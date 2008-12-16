@@ -1,0 +1,35 @@
+//
+//  Position.h
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 12/17/07.
+//  Copyright 2007 Savory Software, LLC. All rights reserved.
+//
+
+#import <Cocoa/Cocoa.h>
+
+@interface Position : NSObject <NSCoding, NSCopying> {
+    float _xPosition;
+    float _yPosition;
+    float _zPosition;
+}
+
+- (id)initWithX: (float)xLoc Y: (float)yLoc Z: (float)zLoc;
++ (id)positionWithX: (float)xLoc Y: (float)yLoc Z: (float)zLoc;
+
+@property (readwrite, assign) float xPosition;
+@property (readwrite, assign) float yPosition;
+@property (readwrite, assign) float zPosition;
+
+- (float)angleTo: (Position*)position;
+- (float)verticalAngleTo: (Position*)position;
+- (float)distanceToPosition: (Position*)position;
+- (float)distanceToPosition2D: (Position*)position;
+- (float)verticalDistanceToPosition: (Position*)position;
+
+@end
+
+@protocol UnitPosition
+- (Position*)position;
+@end
+
