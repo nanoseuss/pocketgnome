@@ -9,6 +9,8 @@
 #import <Cocoa/Cocoa.h>
 #import "Node.h"
 
+@class PlayerDataController;
+
 typedef enum {
     AnyNode = 0,
     MiningNode = 1,
@@ -18,7 +20,7 @@ typedef enum {
 @interface NodeController : NSObject {
     IBOutlet id controller;
     IBOutlet id botController;
-    IBOutlet id playerController;
+    IBOutlet PlayerDataController *playerController;
     IBOutlet id movementController;
     IBOutlet id memoryViewController;
     
@@ -57,11 +59,13 @@ typedef enum {
 
 - (NSArray*)allMiningNodes;
 - (NSArray*)allHerbalismNodes;
+- (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type;
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level;
 
 - (IBAction)resetList: (id)sender;
 - (IBAction)faceNode: (id)sender;
 - (IBAction)filterList: (id)sender;
+- (IBAction)monitorFishing: (id)sender;
 
 - (IBAction)moveToStart: (id)sender;
 - (IBAction)moveToStop: (id)sender;

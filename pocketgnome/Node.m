@@ -34,45 +34,6 @@ enum eGameObjectFields
     GAMEOBJECT_BYTES_1          = 0x5C , // Type: Int32, Size: 1
 };
 
-
-enum eGameObjectTypes {
-    GAMEOBJECT_TYPE_DOOR                = 0,
-    GAMEOBJECT_TYPE_BUTTON              = 1,
-    GAMEOBJECT_TYPE_QUESTGIVER          = 2,
-    GAMEOBJECT_TYPE_CONTAINER           = 3,
-    GAMEOBJECT_TYPE_BINDER              = 4,
-    GAMEOBJECT_TYPE_GENERIC             = 5,
-    GAMEOBJECT_TYPE_TRAP                = 6,
-    GAMEOBJECT_TYPE_CHAIR               = 7,
-    GAMEOBJECT_TYPE_SPELL_FOCUS         = 8,
-    GAMEOBJECT_TYPE_TEXT                = 9,
-    GAMEOBJECT_TYPE_GOOBER              = 10, // eg, gong of zul'farrak, cove cannon
-    GAMEOBJECT_TYPE_TRANSPORT           = 11, // eg, elevator
-    GAMEOBJECT_TYPE_AREADAMAGE          = 12,
-    GAMEOBJECT_TYPE_CAMERA              = 13,
-    GAMEOBJECT_TYPE_MAP_OBJECT          = 14,
-    GAMEOBJECT_TYPE_MO_TRANSPORT        = 15, // eg, boat
-    GAMEOBJECT_TYPE_DUEL_ARBITER        = 16,
-    GAMEOBJECT_TYPE_FISHING_BOBBER      = 17,
-    GAMEOBJECT_TYPE_RITUAL              = 18,
-    GAMEOBJECT_TYPE_MAILBOX             = 19,
-    GAMEOBJECT_TYPE_AUCTIONHOUSE        = 20,
-    GAMEOBJECT_TYPE_GUARDPOST           = 21,
-    GAMEOBJECT_TYPE_PORTAL              = 22,
-    GAMEOBJECT_TYPE_MEETING_STONE       = 23,
-    GAMEOBJECT_TYPE_FLAGSTAND           = 24,
-    GAMEOBJECT_TYPE_FISHINGHOLE         = 25,
-    GAMEOBJECT_TYPE_FLAGDROP            = 26,
-    GAMEOBJECT_TYPE_MINI_GAME           = 27,
-    GAMEOBJECT_TYPE_LOTTERY_KIOSK       = 28,
-    GAMEOBJECT_TYPE_CAPTURE_POINT       = 29,
-    GAMEOBJECT_TYPE_AURA_GENERATOR      = 30,
-    GAMEOBJECT_TYPE_DUNGEON_DIFFICULTY  = 31,
-    GAMEOBJECT_TYPE_UNK                 = 32,
-    GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING = 33,
-    GAMEOBJECT_TYPE_GUILDBANK           = 34,
-};
-
 #define NODE_NAMESTRUCT_POINTER_OFFSET     0x1E8
 
 enum eNodeNameStructFields {
@@ -172,12 +133,20 @@ enum eNodeNameStructFields {
     return 0;
 }
 
+- (GUID)owner {
+    UInt64 value = 0;
+    if([_memory loadDataForObject: self atAddress: ([self infoAddress] + OBJECT_FIELD_CREATED_BY) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+        return value;
+    }
+    return 0;
+}
+
 - (UInt32)nodeType {
     UInt32 value = 0;
     if([_memory loadDataForObject: self atAddress: ([self infoAddress] + GAMEOBJECT_BYTES_1) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
         return ((CFSwapInt32HostToLittle(value) >> 8) & 0xFF);
     }
-    return GAMEOBJECT_TYPE_UNK;
+    return -1;
 }
 
 // 1 read
@@ -354,6 +323,15 @@ enum eNodeNameStructFields {
             break;
         case GAMEOBJECT_TYPE_AURA_GENERATOR:
             return @"Aura Generator";
+            break;
+        case GAMEOBJECT_TYPE_BARBERSHOP:
+            return @"Barbershop";
+            break;
+        case GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING:
+            return @"Destructible Object";
+            break;
+        case GAMEOBJECT_TYPE_TELEPORT:
+            return @"Teleport/Transport";
             break;
         default:
             return [NSString stringWithFormat: @"Unknown (%d)", typeID];
