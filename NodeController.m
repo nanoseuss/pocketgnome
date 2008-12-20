@@ -16,6 +16,8 @@
 
 #import "ImageAndTextCell.h"
 
+#define BobberNode_CaughtFish_Offset    0xD0
+
 typedef enum {
     Filter_All              = -100,
     Filter_Mine_Herb        = -4,
@@ -341,6 +343,19 @@ typedef enum {
     return nodes;
 }
 
+- (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type {
+    NSMutableArray *finalList = [NSMutableArray array];
+    Position *playerPosition = [(PlayerDataController*)playerController position];
+    for(Node* node in _nodeList) {
+        if(   [node isValid]
+           && [node validToLoot]
+           && ([playerPosition distanceToPosition: [node position]] <= distance)
+           && ([node nodeType] == type)) {
+            [finalList addObject: node];
+        }
+    }
+    return finalList;
+}
 
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level {
     NSArray *nodeList = nil;
@@ -352,7 +367,7 @@ typedef enum {
     Position *playerPosition = [(PlayerDataController*)playerController position];
     for(Node* node in nodeList) {
         if(   [node isValid]
-           && [node validToLoot] // no longer valid in 3.0.2
+           && [node validToLoot]
            && ([playerPosition distanceToPosition: [node position]] <= distance)
            && ([self nodeLevel: node] <= level)
            && ![_finishedNodes containsObject: node]) {
@@ -429,6 +444,16 @@ typedef enum {
     [self reloadNodeData: nil];
 }
 
+- (IBAction)monitorFishing: (id)sender {
+    if([sender state] == NSOnState) {
+        PGLog(@"Starting fish monitor");
+        [self fishingCheck];
+    } else {
+        PGLog(@"Stopping fish monitor");
+        [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(fishingCheck) object: nil];
+    }
+}
+
 - (IBAction)moveToStart: (id)sender {
     int tag = [moveToList selectedTag];
     if(tag <= 0) return;
@@ -480,6 +505,36 @@ typedef enum {
 
 - (IBAction)moveToStop: (id)sender {
     [movementController setPatrolRoute: nil];
+}
+
+#pragma mark Monitor Fishing
+
+- (void)fishingCheck {
+    // first, scan all objects for fishing bobbers
+    GUID playerGUID = [playerController GUID];
+    NSArray *validBobbers = [self nodesWithinDistance: 20.0f ofAbsoluteType: GAMEOBJECT_TYPE_FISHING_BOBBER];
+    for(Node *node in validBobbers) {
+        if(playerGUID == [node owner]) {
+            UInt32 value = 0;
+            if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([node baseAddress] + BobberNode_CaughtFish_Offset) Buffer: (Byte *)&value BufLength: sizeof(value)] && (value == 1)) {
+                // we caught a fish!
+                CGDisplayFadeReservationToken token = 0;
+                CGError err = CGAcquireDisplayFadeReservation(4.0, &token);
+                if(err == noErr) {
+                    CGDisplayFade(token, 0.35, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.5f, 0.5f, 0.5f, true);
+                    CGDisplayFade(token, 0.50, kCGDisplayBlendSolidColor,kCGDisplayBlendNormal, 0.5f, 0.5f, 0.5f, true);
+                    CGReleaseDisplayFadeReservation(token);
+                } else {
+                    PGLog(@"Error getting fade token");
+                }
+                
+                PGLog(@"Caught fish! Waiting 5 seconds.");
+                [self performSelector: _cmd withObject: nil afterDelay: 5.0];
+                return;
+            }
+        }
+    }
+    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
 }
 
 @end
