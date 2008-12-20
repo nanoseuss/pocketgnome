@@ -524,11 +524,9 @@ typedef enum {
                     CGDisplayFade(token, 0.35, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.5f, 0.5f, 0.5f, true);
                     CGDisplayFade(token, 0.50, kCGDisplayBlendSolidColor,kCGDisplayBlendNormal, 0.5f, 0.5f, 0.5f, true);
                     CGReleaseDisplayFadeReservation(token);
-                } else {
-                    PGLog(@"Error getting fade token");
                 }
                 
-                PGLog(@"Caught fish! Waiting 5 seconds.");
+                // call this function again in 5 seconds
                 [self performSelector: _cmd withObject: nil afterDelay: 5.0];
                 return;
             }
