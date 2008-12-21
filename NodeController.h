@@ -43,6 +43,9 @@ typedef enum {
     float _updateFrequency;
     NSSize minSectionSize, maxSectionSize;
     int _nodeTypeFilter;
+    
+    // fishing
+    BOOL _monitorFishing;
 }
 
 @property (readonly) NSView *view;
@@ -50,6 +53,7 @@ typedef enum {
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 @property float updateFrequency;
+@property BOOL monitorFishing;
 
 - (void)addAddresses: (NSArray*)addresses;
 // - (BOOL)addNode: (Node*)node;

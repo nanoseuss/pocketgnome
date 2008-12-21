@@ -19,6 +19,8 @@
 		7D2167F40DC4581700D5A815 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D2167F30DC4581700D5A815 /* Carbon.framework */; };
 		7D220E630D1662F70026DF75 /* MovementController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D220E620D1662F70026DF75 /* MovementController.m */; };
 		7D220F150D1691E90026DF75 /* MobController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D220F140D1691E90026DF75 /* MobController.m */; };
+		7D3108E30EFDBCCB00ECFABE /* Bobber.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D3108E20EFDBCCB00ECFABE /* Bobber.png */; };
+		7D3109440EFDCBA700ECFABE /* splash.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7D3109430EFDCBA700ECFABE /* splash.mp3 */; };
 		7D370B0D0E7350DD002FE3A4 /* Action.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D370B0C0E7350DD002FE3A4 /* Action.m */; };
 		7D370C070E7366DC002FE3A4 /* ActionMenusController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D370C060E7366DC002FE3A4 /* ActionMenusController.m */; };
 		7D3C91EB0E47C8C700EDF3B3 /* Gathering.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7D3C91EA0E47C8C700EDF3B3 /* Gathering.plist */; };
@@ -306,6 +308,8 @@
 		7D220E620D1662F70026DF75 /* MovementController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovementController.m; sourceTree = "<group>"; };
 		7D220F130D1691E90026DF75 /* MobController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobController.h; sourceTree = "<group>"; };
 		7D220F140D1691E90026DF75 /* MobController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobController.m; sourceTree = "<group>"; };
+		7D3108E20EFDBCCB00ECFABE /* Bobber.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Bobber.png; sourceTree = "<group>"; };
+		7D3109430EFDCBA700ECFABE /* splash.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = splash.mp3; sourceTree = "<group>"; };
 		7D370B0B0E7350DD002FE3A4 /* Action.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Action.h; sourceTree = "<group>"; };
 		7D370B0C0E7350DD002FE3A4 /* Action.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Action.m; sourceTree = "<group>"; };
 		7D370C050E7366DC002FE3A4 /* ActionMenusController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionMenusController.h; sourceTree = "<group>"; };
@@ -779,6 +783,8 @@
 			children = (
 				7DE310530E8AFB57004CCD27 /* dsa_pub.pem */,
 				7DA95ECD0E23537A00AC85E2 /* alarm.mp3 */,
+				7D3109430EFDCBA700ECFABE /* splash.mp3 */,
+				7D3108E20EFDBCCB00ECFABE /* Bobber.png */,
 				7D41E99A0DEA731E00118EA0 /* Hotkey Help */,
 				7D5B92960D9F179D00423FC6 /* gnome.icns */,
 				7DC7A9A50DFC869400F6FA63 /* gnome2.icns */,
@@ -1501,6 +1507,8 @@
 				7D7C670A0E58EB37002A6C96 /* ProximityCount.xib in Resources */,
 				7D7C670E0E58EC50002A6C96 /* TargetClass.xib in Resources */,
 				7DE310540E8AFB57004CCD27 /* dsa_pub.pem in Resources */,
+				7D3108E30EFDBCCB00ECFABE /* Bobber.png in Resources */,
+				7D3109440EFDCBA700ECFABE /* splash.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

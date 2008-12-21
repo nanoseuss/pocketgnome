@@ -11,6 +11,7 @@
 		<string>PlayerLevelUp</string>
 		<string>BattlegroundEnter</string>
 		<string>BattlegroundLeave</string>
+		<string>FishCaught</string>
 	</array>
 	<key>TicketVersion</key>
 	<integer>1</integer>
