@@ -78,6 +78,13 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityPreferencesUnreadable",
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
+                                   
+                                   // fishing
+                                   [NSNumber numberWithBool: NO],       @"FishingPlayAlertSound",
+                                   [NSNumber numberWithBool: YES],      @"FishingFlashScreen",
+                                   [NSNumber numberWithBool: YES],      @"FishingUseGrowl",
+                                   [NSNumber numberWithBool: YES],      @"FishingHideOtherBobbers",
+                                   
                                    nil];
     // NSLog(@"%d, %d", getuid(), geteuid());
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];

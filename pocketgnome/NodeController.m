@@ -16,7 +16,11 @@
 
 #import "ImageAndTextCell.h"
 
+#import <Growl/GrowlApplicationBridge.h>
+
 #define BobberNode_CaughtFish_Offset    0xD0
+#define BobberNode_Visibility_Offset    0xD8    // could use a better name
+#define kBobberTemporarilyHidden    16000
 
 typedef enum {
     Filter_All              = -100,
@@ -113,6 +117,7 @@ typedef enum {
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
 @synthesize nodeTypeFilter = _nodeTypeFilter;
+@synthesize monitorFishing = _monitorFishing;
 
 - (NSString*)sectionTitle {
     return @"Nodes";
@@ -512,18 +517,49 @@ typedef enum {
 - (void)fishingCheck {
     // first, scan all objects for fishing bobbers
     GUID playerGUID = [playerController GUID];
-    NSArray *validBobbers = [self nodesWithinDistance: 20.0f ofAbsoluteType: GAMEOBJECT_TYPE_FISHING_BOBBER];
+    NSArray *validBobbers = [self nodesWithinDistance: 25.0f ofAbsoluteType: GAMEOBJECT_TYPE_FISHING_BOBBER];
     for(Node *node in validBobbers) {
         if(playerGUID == [node owner]) {
             UInt32 value = 0;
             if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([node baseAddress] + BobberNode_CaughtFish_Offset) Buffer: (Byte *)&value BufLength: sizeof(value)] && (value == 1)) {
                 // we caught a fish!
-                CGDisplayFadeReservationToken token = 0;
-                CGError err = CGAcquireDisplayFadeReservation(4.0, &token);
-                if(err == noErr) {
-                    CGDisplayFade(token, 0.35, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.5f, 0.5f, 0.5f, true);
-                    CGDisplayFade(token, 0.50, kCGDisplayBlendSolidColor,kCGDisplayBlendNormal, 0.5f, 0.5f, 0.5f, true);
-                    CGReleaseDisplayFadeReservation(token);
+                
+                // beep
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                if([[defaults objectForKey: @"FishingPlayAlertSound"] boolValue]) {
+                    [[NSSound soundNamed: @"splash"] play];
+                }
+                
+                // send a growl notification
+                if([[defaults objectForKey: @"FishingUseGrowl"] boolValue]) {
+                    if([GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+                        [GrowlApplicationBridge notifyWithTitle: @"You Caught Something!"
+                                                    description: [NSString stringWithFormat: @"FISHY!"]
+                                               notificationName: @"FishCaught"
+                                                       iconData: [[NSImage imageNamed: @"Bobber"] TIFFRepresentation]
+                                                       priority: 0
+                                                       isSticky: NO
+                                                   clickContext: nil];
+                    }
+                }
+
+                // flash the screen to white and back
+                if([[defaults objectForKey: @"FishingFlashScreen"] boolValue]) {
+                    CGDisplayFadeReservationToken token = 0;
+                    CGError err = CGAcquireDisplayFadeReservation(4.0, &token);
+                    if(err == noErr) {
+                        CGDisplayFade(token, 0.35, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.5f, 0.5f, 0.5f, true);
+                        CGDisplayFade(token, 0.50, kCGDisplayBlendSolidColor,kCGDisplayBlendNormal, 0.5f, 0.5f, 0.5f, true);
+                        CGReleaseDisplayFadeReservation(token);
+                    }
+                }
+                
+                if([[defaults objectForKey: @"FishingHideOtherBobbers"] boolValue]) {
+                    UInt32 value = kBobberTemporarilyHidden;
+                    for(Node *bobber in validBobbers) {
+                        if(bobber == node) continue;    // skip mine
+                        [[controller wowMemoryAccess] saveDataForAddress: ([bobber baseAddress] + BobberNode_Visibility_Offset) Buffer: (Byte*)&value BufLength: sizeof(value)];
+                    }
                 }
                 
                 // call this function again in 5 seconds
