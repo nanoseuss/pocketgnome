@@ -46,6 +46,7 @@ typedef enum {
     
     // fishing
     BOOL _monitorFishing;
+    IBOutlet id openMonitorFishingWindowButton;
 }
 
 @property (readonly) NSView *view;

@@ -324,13 +324,13 @@ enum eNodeNameStructFields {
         case GAMEOBJECT_TYPE_AURA_GENERATOR:
             return @"Aura Generator";
             break;
-        case GAMEOBJECT_TYPE_BARBERSHOP:
+        case GAMEOBJECT_TYPE_BARBER_CHAIR:
             return @"Barbershop";
             break;
         case GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING:
             return @"Destructible Object";
             break;
-        case GAMEOBJECT_TYPE_TELEPORT:
+        case GAMEOBJECT_TYPE_TRAPDOOR:
             return @"Teleport/Transport";
             break;
         default:

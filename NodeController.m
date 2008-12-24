@@ -20,7 +20,7 @@
 
 #define BobberNode_CaughtFish_Offset    0xD0
 #define BobberNode_Visibility_Offset    0xD8    // could use a better name
-#define kBobberTemporarilyHidden    16000
+#define kBobberTemporarilyHidden        16000
 
 typedef enum {
     Filter_All              = -100,
@@ -40,6 +40,7 @@ typedef enum {
 - (int)nodeLevel: (Node*)node;
 - (BOOL)trackingNode: (Node*)trackingNode;
 - (void)reloadNodeData: (id)sender;
+- (void)fishingCheck;
 
 @end
 
@@ -453,9 +454,11 @@ typedef enum {
     if([sender state] == NSOnState) {
         PGLog(@"Starting fish monitor");
         [self fishingCheck];
+        [openMonitorFishingWindowButton setImage: [NSImage imageNamed: @"on"]];
     } else {
         PGLog(@"Stopping fish monitor");
         [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(fishingCheck) object: nil];
+        [openMonitorFishingWindowButton setImage: [NSImage imageNamed: @"off"]];
     }
 }
 
