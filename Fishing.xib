@@ -2,12 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.02">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9F33</string>
+		<string key="IBDocument.SystemVersion">9G55</string>
 		<string key="IBDocument.InterfaceBuilderVersion">670</string>
-		<string key="IBDocument.AppKitVersion">949.34</string>
-		<string key="IBDocument.HIToolboxVersion">352.00</string>
+		<string key="IBDocument.AppKitVersion">949.43</string>
+		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -26,7 +27,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSCustomView" id="1005">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -308,13 +309,13 @@
 									<object class="NSTextField" id="477310316">
 										<reference key="NSNextResponder" ref="351442455"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{320, 80}, {217, 14}}</string>
+										<string key="NSFrame">{{320, 80}, {229, 14}}</string>
 										<reference key="NSSuperview" ref="351442455"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="22878470">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">272761856</int>
-											<string key="NSContents">Hotkey to activate your fishing lures.</string>
+											<string key="NSContents">WoW hotkey to activate your fishing lures.</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="477310316"/>
 											<reference key="NSBackgroundColor" ref="642407247"/>
@@ -404,7 +405,7 @@
 											<nil key="autosaveName"/>
 											<integer value="53" key="keyComboCode"/>
 											<reference key="keyComboFlags" ref="8"/>
-											<integer value="917504" key="allowedFlags"/>
+											<integer value="9306112" key="allowedFlags"/>
 											<reference key="requiredFlags" ref="8"/>
 											<reference key="allowsKeyOnly" ref="5"/>
 											<reference key="escapeKeysRecord" ref="5"/>
@@ -421,7 +422,7 @@
 										<object class="NSTextFieldCell" key="NSCell" id="791876813">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">272761856</int>
-											<string key="NSContents">Set this to the hotkey that casts your line.</string>
+											<string key="NSContents">WoW hotkey that casts your fishing line.</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="404158174"/>
 											<reference key="NSBackgroundColor" ref="642407247"/>
@@ -431,13 +432,13 @@
 									<object class="NSTextField" id="566410656">
 										<reference key="NSNextResponder" ref="351442455"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{320, 48}, {205, 17}}</string>
+										<string key="NSFrame">{{320, 48}, {233, 17}}</string>
 										<reference key="NSSuperview" ref="351442455"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="280993867">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">272761856</int>
-											<string key="NSContents">Hotkey that specfies your fishing rod.</string>
+											<string key="NSContents">WoW hotkey that specfies your fishing rod.</string>
 											<reference key="NSSupport" ref="26"/>
 											<reference key="NSControlView" ref="566410656"/>
 											<reference key="NSBackgroundColor" ref="642407247"/>
@@ -569,6 +570,7 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{600, 412}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
