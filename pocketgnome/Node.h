@@ -55,10 +55,10 @@ typedef enum eGameObjectTypes {
     GAMEOBJECT_TYPE_CAPTURE_POINT       = 29,
     GAMEOBJECT_TYPE_AURA_GENERATOR      = 30,
     GAMEOBJECT_TYPE_DUNGEON_DIFFICULTY  = 31,
-    GAMEOBJECT_TYPE_BARBERSHOP          = 32,   // barbershop?
+    GAMEOBJECT_TYPE_BARBER_CHAIR          = 32,   // barbershop?
     GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING = 33,
     GAMEOBJECT_TYPE_GUILDBANK           = 34,
-    GAMEOBJECT_TYPE_TELEPORT            = 35,   // teleportation something? see well in Dalaran
+    GAMEOBJECT_TYPE_TRAPDOOR            = 35,   // see the Well in Dalaran
 } GameObjectType;
 
 @interface Node : WoWObject <UnitPosition> {

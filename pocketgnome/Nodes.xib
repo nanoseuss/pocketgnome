@@ -1039,7 +1039,7 @@
 									<object class="NSButton" id="694150">
 										<reference key="NSNextResponder" ref="232435970"/>
 										<int key="NSvFlags">265</int>
-										<string key="NSFrame">{{394, 11}, {127, 19}}</string>
+										<string key="NSFrame">{{371, 11}, {150, 19}}</string>
 										<reference key="NSSuperview" ref="232435970"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSButtonCell" key="NSCell" id="702479818">
@@ -1048,8 +1048,12 @@
 											<string key="NSContents">Monitor Fishing...</string>
 											<reference key="NSSupport" ref="416883570"/>
 											<reference key="NSControlView" ref="694150"/>
-											<int key="NSButtonFlags">-2038152961</int>
+											<int key="NSButtonFlags">-2034482945</int>
 											<int key="NSButtonFlags2">164</int>
+											<object class="NSCustomResource" key="NSNormalImage">
+												<string key="NSClassName">NSImage</string>
+												<string key="NSResourceName">off</string>
+											</object>
 											<string key="NSAlternateContents"/>
 											<string key="NSKeyEquivalent"/>
 											<int key="NSPeriodicDelay">400</int>
@@ -1094,6 +1098,7 @@
 				<string key="NSWindowTitle">Monitor Fishing</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="393628514">
 					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -1274,15 +1279,6 @@
 				<string key="NSFrameAutosaveName">MonitorFishingPanel</string>
 			</object>
 			<object class="NSUserDefaultsController" id="482910728">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>fishingFlashScreen</string>
-					<string>FishingPLayAlertSound</string>
-					<string>FishingPlayAlertSound</string>
-					<string>FishingFlashScreen</string>
-					<string>FishingUseGrowl</string>
-					<string>FishingHideOtherBobbers</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 		</object>
@@ -1715,6 +1711,14 @@
 						<reference key="destination" ref="694150"/>
 					</object>
 					<int key="connectionID">248</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">openMonitorFishingWindowButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="694150"/>
+					</object>
+					<int key="connectionID">249</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -2445,6 +2449,7 @@
 					<string>150.IBPluginDependency</string>
 					<string>150.IBWindowTemplateEditedContentRect</string>
 					<string>150.NSWindowTemplate.visibleAtLaunch</string>
+					<string>150.windowTemplate.maxSize</string>
 					<string>151.IBPluginDependency</string>
 					<string>152.IBPluginDependency</string>
 					<string>153.IBPluginDependency</string>
@@ -2542,7 +2547,8 @@
 					<string>{{698, 257}, {473, 184}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{698, 257}, {473, 184}}</string>
-					<integer value="0"/>
+					<reference ref="8"/>
+					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2613,7 +2619,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">248</int>
+			<int key="maxID">249</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2687,6 +2693,7 @@
 							<string>moveToList</string>
 							<string>movementController</string>
 							<string>nodeTable</string>
+							<string>openMonitorFishingWindowButton</string>
 							<string>playerController</string>
 							<string>view</string>
 						</object>
@@ -2696,6 +2703,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSPopUpButton</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>PlayerDataController</string>

@@ -107,6 +107,9 @@
 		7D53C0EC0E5E2199007B3AA6 /* UKFNSubscribeFileWatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D53C0E80E5E2199007B3AA6 /* UKFNSubscribeFileWatcher.m */; };
 		7D5496430E1AA073004AA3E9 /* AuraStackConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D5496420E1AA073004AA3E9 /* AuraStackConditionController.m */; };
 		7D5496460E1AA0F5004AA3E9 /* AuraStackCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D5496450E1AA0F5004AA3E9 /* AuraStackCondition.xib */; };
+		7D5498910F0222DC00DD46F8 /* INV_Fishingpole_03.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D5498900F0222DC00DD46F8 /* INV_Fishingpole_03.png */; };
+		7D5498960F02232500DD46F8 /* FishController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D5498950F02232500DD46F8 /* FishController.m */; };
+		7D5498980F02234300DD46F8 /* Fishing.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D5498970F02234300DD46F8 /* Fishing.xib */; };
 		7D5A384A0D14B52900E491CD /* NSNumberToHexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D5A38490D14B52900E491CD /* NSNumberToHexString.m */; };
 		7D60430C0D5FC2DF001501AF /* mixed.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D60430B0D5FC2DF001501AF /* mixed.png */; };
 		7D60434E0D5FCAA6001501AF /* Items.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D60434D0D5FCAA6001501AF /* Items.xib */; };
@@ -410,6 +413,10 @@
 		7D5496410E1AA073004AA3E9 /* AuraStackConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuraStackConditionController.h; sourceTree = "<group>"; };
 		7D5496420E1AA073004AA3E9 /* AuraStackConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuraStackConditionController.m; sourceTree = "<group>"; };
 		7D5496450E1AA0F5004AA3E9 /* AuraStackCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AuraStackCondition.xib; sourceTree = "<group>"; };
+		7D5498900F0222DC00DD46F8 /* INV_Fishingpole_03.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = INV_Fishingpole_03.png; sourceTree = "<group>"; };
+		7D5498940F02232500DD46F8 /* FishController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FishController.h; sourceTree = "<group>"; };
+		7D5498950F02232500DD46F8 /* FishController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FishController.m; sourceTree = "<group>"; };
+		7D5498970F02234300DD46F8 /* Fishing.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Fishing.xib; sourceTree = "<group>"; };
 		7D5A38480D14B52900E491CD /* NSNumberToHexString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNumberToHexString.h; sourceTree = "<group>"; };
 		7D5A38490D14B52900E491CD /* NSNumberToHexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNumberToHexString.m; sourceTree = "<group>"; };
 		7D5B92960D9F179D00423FC6 /* gnome.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = gnome.icns; sourceTree = "<group>"; };
@@ -662,6 +669,8 @@
 				7DAAE7190D148972003F1E3C /* Controller.m */,
 				7DB2C4480D3BFE4100100B4D /* BotController.h */,
 				7DB2C4490D3BFE4100100B4D /* BotController.m */,
+				7D5498940F02232500DD46F8 /* FishController.h */,
+				7D5498950F02232500DD46F8 /* FishController.m */,
 				7D70E7E00DC65372006B8826 /* ChatController.h */,
 				7D70E7E10DC65372006B8826 /* ChatController.m */,
 				7DAAE7670D14917E003F1E3C /* PlayerDataController.h */,
@@ -739,6 +748,7 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				7D5498970F02234300DD46F8 /* Fishing.xib */,
 			);
 			name = WoWWaypoint;
 			sourceTree = "<group>";
@@ -847,6 +857,7 @@
 			isa = PBXGroup;
 			children = (
 				7DBA60590D51D28600FD6A5F /* Spell_Holy_MindVision.png */,
+				7D5498900F0222DC00DD46F8 /* INV_Fishingpole_03.png */,
 				7DBA60800D51D75C00FD6A5F /* Ability_Warrior_Revenge.png */,
 				7DBA605B0D51D28600FD6A5F /* Spell_FireResistanceTotem_01.png */,
 				7DBA605C0D51D28600FD6A5F /* INV_Misc_Head_Dragon_Bronze.png */,
@@ -1509,6 +1520,8 @@
 				7DE310540E8AFB57004CCD27 /* dsa_pub.pem in Resources */,
 				7D3108E30EFDBCCB00ECFABE /* Bobber.png in Resources */,
 				7D3109440EFDCBA700ECFABE /* splash.mp3 in Resources */,
+				7D5498910F0222DC00DD46F8 /* INV_Fishingpole_03.png in Resources */,
+				7D5498980F02234300DD46F8 /* Fishing.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1617,6 +1630,7 @@
 				7D370B0D0E7350DD002FE3A4 /* Action.m in Sources */,
 				7D370C070E7366DC002FE3A4 /* ActionMenusController.m in Sources */,
 				7DB0ADE50EB02F0C00B81BC1 /* Aura.m in Sources */,
+				7D5498960F02232500DD46F8 /* FishController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
