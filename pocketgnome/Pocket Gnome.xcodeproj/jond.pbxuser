@@ -421,6 +421,7 @@
 			7D66C6770F02363500939F06 /* PBXTextBookmark */ = 7D66C6770F02363500939F06 /* PBXTextBookmark */;
 			7D66C6780F02363500939F06 /* PBXTextBookmark */ = 7D66C6780F02363500939F06 /* PBXTextBookmark */;
 			7D66C6790F02363600939F06 /* PBXTextBookmark */ = 7D66C6790F02363600939F06 /* PBXTextBookmark */;
+			7D66C67D0F02371200939F06 /* PBXTextBookmark */ = 7D66C67D0F02371200939F06 /* PBXTextBookmark */;
 			7D69DF630E5B61F900826A0E = 7D69DF630E5B61F900826A0E /* PBXTextBookmark */;
 			7D69DFA10E5B675D00826A0E = 7D69DFA10E5B675D00826A0E /* PBXTextBookmark */;
 			7D69E0640E5B8D8B00826A0E = 7D69E0640E5B8D8B00826A0E /* PBXTextBookmark */;
@@ -3877,6 +3878,16 @@
 		vrLen = 1809;
 		vrLoc = 14848;
 	};
+	7D66C67D0F02371200939F06 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D7A695C0D26F04F0008C3FF /* NodeController.m */;
+		name = "NodeController.m: 455";
+		rLen = 0;
+		rLoc = 16077;
+		rType = 0;
+		vrLen = 1693;
+		vrLoc = 11501;
+	};
 	7D69DF630E5B61F900826A0E /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 7D9772A80D2DB2B300E6D8F9 /* BetterTableView.m */;
@@ -4183,9 +4194,9 @@
 	};
 	7D7A695C0D26F04F0008C3FF /* NodeController.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1028, 8554}}";
-			sepNavSelRange = "{16090, 29}";
-			sepNavVisRange = "{14848, 1809}";
+			sepNavIntBoundsRect = "{{0, 0}, {1206, 8120}}";
+			sepNavSelRange = "{16077, 0}";
+			sepNavVisRange = "{11501, 1693}";
 		};
 	};
 	7D7A6A470D270F130008C3FF /* WoWObject.h */ = {

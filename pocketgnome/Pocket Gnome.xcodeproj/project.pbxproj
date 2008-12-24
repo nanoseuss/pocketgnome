@@ -748,7 +748,6 @@
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
-				7D5498970F02234300DD46F8 /* Fishing.xib */,
 			);
 			name = WoWWaypoint;
 			sourceTree = "<group>";
@@ -804,6 +803,7 @@
 				7DD64B090D5D191B00773CAB /* Images */,
 				7DBA60570D51D27100FD6A5F /* WoW Icons */,
 				7DD8037E0D514F16005C2F01 /* Bot.xib */,
+				7D5498970F02234300DD46F8 /* Fishing.xib */,
 				7DD8037C0D514E62005C2F01 /* Player.xib */,
 				7DD8038B0D515046005C2F01 /* Mobs.xib */,
 				7D41E5990DEA017600118EA0 /* Players.xib */,
