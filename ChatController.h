@@ -16,6 +16,8 @@
     CGEventSourceRef theSource;
 }
 
+- (CGEventSourceRef)source;
+
 - (void)tab;
 - (void)enter;
 

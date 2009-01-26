@@ -48,6 +48,7 @@ typedef enum QualityComponents {
     QualityEnergy = 10,
     QualityHappiness = 11,
     QualityFocus = 12,
+    QualityRunicPower = 20,
 
     QualityBuffType = 13,
     QualityDebuffType = 14,
@@ -59,6 +60,7 @@ typedef enum QualityComponents {
     
     QualityNPC          = 18,
     QualityPlayer       = 19,
+    // QualityRunicPower = 20
 } ConditionQuality;
 
 typedef enum ComparatorComponents {

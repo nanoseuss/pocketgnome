@@ -237,9 +237,9 @@
                                          [NSNumber numberWithUnsignedInt: level],                               @"Level",
                                          [NSNumber numberWithFloat: distance],                                  @"Distance", 
                                          (isNeutral ? @"4" : (isHostile ? @"2" : @"5")),                        @"Status",
-                                         [player iconForClass: [player unitClass]],                             @"ClassIcon",
                                          [player iconForRace: [player race] gender: [player gender]],           @"RaceIcon",
                                          [NSImage imageNamed: [Unit stringForGender: [player gender]]],         @"GenderIcon",
+                                         [player iconForClass: [player unitClass]],                             @"ClassIcon",
                                          nil]];
         }
         

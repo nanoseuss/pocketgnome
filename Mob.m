@@ -10,12 +10,14 @@
 #import "Offsets.h"
 
 
-#define MOB_NAMESTRUCT_POINTER_OFFSET     0x998
+#define MOB_NAMESTRUCT_POINTER_OFFSET     0x988
 
 enum eMobNameStructFields {
-    NAMESTRUCT_CreatureType     = 0x10,
-    NAMESTRUCT_NAME_PTR         = 0x3C,
-    NAMESTRUCT_ENTRY_ID         = 0x4C,
+    NAMESTRUCT_TITLE_PTR            = 0x4,
+    NAMESTRUCT_NAMESPACE_END_PTR    = 0x8,
+    NAMESTRUCT_CreatureType         = 0x10,
+    NAMESTRUCT_NAME_PTR             = 0x3C,
+    NAMESTRUCT_ENTRY_ID             = 0x4C,
 };
 
 @interface Mob ()
@@ -60,17 +62,12 @@ enum eMobNameStructFields {
     
     // if we don't, load the name out of memory
     if([self objectTypeID] == TYPEID_UNIT) {
-        //+0xDA0
-        //----
-        //+0x40 - pointer to string
-        //+0x50 - mob entry ID
-        //+0x78 - mob name as string (not always)
         
         // get the address from the object itself
         UInt32 value = 0;
         if([_memory loadDataForObject: self atAddress: ([self baseAddress] + MOB_NAMESTRUCT_POINTER_OFFSET) Buffer: (Byte *)&value BufLength: sizeof(value)])
         {
-            UInt32 entryID = 0, stringPtr = 0;
+            UInt32 entryID = 0, stringPtr = 0, titlePtr = 0;
             
             // verify that the entry IDs match, then follow the pointer to the string value
             if([_memory loadDataForObject: self atAddress: (value + NAMESTRUCT_NAME_PTR) Buffer: (Byte *)&stringPtr BufLength: sizeof(stringPtr)] &&
@@ -78,13 +75,23 @@ enum eMobNameStructFields {
             {
                 if( (entryID == [self entryID]) && stringPtr )
                 {
-                    char name[65];
-                    name[64] = 0;
+                    // get title ptr if it exists; we dont care if this op fails
+                    [_memory loadDataForObject: self atAddress: (value + NAMESTRUCT_TITLE_PTR) Buffer: (Byte *)&titlePtr BufLength: sizeof(titlePtr)];
+                    
+                    char name[97];
+                    name[96] = 0;  // make sure it's null terminated, just incase
                     if([_memory loadDataForObject: self atAddress: stringPtr Buffer: (Byte *)&name BufLength: sizeof(name)-1])
                     {
-                        NSString *newName = [NSString stringWithUTF8String: name];
+                        NSString *newName = [NSString stringWithUTF8String: name];  // will stop after it's first encounter with '\0'
                         if([newName length]) {
-                            [self setName: newName];
+                            // now see if there's a title
+                            NSString *title = nil;
+                            UInt32 titleOffset = titlePtr - stringPtr;
+                            if(titlePtr && (titleOffset > 0) && (titleOffset < 96)) {
+                                title = [NSString stringWithUTF8String: (name + titleOffset)];
+                            }
+                            
+                            [self setName: [title length] ? [NSString stringWithFormat: @"%@ <%@>", newName, title] : newName];
                             return newName;
                         }
                     }

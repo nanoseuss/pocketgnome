@@ -365,7 +365,7 @@ static MobController* sharedController = nil;
         //if(tag == 23311)    // adjust the height for peons
         //    [mobPosition setZPosition: [mobPosition zPosition] + 20.0f];
         
-        PGLog(@"Moving to mob: %@", mobToMove);
+        // PGLog(@"Moving to mob: %@", mobToMove);
         
         [movementController moveToObject: mobToMove andNotify: NO];
         //[movementController moveToWaypoint: [Waypoint waypointWithPosition: mobPosition]];

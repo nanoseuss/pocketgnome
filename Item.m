@@ -434,7 +434,7 @@ enum eMiscTypes
         case ItemType_Recipe:
             return @"Recipe"; break;
         case ItemType_Money:
-            return @"Money"; break;
+            return @"Currency"; break;
         case ItemType_Quiver:
             return @"Quiver"; break;
         case ItemType_Quest:

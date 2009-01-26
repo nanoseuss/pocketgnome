@@ -18,12 +18,14 @@ void authMe(char * FullPathToMe);
 
 int main(int argc, char *argv[])
 {
-    printf("%s", argv[0]);
     if(MEMORY_GOD_MODE) {
         if (amIWorthy()) {
-            printf("We're done here.\n"); // signal back to close caller
+            printf("It's go time.\n"); // signal back to close caller
             fflush(stdout);
+            // WHOA! PG works with Xcode's console in 10.5.6!
+#ifndef PGLOGGING
             fclose(stderr); // to shut up the noisy NSLog
+#endif
         } else {
             authMe(argv[0]);
             return 0; 
