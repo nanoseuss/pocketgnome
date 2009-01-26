@@ -8,7 +8,7 @@
 		};
 	};
 	29B97313FDCFA39411CA2CEA /* Project object */ = {
-		activeBuildConfigurationName = Debug;
+		activeBuildConfigurationName = Release;
 		activeExecutable = 7DAAE7070D148955003F1E3C /* Pocket Gnome */;
 		activeTarget = 8D1107260486CEB800E47090 /* Pocket Gnome */;
 		addToTargets = (
@@ -474,6 +474,26 @@
 			7D5D96E40F2D5EA100BDD0EC /* PBXTextBookmark */ = 7D5D96E40F2D5EA100BDD0EC /* PBXTextBookmark */;
 			7D5D96E50F2D5EA100BDD0EC /* PBXTextBookmark */ = 7D5D96E50F2D5EA100BDD0EC /* PBXTextBookmark */;
 			7D5D96E60F2D5EA100BDD0EC /* PBXTextBookmark */ = 7D5D96E60F2D5EA100BDD0EC /* PBXTextBookmark */;
+			7D5D96E80F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96E80F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96E90F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96E90F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96EA0F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96EA0F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96EB0F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96EB0F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96EC0F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96EC0F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96ED0F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96ED0F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96EE0F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96EE0F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96EF0F2D60D400BDD0EC /* PBXTextBookmark */ = 7D5D96EF0F2D60D400BDD0EC /* PBXTextBookmark */;
+			7D5D96F10F2D60F600BDD0EC /* PBXTextBookmark */ = 7D5D96F10F2D60F600BDD0EC /* PBXTextBookmark */;
+			7D5D96F20F2D60F600BDD0EC /* PlistBookmark */ = 7D5D96F20F2D60F600BDD0EC /* PlistBookmark */;
+			7D5D96F30F2D60F600BDD0EC /* PBXTextBookmark */ = 7D5D96F30F2D60F600BDD0EC /* PBXTextBookmark */;
+			7D5D96F40F2D60F600BDD0EC /* PlistBookmark */ = 7D5D96F40F2D60F600BDD0EC /* PlistBookmark */;
+			7D5D96F50F2D610000BDD0EC /* PBXTextBookmark */ = 7D5D96F50F2D610000BDD0EC /* PBXTextBookmark */;
+			7D5D96F60F2D610000BDD0EC /* PBXTextBookmark */ = 7D5D96F60F2D610000BDD0EC /* PBXTextBookmark */;
+			7D5D96F70F2D610300BDD0EC /* PBXTextBookmark */ = 7D5D96F70F2D610300BDD0EC /* PBXTextBookmark */;
+			7D5D96F80F2D610300BDD0EC /* PBXTextBookmark */ = 7D5D96F80F2D610300BDD0EC /* PBXTextBookmark */;
+			7D5D96F90F2D610300BDD0EC /* PBXTextBookmark */ = 7D5D96F90F2D610300BDD0EC /* PBXTextBookmark */;
+			7D5D96FA0F2D610300BDD0EC /* PBXTextBookmark */ = 7D5D96FA0F2D610300BDD0EC /* PBXTextBookmark */;
+			7D5D96FB0F2D610300BDD0EC /* PBXTextBookmark */ = 7D5D96FB0F2D610300BDD0EC /* PBXTextBookmark */;
+			7D5D96FC0F2D610600BDD0EC /* PlistBookmark */ = 7D5D96FC0F2D610600BDD0EC /* PlistBookmark */;
 			7D6043120D5FC3C3001501AF = 7D6043120D5FC3C3001501AF /* PBXBookmark */;
 			7D6043130D5FC3C3001501AF = 7D6043130D5FC3C3001501AF /* PBXBookmark */;
 			7D6043140D5FC3C3001501AF = 7D6043140D5FC3C3001501AF /* PBXBookmark */;
@@ -1791,9 +1811,9 @@
 	};
 	7D220E620D1662F70026DF75 /* MovementController.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1079, 11872}}";
-			sepNavSelRange = "{15677, 0}";
-			sepNavVisRange = "{14941, 1299}";
+			sepNavIntBoundsRect = "{{0, 0}, {1100, 12082}}";
+			sepNavSelRange = "{9260, 0}";
+			sepNavVisRange = "{8224, 1297}";
 		};
 	};
 	7D220F130D1691E90026DF75 /* MobController.h */ = {
@@ -1807,7 +1827,7 @@
 	7D220F140D1691E90026DF75 /* MobController.m */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {1260, 10416}}";
-			sepNavSelRange = "{12071, 0}";
+			sepNavSelRange = "{11396, 0}";
 			sepNavVisRange = "{10708, 1767}";
 			sepNavWindowFrame = "{{15, 74}, {1346, 1099}}";
 		};
@@ -4554,6 +4574,207 @@
 		vrLen = 1767;
 		vrLoc = 10708;
 	};
+	7D5D96E80F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D41EA100DEB554100118EA0 /* Unit.m */;
+		name = "Unit.m: 233";
+		rLen = 0;
+		rLoc = 6716;
+		rType = 0;
+		vrLen = 1396;
+		vrLoc = 6149;
+	};
+	7D5D96E90F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D2166F40DC4487000D5A815 /* CGEvent.h */;
+		name = "CGEvent.h: 85";
+		rLen = 74;
+		rLoc = 3452;
+		rType = 0;
+		vrLen = 2478;
+		vrLoc = 2397;
+	};
+	7D5D96EA0F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D70E7E10DC65372006B8826 /* ChatController.m */;
+		name = "ChatController.m: 33";
+		rLen = 16;
+		rLoc = 561;
+		rType = 0;
+		vrLen = 1228;
+		vrLoc = 303;
+	};
+	7D5D96EB0F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220E620D1662F70026DF75 /* MovementController.m */;
+		name = "MovementController.m: 506";
+		rLen = 0;
+		rLoc = 15680;
+		rType = 0;
+		vrLen = 1307;
+		vrLoc = 14926;
+	};
+	7D5D96EC0F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D41EA100DEB554100118EA0 /* Unit.m */;
+		name = "Unit.m: 233";
+		rLen = 0;
+		rLoc = 6716;
+		rType = 0;
+		vrLen = 1396;
+		vrLoc = 6149;
+	};
+	7D5D96ED0F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D70E7E10DC65372006B8826 /* ChatController.m */;
+		name = "ChatController.m: 33";
+		rLen = 16;
+		rLoc = 561;
+		rType = 0;
+		vrLen = 1228;
+		vrLoc = 303;
+	};
+	7D5D96EE0F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220E620D1662F70026DF75 /* MovementController.m */;
+		name = "MovementController.m: 285";
+		rLen = 62;
+		rLoc = 8594;
+		rType = 0;
+		vrLen = 1297;
+		vrLoc = 8224;
+	};
+	7D5D96EF0F2D60D400BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7DB3E8EC0E0B21B400A8282D /* Processes.h */;
+		name = "Processes.h: 931";
+		rLen = 15;
+		rLoc = 31554;
+		rType = 0;
+		vrLen = 1700;
+		vrLoc = 30769;
+	};
+	7D5D96F10F2D60F600BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220F140D1691E90026DF75 /* MobController.m */;
+		name = "MobController.m: 350";
+		rLen = 0;
+		rLoc = 11396;
+		rType = 0;
+		vrLen = 1767;
+		vrLoc = 10708;
+	};
+	7D5D96F20F2D60F600BDD0EC /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 8D1107310486CEB800E47090 /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+		);
+		name = /Users/jond/Projects/pocketgnome/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	7D5D96F30F2D60F600BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220F140D1691E90026DF75 /* MobController.m */;
+		name = "MobController.m: 350";
+		rLen = 0;
+		rLoc = 11396;
+		rType = 0;
+		vrLen = 1767;
+		vrLoc = 10708;
+	};
+	7D5D96F40F2D60F600BDD0EC /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 8D1107310486CEB800E47090 /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+		);
+		name = /Users/jond/Projects/pocketgnome/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
+	7D5D96F50F2D610000BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220E620D1662F70026DF75 /* MovementController.m */;
+		name = "MovementController.m: 304";
+		rLen = 0;
+		rLoc = 9260;
+		rType = 0;
+		vrLen = 1297;
+		vrLoc = 8224;
+	};
+	7D5D96F60F2D610000BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7DB3E8EC0E0B21B400A8282D /* Processes.h */;
+		name = "Processes.h: 931";
+		rLen = 15;
+		rLoc = 31554;
+		rType = 0;
+		vrLen = 1700;
+		vrLoc = 30769;
+	};
+	7D5D96F70F2D610300BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220E620D1662F70026DF75 /* MovementController.m */;
+		name = "MovementController.m: 304";
+		rLen = 0;
+		rLoc = 9260;
+		rType = 0;
+		vrLen = 1297;
+		vrLoc = 8224;
+	};
+	7D5D96F80F2D610300BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		comments = "warning: 'KLGetCurrentKeyboardLayout' is deprecated (declared at /Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Carbon.framework/Frameworks/HIToolbox.framework/Headers/Keyboards.h:436)";
+		fRef = 7D70E7E10DC65372006B8826 /* ChatController.m */;
+		rLen = 1;
+		rLoc = 76;
+		rType = 1;
+	};
+	7D5D96F90F2D610300BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D220E620D1662F70026DF75 /* MovementController.m */;
+		name = "MovementController.m: 304";
+		rLen = 0;
+		rLoc = 9260;
+		rType = 0;
+		vrLen = 1297;
+		vrLoc = 8224;
+	};
+	7D5D96FA0F2D610300BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7D70E7E10DC65372006B8826 /* ChatController.m */;
+		name = "ChatController.m: 77";
+		rLen = 57;
+		rLoc = 1892;
+		rType = 0;
+		vrLen = 1465;
+		vrLoc = 1243;
+	};
+	7D5D96FB0F2D610300BDD0EC /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 7DB3E8EC0E0B21B400A8282D /* Processes.h */;
+		name = "Processes.h: 931";
+		rLen = 15;
+		rLoc = 31554;
+		rType = 0;
+		vrLen = 1700;
+		vrLoc = 30769;
+	};
+	7D5D96FC0F2D610600BDD0EC /* PlistBookmark */ = {
+		isa = PlistBookmark;
+		fRef = 8D1107310486CEB800E47090 /* Info.plist */;
+		fallbackIsa = PBXBookmark;
+		isK = 0;
+		kPath = (
+		);
+		name = /Users/jond/Projects/pocketgnome/Info.plist;
+		rLen = 0;
+		rLoc = 2147483647;
+	};
 	7D6043120D5FC3C3001501AF /* PBXBookmark */ = {
 		isa = PBXBookmark;
 		fRef = 7DD64B1F0D5D192500773CAB /* off.png */;
@@ -4875,9 +5096,9 @@
 	};
 	7D70E7E10DC65372006B8826 /* ChatController.m */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {1100, 5418}}";
-			sepNavSelRange = "{561, 16}";
-			sepNavVisRange = "{303, 1228}";
+			sepNavIntBoundsRect = "{{0, 0}, {1100, 5390}}";
+			sepNavSelRange = "{1892, 57}";
+			sepNavVisRange = "{1243, 1465}";
 		};
 	};
 	7D70E7FB0DC655A9006B8826 /* PBXTextBookmark */ = {
