@@ -510,7 +510,7 @@ static PlayerDataController* sharedController = nil;
 - (float)speed {
     float floatValue = 0.0;
     [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self baselineAddress] + BaseField_RunSpeed_Current) Buffer: (Byte*)&floatValue BufLength: sizeof(floatValue)];
-    return floatValue;
+    return [[NSString stringWithFormat: @"%.2f", floatValue] floatValue];
 }
 
 // 2 reads
@@ -866,7 +866,8 @@ static PlayerDataController* sharedController = nil;
         
         Player *player = [self player];
         
-        UInt32 stance = [player currentStance];
+        // the stance value doesn't seem to exist in 3.0.8
+        /*UInt32 stance = [player currentStance];
         if(stance) {
             Spell *stanceSpell = [[SpellController sharedSpells] spellForID: [NSNumber numberWithUnsignedInt: stance]];
             if(stanceSpell.name) {
@@ -876,7 +877,7 @@ static PlayerDataController* sharedController = nil;
             }
         } else {
             [stanceText setStringValue: @"No stance detected."];
-        }
+        }*/
         
         // load health
         [self setHealth: [player currentHealth]];
@@ -892,6 +893,7 @@ static PlayerDataController* sharedController = nil;
             case UnitPower_Focus:       [powerNameText setStringValue: @"Focus:"];  break;
             case UnitPower_Energy:      [powerNameText setStringValue: @"Energy:"]; break;
             case UnitPower_Happiness:   [powerNameText setStringValue: @"Happiness:"]; break;
+            case UnitPower_RunicPower:  [powerNameText setStringValue: @"Runic Power:"]; break;
             default:                    [powerNameText setStringValue: @"Power:"];  break;
         }
         

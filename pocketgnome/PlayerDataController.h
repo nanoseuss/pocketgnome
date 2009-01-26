@@ -34,7 +34,7 @@
     id memoryViewController;
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
-    IBOutlet NSTextField *stanceText;
+    // IBOutlet NSTextField *stanceText; // 3.0.8 removed
 
     NSNumber *_baselineAddress;
     NSNumber *_playerAddress;

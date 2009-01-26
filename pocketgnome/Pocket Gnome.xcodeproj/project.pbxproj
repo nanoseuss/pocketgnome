@@ -247,6 +247,8 @@
 		7DD803A20D5151CA005C2F01 /* Routes.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD803A10D5151CA005C2F01 /* Routes.xib */; };
 		7DD803A40D5153E5005C2F01 /* Behaviors.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD803A30D5153E5005C2F01 /* Behaviors.xib */; };
 		7DD804280D516186005C2F01 /* Nodes.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD804270D516185005C2F01 /* Nodes.xib */; };
+		7DD8910B0F2BE875007E9FE4 /* DeathKnight.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */; };
+		7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */ = {isa = PBXBuildFile; fileRef = 7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */; };
 		7DE310540E8AFB57004CCD27 /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 7DE310530E8AFB57004CCD27 /* dsa_pub.pem */; };
 		7DE3115E0E8B0D4C004CCD27 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DE3115D0E8B0D4C004CCD27 /* Sparkle.framework */; };
 		7DE311610E8B0D4E004CCD27 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DE3115D0E8B0D4C004CCD27 /* Sparkle.framework */; };
@@ -423,7 +425,6 @@
 		7D60430B0D5FC2DF001501AF /* mixed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mixed.png; sourceTree = "<group>"; };
 		7D60434D0D5FCAA6001501AF /* Items.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Items.xib; sourceTree = "<group>"; };
 		7D62BD380DE3790C000D0B6D /* ObjectConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectConstants.h; sourceTree = "<group>"; };
-		7D62BD640DE37DDF000D0B6D /* OldConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OldConstants.h; sourceTree = "<group>"; };
 		7D65C8F70D2EE14500C50DF7 /* Rule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rule.h; sourceTree = "<group>"; };
 		7D65C8F80D2EE14500C50DF7 /* Rule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Rule.m; sourceTree = "<group>"; };
 		7D65C8FA0D2EE16B00C50DF7 /* Condition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Condition.h; sourceTree = "<group>"; };
@@ -608,6 +609,8 @@
 		7DD803A10D5151CA005C2F01 /* Routes.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Routes.xib; sourceTree = "<group>"; };
 		7DD803A30D5153E5005C2F01 /* Behaviors.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Behaviors.xib; sourceTree = "<group>"; };
 		7DD804270D516185005C2F01 /* Nodes.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Nodes.xib; sourceTree = "<group>"; };
+		7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DeathKnight.png; sourceTree = "<group>"; };
+		7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = DeathKnight_Small.gif; sourceTree = "<group>"; };
 		7DE310530E8AFB57004CCD27 /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		7DE3115D0E8B0D4C004CCD27 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = "/Users/jond/Projects/Other Code:Libraries/Sparkle 1.5b6/Extras/Source Code/build/Release/Sparkle.framework"; sourceTree = "<absolute>"; };
 		7DE53DD60E32B48500C59033 /* CombatProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatProfile.h; sourceTree = "<group>"; };
@@ -765,7 +768,6 @@
 				7DAA09A90D55988F00A6D06A /* Globals.h */,
 				7D62BD380DE3790C000D0B6D /* ObjectConstants.h */,
 				7DAAE76A0D1494F0003F1E3C /* Offsets.h */,
-				7D62BD640DE37DDF000D0B6D /* OldConstants.h */,
 				32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */,
 				29B97316FDCFA39411CA2CEA /* main.m */,
 				7DAAE71F0D14897D003F1E3C /* MemoryAccess.h */,
@@ -914,6 +916,7 @@
 				7D41E8840DEA2DFA00118EA0 /* Shaman.png */,
 				7D41E8850DEA2DFA00118EA0 /* Warlock.png */,
 				7D41E8860DEA2DFA00118EA0 /* Warrior.png */,
+				7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */,
 			);
 			name = Class;
 			sourceTree = "<group>";
@@ -930,6 +933,7 @@
 				7D41E8FE0DEA379300118EA0 /* Hunter_Small.gif */,
 				7D41E8FF0DEA379300118EA0 /* Druid_Small.gif */,
 				7D41E9000DEA379300118EA0 /* Rogue_Small.gif */,
+				7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */,
 			);
 			name = Small;
 			sourceTree = "<group>";
@@ -1522,6 +1526,8 @@
 				7D3109440EFDCBA700ECFABE /* splash.mp3 in Resources */,
 				7D5498910F0222DC00DD46F8 /* INV_Fishingpole_03.png in Resources */,
 				7D5498980F02234300DD46F8 /* Fishing.xib in Resources */,
+				7DD8910B0F2BE875007E9FE4 /* DeathKnight.png in Resources */,
+				7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

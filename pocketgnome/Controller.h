@@ -126,6 +126,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (IBAction)renameUseExisting: (id)sender;
 - (IBAction)renameShowHelp: (id)sender;
 
+- (IBAction)testFront: (id)sender;
 @end
 
 @interface NSObject (MemoryViewControllerExtras)

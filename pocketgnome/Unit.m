@@ -230,11 +230,15 @@ enum NPCFlags
 // only works for the current player
 // 0xFFFFFFF when invalid
 - (UInt32)currentStance {
+    // this field seems to have been removed in 3.0.8
+    return 0;
+
+    /*
     UInt32 value = 0;
     if([_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_CurrentStance) Buffer: (Byte *)&value BufLength: sizeof(value)])
         if(value && (value != 0xFFFFFFFF))
             return value;
-    return 0;
+    return 0;*/
 }
 
 #pragma mark -
@@ -246,8 +250,10 @@ enum NPCFlags
     UInt32 value;
     if([_memory loadDataForObject: self atAddress: (([self infoAddress] + UnitField_MaxPower1) + (sizeof(value) * powerType)) Buffer: (Byte *)&value BufLength: sizeof(value)])
     { 
-        if(powerType != UnitPower_Rage) return value;
-        else                            return value/10;
+        if((powerType == UnitPower_Rage) || (powerType == UnitPower_RunicPower))
+            return value/10;
+        else
+            return value;
     }
     return 0;
 }
@@ -258,8 +264,10 @@ enum NPCFlags
     UInt32 value;
     if([_memory loadDataForObject: self atAddress: (([self infoAddress] + UnitField_Power1) + (sizeof(value) * powerType)) Buffer: (Byte *)&value BufLength: sizeof(value)])
     {
-        if(powerType != UnitPower_Rage) return value;
-        else                            return lrintf(floorf(value/10.0f));
+        if((powerType == UnitPower_Rage) || (powerType == UnitPower_RunicPower))
+            return lrintf(floorf(value/10.0f));
+        else
+            return value;
     }
     return 0;
 }
@@ -338,6 +346,9 @@ enum NPCFlags
             break;
         case UnitClass_Druid:
             stringClass = @"Druid";
+            break;
+        case UnitClass_DeathKnight:
+            stringClass = @"Death Knight";
             break;
         default:
             stringClass = @"Unknown";
@@ -420,8 +431,7 @@ enum NPCFlags
 }
 
 - (NSImage*)iconForClass: (UnitClass)unitClass {
-    return [NSImage imageNamed: [NSString stringWithFormat: @"%@_Small", [Unit stringForClass: unitClass]]];
-    
+    return [NSImage imageNamed: [[NSString stringWithFormat: @"%@_Small", [Unit stringForClass: unitClass]] stringByReplacingOccurrencesOfString: @" " withString: @""]];
     
     NSImage *icon = nil;
     switch(unitClass) {
@@ -451,6 +461,9 @@ enum NPCFlags
             break;
         case UnitClass_Druid:
             icon = [NSImage imageNamed: @"Druid"];
+            break;
+        case UnitClass_DeathKnight:
+            icon = [NSImage imageNamed: @"Death Knight"];
             break;
         default:
             icon = [NSImage imageNamed: @"UnknownSmall"];
@@ -794,6 +807,9 @@ enum SheathState
             case UnitField_Power5:
                 desc = @"Happiness, Current";
                 break;
+            case UnitField_Power7:
+                desc = @"Runic Power, Current";
+                break;
 
             case UnitField_MaxHealth:
                 desc = @"Health, Max";
@@ -812,6 +828,9 @@ enum SheathState
                 break;
             case UnitField_MaxPower5:
                 desc = @"Happiness, Max";
+                break;
+            case UnitField_MaxPower7:
+                desc = @"Runic Power, Max";
                 break;
 
             case UnitField_Level:

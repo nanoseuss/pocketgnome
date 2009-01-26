@@ -500,7 +500,7 @@ static Controller* sharedController = nil;
                                 //    isMatchingValue = (Byte*)value[y] == ReturnedBuffer[x + y];
                                 //}
                                 
-                                if (*checkVal == structMarker) {
+                                if(*checkVal == structMarker) {
                                     UInt32 structAddress = SourceAddress + x;
                                     // PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
                                     
@@ -516,7 +516,7 @@ static Controller* sharedController = nil;
                                             break;
                                         }
                                     }
-                                    break;
+                                    // break; this break is unnecessary?
                                 }
                             }
                         }
@@ -1823,6 +1823,52 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
 
 - (IBAction)renameShowHelp: (id)sender {
     [self doQuickAlertSheetWithTitle: @"For Advanced Users" text: @"The Rename Application function will completely rename the Pocket Gnome application such that it will no longer be recognized in process list scans.\n\nIt is an advanced feature, and should only be used by people who know what Signatures and Identifiers are.\n\nBacking up of your preference file before renaming would be a fantastic idea." style: NSInformationalAlertStyle];
+}
+
+
+- (IBAction)testFront: (id)sender {
+    ProcessSerialNumber wowProcess = [self getWoWProcessSerialNumber];
+    int thisSpace, wowSpace;
+    int delay = 10000, timeWaited = 0;
+    BOOL wasWoWHidden = [self isWoWHidden];
+    int err = 0;
+    if(wasWoWHidden) {
+        NSLog(@"wow was hidden");
+        err = ShowHideProcess( &wowProcess, YES);
+        NSLog(@"show/hide err = %d", err);
+    } else {
+        NSLog(@"wow was NOT hidden");
+    }
+    CGSConnection cgsConnection = _CGSDefaultConnection();
+    CGSGetWorkspace(cgsConnection, &thisSpace);
+    NSLog(@"thisSpace: %d", thisSpace);
+    while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
+        usleep(delay);
+        timeWaited += delay;
+        NSLog(@":: not visible");
+    }
+    CGSGetWindowWorkspace(cgsConnection, [self getWOWWindowID], &wowSpace);
+    
+    BOOL weMadeWoWFront = NO;
+    
+    // move wow to the front if necessary
+    if(![self isWoWFront]) {
+        NSLog(@"not front!!!");
+        // move to WoW's workspace
+        if(thisSpace != wowSpace) {
+            CGSSetWorkspace(cgsConnection, wowSpace);
+            usleep(100000);
+        }
+        
+        // and set it as front process
+        err = SetFrontProcess(&wowProcess);
+        NSLog(@"SetFrontProcess error =%d", err);
+        usleep(100000);
+        
+        weMadeWoWFront = YES;
+    } else {
+        NSLog(@"front");
+    }
 }
 
 @end

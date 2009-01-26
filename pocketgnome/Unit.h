@@ -41,32 +41,33 @@ enum eUnitBaseFields {
     BaseField_RunSpeed_Back             = 0x844,
     BaseField_AirSpeed_Max              = 0x850,
     
-    BaseField_Spell_ToCast              = 0xA64,
-    BaseField_Spell_Casting             = 0xA68,
-    BaseField_Spell_TargetGUID_Low      = 0xA6C,
-    BaseField_Spell_TargetGUID_High     = 0xA70,
-    BaseField_Spell_TimeStart           = 0xA74,
-    BaseField_Spell_TimeEnd             = 0xA78,
-    BaseField_Spell_Channeling          = 0xA7C,
-    BaseField_Spell_ChannelTimeStart    = 0xA80,
-    BaseField_Spell_ChannelTimeEnd      = 0xA84,
+    BaseField_Spell_ToCast              = 0xA54,
+    BaseField_Spell_Casting             = 0xA58,
+    BaseField_Spell_TargetGUID_Low      = 0xA5C,
+    BaseField_Spell_TargetGUID_High     = 0xA60,
+    BaseField_Spell_TimeStart           = 0xA64,
+    BaseField_Spell_TimeEnd             = 0xA68,
     
-    BaseField_UnitIsSelected            = 0xA8C,
+    BaseField_Spell_Channeling          = 0xA6C,
+    BaseField_Spell_ChannelTimeStart    = 0xA70,
+    BaseField_Spell_ChannelTimeEnd      = 0xA74,
     
-    BaseField_Player_CurrentTime        = 0xAAC,
+    BaseField_UnitIsSelected            = 0xA7C,
     
-    BaseField_CurrentStance             = 0xB50,
+    BaseField_Player_CurrentTime        = 0xA9C,
     
-    BaseField_Auras_ValidCount          = 0xC7C,
-    BaseField_Auras_Start               = 0xC80,
+    // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
+    
+    BaseField_Auras_ValidCount          = 0xC6C,
+    BaseField_Auras_Start               = 0xC70,
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
-    // the Aura fields in the player stuct get abandoned and move elsewhere
-    BaseField_Auras_OverflowPtr1        = 0xE0C,
-    BaseField_Auras_OverflowPtr2        = 0xEA4,
-    BaseField_Auras_OverflowPtr3        = 0xF3C,
-    BaseField_Auras_OverflowPtr4        = 0xF94,
+    // the Aura fields in the player struct is abandoned and moves elsewhere
+    BaseField_Auras_OverflowPtr1        = 0xDFC,    // 3.0.8: i could not verify overflow 2, 3, 4
+    // BaseField_Auras_OverflowPtr2        = 0xEA4, // but since they aren't actually used, I don't think it matters.
+    // BaseField_Auras_OverflowPtr3        = 0xF3C,
+    // BaseField_Auras_OverflowPtr4        = 0xF94,
 };
 
 enum eUnitFields {
@@ -88,8 +89,8 @@ enum eUnitFields {
 	UnitField_Power3                    = 0x68, // Focus
 	UnitField_Power4                    = 0x6C, // Energy
 	UnitField_Power5                    = 0x70, // Happiness
-	UnitField_Power6                    = 0x74, // Happiness
-	UnitField_Power7                    = 0x78, // Happiness
+	UnitField_Power6                    = 0x74, // unknown
+	UnitField_Power7                    = 0x78, // Runic Power
 	UnitField_MaxHealth                 = 0x7C,
 	UnitField_MaxPower1                 = 0x80,
 	UnitField_MaxPower2                 = 0x84,
@@ -111,18 +112,7 @@ enum eUnitFields {
     UnitField_StatusFlags               = 0xE8,
     UnitField_StatusFlags2              = 0xEC,
     
-    /* ********************************************************** */
-    // everything between is wrong as of patch 3.0.2
-    
-    //UnitField_AuraBuffs                 = 0xC0,
-    //UnitField_AuraDebuffs_NPC           = 0x100,
-    //UnitField_AuraDebuffs_Player        = 0x160,
-    //UnitField_AuraStacks                = 0x210,    // buff then debuff, 1 byte per aura
-    
-    // everything above is wrong
-    /* ********************************************************** */
-    
-    UnitField_MainhandSpeed             = 0xF4,
+    UnitField_MainhandSpeed             = 0xF4, // these speeds are in milliseconds, eg 2000 = 2.0sec
     UnitField_OffhandSpeed              = 0xF8,
     UnitField_RangedSpeed               = 0xFC,
 
@@ -270,7 +260,8 @@ typedef enum {
     UnitPower_Focus         = 2,
     UnitPower_Energy        = 3,
     UnitPower_Happiness     = 4,
-    UnitPower_Max           = 5,
+    UnitPower_RunicPower    = 6,
+    UnitPower_Max           = 7,
 } UnitPower;
 
 typedef enum {
