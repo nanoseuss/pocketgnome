@@ -293,13 +293,13 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>13</integer>
-									<integer>1</integer>
+									<integer>202</integer>
+									<integer>156</integer>
 									<integer>0</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 0}, {275, 957}}</string>
+							<string>{{0, 2839}, {275, 957}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -329,14 +329,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>MobController.m</string>
+								<string>Info.plist</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -344,11 +342,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>MobController.m</string>
+										<string>Info.plist</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>7D5D96E60F2D5EA100BDD0EC</string>
+										<string>7D5D96FC0F2D610600BDD0EC</string>
 										<key>history</key>
 										<array>
 											<string>7D5A384E0D14B66A00E491CD</string>
@@ -595,7 +593,6 @@
 											<string>7D903A6B0EF608A000380E06</string>
 											<string>7D903A6C0EF608A000380E06</string>
 											<string>7D903A6D0EF608A000380E06</string>
-											<string>7D903AA40EF60A6A00380E06</string>
 											<string>7D903AA50EF60A6A00380E06</string>
 											<string>7D903AA60EF60A6A00380E06</string>
 											<string>7D903AD80EF60DF500380E06</string>
@@ -714,14 +711,8 @@
 											<string>7D5D96DD0F2D5EA100BDD0EC</string>
 											<string>7D5D96DE0F2D5EA100BDD0EC</string>
 											<string>7D5D96DF0F2D5EA100BDD0EC</string>
-											<string>7D5D96E00F2D5EA100BDD0EC</string>
-										</array>
-										<key>nextStack</key>
-										<array>
-											<string>7D5D96E20F2D5EA100BDD0EC</string>
-											<string>7D5D96E30F2D5EA100BDD0EC</string>
-											<string>7D5D96E40F2D5EA100BDD0EC</string>
-											<string>7D5D96E50F2D5EA100BDD0EC</string>
+											<string>7D5D96F10F2D60F600BDD0EC</string>
+											<string>7D5D96F20F2D60F600BDD0EC</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -957,6 +948,7 @@
 											<string>7D5D96BC0F2D5A7200BDD0EC</string>
 											<string>7D5D96BD0F2D5A7200BDD0EC</string>
 											<string>7D5D96E10F2D5EA100BDD0EC</string>
+											<string>7D5D96F30F2D60F600BDD0EC</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -1154,8 +1146,8 @@
 		<string>7D5D96470F2D024300BDD0EC</string>
 		<string>7D5D96480F2D024300BDD0EC</string>
 		<string>1CD10A99069EF8BA00B06720</string>
-		<string>1C78EAAD065D492600B07095</string>
 		<string>7DAAE7C70D14A746003F1E3C</string>
+		<string>1C78EAAD065D492600B07095</string>
 		<string>/Users/jond/Projects/pocketgnome/Pocket Gnome.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
@@ -1175,14 +1167,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CD0528F0623707200166675</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>MovementController.m</string>
+								<string>ChatController.m</string>
 								<key>StatusBarVisibility</key>
 								<true/>
 							</dict>
@@ -1199,6 +1189,8 @@
 							<string>687pt</string>
 						</dict>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -1249,7 +1241,7 @@
 			<key>WindowToolGUID</key>
 			<string>7DAAE7C70D14A746003F1E3C</string>
 			<key>WindowToolIsVisible</key>
-			<true/>
+			<false/>
 		</dict>
 		<dict>
 			<key>FirstTimeWindowDisplayed</key>
@@ -1391,8 +1383,6 @@
 							<key>Dock</key>
 							<array>
 								<dict>
-									<key>BecomeActive</key>
-									<true/>
 									<key>ContentConfiguration</key>
 									<dict>
 										<key>PBXProjectModuleGUID</key>
@@ -1419,6 +1409,8 @@
 							<string>769pt</string>
 						</dict>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
