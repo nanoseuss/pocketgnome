@@ -282,6 +282,7 @@
 								<string>29B97317FDCFA39411CA2CEA</string>
 								<string>7DD64B090D5D191B00773CAB</string>
 								<string>7DBA60570D51D27100FD6A5F</string>
+								<string>7D3C91EA0E47C8C700EDF3B3</string>
 								<string>7D54DCB80E08449F00E1B463</string>
 								<string>29B97323FDCFA39411CA2CEA</string>
 								<string>1058C7A0FEA54F0111CA2CBB</string>
@@ -293,7 +294,8 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>202</integer>
+									<integer>200</integer>
+									<integer>199</integer>
 									<integer>156</integer>
 									<integer>0</integer>
 								</array>
@@ -318,7 +320,7 @@
 							<real>275</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>374 162 1437 1016 0 0 1920 1178 </string>
+						<string>61 162 1437 1016 0 0 1920 1178 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -334,7 +336,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>Info.plist</string>
+								<string>Gathering.plist</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -342,11 +344,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>Info.plist</string>
+										<string>Gathering.plist</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>7D5D96FC0F2D610600BDD0EC</string>
+										<string>7D7253730F2DA10700AC62CA</string>
 										<key>history</key>
 										<array>
 											<string>7D5A384E0D14B66A00E491CD</string>
@@ -593,7 +595,6 @@
 											<string>7D903A6B0EF608A000380E06</string>
 											<string>7D903A6C0EF608A000380E06</string>
 											<string>7D903A6D0EF608A000380E06</string>
-											<string>7D903AA50EF60A6A00380E06</string>
 											<string>7D903AA60EF60A6A00380E06</string>
 											<string>7D903AD80EF60DF500380E06</string>
 											<string>7D903AD90EF60DF500380E06</string>
@@ -637,7 +638,6 @@
 											<string>7D3109000EFDBD8A00ECFABE</string>
 											<string>7D3109050EFDBD8A00ECFABE</string>
 											<string>7D3109220EFDC1D500ECFABE</string>
-											<string>7D3109230EFDC1D500ECFABE</string>
 											<string>7DF0ABA30EFEEBF6006E54E3</string>
 											<string>7DF0ABA40EFEEBF6006E54E3</string>
 											<string>7DF0ABA50EFEEBF6006E54E3</string>
@@ -712,7 +712,9 @@
 											<string>7D5D96DE0F2D5EA100BDD0EC</string>
 											<string>7D5D96DF0F2D5EA100BDD0EC</string>
 											<string>7D5D96F10F2D60F600BDD0EC</string>
-											<string>7D5D96F20F2D60F600BDD0EC</string>
+											<string>7D72536F0F2DA10700AC62CA</string>
+											<string>7D7253700F2DA10700AC62CA</string>
+											<string>7D3109230EFDC1D500ECFABE</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -941,7 +943,6 @@
 											<string>7DD892630F2C0CC0007E9FE4</string>
 											<string>7DD892640F2C0CC0007E9FE4</string>
 											<string>7D5D96740F2D421E00BDD0EC</string>
-											<string>7D5D96920F2D50FE00BDD0EC</string>
 											<string>7D5D969D0F2D51AD00BDD0EC</string>
 											<string>7D5D969E0F2D51AD00BDD0EC</string>
 											<string>7D5D96BB0F2D5A7200BDD0EC</string>
@@ -949,6 +950,8 @@
 											<string>7D5D96BD0F2D5A7200BDD0EC</string>
 											<string>7D5D96E10F2D5EA100BDD0EC</string>
 											<string>7D5D96F30F2D60F600BDD0EC</string>
+											<string>7D7253710F2DA10700AC62CA</string>
+											<string>7D7253720F2DA10700AC62CA</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -962,7 +965,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {1140, 679}}</string>
 								<key>RubberWindowFrame</key>
-								<string>374 162 1437 1016 0 0 1920 1178 </string>
+								<string>61 162 1437 1016 0 0 1920 1178 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -982,7 +985,7 @@
 								<key>Frame</key>
 								<string>{{0, 684}, {1140, 291}}</string>
 								<key>RubberWindowFrame</key>
-								<string>374 162 1437 1016 0 0 1920 1178 </string>
+								<string>61 162 1437 1016 0 0 1920 1178 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -1006,9 +1009,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>7D5D963C0F2D024300BDD0EC</string>
+				<string>7D7253740F2DA10700AC62CA</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>7D5D963D0F2D024300BDD0EC</string>
+				<string>7D7253750F2DA10700AC62CA</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -1142,16 +1145,10 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>1C530D57069F1CE1000CFCEE</string>
-		<string>7D5D96470F2D024300BDD0EC</string>
-		<string>7D5D96480F2D024300BDD0EC</string>
-		<string>1CD10A99069EF8BA00B06720</string>
-		<string>7DAAE7C70D14A746003F1E3C</string>
-		<string>1C78EAAD065D492600B07095</string>
 		<string>/Users/jond/Projects/pocketgnome/Pocket Gnome.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
-	<string>374 162 1437 1016 0 0 1920 1178 </string>
+	<string>61 162 1437 1016 0 0 1920 1178 </string>
 	<key>WindowToolsV3</key>
 	<array>
 		<dict>
