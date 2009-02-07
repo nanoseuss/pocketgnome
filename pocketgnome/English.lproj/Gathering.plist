@@ -4,6 +4,69 @@
 <dict>
 	<key>Herbalism</key>
 	<dict>
+		<key>Firethorn</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>360</integer>
+		</dict>
+		<key>Goldclover</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>350</integer>
+		</dict>
+		<key>Frost Lotus</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>450</integer>
+		</dict>
+		<key>Icethorn</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>435</integer>
+		</dict>
+		<key>Lichbloom</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>425</integer>
+		</dict>
+		<key>Adder&apos;s Tongue</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>400</integer>
+		</dict>
+		<key>Frozen Herb</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>400</integer>
+		</dict>
+		<key>Tiger Lily</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>400</integer>
+		</dict>
+		<key>Talandra&apos;s Rose</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>385</integer>
+		</dict>
 		<key>Purple Lotus</key>
 		<dict>
 			<key>Type</key>
