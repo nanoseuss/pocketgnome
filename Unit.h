@@ -41,30 +41,30 @@ enum eUnitBaseFields {
     BaseField_RunSpeed_Back             = 0x844,
     BaseField_AirSpeed_Max              = 0x850,
     
-    BaseField_Spell_ToCast              = 0xA54,
-    BaseField_Spell_Casting             = 0xA58,
-    BaseField_Spell_TargetGUID_Low      = 0xA5C,
-    BaseField_Spell_TargetGUID_High     = 0xA60,
-    BaseField_Spell_TimeStart           = 0xA64,
-    BaseField_Spell_TimeEnd             = 0xA68,
+    BaseField_Spell_ToCast              = 0xA28,
+    BaseField_Spell_Casting             = 0xA2C,
+    BaseField_Spell_TargetGUID_Low      = 0xA30,
+    BaseField_Spell_TargetGUID_High     = 0xA34,
+    BaseField_Spell_TimeStart           = 0xA38,
+    BaseField_Spell_TimeEnd             = 0xA3C,
     
-    BaseField_Spell_Channeling          = 0xA6C,
-    BaseField_Spell_ChannelTimeStart    = 0xA70,
-    BaseField_Spell_ChannelTimeEnd      = 0xA74,
+    BaseField_Spell_Channeling          = 0xA40,
+    BaseField_Spell_ChannelTimeStart    = 0xA44,
+    BaseField_Spell_ChannelTimeEnd      = 0xA48,
     
-    BaseField_UnitIsSelected            = 0xA7C,
+    BaseField_UnitIsSelected            = 0xA50,
     
-    BaseField_Player_CurrentTime        = 0xA9C,
+    BaseField_Player_CurrentTime        = 0xA70,
     
     // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
     
-    BaseField_Auras_ValidCount          = 0xC6C,
-    BaseField_Auras_Start               = 0xC70,
+    BaseField_Auras_ValidCount          = 0xC40,
+    BaseField_Auras_Start               = 0xC44,
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
     // the Aura fields in the player struct is abandoned and moves elsewhere
-    BaseField_Auras_OverflowPtr1        = 0xDFC,    // 3.0.8: i could not verify overflow 2, 3, 4
+    BaseField_Auras_OverflowPtr1        = 0xDD0,    // 3.0.8-9: i could not verify overflow 2, 3, 4
     // BaseField_Auras_OverflowPtr2        = 0xEA4, // but since they aren't actually used, I don't think it matters.
     // BaseField_Auras_OverflowPtr3        = 0xF3C,
     // BaseField_Auras_OverflowPtr4        = 0xF94,

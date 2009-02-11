@@ -11,20 +11,23 @@
  
 #import "ObjectConstants.h"
 
-#define VALID_WOW_VERSION   @"3.0.8"
+#define VALID_WOW_VERSION   @"3.0.9"
 #define PLAYER_LEVEL_CAP    80
 
 // not valid for PPC!
-// 3.0.8 valid
-#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x14A9B48 : 0x0)        // 3.0.8
+// 3.0.9 valid
+#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x14A6B28 : 0x0)        // 3.0.9
+                                             // 0x14A9B48 : 0x0)        // 3.0.8
                                              // 0x14A27E8 : 0x0)        // 3.0.3
                                              // 0x149E668 : 0x0)        // 3.0.2
                                              // 0xEB1C88 : 0xECAD68)    // 2.4.3
-#define SERVER_NAME_STATIC          ((IS_X86) ? 0x14A9FA6 : 0x0)        // 3.0.8
+#define SERVER_NAME_STATIC          ((IS_X86) ? 0x14A6F86 : 0x0)        // 3.0.9
+                                             // 0x14A9FA6 : 0x0)        // 3.0.8                                     
                                              // 0x14A2C46 : 0x0)        // 3.0.3
                                              // 0x149EAC6 : 0x0)        // 3.0.2
                                              // 0xEB1EA6 : 0xECAF7E)    // 2.4.3
-#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x14A9CA0 : 0x0)        // 3.0.8
+#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x14A6C80 : 0x0)        // 3.0.9
+                                             // 0x14A9CA0 : 0x0)        // 3.0.8
                                              // 0x14A2940 : 0x0)        // 3.0.3
                                              // 0x149E7C0 : 0x0)        // 3.0.2
                                              // 0xEB1DE0 : 0xECAEC0) // 2.4.3
@@ -32,12 +35,14 @@
                                              // 0xEB0D46 : 0xEC8F9E  // 2.4.2
                                              // 0xEB0C80 : 0xEC8EE0  // 2.4.2
 
-// 3.0.8 valid
-#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xB78420 : 0x0) // 3.0.8
+// 3.0.9 valid
+#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xB75420 : 0x0) // 3.0.9
+                                             // 0xB78420 : 0x0) // 3.0.8
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
                        
-// 3.0.8 valid
-#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xB9EBE8 : 0x0) // 3.0.8
+// 3.0.9 valid
+#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xB9BBE8 : 0x0) // 3.0.9
+                                             // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
 
 // 2.4.2 valid
@@ -50,8 +55,9 @@
                                                         /* 0x97DE50 2.3.2 PPC */
                                                         /* 0x977E10 2.3.0 PPC */
 
-// 3.0.8 valid
-#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB79FD0 : 0x0) // 3.0.8
+// 3.0.9 valid
+#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB76FD0 : 0x0) // 3.0.9
+                                             // 0xB79FD0 : 0x0) // 3.0.8
                                              // 0xB720B0 : 0x0) // 3.0.3
                                              // 0xB6E06C : 0x0) // 3.0.2
                                              // 0x9AF048 : 0x9D7C6D) // 2.4.3
@@ -63,15 +69,17 @@
 // in 3.0.x, the current time appears globally +0x10 after COMBO_POINTS_STATIC
 
 // this is not used, and i'm currently not entirely sure what it means
-// the name is just a guess.
-#define PLAYER_LOGGED_IN    ((IS_X86) ? 0xB79FFC : 0x0) // 3.0.8 Also: 0xB723E2
+// the name is just a guess, but it appears to apply.
+#define PLAYER_LOGGED_IN    ((IS_X86) ? 0xB76FFC : 0x0) // 3.0.9
+                                     // 0xB79FFC : 0x0) // 3.0.8 Also: 0xB723E2
                                      // 0xB720DC : 0x0) // 3.0.3
 
 // there's another interesting struct between combo points and targets
 // but i don't know what it does yet
 
-// 3.0.8 valid
-#define TARGET_TABLE_STATIC ((IS_X86) ? 0xB7A090 : 0x0) // 3.0.8
+// 3.0.9 valid
+#define TARGET_TABLE_STATIC ((IS_X86) ? 0xB77090 : 0x0) // 3.0.9
+                                     // 0xB7A090 : 0x0) // 3.0.8
                                      // 0xB72170 : 0x0) // 3.0.3
                                      // 0xB6E128 3.0.2
                                      // 0x9AF0F8 : 0x9D7D20  // 2.4.3
@@ -90,8 +98,9 @@
     #define TARGET_MOUSEOVER    0x30 /* GUID */
 // }
 
-// 3.0.8 valid
-#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x155B260 : 0x0) // 3.0.8
+// 3.0.9 valid
+#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x1558240 : 0x0) // 3.0.9
+                                                 // 0x155B260 : 0x0) // 3.0.8
                                                  // 0x1553E80 : 0x0) // 3.0.3
                                                  // 0x154FB40 : 0x0) // 3.0.2
                                                  // 0xF479E0 : 0xF60698  // 2.4.3
@@ -100,16 +109,21 @@
                                  /* 0xED9D80 2.3.3 Intel : 0xEDB2E0 2.3.3 PPC */
                                                        /* 0xEDB2D0 in 2.3.2 */
                                                        /* 0xED1C10 in 2.3.0 */
-#define KNOWN_SPELLS_TOP_RANK_STATIC    ((IS_X86) ? 0x155A260 : 0x0) // 3.0.8
+
+// not used yet, but it might be useful for intelligently upgrading behaviors in the future
+// it is located -0x1000 from KNOWN_SPELLS_STATIC
+#define KNOWN_SPELLS_TOP_RANK_STATIC    ((IS_X86) ? 0x1557240 : 0x0) // 3.0.9
+                                                 // 0x155A260 : 0x0) // 3.0.8
                                                  // 0x1552E80 : 0x0) // 3.0.3
                                                  // 0x154EB40 : 0x0) // 3.0.2
                                                  // 0xF469E0 : 0xF5F698) // 2.4.3
                                                  // 0xF3E240 : 0xF56068  // 2.4.2
                                                  // 0xF347E0 : 0xF4A398  // 2.4.1
 
-// 3.0.8 valid
+// 3.0.9 valid
 // static main hotbar ( uint32[12], spell ID)
-#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x154D200 : 0x0) // 3.0.8
+#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x154A1E0 : 0x0) // 3.0.9
+                                     // 0x154D200 : 0x0) // 3.0.8
                                      // 0x1545E20 : 0x0) // 3.0.3
                                      // 0x1541AE0 : 0x0) // 3.0.2
                                      // 0xF3A980 : 0xF53680) // 2.4.3
@@ -127,8 +141,9 @@
 #define BAR10_OFFSET        0x1B0   // 10th hotbar (unknown)
 
 
-// 3.0.8 valid  
-#define PLAYER_ON_BUILDING_STATIC       ((IS_X86) ? 0x11FBF2C : 0x0)        // 3.0.8
+// 3.0.9 valid
+#define PLAYER_ON_BUILDING_STATIC       ((IS_X86) ? 0x11F8F0C : 0x0)        // 3.0.9
+                                                 // 0x11FBF2C : 0x0)        // 3.0.8
                                                  // 0x11F4D0C : 0x0)        // 3.0.3
                                                  // 0x11F0BAC : 0x0)        // 3.0.2
                                                  // 0xCAA0AC : 0xCC39EC)    // 2.4.2
@@ -147,24 +162,28 @@
                                                      // 0xCE2D10 : 0xCFA56C) // 2.4.2
                                                      // 0xCE2D10 : 0xCFA56C) // 2.4.1
                                                                 // 0xC9869C 2.3.3
-// 3.0.8 valid
+// 3.0.9 valid
 // as of 3.0.2, this value is 0 if a spell successfully cast
 // if the spell did not cast, it contains the ID of the most recently failed spell
-#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x122EBB8 : 0x0) // 3.0.8
+// only works for spells that play an error sound. not sure what makes this distinction.
+#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x122BB98 : 0x0) // 3.0.9
+                                                     // 0x122EBB8 : 0x0) // 3.0.8
                                                      // 0x1227C98 : 0x0) // 3.0.3
                                                      // 0x1223B38 : 0x0) // 3.0.2
 
-// 3.0.8 valid 
-#define REFRESH_DELAY           ((IS_X86) ? 0x12428E0 : 0x0) // 3.0.8
+// 3.0.9 valid 
+#define REFRESH_DELAY           ((IS_X86) ? 0x123F8C0 : 0x0) // 3.0.9
+                                         // 0x12428E0 : 0x0) // 3.0.8
                                          // 0x123B5E0 : 0x0) // 3.0.3
                                          // 0x1237480 : 0x0) // 3.0.2
 // {
     #define REFRESH_MAX_FPS     ((IS_X86) ? 0x08 : 0x0)  // /console maxfps, /console maxfpsbk
 // }
 
-// 3.0.8 valid
+// 3.0.9 valid
 /* 1 if it's open, 0 if it's not */
-#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xBFB720 : 0x0) // 3.0.8
+#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xBF8700 : 0x0) // 3.0.9
+                                         // 0xBFB720 : 0x0) // 3.0.8
                                          // 0xBF4500 : 0x0) // 3.0.3
                                          // 0xBF03A0 : 0x0) // 3.0.2
                                          // 0xA294C0 : 0xA42F08) // 2.4.3
