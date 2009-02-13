@@ -63,7 +63,7 @@
                                              // 0x9AF048 : 0x9D7C6D) // 2.4.3
                                              // 0x9B1008 : 0x9D8C55) // 2.4.2
                                              // 0x9A8008 : 0x9CDC5D) // 2.4.1
-#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xB79FD0 : 0x0) // same as above on Intel
+#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xB76FD0 : 0x0) // same as above on Intel
 #define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86
 #define COMBO_POINT_TARGET_UID      0x8   // 64 bit
 // in 3.0.x, the current time appears globally +0x10 after COMBO_POINTS_STATIC
