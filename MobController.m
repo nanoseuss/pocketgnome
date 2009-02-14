@@ -492,8 +492,12 @@ static MobController* sharedController = nil;
                 }
             }
             
+            BOOL hideNonSeletable = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideNonSelectable"];
+            BOOL hidePets = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHidePets"];
+            BOOL hideCritters = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideCritters"];
+            
             // hide invisible mobs from the list
-            if([[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideNonSelectable"] && ![mob isSelectable])
+            if(hideNonSeletable && ![mob isSelectable])
                 continue;
             
             health = [mob currentHealth];
@@ -503,7 +507,7 @@ static MobController* sharedController = nil;
             
             // check to see if it's a pet
             if([mob isPet]) {
-                if( [mobHidePets state] ) continue;
+                if( hidePets ) continue;
                 if( [mob isTotem]) {
                     name = [@"[Totem] " stringByAppendingString: name];
                 } else {
@@ -527,7 +531,7 @@ static MobController* sharedController = nil;
             BOOL critter = ([controller reactMaskForFaction: faction] == 0) && (level == 1);
             
             // skip critters if necessary
-            if( [mobHideCritters state] && critter)
+            if( hideCritters && critter)
                 continue;
             
             float distance = [[(PlayerDataController*)playerData position] distanceToPosition: [mob position]];
@@ -592,8 +596,22 @@ static MobController* sharedController = nil;
 
 - (IBAction)updateTracking: (id)sender {
     if(![playerData playerIsValid]) return;
-    if((sender == nil) && ![trackHostile state] && ![trackNeutral state] && ![trackFriendly state])
+    
+    if(sender && ![sender isKindOfClass: [self class]]) {
+        // the stupid popup doesn't update the state of the menu items OR BINDINGS until after it fires off its selector.
+        // so if this call is coming from the UI, just delay for a tiny bit and try again.
+        [self performSelector: _cmd withObject: self afterDelay: 0.1];
         return;
+    }
+    
+    BOOL trackFriendly = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobTrackFriendly"];
+    BOOL trackNeutral = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobTrackNeutral"];
+    BOOL trackHostile = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobTrackHostile"];
+    
+    if(!sender && !trackFriendly && !trackNeutral && !trackHostile) {
+        // there's nothing to update
+        return;
+    }
     
     for(Mob *mob in _mobList) {
         BOOL isHostile = [playerData isHostileWithFaction: [mob factionTemplate]];
@@ -601,13 +619,13 @@ static MobController* sharedController = nil;
         BOOL isNeutral = (!isHostile && !isFriendly);
         BOOL shouldTrack = NO;
         
-        if( [trackHostile state] && isHostile) {
+        if( trackHostile && isHostile) {
             shouldTrack = YES;
         }
-        if( [trackNeutral state] && isNeutral) {
+        if( trackNeutral && isNeutral) {
             shouldTrack = YES;
         }
-        if( [trackFriendly state] && isFriendly) {
+        if( trackFriendly && isFriendly) {
             shouldTrack = YES;
         }
         

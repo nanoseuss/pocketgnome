@@ -30,6 +30,7 @@ typedef enum {
     
     IBOutlet NSPopUpButton *moveToList;
 
+    NSString *filterString;
     NSMutableArray *_nodeList;
     NSMutableArray *_nodeDataList;
     NSMutableArray *_finishedNodes;
@@ -67,6 +68,7 @@ typedef enum {
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type;
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level;
 
+- (IBAction)filterNodes: (id)sender;
 - (IBAction)resetList: (id)sender;
 - (IBAction)faceNode: (id)sender;
 - (IBAction)filterList: (id)sender;

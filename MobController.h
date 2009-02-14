@@ -25,13 +25,13 @@
     
     IBOutlet id mobTable;
     IBOutlet id mobColorByLevel;
-    IBOutlet id mobHideNonSelectable;
-    IBOutlet id mobHidePets;
-    IBOutlet id mobHideCritters;
+    //IBOutlet id mobHideNonSelectable;
+    //IBOutlet id mobHidePets;
+    //IBOutlet id mobHideCritters;
     
-    IBOutlet id trackFriendly;
-    IBOutlet id trackNeutral;
-    IBOutlet id trackHostile;
+    IBOutlet id trackFriendlyMenuItem;
+    IBOutlet id trackNeutralMenuItem;
+    IBOutlet id trackHostileMenuItem;
     
     IBOutlet NSPopUpButton *additionalList;
     
