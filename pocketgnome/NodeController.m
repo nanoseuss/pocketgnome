@@ -33,6 +33,7 @@ typedef enum {
 
 @interface NodeController ()
 @property (readwrite, assign) int nodeTypeFilter;
+@property (readwrite, retain) NSString *filterString;
 @end
 
 @interface NodeController (Internal)
@@ -119,6 +120,7 @@ typedef enum {
 @synthesize maxSectionSize;
 @synthesize nodeTypeFilter = _nodeTypeFilter;
 @synthesize monitorFishing = _monitorFishing;
+@synthesize filterString;
 
 - (NSString*)sectionTitle {
     return @"Nodes";
@@ -166,6 +168,7 @@ typedef enum {
         if( [_miningDict objectForKey: name])       type = @"Mining";
         if( [_herbalismDict objectForKey: name])    type = @"Herbalism";
         
+        // first, do type filter
         if(self.nodeTypeFilter < 0) {
             // all              = -100
             // minerals         = -1
@@ -189,6 +192,13 @@ typedef enum {
             } else {
                 if(self.nodeTypeFilter != typeVal)
                     continue;
+            }
+        }
+        
+        // then, do string filter
+        if(self.filterString) {
+            if([[node name] rangeOfString: self.filterString options: NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound) {
+                continue;
             }
         }
         
@@ -227,7 +237,7 @@ typedef enum {
     // enumerate current object addresses
     // determine which objects need to be removed
     for(WoWObject *obj in dataList) {
-        if([obj isValid]) {
+        if([obj isValid] && [(Node*)obj validToLoot]) {
             [addressDict setObject: obj forKey: [NSNumber numberWithUnsignedLongLong: [obj baseAddress]]];
         } else {
             [objectsToRemove addObject: obj];
@@ -436,9 +446,21 @@ typedef enum {
     [nodeTable reloadData];
 }
 
+- (IBAction)filterNodes: (id)sender {
+    if([[sender stringValue] length]) {
+        self.filterString = [sender stringValue];
+    } else {
+        self.filterString = nil;
+    }
+    [self reloadNodeData: nil];
+}
+
 - (IBAction)faceNode: (id)sender {
     int selectedRow = [nodeTable selectedRow];
     if(selectedRow == -1) return;
+    
+    // !!!: remove this hack when 10.5.7 ships
+    [controller makeWoWFront];
     
     Node *node = [[_nodeDataList objectAtIndex: selectedRow] objectForKey: @"Node"];
     
@@ -504,6 +526,9 @@ typedef enum {
     }
     
     if(nodeToMove) {
+        // !!!: remove this hack when 10.5.7 ships
+        [controller makeWoWFront];
+        
         PGLog(@"Moving to node: %@", nodeToMove);
         [movementController moveToObject: nodeToMove andNotify: NO];
         //Position *nodePosition = [nodeToMove position];
