@@ -26,6 +26,9 @@
 
 #import "ImageAndTextCell.h"
 
+@interface MobController ()
+@property (readwrite, retain) NSString *filterString;
+@end
 
 @interface MobController (Internal)
 - (BOOL)trackingMob: (Mob*)mob;
@@ -111,6 +114,7 @@ static MobController* sharedController = nil;
 @synthesize updateFrequency = _updateFrequency;
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
+@synthesize filterString;
 
 - (NSString*)sectionTitle {
     return @"Mobs";
@@ -298,6 +302,10 @@ static MobController* sharedController = nil;
     if(selectedRow >= [_mobDataList count]) return;
     Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
     
+    // !!!: remove this hack when 10.5.7 ships
+    [controller makeWoWFront];
+    
+    
     [movementController turnToward: [mob position]];
             
     //if(angleBetween > 0)
@@ -366,6 +374,9 @@ static MobController* sharedController = nil;
         //    [mobPosition setZPosition: [mobPosition zPosition] + 20.0f];
         
         // PGLog(@"Moving to mob: %@", mobToMove);
+        
+        // !!!: remove this hack when 10.5.7 ships
+        [controller makeWoWFront];
         
         [movementController moveToObject: mobToMove andNotify: NO];
         //[movementController moveToWaypoint: [Waypoint waypointWithPosition: mobPosition]];
@@ -475,8 +486,14 @@ static MobController* sharedController = nil;
             if( ![mob isValid] )
                 continue;
             
+            if(self.filterString) {
+                if([[mob name] rangeOfString: self.filterString options: NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound) {
+                    continue;
+                }
+            }
+            
             // hide invisible mobs from the list
-            if([mobHideNonSelectable state] && ![mob isSelectable])
+            if([[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideNonSelectable"] && ![mob isSelectable])
                 continue;
             
             health = [mob currentHealth];
@@ -564,6 +581,14 @@ static MobController* sharedController = nil;
     }
 }
 
+- (IBAction)filterMobs: (id)sender {
+    if([[sender stringValue] length]) {
+        self.filterString = [sender stringValue];
+    } else {
+        self.filterString = nil;
+    }
+    [self reloadMobData: nil];
+}
 
 - (IBAction)updateTracking: (id)sender {
     if(![playerData playerIsValid]) return;

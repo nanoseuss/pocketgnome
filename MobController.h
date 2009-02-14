@@ -24,8 +24,6 @@
     IBOutlet id view;
     
     IBOutlet id mobTable;
-    IBOutlet id mobCountText;
-    IBOutlet id mobSearchProgress;
     IBOutlet id mobColorByLevel;
     IBOutlet id mobHideNonSelectable;
     IBOutlet id mobHidePets;
@@ -45,6 +43,7 @@
     int cachedPlayerLevel;
     Mob *memoryViewMob;
     NSSize minSectionSize, maxSectionSize;
+    NSString *filterString;
 }
 
 + (MobController *)sharedController;
@@ -75,6 +74,7 @@
                 includeNeutral: (BOOL)neutral
                 includeHostile: (BOOL)hostile;
 
+- (IBAction)filterMobs: (id)sender;
 - (IBAction)updateTracking: (id)sender;
 - (IBAction)resetMobList: (id)sender;
 - (IBAction)targetMob: (id)sender;
