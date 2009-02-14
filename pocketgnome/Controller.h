@@ -97,6 +97,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (BOOL)isWoWHidden;
 - (BOOL)isWoWChatBoxOpen;
 - (BOOL)isWoWVersionValid;
+- (BOOL)makeWoWFront;
 - (NSString*)wowPath;
 - (NSString*)wtfAccountPath;
 - (NSString*)wtfCharacterPath;

@@ -1097,6 +1097,16 @@ static Controller* sharedController = nil;
     return NO;
 }
 
+- (BOOL)makeWoWFront {
+    if([self isWoWOpen]) {
+        ProcessSerialNumber psn = [self getWoWProcessSerialNumber];
+        SetFrontProcess( &psn );
+        usleep(50000);
+        return YES;
+    }
+    return NO;
+}
+
 - (NSString*)wowVersionShort {
     NSBundle *wowBundle = nil;
     if([self isWoWOpen]) {
