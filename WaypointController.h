@@ -46,13 +46,16 @@
     Waypoint *_editWaypoint;
     
     IBOutlet SRRecorderControl *shortcutRecorder;
+	IBOutlet SRRecorderControl *automatorRecorder;
     
     IBOutlet id routeTypeSegment;
     RouteSet *_currentRouteSet;
     PTHotKey *addWaypointGlobalHotkey;
+	PTHotKey *automatorGlobalHotkey;
     NSMutableArray *_routes;
     BOOL validSelection, validWaypointCount;
     BOOL changeWasMade;
+	BOOL isAutomatorRunning;
     NSSize minSectionSize, maxSectionSize;
 }
 
@@ -68,6 +71,8 @@
 @property BOOL validWaypointCount;
 @property (readonly) Route *currentRoute;
 @property (readwrite, retain) RouteSet *currentRouteSet;
+
+
 
 // route actions
 - (IBAction)setRouteType: (id)sender;
@@ -96,7 +101,7 @@
 - (IBAction)closeWaypointAction: (id)sender;
 - (IBAction)changeWaypointAction: (id)sender;
 - (IBAction)cancelWaypointAction: (id)sender;
-
+- (IBAction)startWaypointAutomator: (id)sender;
 
 
 @end
