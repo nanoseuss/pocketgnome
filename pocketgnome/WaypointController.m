@@ -4,7 +4,7 @@
 //
 //  Created by Jon Drummond on 12/16/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
-//
+//  
 
 #import "WaypointController.h"
 #import "Controller.h"
@@ -29,9 +29,11 @@
 #import <ShortcutRecorder/ShortcutRecorder.h>
 
 #define AddWaypointHotkeyIdentifier @"AddWaypoint"
+#define AutomatorHotkeyIdentifier @"AutomatorStartStop"
 
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
+- (void)automatorRun: (id)sender;
 @end
 
 @implementation WaypointController
@@ -63,6 +65,8 @@
         } else
             _routes = [[NSMutableArray array] retain];
         
+		// Automator isn't running!
+		isAutomatorRunning = FALSE;
         
         // listen for notification
 
@@ -89,6 +93,8 @@
     }
     
     [shortcutRecorder setCanCaptureGlobalHotKeys: YES];
+	
+	[automatorRecorder setCanCaptureGlobalHotKeys: YES];
     
     KeyCombo combo = { -1, 0 };
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAdd_HotkeyCode"])
@@ -96,9 +102,19 @@
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAdd_HotkeyFlags"])
         combo.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAdd_HotkeyFlags"] intValue];
     
+    KeyCombo combo2 = { -1, 0 };
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyCode"])
+        combo2.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyCode"] intValue];
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyFlags"])
+        combo2.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyFlags"] intValue];
+	
     [shortcutRecorder setDelegate: nil];
     [shortcutRecorder setKeyCombo: combo];
     [shortcutRecorder setDelegate: self];
+	
+    [automatorRecorder setDelegate: nil];
+    [automatorRecorder setKeyCombo: combo2];
+    [automatorRecorder setDelegate: self];
 }
 
 - (void)saveRoutes {
@@ -787,15 +803,25 @@
 
 - (void)checkHotkeys: (NSNotification*)notification {
 
-    BOOL isEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AddWaypointHotkeyIdentifier]) ? YES : NO;
+    BOOL isAddWaypointEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AddWaypointHotkeyIdentifier]) ? YES : NO;
+    BOOL isAutomatorEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AutomatorHotkeyIdentifier]) ? YES : NO;
 
     if( [notification object] == self.view ) {
-        if(!isEnabled) {
+        if(!isAddWaypointEnabled) {
             [self toggleGlobalHotKey: shortcutRecorder];
         }
+		else if(!isAutomatorEnabled){
+			[self toggleGlobalHotKey: automatorRecorder];
+		}
     } else {
-        if(isEnabled) {
+		// Adding another waypoint
+        if(isAddWaypointEnabled) {
             [self toggleGlobalHotKey: shortcutRecorder];
+            [self saveRoutes];
+        }
+		// Shutting down our automator - so lets save!
+		else if(isAutomatorEnabled) {
+            [self toggleGlobalHotKey: automatorRecorder];
             [self saveRoutes];
         }
     }
@@ -803,36 +829,100 @@
 
 - (void)toggleGlobalHotKey:(id)sender
 {
-	if (addWaypointGlobalHotkey != nil) {
-		[[PTHotKeyCenter sharedCenter] unregisterHotKey: addWaypointGlobalHotkey];
-		[addWaypointGlobalHotkey release];
-		addWaypointGlobalHotkey = nil;
-	} else {
-        KeyCombo keyCombo = [shortcutRecorder keyCombo];
-        
-        if(keyCombo.code >= 0 && keyCombo.flags >= 0) {
-            addWaypointGlobalHotkey = [[PTHotKey alloc] initWithIdentifier: AddWaypointHotkeyIdentifier
-                                                                  keyCombo: [PTKeyCombo keyComboWithKeyCode: keyCombo.code
-                                                                                                  modifiers: [shortcutRecorder cocoaToCarbonFlags: keyCombo.flags]]];
-            
-            [addWaypointGlobalHotkey setTarget: self];
-            [addWaypointGlobalHotkey setAction: @selector(addWaypoint:)];
-            
-            [[PTHotKeyCenter sharedCenter] registerHotKey: addWaypointGlobalHotkey];
-        }
-    }
+	
+	// Only if we come from shortcutRecorder!  Can probably combine this into one function but I'm a n00b
+	if ( sender == shortcutRecorder )
+	{
+		if (addWaypointGlobalHotkey != nil) {
+			[[PTHotKeyCenter sharedCenter] unregisterHotKey: addWaypointGlobalHotkey];
+			[addWaypointGlobalHotkey release];
+			addWaypointGlobalHotkey = nil;
+		} else {
+			KeyCombo keyCombo = [shortcutRecorder keyCombo];
+			
+			if(keyCombo.code >= 0 && keyCombo.flags >= 0) {
+				addWaypointGlobalHotkey = [[PTHotKey alloc] initWithIdentifier: AddWaypointHotkeyIdentifier
+																	  keyCombo: [PTKeyCombo keyComboWithKeyCode: keyCombo.code
+																									  modifiers: [shortcutRecorder cocoaToCarbonFlags: keyCombo.flags]]];
+				
+				[addWaypointGlobalHotkey setTarget: self];
+				[addWaypointGlobalHotkey setAction: @selector(addWaypoint:)];
+				
+				[[PTHotKeyCenter sharedCenter] registerHotKey: addWaypointGlobalHotkey];
+			}
+		}
+	}
+	
+	// Automator only pls
+	if ( sender == automatorRecorder )
+	{
+		if (automatorGlobalHotkey != nil) {
+			[[PTHotKeyCenter sharedCenter] unregisterHotKey: automatorGlobalHotkey];
+			[automatorGlobalHotkey release];
+			automatorGlobalHotkey = nil;
+		} else {
+			KeyCombo keyCombo = [automatorRecorder keyCombo];
+			
+			if(keyCombo.code >= 0 && keyCombo.flags >= 0) {
+				automatorGlobalHotkey = [[PTHotKey alloc] initWithIdentifier: AutomatorHotkeyIdentifier
+																	  keyCombo: [PTKeyCombo keyComboWithKeyCode: keyCombo.code
+																									  modifiers: [automatorRecorder cocoaToCarbonFlags: keyCombo.flags]]];
+				
+				[automatorGlobalHotkey setTarget: self];
+				[automatorGlobalHotkey setAction: @selector(startWaypointAutomator:)];
+				
+				[[PTHotKeyCenter sharedCenter] registerHotKey: automatorGlobalHotkey];
+			}
+		}
+		
+	}
 }
 
 - (void)shortcutRecorder:(SRRecorderControl *)recorder keyComboDidChange:(KeyCombo)newKeyCombo {
     
-    [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"WaypointAdd_HotkeyCode"];
-    [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"WaypointAdd_HotkeyFlags"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+	if(recorder == shortcutRecorder) {
+		[[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"WaypointAdd_HotkeyCode"];
+		[[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"WaypointAdd_HotkeyFlags"];
+		[[NSUserDefaults standardUserDefaults] synchronize];
+	}
     
+	if(recorder == automatorRecorder) {
+		[[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"WaypointAutomator_HotkeyCode"];
+		[[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"WaypointAutomator_HotkeyFlags"];
+		[[NSUserDefaults standardUserDefaults] synchronize];
+	}
+	
     // register this hotkey globally
     [self toggleGlobalHotKey: recorder];
-    
 }
 
+// Added by: Josh
+// Function - starts the automated waypoint recorder...
+- (IBAction)startWaypointAutomator: (id)sender {
+	// OK stop automator!
+	if ( isAutomatorRunning ){
+		isAutomatorRunning = FALSE;
+		PGLog(@"Automator stopped!");
+	}
+	else{
+		isAutomatorRunning = TRUE;
+		PGLog(@"Automator started!");
+	}
+	
+	[self automatorRun : sender];
+}
 
+-(void)automatorRun: (id)sender{
+	// Make sure we have valid route/player/window!
+	if(![self currentRoute])        return;
+    if(![playerData playerIsValid]) return;
+    if(![self.view window])         return;
+	if(!isAutomatorRunning)			return;
+	
+	// Add a waypoint!
+	[self addWaypoint: sender];
+	
+	// Check again after 0.5 seconds!
+	[self performSelector: @selector(automatorRun:) withObject: sender afterDelay:0.5];
+}
 @end
