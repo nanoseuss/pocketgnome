@@ -102,11 +102,11 @@
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAdd_HotkeyFlags"])
         combo.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAdd_HotkeyFlags"] intValue];
     
-    KeyCombo combo2 = { -1, 0 };
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyCode"])
-        combo2.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyCode"] intValue];
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyFlags"])
-        combo2.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomate_HotkeyFlags"] intValue];
+	KeyCombo combo2 = {NSShiftKeyMask, kSRKeysF14};
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomator_HotkeyCode"])
+        combo2.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomator_HotkeyCode"] intValue];
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomator_HotkeyFlags"])
+        combo2.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"WaypointAutomator_HotkeyFlags"] intValue];
 	
     [shortcutRecorder setDelegate: nil];
     [shortcutRecorder setKeyCombo: combo];
@@ -902,11 +902,11 @@
 	// OK stop automator!
 	if ( isAutomatorRunning ){
 		isAutomatorRunning = FALSE;
-		PGLog(@"Automator stopped!");
+		PGLog(@"Waypoint recording stopped");
 	}
 	else{
 		isAutomatorRunning = TRUE;
-		PGLog(@"Automator started!");
+		PGLog(@"Waypoint recording started");
 	}
 	
 	[self automatorRun : sender];
@@ -919,8 +919,15 @@
     if(![self.view window])         return;
 	if(!isAutomatorRunning)			return;
 	
-	// Add a waypoint!
-	[self addWaypoint: sender];
+	// Do a quick check to prevent us from adding the same waypoint over and over again!
+	Waypoint *curWP = [Waypoint waypointWithPosition: [playerData position]];
+	Waypoint *lastWP = [[self currentRoute] waypointAtIndex: ([[self currentRoute] waypointCount]-1)];
+
+	// If we moved... save the WP!
+	if ( [curWP.position distanceToPosition: lastWP.position] != 0.0 ){
+		// Add a waypoint!
+		[self addWaypoint: sender];
+	}
 	
 	// Check again after 0.5 seconds!
 	[self performSelector: @selector(automatorRun:) withObject: sender afterDelay:0.5];
