@@ -276,7 +276,8 @@
 #define COST_SEPARATOR      @"Cost</th><td style=\"border-top: 0\">"
 #define RANGE_SEPARATOR     @"<th>Range</th><td>"
 #define CASTTIME_SEPARATOR  @"<th>Cast time</th><td>"
-#define COOLDOWN_SEPARATOR  @"<th>Cooldown</th><td><div style=\"width: 65%; float: right\">Global cooldown: "
+#define COOLDOWN_SEPARATOR  @"<th>Cooldown</th><td>"
+#define GLOBAL_COOLDOWN_SEPARATOR   @"<div style=\"width: 65%; float: right\">Global cooldown: "
 
 - (void)reloadSpellData {
     
@@ -451,17 +452,30 @@
         // get cooldown
         scanSave = [scanner scanLocation];
         if([scanner scanUpToString: COOLDOWN_SEPARATOR intoString: nil] && [scanner scanString: COOLDOWN_SEPARATOR intoString: NULL]) {
-            float cooldown = 0;
-            if([scanner scanFloat: &cooldown]) {
-                if([scanner scanString: @"minute" intoString: nil]) {
-                    cooldown = cooldown*60;
-                } else if([scanner scanString: @"hour" intoString: nil]) {
-                    cooldown = cooldown*60*60;
-                }
-            } else {
-                // <th>Cooldown</th><td><div style="width: 65%; float: right">Global cooldown: <span class="q0">n/a</span></div>8 seconds</td>
-                if([scanner scanUpToString: @"</div>" intoString: nil] && [scanner scanString: @"</div>" intoString: NULL]) {
-                    if([scanner scanFloat: &cooldown]) {
+        
+            if([scanner scanUpToString: GLOBAL_COOLDOWN_SEPARATOR intoString: nil] && [scanner scanString: GLOBAL_COOLDOWN_SEPARATOR intoString: NULL]) {
+                
+                float cooldown = 0;
+                if([scanner scanFloat: &cooldown]) {
+                    if([scanner scanString: @"minute" intoString: nil]) {
+                        cooldown = cooldown*60;
+                    } else if([scanner scanString: @"hour" intoString: nil]) {
+                        cooldown = cooldown*60*60;
+                    }
+                } else {
+                    BOOL foundCooldown = NO;
+                    // looks like wowhead keeps changing it's cooldown format
+                    // <th>Cooldown</th><td><!--<div style="width: 65%; float: right">Global cooldown: <span class="q0">n/a</span></div>-->25 seconds</td>
+                    if([scanner scanUpToString: @"</div>-->" intoString: nil] && [scanner scanString: @"</div>-->" intoString: NULL]) {
+                        foundCooldown = YES;
+                    } else {
+                        // <th>Cooldown</th><td><div style="width: 65%; float: right">Global cooldown: <span class="q0">n/a</span></div>8 seconds</td>
+                        if([scanner scanUpToString: @"</div>" intoString: nil] && [scanner scanString: @"</div>" intoString: NULL]) {
+                            foundCooldown = YES;
+                        }
+                    }
+                    
+                    if(foundCooldown && [scanner scanFloat: &cooldown]) {
                         if([scanner scanString: @"minute" intoString: nil]) {
                             cooldown = cooldown*60;
                         } else if([scanner scanString: @"hour" intoString: nil]) {
@@ -469,11 +483,11 @@
                         }
                     }
                 }
+                
+                self.cooldown = [NSNumber numberWithFloat: cooldown];
             }
-            
-            self.cooldown = [NSNumber numberWithFloat: cooldown];
         } else {
-            [scanner setScanLocation: scanSave]; // some spells dont have ranks
+            [scanner setScanLocation: scanSave]; // some spells dont have cooldowns
         }
         
         // PGLog(@"Loaded: %@; Rank %@; %@ yards; %@ seconds; school: %@; dispel: %@", self.name, self.rank, self.range, self.cooldown, self.school, self.dispelType);
