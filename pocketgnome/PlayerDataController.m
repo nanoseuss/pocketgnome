@@ -482,9 +482,7 @@ static PlayerDataController* sharedController = nil;
 
 // 1 write
 - (void)setVerticalDirectionFacing: (float)direction {
-    // player must be valid
-    if(direction >= 0.0f)
-        [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Vertical) Buffer: (Byte *)&direction BufLength: sizeof(direction)];
+    [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Vertical) Buffer: (Byte *)&direction BufLength: sizeof(direction)];
 }
 
 // 1 read
