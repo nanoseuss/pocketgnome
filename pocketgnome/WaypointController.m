@@ -31,12 +31,24 @@
 #define AddWaypointHotkeyIdentifier @"AddWaypoint"
 #define AutomatorHotkeyIdentifier @"AutomatorStartStop"
 
+enum AutomatorIntervalType {
+    AutomatorIntervalType_Time = 0,
+    AutomatorIntervalType_Distance = 1,
+};
+
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
-- (void)automatorRun: (id)sender;
+- (void)automatorPulse;
 @end
 
 @implementation WaypointController
+
++ (void) initialize {
+    NSDictionary *waypointDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      @"0.5",                       @"RouteAutomatorIntervalValue",
+                                      [NSNumber numberWithInt: 0],  @"RouteAutomatorIntervalTypeTag", nil];
+    [[NSUserDefaults standardUserDefaults] registerDefaults: waypointDefaults];
+}
 
 - (id) init
 {
@@ -65,11 +77,7 @@
         } else
             _routes = [[NSMutableArray array] retain];
         
-		// Automator isn't running!
-		isAutomatorRunning = FALSE;
-        
         // listen for notification
-
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(checkHotkeys:) 
@@ -92,8 +100,10 @@
         [waypointTable reloadData];
     }
     
+    // Automator isn't running!
+    self.isAutomatorRunning = NO;
+    
     [shortcutRecorder setCanCaptureGlobalHotKeys: YES];
-	
 	[automatorRecorder setCanCaptureGlobalHotKeys: YES];
     
     KeyCombo combo = { -1, 0 };
@@ -146,8 +156,10 @@
 @synthesize currentRoute = _currentRoute;
 @synthesize currentRouteSet = _currentRouteSet;
 
+@synthesize disableGrowl;
 @synthesize validSelection;
 @synthesize validWaypointCount;
+@synthesize isAutomatorRunning;
 
 - (NSString*)sectionTitle {
     return @"Routes & Waypoints";
@@ -377,7 +389,8 @@
     PGLog(@"Added: %@", newWP);
     NSString *readableRoute =  ([routeTypeSegment selectedTag] == 0) ? @"Primary" : @"Corpse Run";
     
-    if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+    BOOL dontGrowl = (!sender && self.disableGrowl); // sender is nil when this is called by the automator
+    if( !dontGrowl && [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
         // [GrowlApplicationBridge setGrowlDelegate: @""];
         [GrowlApplicationBridge notifyWithTitle: @"Added Waypoint"
                                     description: [NSString stringWithFormat: @"Added waypoint to %@ route of \"%@\"", readableRoute, [[self currentRouteSet] name]]
@@ -555,6 +568,128 @@
     [movementController setPatrolRoute: nil];
 }
 
+#pragma mark -
+#pragma mark Route Automator
+// thanks to Josh for getting this started! I just cleaned up a little :)
+
+- (IBAction)openAutomatorPanel: (id)sender {
+    if([[self currentRouteKey] isEqualToString: PrimaryRoute])
+        [automatorVizualizer setShouldClosePath: YES];
+    else
+        [automatorVizualizer setShouldClosePath: NO];
+    
+    [automatorVizualizer setRoute: [self currentRoute]];
+    [automatorVizualizer setPlayerPosition: [playerData position]];
+    [automatorVizualizer setNeedsDisplay: YES];
+    
+    // enable automator hotkey
+    BOOL isAutomatorEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AutomatorHotkeyIdentifier]) ? YES : NO;
+    if(!isAutomatorEnabled)
+        [self toggleGlobalHotKey: automatorRecorder];
+
+	[NSApp beginSheet: automatorPanel
+	   modalForWindow: [self.view window]
+		modalDelegate: nil
+	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
+}
+
+- (IBAction)closeAutomatorPanel: (id)sender {
+    if(self.isAutomatorRunning) {
+        [self startStopAutomator: automatorStartStopButton];
+    }
+    
+    // disable automator hotkey
+    BOOL isAutomatorEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AutomatorHotkeyIdentifier]) ? YES : NO;
+    if(isAutomatorEnabled)
+        [self toggleGlobalHotKey: automatorRecorder];
+    
+    
+    [NSApp endSheet: automatorPanel returnCode: 1];
+    [automatorPanel orderOut: nil];
+    [self saveRoutes];
+}
+
+- (IBAction)startStopAutomator: (id)sender {
+	// OK stop automator!
+	if ( self.isAutomatorRunning ) {
+		PGLog(@"Waypoint recording stopped");
+		self.isAutomatorRunning = NO;
+        [automatorSpinner stopAnimation: nil];
+        [automatorStartStopButton setState: NSOffState];
+        [automatorStartStopButton setTitle: @"Start Recording"];
+        [automatorStartStopButton setImage: [NSImage imageNamed: @"off"]];
+	}
+	else {
+		PGLog(@"Waypoint recording started");
+        [automatorPanel makeFirstResponder: [automatorPanel contentView]];
+		self.isAutomatorRunning = YES;
+        [automatorSpinner startAnimation: nil];
+        [automatorStartStopButton setState: NSOnState];
+        [automatorStartStopButton setTitle: @"Stop Recording"];
+        [automatorStartStopButton setImage: [NSImage imageNamed: @"on"]];
+	}
+	
+	[self automatorPulse];
+}
+
+-(void)automatorPulse {
+	// Make sure we have valid route/player/window!
+	if(!self.isAutomatorRunning)    return;
+	if(![self currentRoute])        return;
+    if(![self.view window])         return;
+    if(![playerData playerIsValid]) return;
+    
+	// figure out how far we've moved
+    Position *playerPosition = [playerData position];
+	Waypoint *curWP = [Waypoint waypointWithPosition: playerPosition];
+	Waypoint *lastWP = [[[self currentRoute] waypoints] lastObject];
+    float distance = [curWP.position distanceToPosition: lastWP.position];
+    
+    // if we haven't moved, we dont care!
+    BOOL waypointAdded = NO;
+    float pulseTime = 0.1f;
+    if(distance != 0.0f) {
+        float interval = [[[NSUserDefaults standardUserDefaults] objectForKey: @"RouteAutomatorIntervalValue"] floatValue];
+        NSInteger type = [[NSUserDefaults standardUserDefaults] integerForKey: @"RouteAutomatorIntervalTypeTag"]; 
+        
+        if(type == AutomatorIntervalType_Distance) {
+            // record automatically after X yards
+            if(distance >= interval) {
+                waypointAdded = YES;
+                [self addWaypoint: nil];
+            }
+        } else {
+            // if we're recording on an time interval, we know 
+            waypointAdded = YES;
+            [self addWaypoint: nil];
+            pulseTime = interval;
+        }
+    }
+    
+    if(waypointAdded) {
+        // if we added something, have the visualizer redraw
+        [automatorVizualizer setPlayerPosition: playerPosition];
+        [automatorVizualizer setNeedsDisplay: YES];
+    }
+	
+	// Check again after the specified delay!
+	[self performSelector: @selector(automatorPulse) withObject: nil afterDelay: pulseTime];
+}
+
+// called by the X button in the Automator panel
+- (IBAction)resetAllWaypoints: (id)sender {
+    int ret = NSRunAlertPanel(@"Remove All Waypoints?", [NSString stringWithFormat: @"Are you sure you want to delete all the waypoints in route \"%@\"?  This cannot be undone.", [[self currentRouteSet] name]], @"Delete", @"Cancel", NULL);
+    if(ret == NSAlertDefaultReturn) {
+        Waypoint *wp = nil;
+        Route *route = [self currentRoute];
+        while((wp = [route waypointAtIndex: 0])) {
+            [route removeWaypointAtIndex: 0];
+        }
+        [automatorVizualizer setNeedsDisplay: YES];
+        changeWasMade = YES;
+    }
+}
 
 #pragma mark -
 #pragma mark NSTableView Delesource
@@ -802,26 +937,16 @@
 #pragma mark ShortcutRecorder Delegate
 
 - (void)checkHotkeys: (NSNotification*)notification {
-
     BOOL isAddWaypointEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AddWaypointHotkeyIdentifier]) ? YES : NO;
-    BOOL isAutomatorEnabled = ([[PTHotKeyCenter sharedCenter] hotKeyWithIdentifier: AutomatorHotkeyIdentifier]) ? YES : NO;
-
+    
     if( [notification object] == self.view ) {
         if(!isAddWaypointEnabled) {
             [self toggleGlobalHotKey: shortcutRecorder];
         }
-		else if(!isAutomatorEnabled){
-			[self toggleGlobalHotKey: automatorRecorder];
-		}
     } else {
 		// Adding another waypoint
         if(isAddWaypointEnabled) {
             [self toggleGlobalHotKey: shortcutRecorder];
-            [self saveRoutes];
-        }
-		// Shutting down our automator - so lets save!
-		else if(isAutomatorEnabled) {
-            [self toggleGlobalHotKey: automatorRecorder];
             [self saveRoutes];
         }
     }
@@ -829,7 +954,6 @@
 
 - (void)toggleGlobalHotKey:(id)sender
 {
-	
 	// Only if we come from shortcutRecorder!  Can probably combine this into one function but I'm a n00b
 	if ( sender == shortcutRecorder )
 	{
@@ -869,7 +993,7 @@
 																									  modifiers: [automatorRecorder cocoaToCarbonFlags: keyCombo.flags]]];
 				
 				[automatorGlobalHotkey setTarget: self];
-				[automatorGlobalHotkey setAction: @selector(startWaypointAutomator:)];
+				[automatorGlobalHotkey setAction: @selector(startStopAutomator:)];
 				
 				[[PTHotKeyCenter sharedCenter] registerHotKey: automatorGlobalHotkey];
 			}
@@ -896,40 +1020,4 @@
     [self toggleGlobalHotKey: recorder];
 }
 
-// Added by: Josh
-// Function - starts the automated waypoint recorder...
-- (IBAction)startWaypointAutomator: (id)sender {
-	// OK stop automator!
-	if ( isAutomatorRunning ){
-		isAutomatorRunning = FALSE;
-		PGLog(@"Waypoint recording stopped");
-	}
-	else{
-		isAutomatorRunning = TRUE;
-		PGLog(@"Waypoint recording started");
-	}
-	
-	[self automatorRun : sender];
-}
-
--(void)automatorRun: (id)sender{
-	// Make sure we have valid route/player/window!
-	if(![self currentRoute])        return;
-    if(![playerData playerIsValid]) return;
-    if(![self.view window])         return;
-	if(!isAutomatorRunning)			return;
-	
-	// Do a quick check to prevent us from adding the same waypoint over and over again!
-	Waypoint *curWP = [Waypoint waypointWithPosition: [playerData position]];
-	Waypoint *lastWP = [[self currentRoute] waypointAtIndex: ([[self currentRoute] waypointCount]-1)];
-
-	// If we moved... save the WP!
-	if ( [curWP.position distanceToPosition: lastWP.position] != 0.0 ){
-		// Add a waypoint!
-		[self addWaypoint: sender];
-	}
-	
-	// Check again after 0.5 seconds!
-	[self performSelector: @selector(automatorRun:) withObject: sender afterDelay:0.5];
-}
 @end

@@ -20,7 +20,6 @@
 #import "PlayersController.h"
 
 #import "CGSPrivate.h"
-#import <Sparkle/Sparkle.h>
 
 #import "MemoryAccess.h"
 #import "Offsets.h"
@@ -79,6 +78,7 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
                                    
+                                   // route automator
                                    // fishing
                                    [NSNumber numberWithBool: NO],       @"FishingPlayAlertSound",
                                    [NSNumber numberWithBool: YES],      @"FishingFlashScreen",
@@ -1470,6 +1470,7 @@ static Controller* sharedController = nil;
  } while (item && ![self hostSupportsItem:item]);
  }*/
 
+/*
 - (BOOL)updater: (SUUpdater *)updater
 shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
   untilInvoking: (NSInvocation *)invocation
@@ -1491,7 +1492,7 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
     }
     //PGLog(@"[Update] Relaunching as expected.");
     return NO;
-}
+}*/
 
 - (void)updateAlertConfirmed:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(void *)contextInfo {
     NSInvocation *invocation = (NSInvocation*)contextInfo;
