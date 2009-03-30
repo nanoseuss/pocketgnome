@@ -18,6 +18,7 @@
 @class SRRecorderControl;
 
 @class BetterSegmentedControl;
+@class RouteVisualizationView;
 
 @interface WaypointController : NSObject {
 
@@ -31,7 +32,7 @@
     IBOutlet id waypointTable;
     
     IBOutlet NSView *view;
-    IBOutlet id visualizeView;
+    IBOutlet RouteVisualizationView *visualizeView;
     IBOutlet NSPanel *visualizePanel;
     IBOutlet NSMenu *actionMenu;
     IBOutlet NSMenu *testingMenu;
@@ -45,6 +46,13 @@
     IBOutlet NSPopUpButton *wpActionIDPopUp;
     Waypoint *_editWaypoint;
     
+    // waypoint recording
+    IBOutlet NSButton *automatorStartStopButton;
+    IBOutlet NSPanel *automatorPanel;
+    IBOutlet NSTextField *automatorIntervalValue;
+    IBOutlet NSProgressIndicator *automatorSpinner;
+    IBOutlet RouteVisualizationView *automatorVizualizer;
+    
     IBOutlet SRRecorderControl *shortcutRecorder;
 	IBOutlet SRRecorderControl *automatorRecorder;
     
@@ -55,7 +63,7 @@
     NSMutableArray *_routes;
     BOOL validSelection, validWaypointCount;
     BOOL changeWasMade;
-	BOOL isAutomatorRunning;
+	BOOL isAutomatorRunning, disableGrowl;
     NSSize minSectionSize, maxSectionSize;
 }
 
@@ -69,6 +77,8 @@
 
 @property BOOL validSelection;
 @property BOOL validWaypointCount;
+@property BOOL isAutomatorRunning;
+@property BOOL disableGrowl;
 @property (readonly) Route *currentRoute;
 @property (readwrite, retain) RouteSet *currentRouteSet;
 
@@ -94,6 +104,12 @@
 - (IBAction)testWaypointSequence: (id)sender;
 - (IBAction)stopMovement: (id)sender;
 
+// waypoint automation
+- (IBAction)openAutomatorPanel: (id)sender;
+- (IBAction)closeAutomatorPanel: (id)sender;
+- (IBAction)startStopAutomator: (id)sender;
+- (IBAction)resetAllWaypoints: (id)sender;
+
 // waypoint actions
 - (IBAction)addWaypoint: (id)sender;
 - (IBAction)removeWaypoint: (id)sender;
@@ -101,7 +117,6 @@
 - (IBAction)closeWaypointAction: (id)sender;
 - (IBAction)changeWaypointAction: (id)sender;
 - (IBAction)cancelWaypointAction: (id)sender;
-- (IBAction)startWaypointAutomator: (id)sender;
 
 
 @end

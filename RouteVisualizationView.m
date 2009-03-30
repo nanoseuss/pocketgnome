@@ -38,7 +38,7 @@
     NSBezierPath *path = [NSBezierPath bezierPath];
 
     // create the path
-    NSPoint firstPoint;
+    NSPoint firstPoint = NSZeroPoint;
     for(Waypoint *waypoint in [self.route waypoints]) {
         float xDiff = ([[waypoint position] xPosition] - leftmost)/xSpan;
         float yDiff = ([[waypoint position] yPosition] - lower)/ySpan;
@@ -53,7 +53,8 @@
         [path lineToPoint: point];
         [path moveToPoint: point];
     }
-    if(shouldClosePath) [path lineToPoint: firstPoint];
+    if(!NSEqualPoints(firstPoint, NSZeroPoint) && shouldClosePath)
+        [path lineToPoint: firstPoint];
     [[NSColor blueColor] set];
     [path setLineWidth: 3.0];
     [path stroke];

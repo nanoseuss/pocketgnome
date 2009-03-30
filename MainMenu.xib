@@ -9,6 +9,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="2375"/>
+			<integer value="57"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -53,15 +54,6 @@
 									<reference key="NSMenu" ref="110575045"/>
 									<string key="NSTitle">About Pocket Gnome</string>
 									<string key="NSKeyEquiv"/>
-									<int key="NSMnemonicLoc">2147483647</int>
-									<reference key="NSOnImage" ref="172017760"/>
-									<reference key="NSMixedImage" ref="36563510"/>
-								</object>
-								<object class="NSMenuItem" id="485498360">
-									<reference key="NSMenu" ref="110575045"/>
-									<string key="NSTitle">Check for updates...</string>
-									<string key="NSKeyEquiv"/>
-									<int key="NSKeyEquivModMask">1048576</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="172017760"/>
 									<reference key="NSMixedImage" ref="36563510"/>
@@ -3627,9 +3619,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 			<object class="NSCustomObject" id="475998322">
 				<string key="NSClassName">ActionMenusController</string>
 			</object>
-			<object class="NSCustomObject" id="570877973">
-				<string key="NSClassName">SUUpdater</string>
-			</object>
 			<object class="NSWindowTemplate" id="207068248">
 				<int key="NSWindowStyleMask">31</int>
 				<int key="NSWindowBacking">2</int>
@@ -6690,22 +6679,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<int key="connectionID">3118</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">checkForUpdates:</string>
-						<reference key="source" ref="570877973"/>
-						<reference key="destination" ref="485498360"/>
-					</object>
-					<int key="connectionID">3121</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">delegate</string>
-						<reference key="source" ref="570877973"/>
-						<reference key="destination" ref="148782052"/>
-					</object>
-					<int key="connectionID">3122</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: isRegistered</string>
 						<reference key="source" ref="1006092562"/>
@@ -7072,7 +7045,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<reference ref="1046388886"/>
 							<reference ref="1056857174"/>
 							<reference ref="342932134"/>
-							<reference ref="485498360"/>
 						</object>
 						<reference key="parent" ref="694149608"/>
 					</object>
@@ -7825,11 +7797,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<int key="objectID">2403</int>
 						<reference key="object" ref="29600181"/>
 						<reference key="parent" ref="53226824"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">2417</int>
-						<reference key="object" ref="485498360"/>
-						<reference key="parent" ref="110575045"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">2421</int>
@@ -8900,12 +8867,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<reference key="parent" ref="1049"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">3120</int>
-						<reference key="object" ref="570877973"/>
-						<reference key="parent" ref="1049"/>
-						<string key="objectName">Sparkle Updater</string>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">3123</int>
 						<reference key="object" ref="1006092562"/>
 						<object class="NSMutableArray" key="children">
@@ -9258,7 +9219,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>2408.IBPluginDependency</string>
 					<string>2410.IBPluginDependency</string>
 					<string>2411.IBPluginDependency</string>
-					<string>2417.IBPluginDependency</string>
 					<string>2419.IBPluginDependency</string>
 					<string>2420.IBPluginDependency</string>
 					<string>2423.IBPluginDependency</string>
@@ -9403,7 +9363,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>3101.IBPluginDependency</string>
 					<string>3102.IBPluginDependency</string>
 					<string>3115.IBPluginDependency</string>
-					<string>3120.IBPluginDependency</string>
 					<string>3123.IBPluginDependency</string>
 					<string>3124.IBPluginDependency</string>
 					<string>3125.IBPluginDependency</string>
@@ -9626,7 +9585,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{325, 589}, {607, 197}}</string>
+					<string>{{286, 553}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{422, 211}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -9639,7 +9598,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{225, 906}, {197, 73}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -9803,7 +9761,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{713, 430}, {416, 246}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{713, 430}, {416, 246}}</string>
@@ -9838,7 +9795,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{12, 922}, {236, 203}}</string>
+					<string>{{12, 942}, {236, 183}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>{{18, 776}, {236, 203}}</string>
@@ -10376,12 +10333,14 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>additionalStart:</string>
 							<string>additionalStop:</string>
 							<string>faceMob:</string>
+							<string>filterMobs:</string>
 							<string>resetMobList:</string>
 							<string>targetMob:</string>
 							<string>updateTracking:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10401,28 +10360,18 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>controller</string>
 							<string>memoryViewController</string>
 							<string>mobColorByLevel</string>
-							<string>mobCountText</string>
-							<string>mobHideCritters</string>
-							<string>mobHideNonSelectable</string>
-							<string>mobHidePets</string>
-							<string>mobSearchProgress</string>
 							<string>mobTable</string>
 							<string>movementController</string>
 							<string>playerData</string>
 							<string>spellController</string>
-							<string>trackFriendly</string>
-							<string>trackHostile</string>
-							<string>trackNeutral</string>
+							<string>trackFriendlyMenuItem</string>
+							<string>trackHostileMenuItem</string>
+							<string>trackNeutralMenuItem</string>
 							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSPopUpButton</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10532,6 +10481,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>faceNode:</string>
 							<string>filterList:</string>
+							<string>filterNodes:</string>
 							<string>monitorFishing:</string>
 							<string>moveToStart:</string>
 							<string>moveToStop:</string>
@@ -10539,6 +10489,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10746,6 +10697,14 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">RouteVisualizationView</string>
+					<string key="superclassName">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">RouteVisualizationView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">RuleEditor</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -10803,22 +10762,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">RuleEditor.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SUUpdater</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">checkForUpdates:</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">delegate</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBUserSource</string>
-						<string key="minorKey"/>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -10881,6 +10824,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>addWaypoint:</string>
 							<string>cancelWaypointAction:</string>
 							<string>changeWaypointAction:</string>
+							<string>closeAutomatorPanel:</string>
 							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closeWaypointAction:</string>
@@ -10891,16 +10835,23 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>importRoute:</string>
 							<string>loadRoute:</string>
 							<string>moveToWaypoint:</string>
+							<string>openAutomatorPanel:</string>
 							<string>removeRoute:</string>
 							<string>removeWaypoint:</string>
 							<string>renameRoute:</string>
+							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
+							<string>startStopAutomator:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
 							<string>visualize:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10928,6 +10879,12 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>actionMenu</string>
+							<string>automatorIntervalValue</string>
+							<string>automatorPanel</string>
+							<string>automatorRecorder</string>
+							<string>automatorSpinner</string>
+							<string>automatorStartStopButton</string>
+							<string>automatorVizualizer</string>
 							<string>botController</string>
 							<string>combatController</string>
 							<string>controller</string>
@@ -10951,6 +10908,12 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
+							<string>NSTextField</string>
+							<string>NSPanel</string>
+							<string>SRRecorderControl</string>
+							<string>NSProgressIndicator</string>
+							<string>NSButton</string>
+							<string>RouteVisualizationView</string>
 							<string>id</string>
 							<string>id</string>
 							<string>Controller</string>
@@ -10963,7 +10926,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>NSMenu</string>
 							<string>NSView</string>
 							<string>NSPanel</string>
-							<string>id</string>
+							<string>RouteVisualizationView</string>
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>NSPopUpButton</string>
