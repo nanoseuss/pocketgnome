@@ -11,6 +11,8 @@
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
 		7D0C43F80DF20B0D005F3940 /* TransparentWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43F70DF20B0D005F3940 /* TransparentWindow.m */; };
 		7D16598B0D455F6500BDF5CA /* RouteSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D16598A0D455F6500BDF5CA /* RouteSet.m */; };
+		7D1BEDF00F8717CF00DF5FBF /* ChatLogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */; };
+		7D1BEE530F8733A400DF5FBF /* ChatLogEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */; };
 		7D21677E0DC456A400D5A815 /* PTKeyBroadcaster.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2167740DC456A400D5A815 /* PTKeyBroadcaster.m */; };
 		7D21677F0DC456A400D5A815 /* PTHotKeyCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2167750DC456A400D5A815 /* PTHotKeyCenter.m */; };
 		7D2167800DC456A400D5A815 /* PTKeyCodeTranslator.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2167780DC456A400D5A815 /* PTKeyCodeTranslator.m */; };
@@ -294,6 +296,10 @@
 		7D1659890D455F6500BDF5CA /* RouteSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteSet.h; sourceTree = "<group>"; };
 		7D16598A0D455F6500BDF5CA /* RouteSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteSet.m; sourceTree = "<group>"; };
 		7D165A950D45761B00BDF5CA /* CGKeyCodeMap.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = CGKeyCodeMap.plist; sourceTree = "<group>"; };
+		7D1BEDEE0F8717CF00DF5FBF /* ChatLogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatLogController.h; sourceTree = "<group>"; };
+		7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatLogController.m; sourceTree = "<group>"; };
+		7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatLogEntry.h; sourceTree = "<group>"; };
+		7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatLogEntry.m; sourceTree = "<group>"; };
 		7D2167740DC456A400D5A815 /* PTKeyBroadcaster.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PTKeyBroadcaster.m; sourceTree = "<group>"; };
 		7D2167750DC456A400D5A815 /* PTHotKeyCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PTHotKeyCenter.m; sourceTree = "<group>"; };
 		7D2167760DC456A400D5A815 /* PTKeyBroadcaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PTKeyBroadcaster.h; sourceTree = "<group>"; };
@@ -624,7 +630,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -671,6 +677,8 @@
 				7D5498950F02232500DD46F8 /* FishController.m */,
 				7D70E7E00DC65372006B8826 /* ChatController.h */,
 				7D70E7E10DC65372006B8826 /* ChatController.m */,
+				7D1BEDEE0F8717CF00DF5FBF /* ChatLogController.h */,
+				7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */,
 				7DAAE7670D14917E003F1E3C /* PlayerDataController.h */,
 				7DAAE7680D14917E003F1E3C /* PlayerDataController.m */,
 				7D220F130D1691E90026DF75 /* MobController.h */,
@@ -725,7 +733,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 				7DC3FEF20D57C65700BEB58B /* MemoryAccessTool */,
 				7DC3FEFB0D57C6B900BEB58B /* InstallTool */,
 			);
@@ -1107,6 +1115,8 @@
 				7D8343FA0D17231300853E32 /* Position.m */,
 				7DAD11640E117BF000B0F7BD /* Macro.h */,
 				7DAD11650E117BF000B0F7BD /* Macro.m */,
+				7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */,
+				7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */,
 			);
 			name = Units;
 			sourceTree = "<group>";
@@ -1329,7 +1339,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1631,6 +1641,8 @@
 				7D370C070E7366DC002FE3A4 /* ActionMenusController.m in Sources */,
 				7DB0ADE50EB02F0C00B81BC1 /* Aura.m in Sources */,
 				7D5498960F02232500DD46F8 /* FishController.m in Sources */,
+				7D1BEDF00F8717CF00DF5FBF /* ChatLogController.m in Sources */,
+				7D1BEE530F8733A400DF5FBF /* ChatLogEntry.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
