@@ -120,6 +120,9 @@
 		7D65C9DB0D2EF93100C50DF7 /* ProcedureController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D65C9DA0D2EF93100C50DF7 /* ProcedureController.m */; };
 		7D65CA480D2F04D200C50DF7 /* Procedure.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D65CA470D2F04D200C50DF7 /* Procedure.m */; };
 		7D65CC1D0D2F69BB00C50DF7 /* Behavior.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D65CC1C0D2F69BB00C50DF7 /* Behavior.m */; };
+		7D6BE9700F87ED8B00ED364A /* ChatLog.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */; };
+		7D6BE9990F87F6FB00ED364A /* Trade_Engraving.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D6BE9980F87F6FB00ED364A /* Trade_Engraving.png */; };
+		7D6BEC8D0F8844F600ED364A /* Growl Registration Ticket.growlRegDict in Resources */ = {isa = PBXBuildFile; fileRef = 7DC8B60F0D419C3200B25B45 /* Growl Registration Ticket.growlRegDict */; };
 		7D70E7E20DC65372006B8826 /* ChatController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D70E7E10DC65372006B8826 /* ChatController.m */; };
 		7D7245420D1511F40094665C /* Mob.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D7245410D1511F40094665C /* Mob.m */; };
 		7D7A695D0D26F04F0008C3FF /* NodeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D7A695C0D26F04F0008C3FF /* NodeController.m */; };
@@ -438,6 +441,8 @@
 		7D65CA470D2F04D200C50DF7 /* Procedure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Procedure.m; sourceTree = "<group>"; };
 		7D65CC1B0D2F69BB00C50DF7 /* Behavior.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Behavior.h; sourceTree = "<group>"; };
 		7D65CC1C0D2F69BB00C50DF7 /* Behavior.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Behavior.m; sourceTree = "<group>"; };
+		7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ChatLog.xib; sourceTree = "<group>"; };
+		7D6BE9980F87F6FB00ED364A /* Trade_Engraving.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Trade_Engraving.png; sourceTree = "<group>"; };
 		7D70E7E00DC65372006B8826 /* ChatController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatController.h; sourceTree = "<group>"; };
 		7D70E7E10DC65372006B8826 /* ChatController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatController.m; sourceTree = "<group>"; };
 		7D7245400D1511F40094665C /* Mob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mob.h; sourceTree = "<group>"; };
@@ -818,6 +823,7 @@
 				7DD803A30D5153E5005C2F01 /* Behaviors.xib */,
 				7DCB5A3F0D540647001678BC /* Memory.xib */,
 				7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */,
+				7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */,
 				7DC8B60F0D419C3200B25B45 /* Growl Registration Ticket.growlRegDict */,
 				7D3C91EA0E47C8C700EDF3B3 /* Gathering.plist */,
 				7D165A950D45761B00BDF5CA /* CGKeyCodeMap.plist */,
@@ -872,6 +878,7 @@
 				7DBA607A0D51D68000FD6A5F /* INV_Misc_Gear_01.png */,
 				7DBA606C0D51D52600FD6A5F /* INV_Misc_Orb_05.png */,
 				7D41E8120DEA28FE00118EA0 /* Spell_Holy_PrayerofSpirit.png */,
+				7D6BE9980F87F6FB00ED364A /* Trade_Engraving.png */,
 				7DBA606F0D51D54E00FD6A5F /* Unused */,
 			);
 			name = Toolbar;
@@ -1373,6 +1380,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D6BEC8D0F8844F600ED364A /* Growl Registration Ticket.growlRegDict in Resources */,
 				7DB0ABC90EABED7F00B81BC1 /* FactionTemplate.plist in Resources */,
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				7D3C91EB0E47C8C700EDF3B3 /* Gathering.plist in Resources */,
@@ -1532,6 +1540,8 @@
 				7D5498980F02234300DD46F8 /* Fishing.xib in Resources */,
 				7DD8910B0F2BE875007E9FE4 /* DeathKnight.png in Resources */,
 				7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */,
+				7D6BE9700F87ED8B00ED364A /* ChatLog.xib in Resources */,
+				7D6BE9990F87F6FB00ED364A /* Trade_Engraving.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

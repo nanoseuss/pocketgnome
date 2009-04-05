@@ -19,31 +19,71 @@
 {
     self = [super init];
     if (self != nil) {
-        self.sequence = -1;
+        self.sequence = nil;
         self.attributes = nil;
+        self.dateStamp = nil;
+        self.timeStamp = nil;
     }
     return self;
 }
 
 - (void) dealloc
 {
+    self.sequence = nil;
     self.attributes = nil;
-    self.timestamp = nil;
+    self.dateStamp = nil;
+    self.timeStamp = nil;
     [super dealloc];
 }
 
-+ (ChatLogEntry*)entryWithSequence: (NSInteger)sequence attributes: (NSDictionary*)attribs {
++ (ChatLogEntry*)entryWithSequence: (NSInteger)sequence timeStamp: (NSInteger)timeStamp attributes: (NSDictionary*)attribs {
     ChatLogEntry *newEntry = [[ChatLogEntry alloc] init];
-    newEntry.timestamp = [NSDate date];
-    newEntry.sequence = sequence;
+    newEntry.dateStamp = [NSDate date];
+    newEntry.timeStamp = [NSNumber numberWithInteger: timeStamp];
+    newEntry.sequence = [NSNumber numberWithInteger: sequence];
     newEntry.attributes = attribs;
+    
+    NSString *newText = @"";
+    if([newEntry.text rangeOfString: @"|c"].location != NSNotFound) {
+        // there is likely an link in this text.  try and parse it/them out...
+        // " |cff1eff00|Hitem:38072:0:0:0:0:0:0:1897089536:75|h[Thunder Capacitor]|h|r"
+        // " |cff4e96f7|Htalent:1405:-1|h[Improved Retribution Aura]|h|r
+        
+        NSScanner *scanner = [NSScanner scannerWithString: newEntry.text];
+        [scanner setCaseSensitive: YES];
+        [scanner setCharactersToBeSkipped: nil]; 
+        while(1) {
+            NSString *temp = nil;
+            if([scanner scanUpToString: @"|c" intoString: &temp]) {
+                newText = [newText stringByAppendingString: temp];
+                if([scanner scanUpToString: @"|h" intoString: nil] && [scanner scanString: @"|h" intoString: nil]) {
+                    if([scanner scanUpToString: @"|h|r" intoString: &temp] && [scanner scanString: @"|h|r" intoString: nil]) {
+                        newText = [newText stringByAppendingString: temp];
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+    
+    if([newText length]) {
+        NSMutableDictionary *newAttribs = [NSMutableDictionary dictionaryWithDictionary: newEntry.attributes];
+        [newAttribs setObject: newText forKey: ChatEntryTextKey];
+        newEntry.attributes = newAttribs;
+    }
+    
     return [newEntry autorelease];
 }
 
 - (BOOL)isEqual: (id)object {
     if( [object isKindOfClass: [self class]] ) {
         ChatLogEntry *other = (ChatLogEntry*)object;
-        return (self.sequence == other.sequence &&
+        return ([self.sequence isEqualToNumber: other.sequence] &&
                 [self.type isEqualToString: other.type] &&
                 [self.channel isEqualToString: other.channel] &&
                 [self.playerName isEqualToString: other.playerName] &&
@@ -52,8 +92,8 @@
     return NO;
 }
 
-+ (NSString*)nameForChannel: (NSString*)channel {
-    NSInteger chan = [channel integerValue];
++ (NSString*)nameForChatType: (NSString*)type {
+    NSInteger chan = [type integerValue];
     switch(chan) {
         case 0:
             return @"Addon"; break;
@@ -138,15 +178,36 @@
         case 46:
             return @"Restricted"; break;
     }
-    return [NSString stringWithFormat: @"Unknown (%@)", channel];
+    return [NSString stringWithFormat: @"Unknown (%@)", type];
 }
 
+@synthesize passNumber = _passNumber;
+@synthesize relativeOrder = _relativeOrder;
+
 @synthesize sequence = _sequence;
-@synthesize timestamp = _timestamp;
+@synthesize timeStamp = _timeStamp;
+@synthesize dateStamp = _dateStamp;
 @synthesize attributes = _attributes;
 
 - (NSString*)type {
     return [self.attributes objectForKey: ChatEntryTypeKey];
+}
+
+- (NSString*)typeName {
+    return [isa nameForChatType: self.type];
+}
+
+- (NSString*)typeVerb {
+    switch([self.type integerValue]) {
+        case 1:
+            return @"says"; break;
+        case 6:
+            return @"yells"; break;
+        case 7:
+        case 8:
+            return @"whispers"; break;
+    }
+    return nil;
 }
 
 - (NSString*)channel {
@@ -162,6 +223,51 @@
 }
 
 - (NSString*)description {
-    return [NSString stringWithFormat: @"<%@ -%d- [%@] %@: \"%@\"%@>", isa, self.sequence, [ChatLogEntry nameForChannel: self.type], self.playerName, self.text, ([self.channel length] ? [NSString stringWithFormat: @" (%@)", self.channel] : @"")];
+    return [NSString stringWithFormat: @"<%@ -%u:%u- [%@] %@: \"%@\"%@>", isa, self.passNumber, self.relativeOrder, [ChatLogEntry nameForChatType: self.type], self.playerName, self.text, ([self.channel length] ? [NSString stringWithFormat: @" (%@)", self.channel] : @"")];
 }
+
+- (BOOL)isEmote {
+    NSInteger type = [self.type integerValue];
+    return (type == 10 || type == 11);
+}
+
+- (BOOL)isSpoken {
+    NSInteger type = [self.type integerValue];
+    return (type == 1 || type == 6 || [self isWhisperReceived]);
+}
+
+- (BOOL)isWhisper {
+    NSInteger type = [self.type integerValue];
+    return (type == 7 || type == 8 || type == 9);
+}
+
+- (BOOL)isWhisperSent {
+    NSInteger type = [self.type integerValue];
+    return (type == 9);
+}
+
+- (BOOL)isWhisperReceived {
+    NSInteger type = [self.type integerValue];
+    return (type == 7 || type == 8);
+}
+
+- (BOOL)isChannel {
+    NSInteger type = [self.type integerValue];
+    return (type >= 17 && type <= 22);
+}
+
+- (NSString*)wellFormattedText {
+    
+    if([self isEmote]) {
+        return [NSString stringWithFormat: @"%@ %@", [self playerName], [self text]];
+    } else if([self isChannel]) {
+        return [NSString stringWithFormat: @"[%@] [%@] %@", [self channel], [self playerName], [self text]];
+    } else if([self isSpoken]) {
+        return [NSString stringWithFormat: @"[%@] %@: %@", [self playerName], [self typeVerb], [self text]];
+    } else if([self isWhisperSent]) {
+        return [NSString stringWithFormat: @"To [%@]: %@", [self playerName], [self text]];
+    }
+    return [NSString stringWithFormat: @"[%@] [%@] %@", [self playerName], [self typeName], [self text]];
+}
+
 @end

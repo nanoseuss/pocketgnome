@@ -24,10 +24,22 @@
 
 @implementation PlayersController
 
+static PlayersController *sharedPlayers = nil;
+
++ (PlayersController *)sharedPlayers {
+	if (sharedPlayers == nil)
+		sharedPlayers = [[[self class] alloc] init];
+	return sharedPlayers;
+}
+
 - (id) init
 {
     self = [super init];
-    if (self != nil) {
+	if(sharedPlayers) {
+		[self release];
+		self = sharedPlayers;
+    } else {
+        sharedPlayers = self;
         _updateTimer = nil;
         [[NSUserDefaults standardUserDefaults] registerDefaults: [NSDictionary dictionaryWithObject: @"0.5" forKey: @"PlayersControllerUpdateFrequency"]];
         _playerList = [[NSMutableArray array] retain];

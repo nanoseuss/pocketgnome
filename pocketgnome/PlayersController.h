@@ -44,6 +44,7 @@
 @property NSSize maxSectionSize;
 @property float updateFrequency;
 
++ (PlayersController *)sharedPlayers;
 - (NSArray*)allPlayers;
 - (Player*)playerTarget;
 - (void)addAddresses: (NSArray*)addresses;

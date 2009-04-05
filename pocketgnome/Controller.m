@@ -161,6 +161,7 @@ static Controller* sharedController = nil;
     [self checkWoWVersion];
     
     [GrowlApplicationBridge setGrowlDelegate: self];
+    [GrowlApplicationBridge setWillRegisterWhenGrowlIsReady: YES];
     /*if( [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
         PGLog(@"Growl running.");
         [GrowlApplicationBridge notifyWithTitle: @"RUNNING"
@@ -174,6 +175,20 @@ static Controller* sharedController = nil;
         PGLog(@"Growl not running.");
     }*/
     
+    // insert the new ChatLog toolbar item if it hasn't been done before and it's not there
+    if(![[NSUserDefaults standardUserDefaults] boolForKey: @"AddedChatLogToolbarItem"]) {
+        BOOL foundChatLog = NO;
+        for(NSToolbarItem *item in [mainToolbar items]) {
+            if([[item itemIdentifier] isEqualToString: [chatLogToolbarItem itemIdentifier]]) {
+                foundChatLog = YES;
+            }
+        }
+        if(!foundChatLog) {
+            PGLog(@"Inserting Chat Log toolbar item.");
+            [mainToolbar insertItemWithItemIdentifier: [chatLogToolbarItem itemIdentifier] atIndex: 1];
+        }
+        [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedChatLogToolbarItem"];
+    }
     
     //UInt32 bleh = 3250009464u;
     //float bleh2;
@@ -768,7 +783,6 @@ static Controller* sharedController = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName: DidLoadViewInMainWindowNotification object: newView];
 }
 
-
 - (IBAction)toolbarItemSelected: (id)sender {
     NSView *newView = nil;
     NSString *addToTitle = nil;
@@ -836,6 +850,12 @@ static Controller* sharedController = nil;
         addToTitle = [playersController sectionTitle];
         minSize = [playersController minSectionSize];
         maxSize = [playersController maxSectionSize];
+    }
+    if( [sender tag] == 12) {
+        newView = [chatLogController view];
+        addToTitle = [chatLogController sectionTitle];
+        minSize = [chatLogController minSectionSize];
+        maxSize = [chatLogController maxSectionSize];
     }
     
     if(newView) {
@@ -1380,6 +1400,27 @@ static Controller* sharedController = nil;
 
 #pragma mark Toolbar Delegate
 
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar {
+    NSLog(@"%s %@", __FUNCTION__, toolbar);
+    return [NSArray arrayWithObjects:
+            [botToolbarItem itemIdentifier], 
+            [chatLogToolbarItem itemIdentifier],
+            NSToolbarSpaceItemIdentifier,
+            [playerToolbarItem itemIdentifier], 
+            [spellsToolbarItem itemIdentifier],
+            NSToolbarSpaceItemIdentifier,
+            [playersToolbarItem itemIdentifier], 
+            [mobsToolbarItem itemIdentifier], 
+            [itemsToolbarItem itemIdentifier],
+            [nodesToolbarItem itemIdentifier], 
+            NSToolbarSpaceItemIdentifier,
+            [routesToolbarItem itemIdentifier], 
+            [behavsToolbarItem itemIdentifier],
+            NSToolbarFlexibleSpaceItemIdentifier,
+            [memoryToolbarItem itemIdentifier],
+            [prefsToolbarItem itemIdentifier], nil];
+}
+
 - (NSArray *)toolbarSelectableItemIdentifiers: (NSToolbar *)toolbar;
 {
     // Optional delegate method: Returns the identifiers of the subset of
@@ -1394,7 +1435,8 @@ static Controller* sharedController = nil;
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
             [memoryToolbarItem itemIdentifier],
-            [prefsToolbarItem itemIdentifier], nil];
+            [prefsToolbarItem itemIdentifier],
+            [chatLogToolbarItem itemIdentifier], nil];
 }
 
 #pragma mark -
@@ -1406,23 +1448,13 @@ static Controller* sharedController = nil;
  */
  
 - (NSDictionary *) registrationDictionaryForGrowl {
-
-    NSArray *notifications = [NSArray arrayWithObjects:
-                              @"AddWaypoint",
-                              @"AddingUnit",
-                              @"KilledUnit",
-                              @"PlayerDied",
-                              @"PlayerLevelUp",
-                              @"BattlegroundEnter",
-                              @"BattlegroundLeave", nil];
-    return [NSDictionary dictionaryWithObjectsAndKeys:
-            notifications, GROWL_NOTIFICATIONS_ALL,
-            notifications, GROWL_NOTIFICATIONS_DEFAULT,
-            nil];
+    NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"Growl Registration Ticket" ofType: @"growlRegDict"]];
+    NSLog(@"%@", dict);
+    return dict;
 }
 
 - (NSString *) applicationNameForGrowl {
-    //PGLog(@"applicationNameForGrowl");
+    // NSLog(@"applicationNameForGrowl: %@", [self appName]);
     return [self appName]; //@"Pocket Gnome";
 }
 
