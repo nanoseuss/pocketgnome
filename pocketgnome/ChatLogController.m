@@ -128,7 +128,8 @@ static NSUInteger passNumber = 0;
                 if([chatEntry length]) {
                     NSMutableDictionary *chatComponents = [NSMutableDictionary dictionary];
                     for(NSString *component in [chatEntry componentsSeparatedByString: @"], "]) {
-                        NSArray *keyValue = [component componentsSeparatedByString: @": "];
+                        NSArray *keyValue = [component componentsSeparatedByString: @": ["];
+                        // "Text: [blah blah blah]"
                         if([keyValue count] == 2) {
                             // now we have "key" and "[value]"
                             NSString *key = [keyValue objectAtIndex: 0];
@@ -136,7 +137,7 @@ static NSUInteger passNumber = 0;
                             [chatComponents setObject: value forKey: key];
                         } else {
                             // bad data
-                            // NSLog(@"Throwing out bad data: \"%@\"", component);
+                            NSLog(@"Throwing out bad data: \"%@\"", component);
                         }
                     }
                     if([chatComponents count]) {
