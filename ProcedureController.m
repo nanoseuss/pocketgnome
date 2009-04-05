@@ -121,7 +121,6 @@
 - (void)addBehavior: (Behavior*)behavior {
     int num = 2;
     BOOL done = NO;
-    NSLog(@"%@ - %@", [behavior className], [behavior name]);
     if(![behavior isKindOfClass: [Behavior class]]) return;
     if(![[behavior name] length]) return;
     
