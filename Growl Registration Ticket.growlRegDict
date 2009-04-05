@@ -12,6 +12,19 @@
 		<string>BattlegroundEnter</string>
 		<string>BattlegroundLeave</string>
 		<string>FishCaught</string>
+        <string>PlayerReceivedMessage</string>
+	</array>
+	<key>DefaultNotifications</key>
+	<array>
+		<string>AddWaypoint</string>
+		<string>AddingUnit</string>
+		<string>KilledUnit</string>
+		<string>PlayerDied</string>
+		<string>PlayerLevelUp</string>
+		<string>BattlegroundEnter</string>
+		<string>BattlegroundLeave</string>
+		<string>FishCaught</string>
+        <string>PlayerReceivedMessage</string>
 	</array>
 	<key>TicketVersion</key>
 	<integer>1</integer>

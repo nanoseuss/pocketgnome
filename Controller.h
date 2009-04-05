@@ -14,10 +14,11 @@
 @class BotController;
 @class MobController;
 @class NodeController;
-@class PlayersController;
-@class InventoryController;
 @class SpellController;
+@class ChatLogController;
+@class PlayersController;
 @class WaypointController;
+@class InventoryController;
 @class ProcedureController;
 @class MemoryViewController;
 @class PlayerDataController;
@@ -40,12 +41,13 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet SpellController     *spellController;
     IBOutlet WaypointController  *routeController;
     IBOutlet ProcedureController *behaviorController;
+    IBOutlet ChatLogController   *chatLogController;
 
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *itemsToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *playersToolbarItem, *mobsToolbarItem, *nodesToolbarItem, *routesToolbarItem, *behavsToolbarItem;
-    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem;
+    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem;
     
     IBOutlet NSView *aboutView, *settingsView;
     IBOutlet NSImageView *aboutValidImage;

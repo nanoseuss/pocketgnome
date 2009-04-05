@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1" id="9"/>
+			<integer value="174"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -923,7 +923,6 @@ bmMuLCAyMDA5AA</bytes>
 													</object>
 												</object>
 											</object>
-											<int key="NSSelectedIndex">3</int>
 											<bool key="NSPullDown">YES</bool>
 											<int key="NSPreferredEdge">1</int>
 											<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1009,11 +1008,7 @@ bmMuLCAyMDA5AA</bytes>
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
 							<string key="NSContents">Target Mob</string>
-							<object class="NSFont" key="NSSupport">
-								<string key="NSName">LucidaGrande</string>
-								<double key="NSSize">1.200000e+01</double>
-								<int key="NSfFlags">4883</int>
-							</object>
+							<reference key="NSSupport" ref="458210180"/>
 							<reference key="NSControlView" ref="98831397"/>
 							<int key="NSButtonFlags">-2034482945</int>
 							<int key="NSButtonFlags2">164</int>
@@ -1221,7 +1216,7 @@ bmMuLCAyMDA5AA</bytes>
 										<object class="NSMutableArray" key="dict.values">
 											<bool key="EncodedWithXMLCoder">YES</bool>
 											<string>cancel</string>
-											<reference ref="9"/>
+											<integer value="1" id="9"/>
 										</object>
 									</object>
 								</object>
@@ -1245,15 +1240,6 @@ bmMuLCAyMDA5AA</bytes>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="347168981">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>MobHidePets</string>
-					<string>MobHideCritters</string>
-					<string>MobHideNonSelectable</string>
-					<string>MobTrackFriendly</string>
-					<string>MobTrackNeutral</string>
-					<string>MobTrackHostile</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 		</object>
