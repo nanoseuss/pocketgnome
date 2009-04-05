@@ -336,7 +336,7 @@
     }
     
     if(!importedBehavior) {
-        NSRunAlertPanel(@"Behavior not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid behavior.", path], @"Okay", NULL, NULL);
+        NSRunAlertPanel(@"Behavior not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid behavior or behavior set.", path], @"Okay", NULL, NULL);
     }
 }
 
