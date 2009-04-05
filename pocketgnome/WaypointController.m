@@ -320,10 +320,10 @@ enum AutomatorIntervalType {
         } else {
             importedRoute = nil;
         }
-        
-        if(!importedRoute) {
-            NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route or route set.", path], @"Okay", NULL, NULL);
-        }
+    }
+    
+    if(!importedRoute) {
+        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route or route set.", path], @"Okay", NULL, NULL);
     }
 }
 
