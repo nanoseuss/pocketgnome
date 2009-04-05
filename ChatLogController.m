@@ -126,6 +126,7 @@ static NSUInteger passNumber = 0;
                 }
                 NSString *chatEntry = [NSString stringWithUTF8String: buffer + ChatLog_DescriptionOffset ];
                 if([chatEntry length]) {
+                    // "Type: [17], Channel: [General - Whatev], Player Name: [PlayerName], Text: [Text]"
                     NSMutableDictionary *chatComponents = [NSMutableDictionary dictionary];
                     for(NSString *component in [chatEntry componentsSeparatedByString: @"], "]) {
                         NSArray *keyValue = [component componentsSeparatedByString: @": ["];

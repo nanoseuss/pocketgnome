@@ -9,8 +9,8 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="143"/>
-			<integer value="227"/>
 			<integer value="537"/>
+			<integer value="227"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1335,6 +1335,7 @@
 				<string key="NSWindowTitle">Visualize Route</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
+				<string key="NSWindowContentMinSize">{517, 256}</string>
 				<object class="NSView" key="NSWindowView" id="788939595">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -1371,7 +1372,7 @@
 					<string key="NSFrameSize">{517, 256}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMinSize">{0, 16}</string>
+				<string key="NSMinSize">{517, 272}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">VisualizeRouteWindow</string>
 			</object>
@@ -1396,8 +1397,8 @@
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="520972160">
 								<int key="NSCellFlags">67239488</int>
-								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">Rename Behavior:</string>
+								<int key="NSCellFlags2">71304192</int>
+								<string key="NSContents">Rename Route:</string>
 								<reference key="NSSupport" ref="805037073"/>
 								<reference key="NSControlView" ref="188979436"/>
 								<reference key="NSBackgroundColor" ref="211653087"/>
@@ -2007,6 +2008,7 @@
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
+				<string key="NSWindowContentMinSize">{490, 366}</string>
 				<object class="NSView" key="NSWindowView" id="526776737">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -2335,7 +2337,7 @@
 					<string key="NSFrameSize">{490, 367}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMinSize">{0, 16}</string>
+				<string key="NSMinSize">{490, 382}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">AutomateRouteWindow</string>
 			</object>
@@ -2347,6 +2349,7 @@
 				<string key="NSWindowTitle">Export</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{415, 231}</string>
 				<object class="NSView" key="NSWindowView" id="14078509">
 					<reference key="NSNextResponder"/>
@@ -2420,6 +2423,7 @@
 									</object>
 									<string key="NSFrame">{{1, 1}, {373, 129}}</string>
 									<reference key="NSSuperview" ref="315886312"/>
+									<reference key="NSNextKeyView" ref="750477206"/>
 									<reference key="NSDocView" ref="750477206"/>
 									<reference key="NSBGColor" ref="907939593"/>
 									<int key="NScvFlags">4</int>
@@ -2446,6 +2450,7 @@
 							</object>
 							<string key="NSFrame">{{20, 55}, {375, 131}}</string>
 							<reference key="NSSuperview" ref="14078509"/>
+							<reference key="NSNextKeyView" ref="63802943"/>
 							<int key="NSsFlags">562</int>
 							<reference key="NSVScroller" ref="957169214"/>
 							<reference key="NSHScroller" ref="994209982"/>
@@ -2537,7 +2542,6 @@
 				<object class="NSMutableArray" key="NSDeclaredKeys">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>name</string>
-					<string>count</string>
 					<string>@count</string>
 				</object>
 				<bool key="NSEditable">YES</bool>
@@ -5916,6 +5920,7 @@
 					<string>536.IBWindowTemplateEditedContentRect</string>
 					<string>536.NSWindowTemplate.visibleAtLaunch</string>
 					<string>536.windowTemplate.hasMinSize</string>
+					<string>536.windowTemplate.maxSize</string>
 					<string>536.windowTemplate.minSize</string>
 					<string>537.IBPluginDependency</string>
 					<string>538.IBPluginDependency</string>
@@ -6184,8 +6189,9 @@
 					<string>{{561, 777}, {415, 231}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{561, 777}, {415, 231}}</string>
-					<reference ref="6"/>
-					<integer value="1"/>
+					<reference ref="8"/>
+					<reference ref="9"/>
+					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{415, 231}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

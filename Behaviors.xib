@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="168"/>
 			<integer value="287"/>
 			<integer value="239"/>
-			<integer value="168"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1083,6 +1083,7 @@ LCBQb2NrZXQgR25vbWUgbWF5IHBhdXNlIHJlcGVhdGVkbHkgYXMgeW91IHBhdHJvbC4</string>
 				<string key="NSWindowTitle">Export</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{415, 231}</string>
 				<object class="NSView" key="NSWindowView" id="860426659">
 					<reference key="NSNextResponder"/>
@@ -1256,7 +1257,7 @@ A</string>
 							<object class="NSTextFieldCell" key="NSCell" id="200232840">
 								<int key="NSCellFlags">68288064</int>
 								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">x routes selected.</string>
+								<string key="NSContents">x behaviors selected.</string>
 								<reference key="NSSupport" ref="1039970681"/>
 								<reference key="NSControlView" ref="957175181"/>
 								<reference key="NSBackgroundColor" ref="620660649"/>
@@ -2893,6 +2894,7 @@ A</string>
 					<string>286.IBWindowTemplateEditedContentRect</string>
 					<string>286.NSWindowTemplate.visibleAtLaunch</string>
 					<string>286.windowTemplate.hasMinSize</string>
+					<string>286.windowTemplate.maxSize</string>
 					<string>286.windowTemplate.minSize</string>
 					<string>287.IBPluginDependency</string>
 					<string>288.IBPluginDependency</string>
@@ -3012,11 +3014,12 @@ A</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{165, 756}, {415, 231}}</string>
+					<string>{{517, 760}, {415, 231}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{165, 756}, {415, 231}}</string>
-					<integer value="0"/>
-					<integer value="1"/>
+					<string>{{517, 760}, {415, 231}}</string>
+					<reference ref="8"/>
+					<reference ref="9"/>
+					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>{415, 231}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
