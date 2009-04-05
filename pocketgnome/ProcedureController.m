@@ -267,27 +267,27 @@
 - (BOOL)behaviorsContainMacros: (NSArray*)behaviors {
     // search for macros
     for(Behavior *behavior in behaviors) {
-        for(Rule *rule in [[[self currentBehavior] procedureForKey: PreCombatProcedure] rules]) {
+        for(Rule *rule in [[behavior procedureForKey: PreCombatProcedure] rules]) {
             if( [rule resultType] == ActionType_Macro ) {
                 return YES;
             }
         }
-        for(Rule *rule in [[[self currentBehavior] procedureForKey: CombatProcedure] rules]) {
+        for(Rule *rule in [[behavior procedureForKey: CombatProcedure] rules]) {
             if( [rule resultType] == ActionType_Macro ) {
                 return YES;
             }
         }
-        for(Rule *rule in [[[self currentBehavior] procedureForKey: PostCombatProcedure] rules]) {
+        for(Rule *rule in [[behavior procedureForKey: PostCombatProcedure] rules]) {
             if( [rule resultType] == ActionType_Macro ) {
                 return YES;
             }
         }
-        for(Rule *rule in [[[self currentBehavior] procedureForKey: RegenProcedure] rules]) {
+        for(Rule *rule in [[behavior procedureForKey: RegenProcedure] rules]) {
             if( [rule resultType] == ActionType_Macro ) {
                 return YES;
             }
         }
-        for(Rule *rule in [[[self currentBehavior] procedureForKey: PatrollingProcedure] rules]) {
+        for(Rule *rule in [[behavior procedureForKey: PatrollingProcedure] rules]) {
             if( [rule resultType] == ActionType_Macro ) {
                 return YES;
             }
@@ -306,7 +306,6 @@
     
     if(importedBehavior) {
         BOOL containsMacros = NO;
-        NSLog(@"importedBehavior == %@", [importedBehavior className]);
         if([importedBehavior isKindOfClass: [Behavior class]]) {
             containsMacros = [self behaviorsContainMacros: [NSArray arrayWithObject: importedBehavior]];
         } else if([importedBehavior isKindOfClass: [NSArray class]]) {
