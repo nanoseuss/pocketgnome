@@ -37,6 +37,7 @@
     IBOutlet NSMenu *actionMenu;
     IBOutlet NSMenu *testingMenu;
     IBOutlet NSPanel *renamePanel;
+    IBOutlet NSPanel *exportPanel;
     
     // waypoint action editor
     IBOutlet NSPanel *wpActionPanel;
@@ -92,6 +93,8 @@
 - (IBAction)renameRoute: (id)sender;
 - (IBAction)closeRename: (id)sender;
 - (IBAction)duplicateRoute: (id)sender;
+- (IBAction)openExportPanel: (id)sender;
+- (IBAction)closeExportPanel: (id)sender;
 
 // importing/exporting
 - (void)importRouteAtPath: (NSString*)path;

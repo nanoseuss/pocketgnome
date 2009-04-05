@@ -228,17 +228,17 @@
 
 - (BOOL)isEmote {
     NSInteger type = [self.type integerValue];
-    return (type == 10 || type == 11);
+    return ((type == 10) || (type == 11));
 }
 
 - (BOOL)isSpoken {
     NSInteger type = [self.type integerValue];
-    return (type == 1 || type == 6 || [self isWhisperReceived]);
+    return ((type == 1) || (type == 6) || [self isWhisperReceived]);
 }
 
 - (BOOL)isWhisper {
     NSInteger type = [self.type integerValue];
-    return (type == 7 || type == 8 || type == 9);
+    return ((type == 7) || (type == 8) || (type == 9));
 }
 
 - (BOOL)isWhisperSent {
@@ -248,12 +248,12 @@
 
 - (BOOL)isWhisperReceived {
     NSInteger type = [self.type integerValue];
-    return (type == 7 || type == 8);
+    return ((type == 7) || (type == 8));
 }
 
 - (BOOL)isChannel {
     NSInteger type = [self.type integerValue];
-    return (type >= 17 && type <= 22);
+    return ((type >= 17) && (type <= 22) && [[self channel] length]);
 }
 
 - (NSString*)wellFormattedText {

@@ -185,7 +185,7 @@ static NSUInteger passNumber = 0;
                 [_chatLog addObject: entry];
                 self.lastPassFoundChat = YES;
                 
-                if(passNumber > 0 && ![entry isWhisperSent]) {
+                if(passNumber > 0 && ![entry isWhisperSent] && ![controller isWoWFront]) {
                     if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
                         [GrowlApplicationBridge notifyWithTitle: [entry isSpoken] ? [NSString stringWithFormat: @"%@ %@...", [entry playerName], [entry typeVerb]] : [NSString stringWithFormat: @"%@ (%@)", [entry playerName], [entry isChannel] ? [entry channel] : [entry typeName]]
                                                     description: [entry text]
