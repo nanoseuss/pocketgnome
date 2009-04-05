@@ -44,7 +44,7 @@
     newEntry.attributes = attribs;
     
     NSString *newText = @"";
-    if([newEntry.text rangeOfString: @"|c"].location != NSNotFound) {
+    if([newEntry.text length] && ([newEntry.text rangeOfString: @"|c"].location != NSNotFound)) {
         // there is likely an link in this text.  try and parse it/them out...
         // " |cff1eff00|Hitem:38072:0:0:0:0:0:0:1897089536:75|h[Thunder Capacitor]|h|r"
         // " |cff4e96f7|Htalent:1405:-1|h[Improved Retribution Aura]|h|r

@@ -121,7 +121,8 @@
 - (void)addBehavior: (Behavior*)behavior {
     int num = 2;
     BOOL done = NO;
-    
+    NSLog(@"%@ - %@", [behavior className], [behavior name]);
+    if(![behavior isKindOfClass: [Behavior class]]) return;
     if(![[behavior name] length]) return;
     
     // check to see if a route exists with this name
@@ -263,6 +264,38 @@
 #pragma mark -
 #pragma mark Import & Export
 
+- (BOOL)behaviorsContainMacros: (NSArray*)behaviors {
+    // search for macros
+    for(Behavior *behavior in behaviors) {
+        for(Rule *rule in [[[self currentBehavior] procedureForKey: PreCombatProcedure] rules]) {
+            if( [rule resultType] == ActionType_Macro ) {
+                return YES;
+            }
+        }
+        for(Rule *rule in [[[self currentBehavior] procedureForKey: CombatProcedure] rules]) {
+            if( [rule resultType] == ActionType_Macro ) {
+                return YES;
+            }
+        }
+        for(Rule *rule in [[[self currentBehavior] procedureForKey: PostCombatProcedure] rules]) {
+            if( [rule resultType] == ActionType_Macro ) {
+                return YES;
+            }
+        }
+        for(Rule *rule in [[[self currentBehavior] procedureForKey: RegenProcedure] rules]) {
+            if( [rule resultType] == ActionType_Macro ) {
+                return YES;
+            }
+        }
+        for(Rule *rule in [[[self currentBehavior] procedureForKey: PatrollingProcedure] rules]) {
+            if( [rule resultType] == ActionType_Macro ) {
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
 - (void)importBehaviorAtPath: (NSString*)path {
     id importedBehavior;
     NS_DURING {
@@ -271,47 +304,38 @@
         importedBehavior = nil;
     } NS_ENDHANDLER
     
-    if(importedBehavior && [importedBehavior respondsToSelector: @selector(procedureForKey:)]) {
-        
-        // search for macros
+    if(importedBehavior) {
         BOOL containsMacros = NO;
-        for(Rule *rule in [[importedBehavior procedureForKey: PreCombatProcedure] rules]) {
-            if( [rule resultType] == ActionType_Macro ) {
-                containsMacros = YES;
-            }
-        }
-        for(Rule *rule in [[importedBehavior procedureForKey: CombatProcedure] rules]) {
-            if( [rule resultType] == ActionType_Macro ) {
-                containsMacros = YES;
-            }
-        }
-        for(Rule *rule in [[importedBehavior procedureForKey: PostCombatProcedure] rules]) {
-            if( [rule resultType] == ActionType_Macro ) {
-                containsMacros = YES;
-            }
-        }
-        for(Rule *rule in [[importedBehavior procedureForKey: RegenProcedure] rules]) {
-            if( [rule resultType] == ActionType_Macro ) {
-                containsMacros = YES;
-            }
-        }
-        for(Rule *rule in [[importedBehavior procedureForKey: PatrollingProcedure] rules]) {
-            if( [rule resultType] == ActionType_Macro ) {
-                containsMacros = YES;
-            }
+        NSLog(@"importedBehavior == %@", [importedBehavior className]);
+        if([importedBehavior isKindOfClass: [Behavior class]]) {
+            containsMacros = [self behaviorsContainMacros: [NSArray arrayWithObject: importedBehavior]];
+        } else if([importedBehavior isKindOfClass: [NSArray class]]) {
+            containsMacros = [self behaviorsContainMacros: importedBehavior];
+        } else {
+            importedBehavior = nil;
         }
         
-        // let the user know
-        int ret = NSAlertDefaultReturn;
-        if(containsMacros) {
-            NSBeep();
-            ret = NSRunCriticalAlertPanel(@"Warning: Macros Detected", [NSString stringWithFormat: @"The behavior \"%@\" contains one or more rules that utilize WoW macros.  Since these macros are specific to each copy of WoW, this behavior will most likely not function unless you manually fix each of the affected rules.  Do you still want to import this behavior?", [importedBehavior name]], @"Import", @"Cancel", NULL);
+        if(importedBehavior) {
+            // let the user know if there are macros
+            int ret = NSAlertDefaultReturn;
+            if(containsMacros) {
+                NSBeep();
+                ret = NSRunCriticalAlertPanel(@"Warning: Macros Detected",  [NSString stringWithFormat: @"The behavior file \"%@\" contains one or more rules that utilize WoW macros.  Since these macros are specific to each copy of WoW, this behavior will most likely not function unless you manually fix each of the affected rules.  Do you still want to import this file?", [path lastPathComponent]], @"Import", @"Cancel", NULL);
+            }
+            
+            if(ret == NSAlertDefaultReturn) {
+                if([importedBehavior isKindOfClass: [Behavior class]]) {
+                    [self addBehavior: importedBehavior];
+                } else if([importedBehavior isKindOfClass: [NSArray class]]) {
+                    for(Behavior *behavior in importedBehavior) {
+                        [self addBehavior: behavior];
+                    }
+                }
+            }
         }
-        
-        if(ret == NSAlertDefaultReturn) {
-            [self addBehavior: importedBehavior];
-        }
-    } else {
+    }
+    
+    if(!importedBehavior) {
         NSRunAlertPanel(@"Behavior not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid behavior.", path], @"Okay", NULL, NULL);
     }
 }
@@ -325,7 +349,7 @@
 	[openPanel setCanChooseFiles: YES];
     [openPanel setAllowsMultipleSelection: YES];
 	
-	int ret = [openPanel runModalForTypes: [NSArray arrayWithObject: @"behavior"]];
+	int ret = [openPanel runModalForTypes: [NSArray arrayWithObjects: @"behavior", @"behaviorset", nil]];
     
 	if(ret == NSFileHandlingPanelOKButton) {
         for(NSString *behaviorPath in [openPanel filenames]) {
@@ -337,40 +361,12 @@
 - (IBAction)exportBehavior: (id)sender {
     if(![self currentBehavior]) return;
     
-    // search for macros
-    BOOL containsMacros = NO;
-    for(Rule *rule in [[[self currentBehavior] procedureForKey: PreCombatProcedure] rules]) {
-        if( [rule resultType] == ActionType_Macro ) {
-            containsMacros = YES;
-        }
-    }
-    for(Rule *rule in [[[self currentBehavior] procedureForKey: CombatProcedure] rules]) {
-        if( [rule resultType] == ActionType_Macro ) {
-            containsMacros = YES;
-        }
-    }
-    for(Rule *rule in [[[self currentBehavior] procedureForKey: PostCombatProcedure] rules]) {
-        if( [rule resultType] == ActionType_Macro ) {
-            containsMacros = YES;
-        }
-    }
-    for(Rule *rule in [[[self currentBehavior] procedureForKey: RegenProcedure] rules]) {
-        if( [rule resultType] == ActionType_Macro ) {
-            containsMacros = YES;
-        }
-    }
-    for(Rule *rule in [[[self currentBehavior] procedureForKey: PatrollingProcedure] rules]) {
-        if( [rule resultType] == ActionType_Macro ) {
-            containsMacros = YES;
-        }
-    }
-    
-    // let the user know
-    if(containsMacros) {
+    // let the user know if this behavior contains macros
+    if([self behaviorsContainMacros: [NSArray arrayWithObject: [self currentBehavior]]]) {
         NSBeep();
         NSRunCriticalAlertPanel(@"Warning: Behavior Contains Macros", @"The behavior you are exporting contains one or more rules that utilize macros.  Macros are contained within your local copy of Warcraft, and will not be exported with this behavior -- these rules will not work on anybody else's computer!", @"Okay", NULL, NULL);
     }
-    
+       
     NSSavePanel *savePanel = [NSSavePanel savePanel];
     [savePanel setCanCreateDirectories: YES];
     [savePanel setTitle: @"Export Behavior"];
@@ -383,6 +379,50 @@
         [data writeToFile: saveLocation atomically: YES];
     }
     
+}
+
+- (IBAction)openExportPanel: (id)sender {
+
+	[NSApp beginSheet: exportPanel
+	   modalForWindow: [ruleTable window]
+		modalDelegate: nil
+	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
+}
+
+- (IBAction)closeExportPanel: (id)sender {
+    [NSApp endSheet: exportPanel returnCode: 1];
+    [exportPanel orderOut: nil];
+}
+
+- (IBAction)exportBehaviors: (id)sender {
+    NSArray *behaviors = (NSArray*)sender;
+    if(![behaviors isKindOfClass: [NSArray class]])
+        return;
+    if(![behaviors count]) {
+        NSBeep();
+        return;
+    }
+    
+    // let the user know if these behaviors contains macros
+    if([self behaviorsContainMacros: behaviors]) {
+        NSBeep();
+        NSRunCriticalAlertPanel(@"Warning: Behaviors Contain Macros", @"The behaviors you are exporting contain one or more rules that utilize macros.  Macros are contained within your local copy of Warcraft, and will not be exported with this behavior -- these rules will not work on anybody else's computer!", @"Okay", NULL, NULL);
+    }
+
+    int behaviorCount = [behaviors count];
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    [savePanel setCanCreateDirectories: YES];
+    [savePanel setTitle: (behaviorCount == 1) ? @"Export Behavior" : @"Export Behaviors"];
+    [savePanel setMessage: (behaviorCount == 1) ? @"Please choose a destination for this behavior." : @"Please choose a destination for these behaviors."];
+    int ret = [savePanel runModalForDirectory: @"~/" file: [[NSString stringWithFormat: @"%d", [behaviors count]] stringByAppendingPathExtension: (behaviorCount == 1) ? @"route" : @"behaviorset"]];
+    
+	if(ret == NSFileHandlingPanelOKButton) {
+        NSString *saveLocation = [savePanel filename];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: (behaviorCount == 1) ? [behaviors lastObject] : behaviors];
+        [data writeToFile: saveLocation atomically: YES];
+        [self closeExportPanel: nil];
+    }
 }
 
 #pragma mark -
