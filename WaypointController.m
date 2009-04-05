@@ -206,7 +206,7 @@ enum AutomatorIntervalType {
 - (void)addRoute: (RouteSet*)routeSet {
     int num = 2;
     BOOL done = NO;
-    
+    if(![routeSet isKindOfClass: [RouteSet class]]) return;
     if(![[routeSet name] length]) return;
     
     // check to see if a route exists with this name
@@ -310,12 +310,17 @@ enum AutomatorIntervalType {
         importedRoute = nil;
     } NS_ENDHANDLER
     
-    if(importedRoute && [importedRoute respondsToSelector: @selector(routeForKey:)]) {
-        [self addRoute: importedRoute];
+    if(importedRoute) {
+        if([importedRoute isKindOfClass: [RouteSet class]]) {
+            [self addRoute: importedRoute];
+        } else if([importedRoute isKindOfClass: [NSArray class]]) {
+            for(RouteSet *route in importedRoute) {
+                [self addRoute: route];
+            }
+        }
     } else {
-        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route.", path], @"Okay", NULL, NULL);
+        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route or route set.", path], @"Okay", NULL, NULL);
     }
-    
 }
 
 - (IBAction)importRoute: (id)sender {
@@ -327,7 +332,7 @@ enum AutomatorIntervalType {
 	[openPanel setCanChooseFiles: YES];
     [openPanel setAllowsMultipleSelection: YES];
 	
-	int ret = [openPanel runModalForTypes: [NSArray arrayWithObject: @"route"]];
+	int ret = [openPanel runModalForTypes: [NSArray arrayWithObjects: @"route", @"routeset", nil]];
     
 	if(ret == NSFileHandlingPanelOKButton) {
         for(NSString *routePath in [openPanel filenames]) {
@@ -349,8 +354,43 @@ enum AutomatorIntervalType {
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject: [self currentRouteSet]];
         [data writeToFile: saveLocation atomically: YES];
     }
-    
 }
+
+- (IBAction)openExportPanel: (id)sender {
+
+	[NSApp beginSheet: exportPanel
+	   modalForWindow: [waypointTable window]
+		modalDelegate: nil
+	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
+}
+
+- (IBAction)closeExportPanel: (id)sender {
+    [NSApp endSheet: exportPanel returnCode: 1];
+    [exportPanel orderOut: nil];
+}
+
+- (IBAction)exportRoutes: (id)sender {
+    if(![sender count]) {
+        NSBeep();
+        return;
+    }
+
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    [savePanel setCanCreateDirectories: YES];
+    [savePanel setTitle: ([sender count] == 1) ? @"Export Route" : @"Export Routes"];
+    [savePanel setMessage: ([sender count] == 1) ? @"Please choose a destination for this route." : @"Please choose a destination for these routes."];
+    int ret = [savePanel runModalForDirectory: @"~/" file: [[NSString stringWithFormat: @"%d", [sender count]] stringByAppendingPathExtension: ([sender count] == 1) ? @"route" : @"routeset"]];
+    
+	if(ret == NSFileHandlingPanelOKButton) {
+        NSString *saveLocation = [savePanel filename];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: ([sender count] == 1) ? [sender lastObject] : sender];
+        [data writeToFile: saveLocation atomically: YES];
+        [self closeExportPanel: nil];
+    }
+}
+
+
 
 #pragma mark -
 #pragma mark Waypoint & Other Actions

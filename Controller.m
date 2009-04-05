@@ -1401,7 +1401,6 @@ static Controller* sharedController = nil;
 #pragma mark Toolbar Delegate
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar*)toolbar {
-    NSLog(@"%s %@", __FUNCTION__, toolbar);
     return [NSArray arrayWithObjects:
             [botToolbarItem itemIdentifier], 
             [chatLogToolbarItem itemIdentifier],
@@ -1449,7 +1448,6 @@ static Controller* sharedController = nil;
  
 - (NSDictionary *) registrationDictionaryForGrowl {
     NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"Growl Registration Ticket" ofType: @"growlRegDict"]];
-    NSLog(@"%@", dict);
     return dict;
 }
 
