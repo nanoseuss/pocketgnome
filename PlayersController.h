@@ -47,6 +47,7 @@
 + (PlayersController *)sharedPlayers;
 - (NSArray*)allPlayers;
 - (Player*)playerTarget;
+- (Player*)playerWithGUID: (GUID)guid;
 - (void)addAddresses: (NSArray*)addresses;
 //- (BOOL)addPlayer: (Player*)player;
 - (void)resetAllPlayers;

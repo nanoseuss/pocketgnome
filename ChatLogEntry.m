@@ -241,6 +241,14 @@
     return ((type == 7) || (type == 8) || (type == 9));
 }
 
+- (NSArray*)spokenTypes { 
+    return [NSArray arrayWithObjects: @"1", @"6", nil];
+}
+
+- (NSArray*)whisperTypes {
+    return [NSArray arrayWithObjects: @"7", @"8", @"9", nil];
+}
+
 - (BOOL)isWhisperSent {
     NSInteger type = [self.type integerValue];
     return (type == 9);
