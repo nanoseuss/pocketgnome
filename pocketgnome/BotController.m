@@ -116,6 +116,7 @@
                                    [NSNumber numberWithInt: NSOnState], @"PvPLeaveWhenInactive",
                                    nil];
     
+    [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
 }
 

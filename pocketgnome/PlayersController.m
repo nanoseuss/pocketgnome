@@ -128,7 +128,16 @@ static PlayersController *sharedPlayers = nil;
     
     for(Player *player in _playerList) {
         if( playerTarget == [player GUID]) {
-            return player;
+            return [[player retain] autorelease];
+        }
+    }
+    return nil;
+}
+
+- (Player*)playerWithGUID: (GUID)guid {
+    for(Player *player in _playerList) {
+        if( guid == [player GUID]) {
+            return [[player retain] autorelease];
         }
     }
     return nil;

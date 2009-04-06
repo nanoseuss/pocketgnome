@@ -11,6 +11,13 @@
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
 		7D0C43F80DF20B0D005F3940 /* TransparentWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43F70DF20B0D005F3940 /* TransparentWindow.m */; };
 		7D16598B0D455F6500BDF5CA /* RouteSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D16598A0D455F6500BDF5CA /* RouteSet.m */; };
+		7D1B39420F896A96005CA0CD /* ChatAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D1B39410F896A96005CA0CD /* ChatAction.m */; };
+		7D1B39C50F897721005CA0CD /* Message.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D1B39C40F897721005CA0CD /* Message.framework */; };
+		7D1B3A220F89860D005CA0CD /* ScriptingBridge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */; };
+		7D1B3A5C0F898887005CA0CD /* Mail.app in Sources */ = {isa = PBXBuildFile; fileRef = 7D1B3A560F89885D005CA0CD /* Mail.app */; };
+		7D1B3A960F898D90005CA0CD /* iChat.app in Sources */ = {isa = PBXBuildFile; fileRef = 7D1B3A940F898D89005CA0CD /* iChat.app */; };
+		7D1B3B8D0F89ACE9005CA0CD /* Mail.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D1B3B8C0F89ACE9005CA0CD /* Mail.png */; };
+		7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D1B3B8E0F89AD22005CA0CD /* iChat.png */; };
 		7D1BEDF00F8717CF00DF5FBF /* ChatLogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */; };
 		7D1BEE530F8733A400DF5FBF /* ChatLogEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */; };
 		7D21677E0DC456A400D5A815 /* PTKeyBroadcaster.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D2167740DC456A400D5A815 /* PTKeyBroadcaster.m */; };
@@ -268,6 +275,20 @@
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		7D1B3A500F8987B1005CA0CD /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.app";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(DERIVED_FILES_DIR)/$(INPUT_FILE_BASE).h",
+			);
+			script = "sdef \"$INPUT_FILE_PATH\" | sdp -fh -o \"$DERIVED_FILES_DIR\" --basename \"$INPUT_FILE_BASE\" --bundleid `defaults read \"$INPUT_FILE_PATH/Contents/Info\" CFBundleIdentifier`";
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		7DC8B60C0D419BF500B25B45 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -299,6 +320,14 @@
 		7D1659890D455F6500BDF5CA /* RouteSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteSet.h; sourceTree = "<group>"; };
 		7D16598A0D455F6500BDF5CA /* RouteSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteSet.m; sourceTree = "<group>"; };
 		7D165A950D45761B00BDF5CA /* CGKeyCodeMap.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = CGKeyCodeMap.plist; sourceTree = "<group>"; };
+		7D1B39400F896A96005CA0CD /* ChatAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatAction.h; sourceTree = "<group>"; };
+		7D1B39410F896A96005CA0CD /* ChatAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatAction.m; sourceTree = "<group>"; };
+		7D1B39C40F897721005CA0CD /* Message.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Message.framework; path = /System/Library/Frameworks/Message.framework; sourceTree = "<absolute>"; };
+		7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScriptingBridge.framework; path = /System/Library/Frameworks/ScriptingBridge.framework; sourceTree = "<absolute>"; };
+		7D1B3A560F89885D005CA0CD /* Mail.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = Mail.app; path = /Applications/Mail.app; sourceTree = "<absolute>"; };
+		7D1B3A940F898D89005CA0CD /* iChat.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = iChat.app; path = /Applications/iChat.app; sourceTree = "<absolute>"; };
+		7D1B3B8C0F89ACE9005CA0CD /* Mail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Mail.png; path = /Users/jond/Projects/pocketgnome/Mail.png; sourceTree = "<absolute>"; };
+		7D1B3B8E0F89AD22005CA0CD /* iChat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = iChat.png; path = /Users/jond/Projects/pocketgnome/iChat.png; sourceTree = "<absolute>"; };
 		7D1BEDEE0F8717CF00DF5FBF /* ChatLogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatLogController.h; sourceTree = "<group>"; };
 		7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatLogController.m; sourceTree = "<group>"; };
 		7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatLogEntry.h; sourceTree = "<group>"; };
@@ -665,6 +694,8 @@
 				7DBC34EC0DB57A2C000C9BCF /* ShortcutRecorder.framework in Frameworks */,
 				7D2167F40DC4581700D5A815 /* Carbon.framework in Frameworks */,
 				7DBF31C60E94679500A592BD /* Growl.framework in Frameworks */,
+				7D1B39C50F897721005CA0CD /* Message.framework in Frameworks */,
+				7D1B3A220F89860D005CA0CD /* ScriptingBridge.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -713,6 +744,8 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */,
+				7D1B39C40F897721005CA0CD /* Message.framework */,
 				7D2167F30DC4581700D5A815 /* Carbon.framework */,
 				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
 				7DAA08010D557A7600A6D06A /* CoreServices.framework */,
@@ -756,6 +789,8 @@
 				7D72453E0D1511E20094665C /* Units */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				7D1B3A560F89885D005CA0CD /* Mail.app */,
+				7D1B3A940F898D89005CA0CD /* iChat.app */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
@@ -1157,6 +1192,8 @@
 				7DE53DD70E32B48500C59033 /* CombatProfile.m */,
 				7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */,
 				7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */,
+				7D1B39400F896A96005CA0CD /* ChatAction.h */,
+				7D1B39410F896A96005CA0CD /* ChatAction.m */,
 			);
 			name = "Rules & Procedures";
 			sourceTree = "<group>";
@@ -1291,6 +1328,8 @@
 				7DD64B200D5D192500773CAB /* on.png */,
 				7D4AFB320D9EDBF100A33CE1 /* bad.tif */,
 				7D4AFB330D9EDBF100A33CE1 /* good.tif */,
+				7D1B3B8C0F89ACE9005CA0CD /* Mail.png */,
+				7D1B3B8E0F89AD22005CA0CD /* iChat.png */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -1340,6 +1379,7 @@
 				7DC8B60C0D419BF500B25B45 /* CopyFiles */,
 			);
 			buildRules = (
+				7D1B3A500F8987B1005CA0CD /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -1542,6 +1582,8 @@
 				7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */,
 				7D6BE9700F87ED8B00ED364A /* ChatLog.xib in Resources */,
 				7D6BE9990F87F6FB00ED364A /* Trade_Engraving.png in Resources */,
+				7D1B3B8D0F89ACE9005CA0CD /* Mail.png in Resources */,
+				7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1570,6 +1612,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D1B3A960F898D90005CA0CD /* iChat.app in Sources */,
+				7D1B3A5C0F898887005CA0CD /* Mail.app in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				7DAAE71A0D148972003F1E3C /* Controller.m in Sources */,
 				7DAAE7220D14897D003F1E3C /* MemoryAccess.m in Sources */,
@@ -1653,6 +1697,7 @@
 				7D5498960F02232500DD46F8 /* FishController.m in Sources */,
 				7D1BEDF00F8717CF00DF5FBF /* ChatLogController.m in Sources */,
 				7D1BEE530F8733A400DF5FBF /* ChatLogEntry.m in Sources */,
+				7D1B39420F896A96005CA0CD /* ChatAction.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

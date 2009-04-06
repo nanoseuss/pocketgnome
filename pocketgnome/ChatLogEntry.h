@@ -46,6 +46,8 @@
 @property (readonly) BOOL isWhisperReceived;
 @property (readonly) BOOL isChannel;
 
+@property (readonly) NSArray *whisperTypes;
+
 @property (readonly) NSString *wellFormattedText;
 
 @end
