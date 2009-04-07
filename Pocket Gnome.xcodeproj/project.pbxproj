@@ -326,8 +326,8 @@
 		7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScriptingBridge.framework; path = /System/Library/Frameworks/ScriptingBridge.framework; sourceTree = "<absolute>"; };
 		7D1B3A560F89885D005CA0CD /* Mail.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = Mail.app; path = /Applications/Mail.app; sourceTree = "<absolute>"; };
 		7D1B3A940F898D89005CA0CD /* iChat.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; name = iChat.app; path = /Applications/iChat.app; sourceTree = "<absolute>"; };
-		7D1B3B8C0F89ACE9005CA0CD /* Mail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Mail.png; path = /Users/jond/Projects/pocketgnome/Mail.png; sourceTree = "<absolute>"; };
-		7D1B3B8E0F89AD22005CA0CD /* iChat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = iChat.png; path = /Users/jond/Projects/pocketgnome/iChat.png; sourceTree = "<absolute>"; };
+		7D1B3B8C0F89ACE9005CA0CD /* Mail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Mail.png; sourceTree = "<group>"; };
+		7D1B3B8E0F89AD22005CA0CD /* iChat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iChat.png; sourceTree = "<group>"; };
 		7D1BEDEE0F8717CF00DF5FBF /* ChatLogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatLogController.h; sourceTree = "<group>"; };
 		7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ChatLogController.m; sourceTree = "<group>"; };
 		7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChatLogEntry.h; sourceTree = "<group>"; };
