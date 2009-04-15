@@ -291,7 +291,7 @@ static Controller* sharedController = nil;
     uint32_t prevStructPtrAddr = structAddress + 0x30;
     uint32_t nextStructPtrAddr = structAddress + 0x34;
     
-    //PGLog(@"Loading 0x%X...", structAddress);
+    PGLog(@"Loading 0x%X...", structAddress);
     if([memory loadDataForObject: self atAddress: structAddress Buffer: (Byte*)&value BufLength: sizeof(value)] && (value > 0) && (value < 0xFFFFFF))
     {
         int objectType = TYPEID_UNKNOWN;
@@ -352,7 +352,7 @@ static Controller* sharedController = nil;
             //    PGLog(@"Unknown object at 0x%X of type %u (0x%X).", structAddress, value, value);
             
             if( (objectType <= TYPEID_UNKNOWN) || (objectType >= TYPEID_MAX)) {
-                //PGLog(@"--> Unknown = bailing");
+                PGLog(@"--> Unknown = bailing");
                 return;
             }
             
@@ -378,8 +378,8 @@ static Controller* sharedController = nil;
 - (void)scanObjectGraph {
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
     
-    //NSDate *date = [NSDate date];
-    //NSDate *start = date;
+    NSDate *date = [NSDate date];
+    NSDate *start = date;
     
     // BOOL foundPlayer = [self locatePlayerStructure];
     BOOL playerIsValid = [playerDataController playerIsValid];
@@ -395,25 +395,25 @@ static Controller* sharedController = nil;
         [_dynamicObjects removeAllObjects];
         [_corpses removeAllObjects];
         
-        //NSDate *date = [NSDate date];
+        NSDate *date = [NSDate date];
         [memory resetLoadCount];
         [self exploreStruct: [[playerDataController structureAddress] unsignedIntValue] inMemory: memory];
-        //PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
+        PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
         
         //PGLog(@"Memory scan took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
         //date = [NSDate date];
         
-        //if([_dynamicObjects count]) {
-        //    PGLog(@"Found %d dynamic objects.", [_dynamicObjects count]);
-        //}
+        if([_dynamicObjects count]) {
+            PGLog(@"Found %d dynamic objects.", [_dynamicObjects count]);
+        }
         
         [mobController addAddresses: _mobs];
         [itemController addAddresses: _items];
         [nodeController addAddresses: _gameObjects];
         [playersController addAddresses: _players];
         
-        //PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
-        //date = [NSDate date];
+        PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
+        date = [NSDate date];
 
         // clean-up; we don't need this crap sitting around
         [_items removeAllObjects];
@@ -423,8 +423,8 @@ static Controller* sharedController = nil;
         [_dynamicObjects removeAllObjects];
         [_corpses removeAllObjects];
         
-        //PGLog(@"Total scan took %.4f sec", [start timeIntervalSinceNow]*-1.0f);
-        //PGLog(@"-----------------");
+        PGLog(@"Total scan took %.4f sec", [start timeIntervalSinceNow]*-1.0f);
+        PGLog(@"-----------------");
         
         // run this every 10 seconds if the player is valid
         [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 3.0];
@@ -454,7 +454,7 @@ static Controller* sharedController = nil;
     
     NSDate *date = [NSDate date];
     NSNumber *listAddress = nil;
-    
+	
     // get the WoW PID
     pid_t wowPID = 0;
     ProcessSerialNumber wowPSN = [self getWoWProcessSerialNumber];
@@ -466,6 +466,7 @@ static Controller* sharedController = nil;
         mach_port_t MySlaveTask;
         kern_return_t KernelResult = task_for_pid(current_task(), wowPID, &MySlaveTask);
         if(KernelResult == KERN_SUCCESS) {
+			//PGLog(@"We have a task!");
             // Cool! we have a task...
             // Now we need to start grabbing blocks of memory from our slave task and copying it into our memory space for analysis
             vm_address_t SourceAddress = 0;
@@ -483,6 +484,7 @@ static Controller* sharedController = nil;
             
             while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
                 // If we get here then we have a block of memory and we know how big it is... let's copy writable blocks and see what we've got!
+				//PGLog(@"we have a block of memory!");
 
                 // ensure we have access to this block
                 if ((SourceInfo.protection & VM_PROT_WRITE) && (SourceInfo.protection & VM_PROT_READ)) {
@@ -495,9 +497,9 @@ static Controller* sharedController = nil;
                             // the last address we check must be far enough from the end of the buffer to check all the bytes of our sought value
                             
                             if((ReturnedBufferContentSize % MemSize) != 0) {
-                                // int oldSize = ReturnedBufferContentSize;
+                                int oldSize = ReturnedBufferContentSize;
                                 ReturnedBufferContentSize -= (ReturnedBufferContentSize % MemSize);
-                                // PGLog(@"Modifying region size from %d to %d", oldSize, ReturnedBufferContentSize);
+                                PGLog(@"Modifying region size from %d to %d", oldSize, ReturnedBufferContentSize);
                             }
                             //ReturnedBufferContentSize -= MemSize - 1;
                             
@@ -514,22 +516,24 @@ static Controller* sharedController = nil;
                                 //for (y=MemSize-1 ; isMatchingValue && (y>-1) ; y--) {
                                 //    isMatchingValue = (Byte*)value[y] == ReturnedBuffer[x + y];
                                 //}
-                                
+								
                                 if(*checkVal == structMarker) {
                                     UInt32 structAddress = SourceAddress + x;
-                                    // PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
+                                    PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
                                     
                                     value = 0;
                                     if([memory loadDataForObject: self atAddress: (structAddress + 0xC) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
-                                        // PGLog(@"Found object list head at 0x%X.", value);
+										PGLog(@"Found object list head at 0x%X.", value);
                                         
                                         // load the value at that address and make sure it is 0x18
                                         UInt32 value2 = 0;
                                         if([memory loadDataForObject: self atAddress: value Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == 0x18)) {
-                                            // PGLog(@"Object list validated.");
+                                            PGLog(@"Object list validated.");
                                             listAddress = [NSNumber numberWithUnsignedLong: value];
                                             break;
                                         }
+										
+										PGLog(@"Value is 0x%X", value2);
                                     }
                                     // break; this break is unnecessary?
                                 }
@@ -593,7 +597,7 @@ static Controller* sharedController = nil;
 }
 
 - (void)foundObjectListAddress: (NSNumber*)address {
-    // PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
+    PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
     MemoryAccess *memory = [self wowMemoryAccess];
     _foundPlayer = NO;
     if(memory && address && ([address unsignedIntValue] != 0)) {
