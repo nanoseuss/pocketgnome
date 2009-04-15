@@ -11,22 +11,32 @@
  
 #import "ObjectConstants.h"
 
-#define VALID_WOW_VERSION   @"3.0.9"
+#define VALID_WOW_VERSION   @"3.1.0"
 #define PLAYER_LEVEL_CAP    80
 
 // not valid for PPC!
 // 3.0.9 valid
-#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x14A6B28 : 0x0)        // 3.0.9
+#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x1374028 : 0x0)       // 3.1.0
+											 // 0x14A6B28 : 0x0)        // 3.0.9
                                              // 0x14A9B48 : 0x0)        // 3.0.8
                                              // 0x14A27E8 : 0x0)        // 3.0.3
                                              // 0x149E668 : 0x0)        // 3.0.2
                                              // 0xEB1C88 : 0xECAD68)    // 2.4.3
-#define SERVER_NAME_STATIC          ((IS_X86) ? 0x14A6F86 : 0x0)        // 3.0.9
+
+
+
+#define SERVER_NAME_STATIC          ((IS_X86) ? 0x1374706 : 0x0)       // 3.1.0
+											 // 0x14A6F86 : 0x0)        // 3.0.9
                                              // 0x14A9FA6 : 0x0)        // 3.0.8                                     
                                              // 0x14A2C46 : 0x0)        // 3.0.3
                                              // 0x149EAC6 : 0x0)        // 3.0.2
                                              // 0xEB1EA6 : 0xECAF7E)    // 2.4.3
-#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x14A6C80 : 0x0)        // 3.0.9
+
+
+
+
+#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x1374180 : 0x0)       // 3.1.0
+											 // 0x14A6C80 : 0x0)        // 3.0.9
                                              // 0x14A9CA0 : 0x0)        // 3.0.8
                                              // 0x14A2940 : 0x0)        // 3.0.3
                                              // 0x149E7C0 : 0x0)        // 3.0.2
@@ -35,13 +45,15 @@
                                              // 0xEB0D46 : 0xEC8F9E  // 2.4.2
                                              // 0xEB0C80 : 0xEC8EE0  // 2.4.2
 
-// 3.0.9 valid
-#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xB75420 : 0x0) // 3.0.9
+// 3.0.9 valid	
+#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xAA3400 : 0x0) // 3.1.0
+											 // 0xB75420 : 0x0) // 3.0.9
                                              // 0xB78420 : 0x0) // 3.0.8
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
                        
-// 3.0.9 valid
-#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xB9BBE8 : 0x0) // 3.0.9
+// 3.0.9 valid	   0xAA6BA4
+#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0x0 : 0x0) // 3.1.0
+											 // 0xB9BBE8 : 0x0) // 3.0.9
                                              // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
 

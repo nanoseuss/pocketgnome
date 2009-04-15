@@ -21,7 +21,9 @@
 #import "Mail.h"    // http://developer.apple.com/samplecode/SBSendEmail/listing4.html
 #import "iChat.h"
 
-#define ChatLog_Start 0x14A75B0
+//#define ChatLog_Start 0x14A75B0		// 3.0.9
+
+#define ChatLog_Start 0x01374F9C
 
 #define ChatLog_CounterOffset       0x8
 #define ChatLog_TimestampOffset     0xC
@@ -145,6 +147,8 @@
                     foundAt = i;
                 }
                 NSString *chatEntry = [NSString stringWithUTF8String: buffer + ChatLog_DescriptionOffset ];
+				//PGLog(@"Chat found: %@", chatEntry );
+				
                 if([chatEntry length]) {
                     // "Type: [17], Channel: [General - Whatev], Player Name: [PlayerName], Text: [Text]"
                     NSMutableDictionary *chatComponents = [NSMutableDictionary dictionary];
@@ -158,7 +162,7 @@
                             [chatComponents setObject: value forKey: key];
                         } else {
                             // bad data
-                            PGLog(@"Throwing out bad data: \"%@\"", component);
+                            //PGLog(@"Throwing out bad data: \"%@\"", component);
                         }
                     }
                     if([chatComponents count]) {
