@@ -52,35 +52,39 @@
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
                        
 // 3.0.9 valid	   0xAA6BA4  0x13969698
+// this is NOT 3.1.0 valid :(  /cry
 #define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0x21185000 : 0x0) // 3.1.0
 											 // 0xB9BBE8 : 0x0) // 3.0.9
                                              // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
 
-// 3.0.9 valid
-#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB76FD0 : 0x0) // 3.0.9
+// 3.1.0 valid
+#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xAA508C : 0x0) // 3.1.0 
+											 // 0xB76FD0 : 0x0) // 3.0.9
                                              // 0xB79FD0 : 0x0) // 3.0.8
                                              // 0xB720B0 : 0x0) // 3.0.3
                                              // 0xB6E06C : 0x0) // 3.0.2
                                              // 0x9AF048 : 0x9D7C6D) // 2.4.3
                                              // 0x9B1008 : 0x9D8C55) // 2.4.2
                                              // 0x9A8008 : 0x9CDC5D) // 2.4.1
-#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xB76FD0 : 0x0) // same as above on Intel
-#define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86
-#define COMBO_POINT_TARGET_UID      0x8   // 64 bit
+#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xAA508C : 0x0) // same as above on Intel		(Tanaris4:not verified for 3.1.0)
+#define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86					(Tanaris4:not verified for 3.1.0)
+#define COMBO_POINT_TARGET_UID      0x8   // 64 bit												(Tanaris4:not verified for 3.1.0)
 // in 3.0.x, the current time appears globally +0x10 after COMBO_POINTS_STATIC
 
 // this is not used, and i'm currently not entirely sure what it means
 // the name is just a guess, but it appears to apply.
-#define PLAYER_LOGGED_IN    ((IS_X86) ? 0xB76FFC : 0x0) // 3.0.9
+#define PLAYER_LOGGED_IN    ((IS_X86) ? 0xAA50B4 : 0x0) // 3.1.0				(not 100% sure - but consistent on game close)
+									 // 0xB76FFC : 0x0) // 3.0.9
                                      // 0xB79FFC : 0x0) // 3.0.8 Also: 0xB723E2
                                      // 0xB720DC : 0x0) // 3.0.3
 
 // there's another interesting struct between combo points and targets
 // but i don't know what it does yet
 
-// 3.0.9 valid
-#define TARGET_TABLE_STATIC ((IS_X86) ? 0xB77090 : 0x0) // 3.0.9
+// 3.1.0 valid
+#define TARGET_TABLE_STATIC ((IS_X86) ? 0xAA516F : 0x0) // 3.1.0 
+									 // 0xB77090 : 0x0) // 3.0.9
                                      // 0xB7A090 : 0x0) // 3.0.8
                                      // 0xB72170 : 0x0) // 3.0.3
                                      // 0xB6E128 3.0.2
@@ -152,19 +156,20 @@
                                                  // 0x11F0BAC : 0x0)        // 3.0.2
                                                  // 0xCAA0AC : 0xCC39EC)    // 2.4.2
 
-// 3.0.9 valid
+// 3.1.0 valid
 // as of 3.0.2, this value is 0 if a spell successfully cast
 // if the spell did not cast, it contains the ID of the most recently failed spell
 // only works for spells that play an error sound. not sure what makes this distinction.
-
 //
-#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x122BB98 : 0x0) // 3.0.9
+#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x11472B0 : 0x0) // 3.1.0
+													 // 0x122BB98 : 0x0) // 3.0.9
                                                      // 0x122EBB8 : 0x0) // 3.0.8
                                                      // 0x1227C98 : 0x0) // 3.0.3
                                                      // 0x1223B38 : 0x0) // 3.0.2
 
-// 3.0.9 valid 
-#define REFRESH_DELAY           ((IS_X86) ? 0x123F8C0 : 0x0) // 3.0.9
+// 3.1.0 valid 
+#define REFRESH_DELAY           ((IS_X86) ? 0x1142F4C : 0x0) // 3.1.0
+										 // 0x123F8C0 : 0x0) // 3.0.9
                                          // 0x12428E0 : 0x0) // 3.0.8
                                          // 0x123B5E0 : 0x0) // 3.0.3
                                          // 0x1237480 : 0x0) // 3.0.2
@@ -172,9 +177,10 @@
     #define REFRESH_MAX_FPS     ((IS_X86) ? 0x08 : 0x0)  // /console maxfps, /console maxfpsbk
 // }
 
-// 3.0.9 valid
+// 3.1.0 valid
 /* 1 if it's open, 0 if it's not */
-#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xBF8700 : 0x0) // 3.0.9
+#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xB1DF60 : 0x0) // 3.1.0
+										 // 0xBF8700 : 0x0) // 3.0.9
                                          // 0xBFB720 : 0x0) // 3.0.8
                                          // 0xBF4500 : 0x0) // 3.0.3
                                          // 0xBF03A0 : 0x0) // 3.0.2
@@ -185,6 +191,9 @@
                                          // 0x9D79E0 2.3.3 PPC
 
 
+// **** RANDOM **** //
+
+// Found by Danevin: 0xAA5193 (Current Target) +0xC (Highlight)
 
 
 // **************************** NOT USED/DATED ******************************************* //
