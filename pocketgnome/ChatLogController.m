@@ -21,9 +21,7 @@
 #import "Mail.h"    // http://developer.apple.com/samplecode/SBSendEmail/listing4.html
 #import "iChat.h"
 
-//#define ChatLog_Start 0x14A75B0		// 3.0.9
-
-#define ChatLog_Start 0x01374F9C
+#define ChatLog_Start 0x1374F50
 
 #define ChatLog_CounterOffset       0x8
 #define ChatLog_TimestampOffset     0xC
