@@ -12,28 +12,28 @@
 #import "SpellController.h"
 
 /*
-/// Non Player Character flags
-enum NPCFlags
-{
-    UNIT_NPC_FLAG_NONE              = 0x00000000,
-    UNIT_NPC_FLAG_GOSSIP            = 0x00000001,
-    UNIT_NPC_FLAG_QUESTGIVER        = 0x00000002,
-    UNIT_NPC_FLAG_VENDOR            = 0x00000004,
-    UNIT_NPC_FLAG_TAXIVENDOR        = 0x00000008,
-    UNIT_NPC_FLAG_TRAINER           = 0x00000010,
-    UNIT_NPC_FLAG_SPIRITHEALER      = 0x00000020,
-    UNIT_NPC_FLAG_SPIRITGUIDE       = 0x00000040,           // Spirit Guide
-    UNIT_NPC_FLAG_INNKEEPER         = 0x00000080,
-    UNIT_NPC_FLAG_BANKER            = 0x00000100,
-    UNIT_NPC_FLAG_PETITIONER        = 0x00000200,           // 0x600 = guild petitions, 0x200 = arena team petitions
-    UNIT_NPC_FLAG_TABARDDESIGNER    = 0x00000400,
-    UNIT_NPC_FLAG_BATTLEFIELDPERSON = 0x00000800,
-    UNIT_NPC_FLAG_AUCTIONEER        = 0x00001000,
-    UNIT_NPC_FLAG_STABLE            = 0x00002000,
-    UNIT_NPC_FLAG_ARMORER           = 0x00004000,
-    UNIT_NPC_FLAG_GUARD             = 0x00010000,           // custom flag
-};
-*/
+ /// Non Player Character flags
+ enum NPCFlags
+ {
+ UNIT_NPC_FLAG_NONE              = 0x00000000,
+ UNIT_NPC_FLAG_GOSSIP            = 0x00000001,
+ UNIT_NPC_FLAG_QUESTGIVER        = 0x00000002,
+ UNIT_NPC_FLAG_VENDOR            = 0x00000004,
+ UNIT_NPC_FLAG_TAXIVENDOR        = 0x00000008,
+ UNIT_NPC_FLAG_TRAINER           = 0x00000010,
+ UNIT_NPC_FLAG_SPIRITHEALER      = 0x00000020,
+ UNIT_NPC_FLAG_SPIRITGUIDE       = 0x00000040,           // Spirit Guide
+ UNIT_NPC_FLAG_INNKEEPER         = 0x00000080,
+ UNIT_NPC_FLAG_BANKER            = 0x00000100,
+ UNIT_NPC_FLAG_PETITIONER        = 0x00000200,           // 0x600 = guild petitions, 0x200 = arena team petitions
+ UNIT_NPC_FLAG_TABARDDESIGNER    = 0x00000400,
+ UNIT_NPC_FLAG_BATTLEFIELDPERSON = 0x00000800,
+ UNIT_NPC_FLAG_AUCTIONEER        = 0x00001000,
+ UNIT_NPC_FLAG_STABLE            = 0x00002000,
+ UNIT_NPC_FLAG_ARMORER           = 0x00004000,
+ UNIT_NPC_FLAG_GUARD             = 0x00010000,           // custom flag
+ };
+ */
 
 @interface Unit (Internal)
 - (UInt32)infoFlags;
@@ -64,12 +64,12 @@ enum NPCFlags
 
 - (GUID)petGUID {
     UInt64 value = 0;
-    
+	
     // check for summon
     if( (value = [self summon]) ) {
         return value;
     }
-    
+	
     // check for charm
     if( (value = [self charm]) ) {
         return value;
@@ -88,10 +88,10 @@ enum NPCFlags
 - (BOOL)isPet {
     if((GUID_HIPART([self GUID]) == HIGHGUID_PET) || [self isTotem])
         return YES;
-        
+	
     if( [self createdBy] || [self summonedBy] || [self charmedBy])
         return YES;
-    
+	
     return NO;
 }
 
@@ -108,10 +108,10 @@ enum NPCFlags
         [_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_Spell_Casting) Buffer: (Byte *)&cast BufLength: sizeof(cast)];
         [_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_Spell_Channeling) Buffer: (Byte *)&channel BufLength: sizeof(channel)];
     }
-    
+	
     if( cast > 0 || channel > 0)
         return YES;
-    
+	
     return NO;
 }
 
@@ -232,13 +232,13 @@ enum NPCFlags
 - (UInt32)currentStance {
     // this field seems to have been removed in 3.0.8
     return 0;
-
+	
     /*
-    UInt32 value = 0;
-    if([_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_CurrentStance) Buffer: (Byte *)&value BufLength: sizeof(value)])
-        if(value && (value != 0xFFFFFFFF))
-            return value;
-    return 0;*/
+	 UInt32 value = 0;
+	 if([_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_CurrentStance) Buffer: (Byte *)&value BufLength: sizeof(value)])
+	 if(value && (value != 0xFFFFFFFF))
+	 return value;
+	 return 0;*/
 }
 
 #pragma mark -
@@ -246,10 +246,10 @@ enum NPCFlags
 // 1 read
 - (UInt32)maxPowerOfType: (UnitPower)powerType {
     if(powerType < 0 || powerType > UnitPower_Max) return 0;
-    
+	
     UInt32 value;
     if([_memory loadDataForObject: self atAddress: (([self infoAddress] + UnitField_MaxPower1) + (sizeof(value) * powerType)) Buffer: (Byte *)&value BufLength: sizeof(value)])
-    { 
+    {
         if((powerType == UnitPower_Rage) || (powerType == UnitPower_RunicPower))
             return value/10;
         else
@@ -274,7 +274,7 @@ enum NPCFlags
 
 // 1 in maxP, 1 in currP
 - (UInt32)percentPowerOfType: (UnitPower)powerType {
-
+	
     UInt32 maxPower = [self maxPowerOfType: powerType];
     if(maxPower == 0) return 0;
     return (UInt32)((((1.0)*[self currentPowerOfType: powerType])/maxPower) * 100);
@@ -318,7 +318,7 @@ enum NPCFlags
 
 + (NSString*)stringForClass: (UnitClass)unitClass {
     NSString *stringClass = nil;
-    
+	
     switch(unitClass) {
         case UnitClass_Warrior:
             stringClass = @"Warrior";
@@ -359,7 +359,7 @@ enum NPCFlags
 
 + (NSString*)stringForRace: (UnitRace)unitRace {
     NSString *string = nil;
-    
+	
     switch(unitRace) {
         case UnitRace_Human:
             string = @"Human";
@@ -415,7 +415,7 @@ enum NPCFlags
 
 + (NSString*)stringForGender: (UnitGender) underGender {
     NSString *string = nil;
-    
+	
     switch(underGender) {
         case UnitGender_Male:
             string = @"Male";
@@ -432,7 +432,7 @@ enum NPCFlags
 
 - (NSImage*)iconForClass: (UnitClass)unitClass {
     return [NSImage imageNamed: [[NSString stringWithFormat: @"%@_Small", [Unit stringForClass: unitClass]] stringByReplacingOccurrencesOfString: @" " withString: @""]];
-    
+	
     NSImage *icon = nil;
     switch(unitClass) {
         case UnitClass_Warrior:
@@ -473,10 +473,10 @@ enum NPCFlags
 }
 
 - (NSImage*)iconForRace: (UnitRace)unitRace gender: (UnitGender)unitGender {
-    return [NSImage imageNamed: 
-            [[NSString stringWithFormat: @"%@-%@_Small", 
-              [Unit stringForRace: unitRace], 
-              [Unit stringForGender: unitGender]] 
+    return [NSImage imageNamed:
+            [[NSString stringWithFormat: @"%@-%@_Small",
+              [Unit stringForRace: unitRace],
+              [Unit stringForGender: unitGender]]
              stringByReplacingOccurrencesOfString: @" " withString: @""]];
 }
 
@@ -517,7 +517,7 @@ enum NPCFlags
 }
 
 - (BOOL)isEvading {
-    if( ([self stateFlags] & (1 << UnitStatus_Evading)) == (1 << UnitStatus_Evading)) 
+    if( ([self stateFlags] & (1 << UnitStatus_Evading)) == (1 << UnitStatus_Evading))
         return YES;
     return NO;
 }
@@ -613,7 +613,7 @@ enum NPCFlags
     // lie down = 0x7
     // kneel = 0x8
     // no shadow = 9
-
+	
     UInt32 value = 0;
     if([self isValid] && [_memory loadDataForObject: self atAddress: ([self infoAddress] + UnitField_Bytes_1) Buffer: (Byte *)&value BufLength: sizeof(value)] && (value != 0xDDDDDDDD)) {
         return CFSwapInt32HostToLittle(value);  // not tested if CFSwapInt32HostToLittle is necessary, since unitBytes1 is not yet used anywhere
@@ -634,72 +634,72 @@ enum NPCFlags
     return 0;
 }
 /*
-// high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
-enum ShapeshiftForm
-{
-    FORM_NONE               = 0x00,
-    FORM_CAT                = 0x01,
-    FORM_TREE               = 0x02,
-    FORM_TRAVEL             = 0x03,
-    FORM_AQUA               = 0x04,
-    FORM_BEAR               = 0x05,
-    FORM_AMBIENT            = 0x06,
-    FORM_GHOUL              = 0x07,
-    FORM_DIREBEAR           = 0x08,
-    FORM_CREATUREBEAR       = 0x0E,
-    FORM_CREATURECAT        = 0x0F,
-    FORM_GHOSTWOLF          = 0x10,
-    FORM_BATTLESTANCE       = 0x11,
-    FORM_DEFENSIVESTANCE    = 0x12,
-    FORM_BERSERKERSTANCE    = 0x13,
-    FORM_TEST               = 0x14,
-    FORM_ZOMBIE             = 0x15,
-    FORM_FLIGHT_EPIC        = 0x1B,
-    FORM_SHADOW             = 0x1C,
-    FORM_FLIGHT             = 0x1D,
-    FORM_STEALTH            = 0x1E,
-    FORM_MOONKIN            = 0x1F,
-    FORM_SPIRITOFREDEMPTION = 0x20
-};
-
-
-// byte (2 from 0..3) of UNIT_FIELD_BYTES_2
-enum UnitRename
-{
-    UNIT_RENAME_NOT_ALLOWED = 0x02,
-    UNIT_RENAME_ALLOWED     = 0x03
-};
-
-// byte (1 from 0..3) of UNIT_FIELD_BYTES_2
-enum UnitBytes2_Flags
-{
-    UNIT_BYTE2_FLAG_UNK0  = 0x01,
-    UNIT_BYTE2_FLAG_UNK1  = 0x02,
-    UNIT_BYTE2_FLAG_UNK2  = 0x04,
-    UNIT_BYTE2_FLAG_UNK3  = 0x08,
-    UNIT_BYTE2_FLAG_AURAS = 0x10,                           // show possitive auras as positive, and allow its dispel
-    UNIT_BYTE2_FLAG_UNK5  = 0x20,
-    UNIT_BYTE2_FLAG_UNK6  = 0x40,
-    UNIT_BYTE2_FLAG_UNK7  = 0x80
-};
-
-// low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2
-enum SheathState
-{
-    SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
-    SHEATH_STATE_MELEE    = 1,                              // prepared melee weapon
-    SHEATH_STATE_RANGED   = 2                               // prepared ranged weapon
-};
-*/
+ // high byte (3 from 0..3) of UNIT_FIELD_BYTES_2
+ enum ShapeshiftForm
+ {
+ FORM_NONE               = 0x00,
+ FORM_CAT                = 0x01,
+ FORM_TREE               = 0x02,
+ FORM_TRAVEL             = 0x03,
+ FORM_AQUA               = 0x04,
+ FORM_BEAR               = 0x05,
+ FORM_AMBIENT            = 0x06,
+ FORM_GHOUL              = 0x07,
+ FORM_DIREBEAR           = 0x08,
+ FORM_CREATUREBEAR       = 0x0E,
+ FORM_CREATURECAT        = 0x0F,
+ FORM_GHOSTWOLF          = 0x10,
+ FORM_BATTLESTANCE       = 0x11,
+ FORM_DEFENSIVESTANCE    = 0x12,
+ FORM_BERSERKERSTANCE    = 0x13,
+ FORM_TEST               = 0x14,
+ FORM_ZOMBIE             = 0x15,
+ FORM_FLIGHT_EPIC        = 0x1B,
+ FORM_SHADOW             = 0x1C,
+ FORM_FLIGHT             = 0x1D,
+ FORM_STEALTH            = 0x1E,
+ FORM_MOONKIN            = 0x1F,
+ FORM_SPIRITOFREDEMPTION = 0x20
+ };
+ 
+ 
+ // byte (2 from 0..3) of UNIT_FIELD_BYTES_2
+ enum UnitRename
+ {
+ UNIT_RENAME_NOT_ALLOWED = 0x02,
+ UNIT_RENAME_ALLOWED     = 0x03
+ };
+ 
+ // byte (1 from 0..3) of UNIT_FIELD_BYTES_2
+ enum UnitBytes2_Flags
+ {
+ UNIT_BYTE2_FLAG_UNK0  = 0x01,
+ UNIT_BYTE2_FLAG_UNK1  = 0x02,
+ UNIT_BYTE2_FLAG_UNK2  = 0x04,
+ UNIT_BYTE2_FLAG_UNK3  = 0x08,
+ UNIT_BYTE2_FLAG_AURAS = 0x10,                           // show possitive auras as positive, and allow its dispel
+ UNIT_BYTE2_FLAG_UNK5  = 0x20,
+ UNIT_BYTE2_FLAG_UNK6  = 0x40,
+ UNIT_BYTE2_FLAG_UNK7  = 0x80
+ };
+ 
+ // low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2
+ enum SheathState
+ {
+ SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
+ SHEATH_STATE_MELEE    = 1,                              // prepared melee weapon
+ SHEATH_STATE_RANGED   = 2                               // prepared ranged weapon
+ };
+ */
 
 #pragma mark -
 
 - (NSString*)descriptionForOffset: (UInt32)offset {
     NSString *desc = nil;
-    
+	
     if(offset < ([self infoAddress] - [self baseAddress])) {
         switch(offset) {
-        
+				
             case BaseField_RunSpeed_Current:
                 desc = @"Current Speed (float)";
                 break;
@@ -709,7 +709,7 @@ enum SheathState
             case BaseField_AirSpeed_Max:
                 desc = @"Max Air Speed (float)";
                 break;
-                
+				
             case BaseField_XLocation:
                 desc = @"X Location (float)";
                 break;
@@ -719,18 +719,18 @@ enum SheathState
             case BaseField_ZLocation:
                 desc = @"Z Location (float)";
                 break;
-                
+				
             case BaseField_Facing_Horizontal:
                 desc = @"Direction Facing - Horizontal (float, [0, 2pi])";
                 break;
             case BaseField_Facing_Vertical:
                 desc = @"Direction Facing - Vertical (float, [-pi/2, pi/2])";
                 break;
-                
+				
             case BaseField_MovementFlags:
                 desc = @"Movement Flags";
                 break;
-                
+				
             case BaseField_Spell_ToCast:
                 desc = @"Spell ID to cast";
                 break;
@@ -743,7 +743,7 @@ enum SheathState
             case BaseField_Spell_TimeEnd:
                 desc = @"Time of cast end";
                 break;
-                
+				
             case BaseField_Spell_Channeling:
                 desc = @"Spell ID channeling";
                 break;
@@ -753,7 +753,14 @@ enum SheathState
             case BaseField_Spell_ChannelTimeEnd:
                 desc = @"Time of channel end";
                 break;
-                
+				
+            case BaseField_Auras_Start:
+                desc = @"Start of Auras";
+                break;
+            case BaseField_Auras_ValidCount:
+                desc = @"Auras Valid Count";
+                break;
+				
             case BaseField_Player_CurrentTime:
                 if([self isPlayer]) {
                     desc = @"Current Time";
@@ -762,7 +769,7 @@ enum SheathState
         }
     } else {
         int revOffset = offset - ([self infoAddress] - [self baseAddress]);
-
+		
         switch(revOffset) {
             case UnitField_Charm:
                 desc = @"Charm (GUID)";
@@ -788,7 +795,7 @@ enum SheathState
             case UnitField_Channel_Object:
                 desc = @"Channel Target (GUID)";
                 break;
-
+				
             case UnitField_Health:
                 desc = @"Health, Current";
                 break;
@@ -810,7 +817,7 @@ enum SheathState
             case UnitField_Power7:
                 desc = @"Runic Power, Current";
                 break;
-
+				
             case UnitField_MaxHealth:
                 desc = @"Health, Max";
                 break;
@@ -832,7 +839,7 @@ enum SheathState
             case UnitField_MaxPower7:
                 desc = @"Runic Power, Max";
                 break;
-
+				
             case UnitField_Level:
                 desc = @"Level";
                 break;
@@ -845,7 +852,7 @@ enum SheathState
             case UnitField_StatusFlags:
                 desc = @"Status Flags";
                 break;
-
+				
             case UnitField_MainhandSpeed:
                 desc = @"Mainhand Speed";
                 break;
@@ -855,7 +862,7 @@ enum SheathState
             case UnitField_RangedSpeed:
                 desc = @"Ranged Speed";
                 break;
-
+				
             case UnitField_BoundingRadius:
                 desc = @"Bounding Radius";
                 break;
@@ -871,18 +878,18 @@ enum SheathState
             case UnitField_MountDisplayID:
                 desc = @"Mount Display ID";
                 break;
-
+				
             case UnitField_Bytes_1:
                 desc = @"Unit Bytes 1";
                 break;
-
+				
             case UnitField_PetExperience:
                 desc = @"Pet Experience";
                 break;
             case UnitField_PetNextLevelExp:
                 desc = @"Pet Next Level Experience";
                 break;
-
+				
             case UnitField_DynamicFlags:
                 desc = @"Dynamic Flags";
                 break;
@@ -895,59 +902,59 @@ enum SheathState
             case UnitField_NPCFlags:
                 desc = @"NPC Flags";
                 break;
-
+				
             case UnitField_Bytes_2:
                 desc = @"Unit Bytes 2";
                 break;
         }
-        
+		
         /*
-        int buffOffset, buffSlots, debuffOffset, debuffSlots;
-        if([self isPlayer]) {
-            buffOffset      = PLAYER_BUFFS_OFFSET;
-            buffSlots       = PLAYER_BUFF_SLOTS;
-            debuffOffset    = PLAYER_DEBUFFS_OFFSET;
-            debuffSlots     = PLAYER_DEBUFF_SLOTS;
-        } else {
-            buffOffset      = MOB_BUFFS_OFFSET;
-            buffSlots       = MOB_BUFF_SLOTS;
-            debuffOffset    = MOB_DEBUFFS_OFFSET;
-            debuffSlots     = MOB_DEBUFF_SLOTS;
-        }
-
-        // buffs
-        if( (revOffset >= buffOffset) && (revOffset < debuffOffset) ) {
-            UInt32 buff = 0;
-            if([_memory loadDataForObject: self atAddress: ([self infoAddress] + revOffset) Buffer: (Byte*)&buff BufLength: sizeof(buff)] && buff) {
-                NSString *name = nil;
-                if( (name = [[[SpellController sharedSpells] spellForID: [NSNumber numberWithInt: buff]] name])) {
-                    desc = [NSString stringWithFormat: @"[Buff] %@", name];
-                } else {
-                    desc = [NSString stringWithFormat: @"[Buff] %d", buff];
-                }
-            } else if(revOffset == buffOffset) {
-                desc = [NSString stringWithFormat: @"Buffs Start (%d total)", buffSlots];
-            }
-        }
-        
-        // debuffs
-        if(revOffset >= debuffOffset && revOffset < (debuffOffset + debuffSlots * 4)) {
-            UInt32 buff = 0;
-            if([_memory loadDataForObject: self atAddress: ([self infoAddress] + revOffset) Buffer: (Byte*)&buff BufLength: sizeof(buff)] && buff) {
-                NSString *name = nil;
-                if( (name = [[[SpellController sharedSpells] spellForID: [NSNumber numberWithInt: buff]] name])) {
-                    desc = [NSString stringWithFormat: @"[Debuff] %@", name];
-                } else {
-                    desc = [NSString stringWithFormat: @"[Debuff] %d", buff];
-                }
-            } else if(revOffset == debuffOffset) {
-                desc = [NSString stringWithFormat: @"Debuffs Start (%d total)", debuffSlots];
-            }
-        }*/
+		 int buffOffset, buffSlots, debuffOffset, debuffSlots;
+		 if([self isPlayer]) {
+		 buffOffset      = PLAYER_BUFFS_OFFSET;
+		 buffSlots       = PLAYER_BUFF_SLOTS;
+		 debuffOffset    = PLAYER_DEBUFFS_OFFSET;
+		 debuffSlots     = PLAYER_DEBUFF_SLOTS;
+		 } else {
+		 buffOffset      = MOB_BUFFS_OFFSET;
+		 buffSlots       = MOB_BUFF_SLOTS;
+		 debuffOffset    = MOB_DEBUFFS_OFFSET;
+		 debuffSlots     = MOB_DEBUFF_SLOTS;
+		 }
+		 
+		 // buffs
+		 if( (revOffset >= buffOffset) && (revOffset < debuffOffset) ) {
+		 UInt32 buff = 0;
+		 if([_memory loadDataForObject: self atAddress: ([self infoAddress] + revOffset) Buffer: (Byte*)&buff BufLength: sizeof(buff)] && buff) {
+		 NSString *name = nil;
+		 if( (name = [[[SpellController sharedSpells] spellForID: [NSNumber numberWithInt: buff]] name])) {
+		 desc = [NSString stringWithFormat: @"[Buff] %@", name];
+		 } else {
+		 desc = [NSString stringWithFormat: @"[Buff] %d", buff];
+		 }
+		 } else if(revOffset == buffOffset) {
+		 desc = [NSString stringWithFormat: @"Buffs Start (%d total)", buffSlots];
+		 }
+		 }
+		 
+		 // debuffs
+		 if(revOffset >= debuffOffset && revOffset < (debuffOffset + debuffSlots * 4)) {
+		 UInt32 buff = 0;
+		 if([_memory loadDataForObject: self atAddress: ([self infoAddress] + revOffset) Buffer: (Byte*)&buff BufLength: sizeof(buff)] && buff) {
+		 NSString *name = nil;
+		 if( (name = [[[SpellController sharedSpells] spellForID: [NSNumber numberWithInt: buff]] name])) {
+		 desc = [NSString stringWithFormat: @"[Debuff] %@", name];
+		 } else {
+		 desc = [NSString stringWithFormat: @"[Debuff] %d", buff];
+		 }
+		 } else if(revOffset == debuffOffset) {
+		 desc = [NSString stringWithFormat: @"Debuffs Start (%d total)", debuffSlots];
+		 }
+		 }*/
     }
-    
+	
     if(desc) return desc;
-    
+	
     return [super descriptionForOffset: offset];
 }
 
