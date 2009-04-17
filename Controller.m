@@ -291,7 +291,7 @@ static Controller* sharedController = nil;
     uint32_t prevStructPtrAddr = structAddress + 0x30;
     uint32_t nextStructPtrAddr = structAddress + 0x34;
     
-    PGLog(@"Loading 0x%X...", structAddress);
+    //PGLog(@"Loading 0x%X...", structAddress);
     if([memory loadDataForObject: self atAddress: structAddress Buffer: (Byte*)&value BufLength: sizeof(value)] && (value > 0) && (value < 0xFFFFFF))
     {
         int objectType = TYPEID_UNKNOWN;
@@ -398,7 +398,7 @@ static Controller* sharedController = nil;
         NSDate *date = [NSDate date];
         [memory resetLoadCount];
         [self exploreStruct: [[playerDataController structureAddress] unsignedIntValue] inMemory: memory];
-        PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
+        //PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
         
         //PGLog(@"Memory scan took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
         //date = [NSDate date];
@@ -412,7 +412,7 @@ static Controller* sharedController = nil;
         [nodeController addAddresses: _gameObjects];
         [playersController addAddresses: _players];
         
-        PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
+        //PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
         date = [NSDate date];
 
         // clean-up; we don't need this crap sitting around
@@ -423,8 +423,8 @@ static Controller* sharedController = nil;
         [_dynamicObjects removeAllObjects];
         [_corpses removeAllObjects];
         
-        PGLog(@"Total scan took %.4f sec", [start timeIntervalSinceNow]*-1.0f);
-        PGLog(@"-----------------");
+        //PGLog(@"Total scan took %.4f sec", [start timeIntervalSinceNow]*-1.0f);
+        //PGLog(@"-----------------");
         
         // run this every 10 seconds if the player is valid
         [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 3.0];
@@ -519,21 +519,21 @@ static Controller* sharedController = nil;
 								
                                 if(*checkVal == structMarker) {
                                     UInt32 structAddress = SourceAddress + x;
-                                    PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
+                                    //PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
                                     
                                     value = 0;
-                                    if([memory loadDataForObject: self atAddress: (structAddress + 0xC) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
-										PGLog(@"Found object list head at 0x%X.", value);
+                                    if([memory loadDataForObject: self atAddress: (structAddress - 0xC) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
+										//PGLog(@"Found object list head at 0x%X.", value);
                                         
                                         // load the value at that address and make sure it is 0x18
                                         UInt32 value2 = 0;
                                         if([memory loadDataForObject: self atAddress: value Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == 0x18)) {
-                                            PGLog(@"Object list validated.");
+                                            //PGLog(@"Object list validated.");
                                             listAddress = [NSNumber numberWithUnsignedLong: value];
                                             break;
                                         }
 										
-										PGLog(@"Value is 0x%X", value2);
+										//PGLog(@"Value is 0x%X", value2);
                                     }
                                     // break; this break is unnecessary?
                                 }
@@ -608,7 +608,7 @@ static Controller* sharedController = nil;
             
             int count = 0;
             UInt32 startAddr = [address unsignedIntValue], value = 0, savedAddr = 0;
-            for(; [memory loadDataForObject: self atAddress: startAddr Buffer: (Byte*)&value BufLength: sizeof(value)] && (value == 0x18); startAddr+=0xC) {
+            for(; [memory loadDataForObject: self atAddress: startAddr Buffer: (Byte*)&value BufLength: sizeof(value)] && (value == 0x18); startAddr-=0xC) {
                 
                 // first, load both possible pointers from the bucket
                 UInt32 objAddr = 0, objAddr2 = 0;

@@ -53,7 +53,7 @@
                        
 // 3.0.9 valid	   0xAA6BA4  0x13969698
 // this is NOT 3.1.0 valid :(  /cry
-#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0x21185000 : 0x0) // 3.1.0
+#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xAC6F08 : 0x0) // 3.1.0
 											 // 0xB9BBE8 : 0x0) // 3.0.9
                                              // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)

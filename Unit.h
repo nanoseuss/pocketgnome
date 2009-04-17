@@ -10,13 +10,13 @@
 #import "WoWObject.h"
 
 enum eUnitBaseFields {
-    BaseField_XLocation                 = 0x7C4,
-    BaseField_YLocation                 = 0x7C8,
-    BaseField_ZLocation                 = 0x7CC,
-    BaseField_Facing_Horizontal         = 0x7D0,    // [0, 2pi]
-    BaseField_Facing_Vertical           = 0x7D4,    // [-pi/2, pi/2]
+    BaseField_XLocation                 = 0x790,  // 3.0.9: 0x7C4
+    BaseField_YLocation                 = 0x794,  // 3.0.9: 0x7C8
+    BaseField_ZLocation                 = 0x798,  // 3.0.9: 0x7CC
+    BaseField_Facing_Horizontal         = 0x79C,  // 3.0.9: 0x7D0  // [0, 2pi]
+    BaseField_Facing_Vertical           = 0x7A0,  // 3.0.9: 0x7D0  // [-pi/2, pi/2]
     
-    BaseField_MovementFlags             = 0x7F0,
+    BaseField_MovementFlags             = 0x7C0,  // 3.0.9: 0x7F0
     // 0x80000001 - move forward
     // 0x80000002 - move backward
     // 0x80000004 - strafe left
@@ -35,36 +35,37 @@ enum eUnitBaseFields {
     // 0x83800400 - air mounted, going down (sit key)
     // among others...
     
-    BaseField_RunSpeed_Current          = 0x838,
-    BaseField_RunSpeed_Walk             = 0x83C,
-    BaseField_RunSpeed_Max              = 0x840,
-    BaseField_RunSpeed_Back             = 0x844,
-    BaseField_AirSpeed_Max              = 0x850,
+    BaseField_RunSpeed_Current          = 0x808,	// 3.0.9: 0x838
+    BaseField_RunSpeed_Walk             = 0x80C,	// (you sure this is runspeed walk? - i noticed it was 2.5, yet current speed when walking was 7.0) 3.0.9: 0x83C
+    BaseField_RunSpeed_Max              = 0x810,	// 3.0.9: 0x840
+    BaseField_RunSpeed_Back             = 0x814,	// 3.0.9: 0x844
+    BaseField_AirSpeed_Max              = 0x820,	// 3.0.9: 0x850
     
-    BaseField_Spell_ToCast              = 0xA28,
-    BaseField_Spell_Casting             = 0xA2C,
-    BaseField_Spell_TargetGUID_Low      = 0xA30,
-    BaseField_Spell_TargetGUID_High     = 0xA34,
-    BaseField_Spell_TimeStart           = 0xA38,
-    BaseField_Spell_TimeEnd             = 0xA3C,
+
+    BaseField_Spell_ToCast              = 0xA48,	// 3.0.9: 0xA28
+    BaseField_Spell_Casting             = 0xA4C,	// 3.0.9: 0xA2C
+    BaseField_Spell_TargetGUID_Low      = 0xA50,	// 3.0.9: 0xA30  (not sure how to verify if 3.1.0 offset is correct)
+    BaseField_Spell_TargetGUID_High     = 0xA54,	// 3.0.9: 0xA34  (not sure how to verify if 3.1.0 offset is correct)
+    BaseField_Spell_TimeStart           = 0xA58,	// 3.0.9: 0xA38
+    BaseField_Spell_TimeEnd             = 0xA5C,	// 3.0.9: 0xA3C
     
-    BaseField_Spell_Channeling          = 0xA40,
-    BaseField_Spell_ChannelTimeStart    = 0xA44,
-    BaseField_Spell_ChannelTimeEnd      = 0xA48,
+    BaseField_Spell_Channeling          = 0xA60,	// 3.0.9: 0xA40
+    BaseField_Spell_ChannelTimeStart    = 0xA64,	// 3.0.9: 0xA44
+    BaseField_Spell_ChannelTimeEnd      = 0xA68,	// 3.0.9: 0xA48
     
-    BaseField_UnitIsSelected            = 0xA50,
+    BaseField_UnitIsSelected            = 0xA50,	// 3.0.9:		( not sure what this is )
     
-    BaseField_Player_CurrentTime        = 0xA70,
+    BaseField_Player_CurrentTime        = 0xA94,	// 3.0.9: 0xA70
     
     // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
     
-    BaseField_Auras_ValidCount          = 0xC40,
-    BaseField_Auras_Start               = 0xC44,
+    BaseField_Auras_ValidCount          = 0xDA0,	// 3.0.9: 0xC40  (this number doesn't seem to actually have the number of auras - it doesn't change if you get new ones... confused why it's used?)
+    BaseField_Auras_Start               = 0xDA4,	// 3.0.9: 0xC44
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
     // the Aura fields in the player struct is abandoned and moves elsewhere
-    BaseField_Auras_OverflowPtr1        = 0xDD0,    // 3.0.8-9: i could not verify overflow 2, 3, 4
+    BaseField_Auras_OverflowPtr1        = 0xE28,    // 3.0.9: 0xDD0 // 3.0.8-9: i could not verify overflow 2, 3, 4
     // BaseField_Auras_OverflowPtr2        = 0xEA4, // but since they aren't actually used, I don't think it matters.
     // BaseField_Auras_OverflowPtr3        = 0xF3C,
     // BaseField_Auras_OverflowPtr4        = 0xF94,

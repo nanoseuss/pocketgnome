@@ -94,7 +94,7 @@ typedef struct WoWAura {
 } WoWAura;
 
 - (NSArray*)aurasForUnit: (Unit*)unit idsOnly: (BOOL)IDs {
-    // PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
+    PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
     UInt32 validAuras = 0;
     MemoryAccess *wowMemory = [controller wowMemoryAccess];
     if(!unit || !wowMemory || ![playerController playerIsValid])
@@ -102,7 +102,11 @@ typedef struct WoWAura {
     
     // get the number of valid aura buckets
     [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_ValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
-    if(validAuras <= 0 || validAuras > 56) return nil;
+    if(validAuras <= 0 || validAuras > 56) 
+	{
+		PGLog(@"[Auras] Not a valid aura count :/");
+		return nil;
+	}
     
     UInt32 aurasAddress = [unit baseAddress] + BaseField_Auras_Start;
     if(validAuras > 16) {
@@ -125,14 +129,18 @@ typedef struct WoWAura {
         WoWAura aura;
         if([wowMemory loadDataForObject: self atAddress: (aurasAddress) + i*sizeof(aura) Buffer:(Byte*)&aura BufLength: sizeof(aura)]) {
             aura.bytes = CFSwapInt32HostToLittle(aura.bytes);
+			
+			PGLog(@"[auras] Bytes: %d", aura.bytes);
+			
             // skip empty buckets
             if(aura.entryID == 0) continue;
             
+			// As of 3.1.0 - I don't think expiration is needed, if you remove the buff, it sets that memory space to 0
             // skip expired buffs; they seem to linger until the space is needed for something else
-            if((currentTime > aura.expiration) && (aura.expiration != 0)) {
-                // PGLog(@"%d is expired (%d).", aura.entryID, aura.expiration);
+            /*if((currentTime > aura.expiration) && (aura.expiration != 0)) {
+                PGLog(@"%d is expired (%d).", aura.entryID, aura.expiration);
                 continue;
-            }
+            }*/
             
             // if we get here, the spell ID is valid and the expiration time is good
             // the GUID is that of the casting player
@@ -168,10 +176,10 @@ typedef struct WoWAura {
                                                duration: aura.duration 
                                              expiration: aura.expiration]];
             
-            // PGLog(@"Found aura %d.", aura.entryID);
+            PGLog(@"Found aura %d.", aura.entryID);
         }
     }
-    // PGLog(@"%d: %d auras, %d valid.", currentTime, validAuras, [auras count]);
+    PGLog(@"%d: %d auras, %d valid.", currentTime, validAuras, [auras count]);
     
     return auras;
 }
