@@ -9,6 +9,13 @@
 #import "Node.h"
 #import "ObjectConstants.h"
 
+enum NodeDataFields
+{
+    GAMEOBJECT_POS_X            = 0xE0,
+    GAMEOBJECT_POS_Y            = 0xE4,
+    GAMEOBJECT_POS_Z            = 0xE8,
+};
+
 enum eGameObjectFields
 {
     OBJECT_FIELD_CREATED_BY     = 0x18 , // Type: Guid , Size: 2
@@ -21,9 +28,9 @@ enum eGameObjectFields
     // 0x38
     // 0x3C
     //GAMEOBJECT_STATE            = 0x38 , // Type: Int32, Size: 1
-    GAMEOBJECT_POS_X            = 0x40 , // Type: Float, Size: 1
-    GAMEOBJECT_POS_Y            = 0x44 , // Type: Float, Size: 1
-    GAMEOBJECT_POS_Z            = 0x48 , // Type: Float, Size: 1
+    //GAMEOBJECT_POS_X            = 0x40 , // Type: Float, Size: 1
+    //GAMEOBJECT_POS_Y            = 0x44 , // Type: Float, Size: 1
+    //GAMEOBJECT_POS_Z            = 0x48 , // Type: Float, Size: 1
     GAMEOBJECT_FACING           = 0x4C , // Type: Float, Size: 1
     GAMEOBJECT_DYN_FLAGS        = 0x50 , // Type: Int32, Size: 1
     GAMEOBJECT_FACTION          = 0x54 , // Type: Int32, Size: 1
@@ -31,14 +38,14 @@ enum eGameObjectFields
     GAMEOBJECT_LEVEL            = 0x58 , // Type: Int32, Size: 1
     //GAMEOBJECT_ARTKIT           = 0x60 , // Type: Int32, Size: 1
     //GAMEOBJECT_ANIMPROGRESS     = 0x64 , // Type: Int32, Size: 1
-    GAMEOBJECT_BYTES_1          = 0x5C , // Type: Int32, Size: 1
+    GAMEOBJECT_BYTES_1          = 0x44 , // Type: Int32, Size: 1
 };
 
-#define NODE_NAMESTRUCT_POINTER_OFFSET     0x1E8
+#define NODE_NAMESTRUCT_POINTER_OFFSET     0x198
 
 enum eNodeNameStructFields {
-    NAMESTRUCT_NAME_PTR         = 0x78,
-    NAMESTRUCT_ENTRY_ID         = 0x88,
+    NAMESTRUCT_NAME_PTR         = 0x88,
+    NAMESTRUCT_ENTRY_ID         = 0x98,
 };
 
 @interface Node ()
@@ -121,7 +128,7 @@ enum eNodeNameStructFields {
 // 1 read
 - (Position*)position {
     float pos[3] = {-1.0f, -1.0f, -1.0f };
-    [_memory loadDataForObject: self atAddress: ([self infoAddress] + GAMEOBJECT_POS_X) Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
+    [_memory loadDataForObject: self atAddress: ([self baseAddress] + GAMEOBJECT_POS_X) Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
     return [Position positionWithX: pos[0] Y: pos[1] Z: pos[2]];
 }
 
