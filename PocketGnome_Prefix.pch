@@ -13,7 +13,7 @@
 
 
     #ifdef PGLOGGING
-        #define PGLog(...) ((![[[NSUserDefaults standardUserDefaults] objectForKey: @"SecurityDisableLogging"] boolValue]) ? NSLog(@"%s:%i %s: %@", [[[NSString stringWithCString:__FILE__] lastPathComponent] UTF8String], __LINE__, __PRETTY_FUNCTION__, [NSString stringWithFormat:__VA_ARGS__]) : NULL )
+        #define PGLog(...) ((![[[NSUserDefaults standardUserDefaults] objectForKey: @"SecurityDisableLogging"] boolValue]) ? NSLog(@"%s:%i %s: %@", [[[NSString stringWithCString:__FILE__ encoding:NSUTF8StringEncoding] lastPathComponent] UTF8String], __LINE__, __PRETTY_FUNCTION__, [NSString stringWithFormat:__VA_ARGS__]) : NULL )
 		//#define PGLog(...) (void)fprintf(stderr, "%s:%i %s: %s\n", [[[NSString stringWithCString:__FILE__] lastPathComponent] UTF8String], __LINE__, __PRETTY_FUNCTION__, [[NSString stringWithFormat:__VA_ARGS__] UTF8String])
 	#else
 		#define PGLog(...) ((![[[NSUserDefaults standardUserDefaults] objectForKey: @"SecurityDisableLogging"] boolValue]) ? NSLog(__VA_ARGS__) : NULL )
