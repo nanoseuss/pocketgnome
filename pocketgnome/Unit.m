@@ -757,6 +757,9 @@ enum SheathState
             case BaseField_Auras_Start:
                 desc = @"Start of Auras";
                 break;
+            case BaseField_Auras_Start_IDs:
+                desc = @"Start of Aura IDs";
+                break;
             case BaseField_Auras_ValidCount:
                 desc = @"Auras Valid Count";
                 break;
