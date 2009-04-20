@@ -83,7 +83,7 @@
 // but i don't know what it does yet
 
 // 3.1.0 valid
-#define TARGET_TABLE_STATIC ((IS_X86) ? 0xAA516F : 0x0) // 3.1.0 
+#define TARGET_TABLE_STATIC ((IS_X86) ? 0xAA5170 : 0x0) // 3.1.0 
 									 // 0xB77090 : 0x0) // 3.0.9
                                      // 0xB7A090 : 0x0) // 3.0.8
                                      // 0xB72170 : 0x0) // 3.0.3
@@ -97,7 +97,7 @@
                                                 // 0x96e490 in 2.3.0
 // {
     #define TARGET_FOCUS        0x00 /* GUID. 0xFFFFFFFF or 0 means invalid */
-    #define TARGET_UNKNOWN1     0x10 /* GUID; possibly "2nd last" target*/
+    #define TARGET_UNKNOWN1     0x10 /* GUID; possibly "2nd last" target  (as of 3.1.0 this is normally just 0)*/
     #define TARGET_LAST         0x18 /* GUID */
     #define TARGET_CURRENT      0x20 /* GUID */
     #define TARGET_INTERACT     0x28 /* GUID */
