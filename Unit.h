@@ -53,14 +53,16 @@ enum eUnitBaseFields {
     BaseField_Spell_ChannelTimeStart    = 0xA64,	// 3.0.9: 0xA44
     BaseField_Spell_ChannelTimeEnd      = 0xA68,	// 3.0.9: 0xA48
     
-    BaseField_UnitIsSelected            = 0xA50,	// 3.0.9:		( not sure what this is )
+    BaseField_UnitIsSelected            = 0xA70,	// 3.0.9: 0xA50		( not sure what this is )  9D4
     
     BaseField_Player_CurrentTime        = 0xA94,	// 3.0.9: 0xA70
     
     // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
     
     BaseField_Auras_ValidCount          = 0xDA0,	// 3.0.9: 0xC40  (this number doesn't seem to actually have the number of auras - it doesn't change if you get new ones... confused why it's used?)
-    BaseField_Auras_Start               = 0xDA4,	// 3.0.9: 0xC44
+    BaseField_Auras_Start               = 0xC1C,	// 3.0.9: 0xC44
+	
+	BaseField_Auras_Start_IDs			= 0xDA4,
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
