@@ -22,22 +22,22 @@ enum eGameObjectFields
     GAMEOBJECT_DISPLAYID        = 0x20 , // Type: Int32, Size: 1
     GAMEOBJECT_FLAGS            = 0x24 , // Type: Int32, Size: 1
     GAMEOBJECT_ROTATION         = 0x28 , // Type: Float, Size: 4
-    // 0x2C unknown
+    // 0x2C
     GAMEOBJECT_PARENTROTATION   = 0x30,
     // 0x34
     // 0x38
     // 0x3C
-    //GAMEOBJECT_STATE            = 0x38 , // Type: Int32, Size: 1
+    
+    // 3.1: wtf - position is no longer here? (see NodeDataFields above)
     //GAMEOBJECT_POS_X            = 0x40 , // Type: Float, Size: 1
     //GAMEOBJECT_POS_Y            = 0x44 , // Type: Float, Size: 1
     //GAMEOBJECT_POS_Z            = 0x48 , // Type: Float, Size: 1
+    
+    // 3.1 - these offsets are unverified!
     GAMEOBJECT_FACING           = 0x4C , // Type: Float, Size: 1
     GAMEOBJECT_DYN_FLAGS        = 0x50 , // Type: Int32, Size: 1
     GAMEOBJECT_FACTION          = 0x54 , // Type: Int32, Size: 1
-    //GAMEOBJECT_TYPE_ID          = 0x58 , // Type: Int32, Size: 1
     GAMEOBJECT_LEVEL            = 0x58 , // Type: Int32, Size: 1
-    //GAMEOBJECT_ARTKIT           = 0x60 , // Type: Int32, Size: 1
-    //GAMEOBJECT_ANIMPROGRESS     = 0x64 , // Type: Int32, Size: 1
     GAMEOBJECT_BYTES_1          = 0x44 , // Type: Int32, Size: 1
 };
 

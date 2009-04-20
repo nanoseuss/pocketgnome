@@ -17,16 +17,17 @@
 #define GUID_HIGH32(x)    (UInt32)(((UInt64)(x) >> 32) & 0xFFFFFFFF00000000ULL);
 
 enum HighGuid {
-    HIGHGUID_ITEM           = 0x4000,                       // blizz 4000
-    HIGHGUID_CONTAINER      = 0x4000,                       // blizz 4000
-    HIGHGUID_PLAYER         = 0x0000,                       // blizz 0000
-    HIGHGUID_GAMEOBJECT     = 0xF110,                       // blizz F110
-    HIGHGUID_TRANSPORT      = 0xF120,                       // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
-    HIGHGUID_UNIT           = 0xF130,                       // blizz F130
-    HIGHGUID_PET            = 0xF140,                       // blizz F140
-    HIGHGUID_DYNAMICOBJECT  = 0xF100,                       // blizz F100
-    HIGHGUID_CORPSE         = 0xF101,                       // blizz F100
-    HIGHGUID_MO_TRANSPORT   = 0x1FC0,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
+    HIGHGUID_ITEM           = 0x4100,   // 3.1, was 0x4000 before
+    HIGHGUID_CONTAINER      = 0x4100,   // 3.1, was 0x4000 before
+    HIGHGUID_PLAYER         = 0x1000,   // 3.1, was 0x0000 before
+    HIGHGUID_GAMEOBJECT     = 0xF110,   // 3.1
+    HIGHGUID_TRANSPORT      = 0xF120,   // unverified
+    HIGHGUID_UNIT           = 0xF130,   // 3.1
+    HIGHGUID_PET            = 0xF140,   // unverified
+    HIGHGUID_VEHICLE        = 0xF150,   // unverified (or or 0xF550)
+    HIGHGUID_DYNAMICOBJECT  = 0xF100,   // unverified
+    HIGHGUID_CORPSE         = 0xF100,   // unverified (or 0xF101)
+    HIGHGUID_MO_TRANSPORT   = 0x1FC0,   // unverified
 };
 
 @protocol WoWObjectMemory

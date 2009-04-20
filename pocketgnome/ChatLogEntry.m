@@ -167,8 +167,9 @@
         case 40:
             return @"Raid Warning"; break;
         case 41:
-            return @"Raid Warning (Widescreen)"; break;
-            // 42 ???
+            return @"Raid Warning (Boss Whisper)"; break;
+        case 42:
+            return @"Raid Warning (Boss Emote)"; break;
         case 43:
             return @"Filtered"; break;
         case 44:
@@ -177,6 +178,7 @@
             return @"Battleground (Leader)"; break;
         case 46:
             return @"Restricted"; break;
+        // case 47 - 56, channels 1 through 10?
     }
     return [NSString stringWithFormat: @"Unknown (%@)", type];
 }

@@ -352,7 +352,7 @@ static Controller* sharedController = nil;
             //    PGLog(@"Unknown object at 0x%X of type %u (0x%X).", structAddress, value, value);
             
             if( (objectType <= TYPEID_UNKNOWN) || (objectType >= TYPEID_MAX)) {
-                PGLog(@"--> Unknown = bailing");
+                // PGLog(@"--> Unknown = bailing");
                 return;
             }
             
@@ -378,9 +378,7 @@ static Controller* sharedController = nil;
 - (void)scanObjectGraph {
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
     
-    NSDate *date = [NSDate date];
-    NSDate *start = date;
-    
+    // NSDate *start = date;
     // BOOL foundPlayer = [self locatePlayerStructure];
     BOOL playerIsValid = [playerDataController playerIsValid];
     
@@ -400,12 +398,8 @@ static Controller* sharedController = nil;
         [self exploreStruct: [[playerDataController structureAddress] unsignedIntValue] inMemory: memory];
         //PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
         
-        //PGLog(@"Memory scan took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
+        //PGLog(@"Memory scan took %.4f sec for %d total objects.", [date timeIntervalSinceNow]*-1.0f, [_mobs count] + [_items count] + [_gameObjects count] + [_players count]);
         //date = [NSDate date];
-        
-        if([_dynamicObjects count]) {
-            PGLog(@"Found %d dynamic objects.", [_dynamicObjects count]);
-        }
         
         [mobController addAddresses: _mobs];
         [itemController addAddresses: _items];
@@ -426,7 +420,7 @@ static Controller* sharedController = nil;
         //PGLog(@"Total scan took %.4f sec", [start timeIntervalSinceNow]*-1.0f);
         //PGLog(@"-----------------");
         
-        // run this every 10 seconds if the player is valid
+        // run this every 3 seconds if the player is valid
         [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 3.0];
         return;
     } else {
@@ -497,9 +491,9 @@ static Controller* sharedController = nil;
                             // the last address we check must be far enough from the end of the buffer to check all the bytes of our sought value
                             
                             if((ReturnedBufferContentSize % MemSize) != 0) {
-                                int oldSize = ReturnedBufferContentSize;
+                                // int oldSize = ReturnedBufferContentSize;
                                 ReturnedBufferContentSize -= (ReturnedBufferContentSize % MemSize);
-                                PGLog(@"Modifying region size from %d to %d", oldSize, ReturnedBufferContentSize);
+                                // PGLog(@"Modifying region size from %d to %d", oldSize, ReturnedBufferContentSize);
                             }
                             //ReturnedBufferContentSize -= MemSize - 1;
                             
@@ -522,7 +516,7 @@ static Controller* sharedController = nil;
                                     //PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
                                     
                                     value = 0;
-                                    if([memory loadDataForObject: self atAddress: (structAddress - 0xC) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
+                                    if([memory loadDataForObject: self atAddress: (structAddress + 0x1C) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
 										//PGLog(@"Found object list head at 0x%X.", value);
                                         
                                         // load the value at that address and make sure it is 0x18
@@ -608,7 +602,7 @@ static Controller* sharedController = nil;
             
             int count = 0;
             UInt32 startAddr = [address unsignedIntValue], value = 0, savedAddr = 0;
-            for(; [memory loadDataForObject: self atAddress: startAddr Buffer: (Byte*)&value BufLength: sizeof(value)] && (value == 0x18); startAddr-=0xC) {
+            for(; [memory loadDataForObject: self atAddress: startAddr Buffer: (Byte*)&value BufLength: sizeof(value)] && (value == 0x18); startAddr+=0xC) {
                 
                 // first, load both possible pointers from the bucket
                 UInt32 objAddr = 0, objAddr2 = 0;

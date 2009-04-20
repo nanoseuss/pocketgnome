@@ -231,7 +231,7 @@ static InventoryController *sharedInventory = nil;
                                    item,                                                @"Item",
                                    ([item name] ? [item name] : @""),                   @"Name",
                                    [NSNumber numberWithUnsignedInt: [item entryID]],    @"ItemID",
-                                   [NSNumber numberWithUnsignedInt: [item count]],      @"Count",
+                                   [NSNumber numberWithUnsignedInt: [item isBag] ? [item bagSize] : [item count]],      @"Count",
                                    [item itemTypeString],                               @"Type",
                                    [item itemSubtypeString],                            @"Subtype",
                                    durString,                                           @"Durability",

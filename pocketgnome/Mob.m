@@ -123,28 +123,43 @@ enum eMobNameStructFields {
 #pragma mark -
 #pragma mark Selection
 
-// 1 read, 1 write
-// not even sure if this method is neeced anymore
-- (void)select {
-    UInt32 select = 0x1000, value = 0;
-    [_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_UnitIsSelected Buffer: (Byte *)&value BufLength: sizeof(value)];
-    select |= value;
-    [_memory saveDataForAddress: [self baseAddress] + BaseField_UnitIsSelected Buffer: (Byte *)&select BufLength: sizeof(select)];
+#define UnitSelectedFlag (1 << 12) // 0x1000
+#define UnitFocusedFlag  (1 << 13) // 0x2000
+
+- (BOOL)valueMeansSelected: (UInt32)value {
+    return ((value & UnitSelectedFlag) == UnitSelectedFlag);
 }
 
 // 1 read, 1 write
-// not even sure if this method is needed anymore
+- (void)select {
+    UInt32 select = UnitSelectedFlag, value = 0;
+    [_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&value BufLength: sizeof(value)];
+    select |= value;
+    [_memory saveDataForAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&select BufLength: sizeof(select)];
+}
+
+// this isn't used right now, but might be useful for Focus support?
+- (void)focus {
+    UInt32 focus = UnitFocusedFlag, value = 0;
+    [_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&value BufLength: sizeof(value)];
+    focus |= value;
+    [_memory saveDataForAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&focus BufLength: sizeof(focus)];
+}
+
+// 1 read, 1 write
 - (void)deselect {
     UInt32 value = 0;
-    //[_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_UnitIsSelected Buffer: (Byte *)&value BufLength: sizeof(value)];
-    //if((value & 0x1000) == 0x1000) value ^= 0x1000;
-    [_memory saveDataForAddress: [self baseAddress] + BaseField_UnitIsSelected Buffer: (Byte *)&value BufLength: sizeof(value)];
+    [_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&value BufLength: sizeof(value)];
+    if([self valueMeansSelected: value]) {
+        value ^= UnitSelectedFlag;
+        [_memory saveDataForAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&value BufLength: sizeof(value)];
+    }
 }
 
 // 1 read
 - (BOOL)isSelected {
-    uint32_t value = 0;
-    if([_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_UnitIsSelected Buffer: (Byte *)&value BufLength: sizeof(value)] && ((value & 0x1000) == 0x1000))
+    UInt32 value = 0;
+    if([_memory loadDataForObject: self atAddress: [self baseAddress] + BaseField_SelectionFlags Buffer: (Byte *)&value BufLength: sizeof(value)] && [self valueMeansSelected: value])
         return YES;
     return NO;
 }
@@ -312,8 +327,6 @@ enum eMobNameStructFields {
         return YES;
     return NO;
 }
-
-
 
 #pragma mark Unit Dynamic Flags
 

@@ -66,9 +66,6 @@
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsValid:) name: MemoryAccessValidNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsInvalid:) name: MemoryAccessInvalidNotification object: nil];
         
-#ifdef PGLOGGING
-        [self kickOffScan]; // feel free to turn this off...
-#endif
         
         _timestampFormat = [[NSDateFormatter alloc] init];
         [_timestampFormat setDateStyle: NSDateFormatterNoStyle];
@@ -78,6 +75,8 @@
         _relativeOrderSortDescriptor = [[NSSortDescriptor alloc] initWithKey: @"relativeOrder" ascending: YES];
         
         [NSBundle loadNibNamed: @"ChatLog" owner: self];
+        
+        [self kickOffScan];
     }
     return self;
 }
@@ -497,8 +496,7 @@
             }
         }
     } else {
-        
-        NSLog(@"Mail delivery is NOT configured.");
+        PGLog(@"Mail delivery is NOT configured.");
     }
 }
 
