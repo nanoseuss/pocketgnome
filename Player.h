@@ -11,7 +11,7 @@
 
 
 enum ePlayerFields {
-	PlayerField_Flags                           = 0x3B0,
+	PlayerField_Flags                           = 0x3B0, // 3.1: need to verify this!
 
     PlayerField_VisibleItem_Head                = 0x560,
     PlayerField_VisibleItem_Neck                = 0x5A0,
@@ -19,21 +19,23 @@ enum ePlayerFields {
     PlayerField_VisibleItem_Weapon1             = 0x920,
     PlayerField_VisibleItem_Weapon2             = 0x960,
     
-    PlayerField_CharacterSlot                   = 0xA28,
-    PlayerField_PackSlot_1                      = 0xAE0,
-
-    PlayerField_FarSight                        = 0xE68,
-    PlayerField_ComboPoint_Target               = 0xE70,
-
-	PlayerField_Experience                      = 0xE78,
-	PlayerField_NextLevel_Experience            = 0xE7C,
-
-    PlayerField_RestState_Experience            = 0x15D0, // rest experience remaining
-    PlayerField_Coinage                         = 0x15D4, // in copper
+    PlayerField_CharacterSlot                   = 0x4A8, // used by itemGUIDinSlot: for temporary weapon enchant condition
     
-    PlayerField_ManaRegen                       = 0x1870, // (float, per second)
-    PlayerField_ManaRegen_Combat                = 0x1874, // (float, per second)
-    PlayerField_MaxLevel                        = 0x1878,
+    // PlayerField_PackSlot_1                   = 0xAE0, // 3.1 unknown
+
+    // PlayerField_FarSight                     = 0xE68, // 3.1 unknown
+    // PlayerField_ComboPoint_Target            = 0xE70, // 3.1 unknown
+
+	PlayerField_Experience                      = 0x980,
+	PlayerField_NextLevel_Experience            = 0x984,
+
+    PlayerField_RestState_Experience            = 0x11DC, // rest experience remaining
+    PlayerField_Coinage                         = 0x11E0, // in copper
+    
+    // 3.1 unknown
+    // PlayerField_ManaRegen                       = 0x1870, // (float, per second)
+    // PlayerField_ManaRegen_Combat                = 0x1874, // (float, per second)
+    PlayerField_MaxLevel                        = 0x1380,
 };
 
 enum ePlayer_VisibleItem_Fields {

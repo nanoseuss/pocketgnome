@@ -17,8 +17,11 @@ enum eObjectTypeID {
     TYPEID_GAMEOBJECT       = 5,
     TYPEID_DYNAMICOBJECT    = 6,
     TYPEID_CORPSE           = 7,
-
-    TYPEID_MAX              = 8
+    
+    TYPEID_AIGROUP          = 8,
+    TYPEID_AREATRIGGER      = 9,
+    
+    TYPEID_MAX              = 10
 };
 
 enum eObjectTypeMask {
@@ -30,6 +33,8 @@ enum eObjectTypeMask {
     TYPE_GAMEOBJECT         = 32,
     TYPE_DYNAMICOBJECT      = 64,
     TYPE_CORPSE             = 128,
+    TYPE_AIGROUP            = 256,
+    TYPE_AREATRIGGER        = 512
 };
 
 enum eObjectBase {

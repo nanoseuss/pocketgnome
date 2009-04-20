@@ -53,16 +53,15 @@ enum eUnitBaseFields {
     BaseField_Spell_ChannelTimeStart    = 0xA64,	// 3.0.9: 0xA44
     BaseField_Spell_ChannelTimeEnd      = 0xA68,	// 3.0.9: 0xA48
     
-    BaseField_UnitIsSelected            = 0xA70,	// 3.0.9: 0xA50		( not sure what this is )  9D4
+    BaseField_SelectionFlags            = 0xA70,	// (1 << 12) when a unit is selected, (1 << 13) when it is focused
     
     BaseField_Player_CurrentTime        = 0xA94,	// 3.0.9: 0xA70
     
     // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
     
-    BaseField_Auras_ValidCount          = 0xDA0,	// 3.0.9: 0xC40  (this number doesn't seem to actually have the number of auras - it doesn't change if you get new ones... confused why it's used?)
-    BaseField_Auras_Start               = 0xC1C,	// 3.0.9: 0xC44
-	
-	BaseField_Auras_Start_IDs			= 0xDA4,
+	// Auras offsets are not quite ready for 3.1
+    BaseField_Auras_ValidCount          = 0xD9C,
+    BaseField_Auras_Start               = 0xC1C,
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
@@ -327,6 +326,41 @@ typedef enum CreatureType
     CreatureType_Max,
 } CreatureType;
 
+typedef enum MovementFlag {
+    // some of these may be named poorly (names were my best guess)
+    MovementFlag_None               = 0,            // 0x00000000
+    MovementFlag_Forward            = (1 << 0),     // 0x00000001
+    MovementFlag_Backward           = (1 << 1),     // 0x00000002
+    MovementFlag_StrafeLeft         = (1 << 2),     // 0x00000004
+    MovementFlag_StrafeRight        = (1 << 3),     // 0x00000008
+    MovementFlag_Left               = (1 << 4),     // 0x00000010
+    MovementFlag_Right              = (1 << 5),     // 0x00000020
+    MovementFlag_PitchUp            = (1 << 6),     // 0x00000040
+    MovementFlag_PitchDown          = (1 << 7),     // 0x00000080
+    MovementFlag_WalkMode           = (1 << 8),     // 0x00000100
+    MovementFlag_OnTransport        = (1 << 9),     // 0x00000200
+    MovementFlag_Levitating         = (1 << 10),    // 0x00000400
+    MovementFlag_FlyUnknown11       = (1 << 11),    // 0x00000800
+    MovementFlag_Jumping            = (1 << 12),    // 0x00001000
+    MovementFlag_Unknown13          = (1 << 13),    // 0x00002000
+    MovementFlag_Falling            = (1 << 14),    // 0x00004000
+    // 0x8000, 0x10000, 0x20000, 0x40000, 0x80000, 0x100000
+    MovementFlag_Swimming           = (1 << 21),    // 0x00200000 - can appear with Fly flag?
+    MovementFlag_FlyUp              = (1 << 22),    // 0x00400000
+    MovementFlag_CanFly             = (1 << 23),    // 0x00800000
+    MovementFlag_Flying1            = (1 << 24),    // 0x01000000 - flying, but not in the air 
+    MovementFlag_Flying2            = (1 << 25),    // 0x02000000 - actually in the air
+    MovementFlag_Spline1            = (1 << 26),    // 0x04000000 - used for flight paths
+    MovementFlag_Spline2            = (1 << 27),    // 0x08000000 - used for flight paths
+    MovementFlag_WaterWalking       = (1 << 28),    // 0x10000000 - don't fall through water
+    MovementFlag_SafeFall           = (1 << 29),    // 0x20000000 - active rogue safe fall spell (passive)?
+    MovementFlag_Unknown30          = (1 << 30),    // 0x40000000
+    // the last bit (31) is sometimes on, sometimes not.
+    // i think it's fair to say that it is not used and shouldn't matter.
+    
+    MovementFlag_Max                = (1 << 31),
+} MovementFlag;
+
 @interface Unit : WoWObject <UnitPosition> {
 
 }
@@ -398,8 +432,8 @@ typedef enum CreatureType
 
 - (UInt32)dynamicFlags;
 - (UInt32)npcFlags;
-- (BOOL)isLootable;         // always NO
-- (BOOL)isTappedByOther;    // always NO
+- (BOOL)isLootable;         // always NO (implement in subclass)
+- (BOOL)isTappedByOther;    // always NO (implement in subclass)
 
 - (void)trackUnit;
 - (void)untrackUnit;

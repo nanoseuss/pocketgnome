@@ -85,7 +85,6 @@ static AuraController* sharedController = nil;
 
 #pragma mark -
 
-
 typedef struct WoWAura {
     GUID    guid;
     UInt32  entryID;
@@ -94,9 +93,8 @@ typedef struct WoWAura {
     UInt32  expiration;
 } WoWAura;
 
-/*
 - (NSArray*)aurasForUnit: (Unit*)unit idsOnly: (BOOL)IDs {
-	//PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
+    // PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
     UInt32 validAuras = 0;
     MemoryAccess *wowMemory = [controller wowMemoryAccess];
     if(!unit || !wowMemory || ![playerController playerIsValid])
@@ -106,7 +104,7 @@ typedef struct WoWAura {
     [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_ValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
     if(validAuras <= 0 || validAuras > 56) 
 	{
-		PGLog(@"[Auras] Not a valid aura count :/");
+		// PGLog(@"[Auras] Not a valid aura count :/");
 		return nil;
 	}
     
@@ -117,94 +115,72 @@ typedef struct WoWAura {
         if([wowMemory loadDataForObject: self atAddress: ([unit baseAddress] + BaseField_Auras_OverflowPtr1) Buffer: (Byte*)&newAddr BufLength: sizeof(newAddr)] && newAddr) {
             aurasAddress = newAddr;
         } else {
-            PGLog(@"[Auras] Error finding aura overflow pointer.");
+            // PGLog(@"[Auras] Error finding aura overflow pointer.");
             return nil;
         }
     }
     
-	
-	BOOL stillSearching = TRUE;
-	
-	
-	while ( stillSearching )
-	{
-		int i;
-		// GUID unitGUID = [unit GUID];
-		UInt32 currentTime = [playerController currentTime];
-		NSMutableArray *auras = [NSMutableArray array];
-		
-		// Looks like auras jump to a different location after 12 of them
-		for(i=0; i< 13; i++) {
-			WoWAura aura;
-			if([wowMemory loadDataForObject: self atAddress: (aurasAddress) + i*0x8 Buffer:(Byte*)&aura BufLength: sizeof(aura)]) {
-				aura.bytes = CFSwapInt32HostToLittle(aura.bytes);
-			
-				PGLog(@"[auras] 0x%X Bytes: %d, %d, %d, %d", (aurasAddress) + i*sizeof(aura), aura.bytes, aura.entryID, aura.duration, aura.expiration);
-			
-				// skip empty buckets
-				if(aura.entryID == 0) continue;
-            
-				if(IDs) [auras addObject: [NSNumber numberWithUnsignedInt: aura.entryID]];
-				else    [auras addObject: [Aura auraEntryID: aura.entryID 
-													   GUID: aura.guid
-													  bytes: aura.bytes 
-												   duration: aura.duration 
-												 expiration: aura.expiration]];
-            
-				PGLog(@"Found aura %d.", aura.entryID);
-			}
-		}
-	}
-	
-    PGLog(@"%d: %d auras, %d valid.", currentTime, validAuras, [auras count]);
     
-    return auras;
-}
-*/
-
-- (NSArray*)aurasForUnit: (Unit*)unit idsOnly: (BOOL)IDs {
-   //PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
-    //UInt32 validAuras = 0;
-    MemoryAccess *wowMemory = [controller wowMemoryAccess];
-    if(!unit || !wowMemory || ![playerController playerIsValid])
-        return nil;
-    
-	UInt32 aurasAddress = [unit baseAddress] + BaseField_Auras_Start_IDs;
-	int i = 0;
-	UInt32 auraID;
-	BOOL stillSearching = TRUE;
+    int i;
+    // GUID unitGUID = [unit GUID];
+    // UInt32 currentTime = [playerController currentTime];
     NSMutableArray *auras = [NSMutableArray array];
-    while( stillSearching )
-	{
-
-        if([wowMemory loadDataForObject: self atAddress: (aurasAddress) Buffer:(Byte*)&auraID BufLength: sizeof(auraID)]) {
-
-			// Increment our counter
-			aurasAddress += 0x8;
-			i++;
+    for(i=0; i< validAuras; i++) {
+        WoWAura aura;
+        if([wowMemory loadDataForObject: self atAddress: (aurasAddress) + i*sizeof(aura) Buffer:(Byte*)&aura BufLength: sizeof(aura)]) {
+            aura.bytes = CFSwapInt32HostToLittle(aura.bytes);
+			
+			// PGLog(@"[auras] Bytes: %d", aura.bytes);
 			
             // skip empty buckets
-            if(auraID == 0 || auraID == 256) continue;
+            if(aura.entryID == 0) continue;
             
-			// 3.1.0: We need to jump to another memory location - not sure where that is :/
-			if ( i > 8 )
-			{
-				stillSearching = FALSE;
-				break;
-			}
-			
-			// If we get to here - we have a good aura!			
-			if(IDs) [auras addObject: [NSNumber numberWithUnsignedInt: auraID]];
-			else    [auras addObject: [Aura auraEntryID: auraID
-												   GUID: 0
-												  bytes: 0
-											   duration: 0 
-											 expiration: 0]];
-			
-			//PGLog(@"0x%X (%d) Added aura: %d  (%d)", aurasAddress, i, auraID, IDs);
+			// As of 3.1.0 - I don't think expiration is needed, if you remove the buff, it sets that memory space to 0
+            // skip expired buffs; they seem to linger until the space is needed for something else
+            /*if((currentTime > aura.expiration) && (aura.expiration != 0)) {
+                PGLog(@"%d is expired (%d).", aura.entryID, aura.expiration);
+                continue;
+            }*/
+            
+            // if we get here, the spell ID is valid and the expiration time is good
+            // the GUID is that of the casting player
+            // it is 0 for invalid auras, but can also be 0 for environmental auras (world buffs)
+            
+            // is the aura ours or something elses?
+            // i dont think we're going to bother differentiating for the time being
+            // but there's the damn code
+            /*
+            if(aura.guid == unitGUID) {
+                
+            } else {
+                // is it environmental?
+                if(aura.guid == 0) {
+                    
+                }
+                
+                // is it another player?
+                if( GUID_HIPART(aura.guid) == HIGHGUID_PLAYER) {
+                    
+                }
+                
+                // is it a mob?
+                if(GUID_HIPART(aura.guid) == HIGHGUID_UNIT) {
+                    
+                }
+            }*/
+            
+            if(IDs) [auras addObject: [NSNumber numberWithUnsignedInt: aura.entryID]];
+            else    [auras addObject: [Aura auraEntryID: aura.entryID 
+                                                   GUID: aura.guid
+                                                  bytes: aura.bytes 
+                                               duration: aura.duration 
+                                             expiration: aura.expiration]];
+            
+            // PGLog(@"Found aura %d.", aura.entryID);
         }
     }
-
+    // PGLog(@"%d: %d auras, %d valid.", currentTime, validAuras, [auras count]);
+    
     return auras;
 }
 

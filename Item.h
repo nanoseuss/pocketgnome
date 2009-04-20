@@ -29,6 +29,7 @@ typedef enum {
 	ItemType_Key,
 	ItemType_Permanent,
 	ItemType_Misc,
+	ItemType_Glyph,
     ItemType_Max            = 16
 } ItemType;
 

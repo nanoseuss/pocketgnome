@@ -10,8 +10,12 @@
 #import "ObjectConstants.h"
 
 enum eItemObject {
-    Item_InfoField1     = 0x3C4,
-    Item_InfoField2     = 0x3C8,
+    // these appear a bit before the InfoStruct starts.
+    // they are back-to-back values that look like bit fields, eg
+    // 1) 0x8FF0204 [?] [?] [subType] [itemType]
+    // 2) 0x5       [?] [?] [EquipLoc2?] [EquipLoc1]
+    Item_InfoField1     = 0x390,
+    Item_InfoField2     = 0x394,
 };
 
 enum eItemFields {
@@ -69,21 +73,37 @@ enum eContainerFields {
 	TOTAL_CONTAINER_FIELDS =            3
 };
 
-// [?] [?] [Sub Type]    [Item Type]
-// [?] [?] [EquipLoc 2?] [EquipLoc 1]
-
-enum eEquipLoc
+enum InventoryType
 {
-	EQUIP_LOC_SHIRT = 4,
-
-	EQUIP_LOC_WAIST = 6,
-	EQUIP_LOC_LEGS,
-	EQUIP_LOC_FEET,
-	EQUIP_LOC_WRIST,
-	EQUIP_LOC_HANDS,
-
-	EQUIP_LOC_BACK = 16,
-	EQUIP_LOC_MAIN_HAND
+    INVTYPE_NON_EQUIP                           = 0,
+    INVTYPE_HEAD                                = 1,
+    INVTYPE_NECK                                = 2,
+    INVTYPE_SHOULDERS                           = 3,
+    INVTYPE_BODY                                = 4,
+    INVTYPE_CHEST                               = 5,
+    INVTYPE_WAIST                               = 6,
+    INVTYPE_LEGS                                = 7,
+    INVTYPE_FEET                                = 8,
+    INVTYPE_WRISTS                              = 9,
+    INVTYPE_HANDS                               = 10,
+    INVTYPE_FINGER                              = 11,
+    INVTYPE_TRINKET                             = 12,
+    INVTYPE_WEAPON                              = 13,
+    INVTYPE_SHIELD                              = 14,
+    INVTYPE_RANGED                              = 15,
+    INVTYPE_CLOAK                               = 16,
+    INVTYPE_2HWEAPON                            = 17,
+    INVTYPE_BAG                                 = 18,
+    INVTYPE_TABARD                              = 19,
+    INVTYPE_ROBE                                = 20,
+    INVTYPE_WEAPONMAINHAND                      = 21,
+    INVTYPE_WEAPONOFFHAND                       = 22,
+    INVTYPE_HOLDABLE                            = 23,
+    INVTYPE_AMMO                                = 24,
+    INVTYPE_THROWN                              = 25,
+    INVTYPE_RANGEDRIGHT                         = 26,
+    INVTYPE_QUIVER                              = 27,
+    INVTYPE_RELIC                               = 28
 };
 
 enum eConsumableTypes
@@ -108,7 +128,8 @@ enum eContainerTypes
 	CONTAINER_TYPE_ENGINEERING_BAG,
 	CONTAINER_TYPE_GEM_BAG,
 	CONTAINER_TYPE_MINING_BAG,
-	CONTAINER_TYPE_LEATHERWORKING_BAG
+	CONTAINER_TYPE_LEATHERWORKING_BAG,
+	CONTAINER_TYPE_INSCRIPTIONG_BAG
 };
 
 enum eWeaponTypes
@@ -160,7 +181,8 @@ enum eArmorTypes
 	ARMOR_TYPE_SHIED,
 	ARMOR_TYPE_LIBRAM,
 	ARMOR_TYPE_IDOL,
-	ARMOR_TYPE_TOTEM
+	ARMOR_TYPE_TOTEM,
+	ARMOR_TYPE_SIGIL
 };
 
 enum eReagentTypes
@@ -251,6 +273,30 @@ enum eMiscTypes
 	MISC_TYPE_HOLIDAY,
 	MISC_TYPE_OTHER,
 	MISC_TYPE_MOUNT
+};
+
+enum ItemFlags
+{
+    ItemFlag_Soulbound          = 0x1,
+    ItemFlag_Conjured           = 0x2,
+    ItemFlag_Openable           = 0x4,
+    ItemFlag_Wrapped            = 0x8,
+    ItemFlag_Broken             = 0x10,
+
+    ItemFlag_Wrapper            = 0x200,
+    ItemFlag_PartyLoot          = 0x800,    // item is party lootable
+    
+    ItemFlag_Charter            = 0x2000,   // arena, guild charter
+    
+    ItemFlag_Prospectable       = 0x40000,
+    ItemFlag_UniqueEquipped     = 0x80000,
+    
+    ItemFlag_UsableInArena      = 0x200000,
+    ItemFlag_Throwable          = 0x400000, // only used for in-game tooltip?
+    
+    ItemFlag_AccountBound       = 0x08000000,
+    
+    ItemFlag_Millable           = 0x20000000,
 };
 
 #define CONTAINER_FIELD_SLOT_SIZE       0x8
@@ -445,8 +491,10 @@ enum eMiscTypes
             return @"Permanent"; break;
         case ItemType_Misc:
             return @"Miscellaneous"; break;
+        case ItemType_Glyph:
+            return @"Glyph"; break;
         default:
-            return @"Unknown"; break;
+            return [NSString stringWithFormat: @"Unknown (%d)", type]; break;
     }
     return nil;
 }
@@ -481,7 +529,7 @@ enum eMiscTypes
             case CONSUMABLE_TYPE_OTHER:
                 return @"Other"; break;
             default:
-                return @"Unknown"; break;
+                return [NSString stringWithFormat: @"Unknown Consumable (%d)", subType]; break;
         }
     }
 
@@ -503,8 +551,10 @@ enum eMiscTypes
                 return @"Mining Bag"; break;
             case CONTAINER_TYPE_LEATHERWORKING_BAG:
                 return @"Leatherworking Bag"; break;
+            case CONTAINER_TYPE_INSCRIPTIONG_BAG:
+                return @"Inscription Bag"; break;
             default:
-                return @"Unknown"; break;
+                return [NSString stringWithFormat: @"Unknown Bag (%d)", subType]; break;
         }
     }
     
@@ -553,9 +603,8 @@ enum eMiscTypes
                 return @"Wand"; break;
             case WEAPON_TYPE_FISHING_POLE:
                 return @"Fishing Pole"; break;
-
             default:
-                return @"Unknown"; break;
+                return [NSString stringWithFormat: @"Unknown Weapon (%d)", subType]; break;
         }
     }
     
@@ -580,9 +629,8 @@ enum eMiscTypes
                 return @"Simple"; break;
             case GEM_TYPE_PRISMATIC:
                 return @"Prismatic"; break;
-
             default:
-                return @"Unknown"; break;
+                return [NSString stringWithFormat: @"Unknown Gem (%d)", subType]; break;
         }
     }
 
@@ -608,6 +656,10 @@ enum eMiscTypes
                 return @"Idol"; break;
             case ARMOR_TYPE_TOTEM:
                 return @"Totem"; break;
+            case ARMOR_TYPE_SIGIL:
+                return @"Sigil"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Armor (%d)", subType]; break;
         }
     }
     
@@ -628,6 +680,8 @@ enum eMiscTypes
                 return @"Bullet"; break;
             case PROJECTILE_TYPE_THROWN_OBSOLETE:
                 return @"Thrown (Obsolete)"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Projectile (%d)", subType]; break;
         }
     }
     
@@ -659,6 +713,8 @@ enum eMiscTypes
                 return @"Other"; break;
             case TRADE_GOOD_TYPE_ENCHANTING:
                 return @"Enchanting"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Trade Goods (%d)", subType]; break;
         }
     }
 
@@ -690,6 +746,8 @@ enum eMiscTypes
                 return @"Fishing"; break;
             case RECIPE_TYPE_JEWELCRAFTING:
                 return @"Jewelcrafting"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Recipe (%d)", subType]; break;
         }
     }
     
@@ -708,6 +766,8 @@ enum eMiscTypes
                 return @"Quiver"; break;
             case QUIVER_TYPE_POUCH:
                 return @"Pouch"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Quiver (%d)", subType]; break;
         }
     }
         
@@ -721,6 +781,8 @@ enum eMiscTypes
                 return @"Key"; break;
             case KEY_TYPE_LOCKPICK:
                 return @"Lockpick"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Key (%d)", subType]; break;
         }
     }
 
@@ -743,10 +805,18 @@ enum eMiscTypes
                 return @"Other"; break;
             case MISC_TYPE_MOUNT:
                 return @"Mount"; break;
+            default:
+                return [NSString stringWithFormat: @"Unknown Misc (%d)", subType]; break;
         }
     }
     
-    return @"Unknown";
+    if(type == ItemType_Glyph) {
+        if(subType > 0) {
+            return [NSString stringWithFormat: @"Glyph Type %d", subType];
+        }
+    }
+    
+    return [NSString stringWithFormat: @"Unknown (%d / %d)", type, subType];
 }
 
 #pragma mark Info Accessors
@@ -846,7 +916,8 @@ enum eMiscTypes
 }
 
 - (BOOL)isSoulbound {
-    if( ([self flags] & 1) == 1) return YES;
+    if( ([self flags] & ItemFlag_Soulbound) == ItemFlag_Soulbound)
+        return YES;
     return NO;
 }
 
