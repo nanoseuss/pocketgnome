@@ -60,8 +60,8 @@
                                              // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
 
-// 3.1.0 valid
-#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xAA508C : 0x0) // 3.1.0 
+// 3.1.1 valid
+#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xAA508C : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB76FD0 : 0x0) // 3.0.9
                                              // 0xB79FD0 : 0x0) // 3.0.8
                                              // 0xB720B0 : 0x0) // 3.0.3
@@ -69,10 +69,10 @@
                                              // 0x9AF048 : 0x9D7C6D) // 2.4.3
                                              // 0x9B1008 : 0x9D8C55) // 2.4.2
                                              // 0x9A8008 : 0x9CDC5D) // 2.4.1
-#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xAA508C : 0x0) // same as above on Intel		(Tanaris4:not verified for 3.1.0)
-#define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86					(Tanaris4:not verified for 3.1.0)
-#define COMBO_POINT_TARGET_UID      0x8   // 64 bit												(Tanaris4:not verified for 3.1.0)
-// in 3.0.x, the current time appears globally +0x10 after COMBO_POINTS_STATIC
+#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xAA508C : 0x0) // same as above on Intel
+#define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86
+#define COMBO_POINT_TARGET_UID      0x4   // 64 bit
+// in 3.0.x, the current time appears globally +0xC after COMBO_POINTS_STATIC
 
 // this is not used, and i'm currently not entirely sure what it means
 // the name is just a guess, but it appears to apply.
