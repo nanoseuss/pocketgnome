@@ -102,6 +102,12 @@ typedef struct WoWAura {
     
     // get the number of valid aura buckets
     [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_ValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
+    
+    // we're overflowing. try the backup.
+    if(validAuras == 0xFFFFFFFF) {
+        [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_OverflowValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
+    }
+    
     if(validAuras <= 0 || validAuras > 56) 
 	{
 		// PGLog(@"[Auras] Not a valid aura count :/");
