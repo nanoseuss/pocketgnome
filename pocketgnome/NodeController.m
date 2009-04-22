@@ -467,6 +467,16 @@ typedef enum {
     [movementController turnToward: [node position]];
 }
 
+- (IBAction)targetNode: (id)sender {
+
+    int selectedRow = [nodeTable selectedRow];
+    if(selectedRow == -1) return;
+    
+    Node *node = [[_nodeDataList objectAtIndex: selectedRow] objectForKey: @"Node"];
+    
+    [playerController setPrimaryTarget: [node GUID]];
+}
+
 - (IBAction)filterList: (id)sender {
     self.nodeTypeFilter = [sender selectedTag];
     [self reloadNodeData: nil];

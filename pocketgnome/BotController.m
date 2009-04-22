@@ -175,6 +175,7 @@
     [shortcutRecorder setCanCaptureGlobalHotKeys: YES];
     [startstopRecorder setCanCaptureGlobalHotKeys: YES];
     [petAttackRecorder setCanCaptureGlobalHotKeys: YES];
+    [interactWithRecorder setCanCaptureGlobalHotKeys: YES];
     
     KeyCombo combo1 = { NSShiftKeyMask, kSRKeysF13 };
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyCode"])
@@ -193,17 +194,26 @@
         combo3.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackCode"] intValue];
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackFlags"])
         combo3.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackFlags"] intValue];
+        
+    KeyCombo combo4 = { 0, -1 };
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetCode"])
+        combo4.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetCode"] intValue];
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetFlags"])
+        combo4.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetFlags"] intValue];
     
     [shortcutRecorder setDelegate: nil];
     [startstopRecorder setDelegate: self];
     [petAttackRecorder setDelegate: nil];
+    [interactWithRecorder setDelegate: nil];
 
     [shortcutRecorder setKeyCombo: combo1];
     [startstopRecorder setKeyCombo: combo2];
     [petAttackRecorder setKeyCombo: combo3];
+    [interactWithRecorder setKeyCombo: combo4];
     
     [shortcutRecorder setDelegate: self];
     [petAttackRecorder setDelegate: self];
+    [interactWithRecorder setDelegate: self];
     
     // set up overlay window
     [overlayWindow setLevel: NSFloatingWindowLevel];
@@ -1591,6 +1601,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 
                 if(self.doLooting) {
                     // make sure this mob is even lootable
+                    // sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
                     if( ![_mobsToLoot containsObject: unit] && ([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable])) {
                         [_mobsToLoot addObject: (Mob*)unit];
                         PGLog(@"[Loot]: Adding %@ to loot list.", unit);
@@ -1632,6 +1643,11 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     
     BOOL isNode = [unit isKindOfClass: [Node class]];
     
+    KeyCombo lootCombo = [interactWithRecorder keyCombo];
+    int lootTargetHotkey = lootCombo.code;
+    int lootTargetHotkeyModifier = lootCombo.flags;
+    BOOL useLootHotkey = (lootTargetHotkey >= 0);
+    
     if(self.doLooting || isNode) {
         Position *playerPosition = [playerController position];
         float distanceToUnit = [playerPosition distanceToPosition2D: [unit position]];
@@ -1664,9 +1680,11 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             // PGLog(@"[Loot] Reached unit: %@. Attempting to loot.", unit);
             if(unitIsMob) {
                 [mobController selectMob: (Mob*)unit];
+            } else {
+                [playerController setPrimaryTarget: [unit GUID]];
             }
             
-            if(![controller isWoWFront]) {
+            if(![controller isWoWFront] && !useLootHotkey) {
                 // move to WoW's workspace
                 if(thisSpace != wowSpace) {
                     CGSSetWorkspace(cgsConnection, wowSpace);
@@ -1680,9 +1698,11 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 weMadeWoWFront = YES;
             }
             
-            // find the point to click on
+            // find the point to click on if we aren't using the loot hotkey
             NSDate *date = [NSDate date];
-            clickPt = [self scanForObjectOnScreen: unit];
+            if(!useLootHotkey) {
+                clickPt = [self scanForObjectOnScreen: unit];
+            }
             
             // for mobs, ensure the point is valid
             if(clickPt.x && clickPt.y && unitIsMob) {
@@ -1694,6 +1714,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 }
             }
             
+            // if we're using the hotkey, this will fail since we never set clickPt
             if(clickPt.x && clickPt.y && [controller isWoWFront]) {
                 PGLog(@"[Loot] Located %@ at { %.2f, %.2f } after %.2f seconds.  Looting.", unit, clickPt.x, clickPt.y, [date timeIntervalSinceNow]*-1.0);
                 weLooted = YES;
@@ -1715,7 +1736,12 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 
                 CGInhibitLocalEvents(NO);
             } else {
-                PGLog(@"[Loot] Unable to locate %@ on the screen or wow is not frontmost.", unit);
+                if(useLootHotkey) {
+                    weLooted = YES;
+                    [chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
+                } else {
+                    PGLog(@"[Loot] Unable to locate %@ on the screen or wow is not frontmost.", unit);
+                }
             }
             
         } else {
@@ -1733,10 +1759,10 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             usleep(100000);
         }
         
-        // tell the node controller we finished with a node if we could not loot it
+        // if it was a node, we're done now regardless of if we looted or not
         // we have to do this since nodes remain in memory after being looted
-        // so, if we can't find it on the screen, we're probably done with it
-        if(!weLooted && isNode) {
+        // so either we got it or we can't find it on the screen -- done either way
+        if(isNode) {
             [nodeController finishedNode: (Node*)unit];
             [movementController finishMovingToObject: unit];
         }
@@ -1923,7 +1949,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
-            if(mobToLoot && [mobToLoot isValid]) {
+            if(mobToLoot && [mobToLoot isValid] && [mobToLoot isLootable]) {
                 return mobToLoot;
             }
         }
@@ -2512,6 +2538,19 @@ NSMutableDictionary *_diffDict = nil;
     [hotkeyHelpPanel orderOut: nil];
 }
 
+- (IBAction)lootHotkeyHelp: (id)sender {
+	[NSApp beginSheet: lootHotkeyHelpPanel
+	   modalForWindow: [self.view window]
+		modalDelegate: nil
+	   didEndSelector: nil
+		  contextInfo: nil];
+}
+
+- (IBAction)closeLootHotkeyHelp: (id)sender {
+    [NSApp endSheet: lootHotkeyHelpPanel returnCode: 1];
+    [lootHotkeyHelpPanel orderOut: nil];
+}
+
 #pragma mark Notifications
 //
 //- (void)playerNeverEnteredCombat {
@@ -2658,6 +2697,11 @@ NSMutableDictionary *_diffDict = nil;
     if(recorder == petAttackRecorder) {
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"PetAttackCode"];
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"PetAttackFlags"];
+    }
+    
+    if(recorder == interactWithRecorder) {
+        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"InteractWithTargetCode"];
+        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"InteractWithTargetFlags"];
     }
     
     [[NSUserDefaults standardUserDefaults] synchronize];
