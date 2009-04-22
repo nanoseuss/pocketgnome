@@ -122,9 +122,11 @@
     IBOutlet id ignoreEliteCheckbox;
     
     IBOutlet NSPanel *hotkeyHelpPanel;
+    IBOutlet NSPanel *lootHotkeyHelpPanel;
     IBOutlet SRRecorderControl *shortcutRecorder;
     IBOutlet SRRecorderControl *petAttackRecorder;
     IBOutlet SRRecorderControl *startstopRecorder;
+    IBOutlet SRRecorderControl *interactWithRecorder;
     PTHotKey *StartStopBotGlobalHotkey;
     
     IBOutlet NSTextField *statusText;
@@ -169,6 +171,8 @@
 - (IBAction)updateStatus: (id)sender;
 - (IBAction)hotkeyHelp: (id)sender;
 - (IBAction)closeHotkeyHelp: (id)sender;
+- (IBAction)lootHotkeyHelp: (id)sender;
+- (IBAction)closeLootHotkeyHelp: (id)sender;
 
 // PvP shit
 - (IBAction)pvpStartStop: (id)sender;

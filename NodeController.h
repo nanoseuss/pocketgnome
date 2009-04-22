@@ -71,6 +71,7 @@ typedef enum {
 - (IBAction)filterNodes: (id)sender;
 - (IBAction)resetList: (id)sender;
 - (IBAction)faceNode: (id)sender;
+- (IBAction)targetNode: (id)sender;
 - (IBAction)filterList: (id)sender;
 - (IBAction)monitorFishing: (id)sender;
 

@@ -261,6 +261,7 @@
 		7DD804280D516186005C2F01 /* Nodes.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD804270D516185005C2F01 /* Nodes.xib */; };
 		7DD8910B0F2BE875007E9FE4 /* DeathKnight.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */; };
 		7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */ = {isa = PBXBuildFile; fileRef = 7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */; };
+		7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */; };
 		7DE310540E8AFB57004CCD27 /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 7DE310530E8AFB57004CCD27 /* dsa_pub.pem */; };
 		7DE53DD80E32B48500C59033 /* CombatProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE53DD70E32B48500C59033 /* CombatProfile.m */; };
 		7DE53DDB0E32B84C00C59033 /* IgnoreEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */; };
@@ -648,6 +649,7 @@
 		7DD804270D516185005C2F01 /* Nodes.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Nodes.xib; sourceTree = "<group>"; };
 		7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DeathKnight.png; sourceTree = "<group>"; };
 		7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = DeathKnight_Small.gif; sourceTree = "<group>"; };
+		7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = InteractWithTarget.png; sourceTree = "<group>"; };
 		7DE310530E8AFB57004CCD27 /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		7DE53DD60E32B48500C59033 /* CombatProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatProfile.h; sourceTree = "<group>"; };
 		7DE53DD70E32B48500C59033 /* CombatProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatProfile.m; sourceTree = "<group>"; };
@@ -999,6 +1001,7 @@
 				7D41E9A90DEA734200118EA0 /* Result.png */,
 				7D41E9AD0DEB467500118EA0 /* HotkeyFinished.png */,
 				7D41E9AE0DEB467500118EA0 /* TypeShortcut.png */,
+				7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */,
 			);
 			name = "Hotkey Help";
 			sourceTree = "<group>";
@@ -1584,6 +1587,7 @@
 				7D6BE9990F87F6FB00ED364A /* Trade_Engraving.png in Resources */,
 				7D1B3B8D0F89ACE9005CA0CD /* Mail.png in Resources */,
 				7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */,
+				7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
