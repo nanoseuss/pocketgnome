@@ -938,6 +938,10 @@ enum SheathState
             case UnitField_Bytes_2:
                 desc = @"Unit Bytes 2";
                 break;
+				
+			case UnitField_QuestStart:
+				desc = @"Quest list start";
+				break;
         }
         
         /*
