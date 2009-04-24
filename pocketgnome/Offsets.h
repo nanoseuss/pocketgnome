@@ -199,6 +199,7 @@
 
 // **************************** NOT USED/DATED ******************************************* //
 
+
 // 2.4.2 valid
 // NO LONGER VALID AS OF 3.0.2
 #define PLAYER_STRUCT_PTR_STATIC    ((IS_X86) ? 0x9BA490 : 0x9E2460) // 2.4.3 (0x1DA0 : 0xD70);

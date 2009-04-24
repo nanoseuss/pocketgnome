@@ -21,6 +21,7 @@
 #import "ProcedureController.h"
 #import "InventoryController.h"
 #import "PlayersController.h"
+#import "QuestController.h"
 
 #import "BetterSegmentedControl.h"
 #import "Behavior.h"
@@ -2453,6 +2454,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
 - (void)reEnableStart {
     [startStopButton setEnabled: YES];
     [pvpStartStopButton setEnabled: YES];
+	[questTrackerButton setEnabled: YES];
 }
 
 - (void)timeUp: (id)sender {
@@ -2461,6 +2463,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     [self performSelector: @selector(reEnableStart) withObject: nil afterDelay: 60];
     [startStopButton setEnabled: NO];
     [pvpStartStopButton setEnabled: NO];
+	[questTrackerButton setEnabled: YES];
     
     // show alert
     NSAlert *alert = [[[NSAlert alloc] init] autorelease]; 
@@ -3167,6 +3170,15 @@ NSMutableDictionary *_diffDict = nil;
     [[NSSound soundNamed: @"alarm"] play];
 }
 
+- (IBAction)questTracker: (id)sender {
+	NSLog(@"%s", __FUNCTION__);
+	[questController reloadPlayerQuests];
+}
+
+- (IBAction)questDump: (id)sender {
+	NSLog(@"%s", __FUNCTION__);
+	[questController dumpQuests];
+}
 
 @end
 

@@ -35,6 +35,7 @@
 @class Controller;
 @class WaypointController;
 @class ProcedureController;
+@class QuestController;
 
 @class ScanGridView;
 
@@ -53,6 +54,8 @@
 
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
+	
+	IBOutlet QuestController		*questController;
 
     IBOutlet NSView *view;
     
@@ -92,6 +95,7 @@
     IBOutlet NSButton *pvpAutoReleaseCheckbox;
     IBOutlet NSImageView *pvpBannerImage;
     IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
+	IBOutlet NSButton *questTrackerButton;
     
     // -----------------
     // -----------------
@@ -180,5 +184,8 @@
 - (IBAction)pvpBMSelectAction: (id)sender;
 - (IBAction)pvpTestWarning: (id)sender;
 
+// Quest shit
+- (IBAction)questTracker: (id)sender;
+- (IBAction)questDump: (id)sender;
 
 @end

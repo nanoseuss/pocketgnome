@@ -31,7 +31,10 @@ enum ePlayerFields {
 
     PlayerField_RestState_Experience            = 0x11DC, // rest experience remaining
     PlayerField_Coinage                         = 0x11E0, // in copper
-    
+	
+	PlayerField_QuestStart						= 0x1A30,	// Every 0x10 is another quest ID.. Keep going til you hit 0, that is the full quest list
+
+
     // 3.1 unknown
     // PlayerField_ManaRegen                       = 0x1870, // (float, per second)
     // PlayerField_ManaRegen_Combat                = 0x1874, // (float, per second)

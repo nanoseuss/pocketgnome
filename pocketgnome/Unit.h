@@ -167,8 +167,6 @@ enum eUnitFields {
     UnitField_HoverHeight               = 0x248,
     // padding
 	
-	UnitField_QuestStart				= 0x278,	// Every 0x10 is another quest ID.. Keep going til you hit 0, that is the full quest list
-
     UnitField_TotalUnitFields           = 0x59,
     
 };
