@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
+		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
+		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
 		7D0C43F80DF20B0D005F3940 /* TransparentWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43F70DF20B0D005F3940 /* TransparentWindow.m */; };
@@ -305,6 +308,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		034429B60FAA3E1800E9DE03 /* Quest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quest.h; sourceTree = "<group>"; };
+		034429B70FAA3E1800E9DE03 /* Quest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Quest.m; sourceTree = "<group>"; };
+		034429BB0FAA3E3800E9DE03 /* QuestItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestItem.h; sourceTree = "<group>"; };
+		034429BC0FAA3E3800E9DE03 /* QuestItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestItem.m; sourceTree = "<group>"; };
+		034429BE0FAA3E5600E9DE03 /* QuestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestController.h; sourceTree = "<group>"; };
+		034429BF0FAA3E5600E9DE03 /* QuestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestController.m; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -666,7 +675,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -739,6 +748,8 @@
 				7D45A6B90E4461CA008A3601 /* BonjourController.m */,
 				7D370C050E7366DC002FE3A4 /* ActionMenusController.h */,
 				7D370C060E7366DC002FE3A4 /* ActionMenusController.m */,
+				034429BE0FAA3E5600E9DE03 /* QuestController.h */,
+				034429BF0FAA3E5600E9DE03 /* QuestController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -773,7 +784,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 				7DC3FEF20D57C65700BEB58B /* MemoryAccessTool */,
 				7DC3FEFB0D57C6B900BEB58B /* InstallTool */,
 			);
@@ -1162,6 +1173,10 @@
 				7DAD11650E117BF000B0F7BD /* Macro.m */,
 				7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */,
 				7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */,
+				034429B60FAA3E1800E9DE03 /* Quest.h */,
+				034429B70FAA3E1800E9DE03 /* Quest.m */,
+				034429BB0FAA3E3800E9DE03 /* QuestItem.h */,
+				034429BC0FAA3E3800E9DE03 /* QuestItem.m */,
 			);
 			name = Units;
 			sourceTree = "<group>";
@@ -1389,7 +1404,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1702,6 +1717,9 @@
 				7D1BEDF00F8717CF00DF5FBF /* ChatLogController.m in Sources */,
 				7D1BEE530F8733A400DF5FBF /* ChatLogEntry.m in Sources */,
 				7D1B39420F896A96005CA0CD /* ChatAction.m in Sources */,
+				034429B80FAA3E1800E9DE03 /* Quest.m in Sources */,
+				034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */,
+				034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

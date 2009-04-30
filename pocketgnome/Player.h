@@ -36,6 +36,9 @@ enum ePlayerFields {
     // PlayerField_ManaRegen                       = 0x1870, // (float, per second)
     // PlayerField_ManaRegen_Combat                = 0x1874, // (float, per second)
     PlayerField_MaxLevel                        = 0x1380,
+	
+	PlayerField_QuestStart						= 0x1A30,	// Every 0x10 is another quest ID.. Keep going til you hit 0, that is the full quest list
+
 };
 
 enum ePlayer_VisibleItem_Fields {
