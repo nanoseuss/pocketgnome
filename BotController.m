@@ -21,6 +21,7 @@
 #import "ProcedureController.h"
 #import "InventoryController.h"
 #import "PlayersController.h"
+#import "QuestController.h"
 
 #import "BetterSegmentedControl.h"
 #import "Behavior.h"

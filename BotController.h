@@ -35,6 +35,7 @@
 @class Controller;
 @class WaypointController;
 @class ProcedureController;
+@class QuestController;
 
 @class ScanGridView;
 
@@ -54,6 +55,8 @@
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
 
+	IBOutlet QuestController		*questController;
+	
     IBOutlet NSView *view;
     
     RouteSet *theRoute;
