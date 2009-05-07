@@ -1607,6 +1607,9 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                         [_mobsToLoot addObject: (Mob*)unit];
                         PGLog(@"[Loot]: Adding %@ to loot list.", unit);
                     }
+					else{
+						PGLog(@"[Loot]: Mob %@ wasn't lootable b/c: %d:%d:%d", unit, ![_mobsToLoot containsObject: unit], [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable]);
+					}
                 }
             }
             
@@ -2273,19 +2276,28 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     [statusText setStringValue: status];
 }
 
-
 - (IBAction)startBot: (id)sender {
+	[self startBotWithRoute: sender: nil];
+}
+
+- (IBAction)startBotWithRoute: (id)sender: (RouteSet*) route{
     _currentHotkey = -1;
     _currentPetAttackHotkey = -1;
     
      BOOL ignoreRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"IgnoreRoute"] boolValue];
     
     // gather appropriate information to start the bot
-    if(ignoreRoute) {
-        self.theRoute = nil;
-    } else {
-        self.theRoute = [[routePopup selectedItem] representedObject];
-    }
+	if ( route != nil){
+		self.theRoute = route;
+	}
+	else
+	{
+		if(ignoreRoute) {
+			self.theRoute = nil;
+		} else {
+			self.theRoute = [[routePopup selectedItem] representedObject];
+		}
+	}
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
     

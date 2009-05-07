@@ -18,6 +18,7 @@
 #import "PlayerDataController.h"
 #import "MemoryViewController.h"
 #import "PlayersController.h"
+#import "QuestController.h"
 
 #import "CGSPrivate.h"
 
@@ -189,6 +190,23 @@ static Controller* sharedController = nil;
         }
         [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedChatLogToolbarItem"];
     }
+	
+    // insert the new Quest toolbar item if it hasn't been done before and it's not there
+    if(![[NSUserDefaults standardUserDefaults] boolForKey: @"AddedQuestToolbarItem"]) {
+        BOOL foundQuestLog = NO;
+        for(NSToolbarItem *item in [mainToolbar items]) {
+            if([[item itemIdentifier] isEqualToString: [questToolbarItem itemIdentifier]]) {
+                foundQuestLog = YES;
+            }
+        }
+        if(!foundQuestLog) {
+            PGLog(@"Inserting Quest toolbar item.");
+            [mainToolbar insertItemWithItemIdentifier: [questToolbarItem itemIdentifier] atIndex: 1];
+        }
+        [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedQuestToolbarItem"];
+    }
+	
+	
     
     //UInt32 bleh = 3250009464u;
     //float bleh2;
@@ -591,7 +609,7 @@ static Controller* sharedController = nil;
 }
 
 - (void)foundObjectListAddress: (NSNumber*)address {
-    PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
+   //PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
     MemoryAccess *memory = [self wowMemoryAccess];
     _foundPlayer = NO;
     if(memory && address && ([address unsignedIntValue] != 0)) {
@@ -785,6 +803,7 @@ static Controller* sharedController = nil;
     NSView *newView = nil;
     NSString *addToTitle = nil;
     NSSize minSize = NSZeroSize, maxSize = NSZeroSize;
+	
     if( [sender tag] == 1) {
         newView = [botController view];
         addToTitle = [botController sectionTitle];
@@ -855,11 +874,19 @@ static Controller* sharedController = nil;
         minSize = [chatLogController minSectionSize];
         maxSize = [chatLogController maxSectionSize];
     }
-    
+    if( [sender tag] == 13) {
+        newView = [questController view];
+        addToTitle = [questController sectionTitle];
+        minSize = [questController minSectionSize];
+        maxSize = [questController maxSectionSize];
+		
+		[questController loadingView];
+    }
+	
     if(newView) {
         [self loadView: newView withTitle: addToTitle];
     }
-    
+	
     // correct the minSize
     if(NSEqualSizes(minSize, NSZeroSize)) {
         minSize = NSMakeSize(MainWindowMinWidth, MainWindowMinHeight);
@@ -1402,6 +1429,7 @@ static Controller* sharedController = nil;
     return [NSArray arrayWithObjects:
             [botToolbarItem itemIdentifier], 
             [chatLogToolbarItem itemIdentifier],
+			[questToolbarItem itemIdentifier],
             NSToolbarSpaceItemIdentifier,
             [playerToolbarItem itemIdentifier], 
             [spellsToolbarItem itemIdentifier],
@@ -1433,7 +1461,8 @@ static Controller* sharedController = nil;
             [behavsToolbarItem itemIdentifier],
             [memoryToolbarItem itemIdentifier],
             [prefsToolbarItem itemIdentifier],
-            [chatLogToolbarItem itemIdentifier], nil];
+            [chatLogToolbarItem itemIdentifier], 
+			[questToolbarItem itemIdentifier], nil];
 }
 
 #pragma mark -

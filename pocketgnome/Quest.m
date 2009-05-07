@@ -15,6 +15,10 @@
 
 @implementation Quest
 
+@synthesize route = _route;
+@synthesize routeToTurnIn = _routeToTurnIn;
+@synthesize order = _order;
+@synthesize enabled = _enabled;
 @synthesize _bytes1;
 @synthesize _bytes2;
 @synthesize _bytes3;
@@ -32,11 +36,15 @@
 		_level = nil;
 		_requiredLevel = nil;
 		
+		_route = nil;
+		_routeToTurnIn = nil;
+		_order = nil;
+		_enabled = nil;
     }
     return self;
 }
 
-- (id)initWithQuestID: (NSNumber*)questID {
+- (id)initWithQuestID: (NSNumber*)questID: (NSNumber*) order {
     self = [self init];
     if(self) {
         if( ([questID intValue] <= 0) || ([questID intValue] > MaxQuestID)) {
@@ -44,6 +52,8 @@
             return nil;
         }
         _questID = [questID retain];
+		_order = order;
+		_enabled = 0;
 		
 		// Lets grab quest data...
 		//[self reloadQuestData];
@@ -82,9 +92,7 @@
 	[coder encodeObject: self.requiredlevel forKey: @"RequiredLevel"];
 	[coder encodeObject: self.startnpc forKey: @"StartNPC"];
 	[coder encodeObject: self.endnpc forKey: @"EndNPC"];
-	[coder encodeObject: self.endnpc forKey: @"ItemRequirements"];
-	
-	
+	[coder encodeObject: self.endnpc forKey: @"ItemRequirements"];	
 }
 
 - (void)dealloc {
@@ -101,6 +109,15 @@
     
     [super dealloc];
 }
+
+/*
+- (void)setRoute: (id) route{
+	_route = route;
+}
+
+- (void)setEnabled: (id) enabled{
+	_enabled = enabled;
+}*/
 
 #pragma mark -
 

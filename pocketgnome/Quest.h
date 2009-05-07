@@ -8,6 +8,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class RouteSet;
+
 #define MaxQuestID 1000000
 
 @interface Quest : NSObject {
@@ -31,13 +33,28 @@
 	NSNumber *_bytes1;
 	NSNumber *_bytes2;
 	NSNumber *_bytes3;
+	
+	// Store route info for this quest!
+	RouteSet *_route;
+	RouteSet *_routeToTurnIn;
+	NSNumber *_enabled;
+	NSNumber *_order;
 }
+
+@property (readwrite, retain) RouteSet *route;
+@property (readwrite, retain) RouteSet *routeToTurnIn;
+@property (readwrite, retain) NSNumber *enabled;
+@property (readwrite, retain) NSNumber *order;
+
 
 @property (retain) NSNumber *_bytes1;
 @property (retain) NSNumber *_bytes2;
 @property (retain) NSNumber *_bytes3;
 
-- (id)initWithQuestID: (NSNumber*)questID;
+/*- (void)setRoute: (id) route;
+- (void)setEnabled: (id) enabled;
+*/
+- (id)initWithQuestID: (NSNumber*)questID: (NSNumber*) order;
 
 - (NSNumber*)ID;
 - (void)setID: (NSNumber*)ID;

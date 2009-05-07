@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03442AA00FABB1CF00E9DE03 /* Quest.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03442A9F0FABB1CF00E9DE03 /* Quest.xib */; };
 		0349DF980F9FF96900294A3F /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0349DF970F9FF96900294A3F /* QuestController.m */; };
 		0349E3450FA02CF500294A3F /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 0349E3440FA02CF500294A3F /* Quest.m */; };
 		0349E7660FA0EAD500294A3F /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 0349E7650FA0EAD500294A3F /* QuestItem.m */; };
@@ -308,6 +309,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		03442A9F0FABB1CF00E9DE03 /* Quest.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Quest.xib; sourceTree = "<group>"; };
 		0349DF960F9FF96900294A3F /* QuestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestController.h; sourceTree = "<group>"; };
 		0349DF970F9FF96900294A3F /* QuestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestController.m; sourceTree = "<group>"; };
 		0349E3430FA02CF500294A3F /* Quest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quest.h; sourceTree = "<group>"; };
@@ -713,6 +715,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		03442F1F0FB0B47B00E9DE03 /* Quest */ = {
+			isa = PBXGroup;
+			children = (
+				0349E3430FA02CF500294A3F /* Quest.h */,
+				0349E3440FA02CF500294A3F /* Quest.m */,
+				0349E7640FA0EAD500294A3F /* QuestItem.h */,
+				0349E7650FA0EAD500294A3F /* QuestItem.m */,
+				0349DF960F9FF96900294A3F /* QuestController.h */,
+				0349DF970F9FF96900294A3F /* QuestController.m */,
+			);
+			name = Quest;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -748,8 +763,6 @@
 				7D45A6B90E4461CA008A3601 /* BonjourController.m */,
 				7D370C050E7366DC002FE3A4 /* ActionMenusController.h */,
 				7D370C060E7366DC002FE3A4 /* ActionMenusController.m */,
-				0349DF960F9FF96900294A3F /* QuestController.h */,
-				0349DF970F9FF96900294A3F /* QuestController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -795,6 +808,7 @@
 			isa = PBXGroup;
 			children = (
 				080E96DDFE201D6D7F000001 /* Classes */,
+				03442F1F0FB0B47B00E9DE03 /* Quest */,
 				7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */,
 				7D65C8F60D2EE0B100C50DF7 /* GUI Subclasses */,
 				7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */,
@@ -880,6 +894,7 @@
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
 				7D54DCB80E08449F00E1B463 /* Condition NIBs */,
+				03442A9F0FABB1CF00E9DE03 /* Quest.xib */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -1173,10 +1188,6 @@
 				7DAD11650E117BF000B0F7BD /* Macro.m */,
 				7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */,
 				7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */,
-				0349E3430FA02CF500294A3F /* Quest.h */,
-				0349E3440FA02CF500294A3F /* Quest.m */,
-				0349E7640FA0EAD500294A3F /* QuestItem.h */,
-				0349E7650FA0EAD500294A3F /* QuestItem.m */,
 			);
 			name = Units;
 			sourceTree = "<group>";
@@ -1603,6 +1614,7 @@
 				7D1B3B8D0F89ACE9005CA0CD /* Mail.png in Resources */,
 				7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */,
 				7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */,
+				03442AA00FABB1CF00E9DE03 /* Quest.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

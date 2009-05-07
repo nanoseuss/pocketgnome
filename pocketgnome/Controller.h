@@ -22,6 +22,7 @@
 @class ProcedureController;
 @class MemoryViewController;
 @class PlayerDataController;
+@class QuestController;
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
@@ -42,12 +43,13 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet WaypointController  *routeController;
     IBOutlet ProcedureController *behaviorController;
     IBOutlet ChatLogController   *chatLogController;
-
+    IBOutlet QuestController	 *questController;
+	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *itemsToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *playersToolbarItem, *mobsToolbarItem, *nodesToolbarItem, *routesToolbarItem, *behavsToolbarItem;
-    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem;
+    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *questToolbarItem;
     
     IBOutlet NSView *aboutView, *settingsView;
     IBOutlet NSImageView *aboutValidImage;

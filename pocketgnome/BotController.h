@@ -187,5 +187,6 @@
 // Quest shit
 - (IBAction)questTracker: (id)sender;
 - (IBAction)questDump: (id)sender;
+- (IBAction)startBotWithRoute: (id)sender: (RouteSet*) route;
 
 @end

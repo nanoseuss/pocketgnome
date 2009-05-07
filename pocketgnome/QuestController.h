@@ -10,18 +10,45 @@
 
 @class Controller;
 @class PlayerDataController;
+@class WaypointController;
+@class RouteSet;
 
 @interface QuestController : NSObject {
     IBOutlet Controller             *controller;
-	IBOutlet PlayerDataController      *playerDataController;
+	IBOutlet PlayerDataController   *playerDataController;
+	IBOutlet WaypointController		*routeController;
+	IBOutlet BotController			*botController;
 	
-	NSMutableArray			*_playerQuests;
+	IBOutlet NSTableView		*questTable;
+	IBOutlet NSView				*view;
+	
+	IBOutlet NSButton *questStartStopButton;
+	
+	NSMutableArray				*_playerQuests;
+	NSMutableArray				*_routes;
+    
+    NSSize minSectionSize, maxSectionSize;
+	
+	BOOL isQuesting;
 }
 
-- (void)reloadPlayerQuests;
+// Controller interface
+@property (readonly) NSView *view;
+@property (readonly) NSString *sectionTitle;
+@property NSSize minSectionSize;
+@property NSSize maxSectionSize;
+@property (readwrite, retain) NSMutableArray *routes;
+
+- (IBAction)startQuesting: (id)sender;
+
+- (void)loadPlayerQuests;
+
+- (void)loadingView;
 
 - (void)dumpQuests;
 
 - (NSArray*)playerQuests;
+
+- (RouteSet*)getRouteSetFromIndex: (id)anObject;
 
 @end
