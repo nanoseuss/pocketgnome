@@ -82,8 +82,11 @@ typedef struct QuestInfo {
 		[questStartStopButton setEnabled: NO];
 		//return;
 	}
+	else{
+		[questStartStopButton setEnabled: YES];
+	}
 	
-	[questStartStopButton setEnabled: YES];
+	
 	
 	[self loadPlayerQuests];
 	
