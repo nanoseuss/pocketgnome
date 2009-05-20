@@ -11,12 +11,13 @@
  
 #import "ObjectConstants.h"
 
-#define VALID_WOW_VERSION   @"3.1.1"
+#define VALID_WOW_VERSION   @"3.1.2"
 #define PLAYER_LEVEL_CAP    80
 
 // not valid for PPC!
-// 3.1.1 valid
-#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x1374088 : 0x0)        // 3.1.1
+// 3.1.2 valid
+#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x139FEC8 : 0x0)		// 3.1.2
+											 // 0x1374088 : 0x0)        // 3.1.1
 											 // 0x1374028 : 0x0)        // 3.1.0
 											 // 0x14A6B28 : 0x0)        // 3.0.9
                                              // 0x14A9B48 : 0x0)        // 3.0.8
@@ -26,7 +27,8 @@
 
 
 
-#define SERVER_NAME_STATIC          ((IS_X86) ? 0x1374766 : 0x0)        // 3.1.1
+#define SERVER_NAME_STATIC          ((IS_X86) ? 0x13A05A6 : 0x0)		// 3.1.2
+											 // 0x1374766 : 0x0)        // 3.1.1
 											 // 0x1374706 : 0x0)        // 3.1.0
 											 // 0x14A6F86 : 0x0)        // 3.0.9
                                              // 0x14A9FA6 : 0x0)        // 3.0.8                                     
@@ -37,7 +39,8 @@
 
 
 
-#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x13741E0 : 0x0)        // 3.1.1
+#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x13A0020 : 0x0)		// 3.1.2
+											 // 0x13741E0 : 0x0)        // 3.1.1
 											 // 0x1374180 : 0x0)        // 3.1.0
 											 // 0x14A6C80 : 0x0)        // 3.0.9
                                              // 0x14A9CA0 : 0x0)        // 3.0.8
@@ -48,14 +51,16 @@
                                              // 0xEB0D46 : 0xEC8F9E  // 2.4.2
                                              // 0xEB0C80 : 0xEC8EE0  // 2.4.2
 
-// 3.1.1 valid	
-#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xAA3400 : 0x0) // 3.1.0 & 3.1.1
+// 3.1.2 valid	
+#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xAC9440 : 0x0)	// 3.1.2
+											 // 0xAA3400 : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB75420 : 0x0) // 3.0.9
                                              // 0xB78420 : 0x0) // 3.0.8
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
                        
-// 3.1.1 valid
-#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xAC6F08 : 0x0) // 3.1.0 & 3.1.1
+// 3.1.2 valid
+#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xAED328 : 0x0) // 3.1.2
+											 // 0xAC6F08 : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB9BBE8 : 0x0) // 3.0.9
                                              // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
