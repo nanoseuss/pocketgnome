@@ -139,7 +139,7 @@
 
 // 3.1.2 valid
 // static main hotbar ( uint32[12], spell ID)
-#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x11710E4 : 0x0) // 3.1.2
+#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x143EE40 : 0x0) // 3.1.2
 									 // 0x1413000 : 0x0) // 3.1.1
 									 // 0x1412FA0 : 0x0) // 3.1.0
 									 // 0x154A1E0 : 0x0) // 3.0.9
