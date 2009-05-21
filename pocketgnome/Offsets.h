@@ -89,8 +89,9 @@
 // there's another interesting struct between combo points and targets
 // but i don't know what it does yet
 
-// 3.1.1 valid
-#define TARGET_TABLE_STATIC ((IS_X86) ? 0xAA5170 : 0x0) // 3.1.0 & 3.1.1
+// 3.1.2 valid
+#define TARGET_TABLE_STATIC ((IS_X86) ? 0xACB210 : 0x0) // 3.1.2
+									 // 0xAA5170 : 0x0) // 3.1.0 & 3.1.1
 									 // 0xB77090 : 0x0) // 3.0.9
                                      // 0xB7A090 : 0x0) // 3.0.8
                                      // 0xB72170 : 0x0) // 3.0.3
@@ -112,7 +113,8 @@
 // }
 
 // 3.1.1 valid
-#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x1421040 : 0x0) // 3.1.1
+#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x144BE80 : 0x0) // 3.1.2
+												 // 0x1421040 : 0x0) // 3.1.1
 												 // 0x141FFE0 : 0x0) // 3.1.0
 												 // 0x1558240 : 0x0) // 3.0.9
                                                  // 0x155B260 : 0x0) // 3.0.8
@@ -135,9 +137,10 @@
                                                  // 0xF3E240 : 0xF56068  // 2.4.2
                                                  // 0xF347E0 : 0xF4A398  // 2.4.1
 
-// 3.1.1 valid
+// 3.1.2 valid
 // static main hotbar ( uint32[12], spell ID)
-#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x1413000 : 0x0) // 3.1.1
+#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x11710E4 : 0x0) // 3.1.2
+									 // 0x1413000 : 0x0) // 3.1.1
 									 // 0x1412FA0 : 0x0) // 3.1.0
 									 // 0x154A1E0 : 0x0) // 3.0.9
                                      // 0x154D200 : 0x0) // 3.0.8
@@ -187,9 +190,10 @@
     #define REFRESH_MAX_FPS     ((IS_X86) ? 0x08 : 0x0)  // /console maxfps, /console maxfpsbk
 // }
 
-// 3.1.1 valid
+// 3.1.2 valid
 /* 1 if it's open, 0 if it's not */
-#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xB1DFC0 : 0x0) // 3.1.1
+#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xB49DA0 : 0x0) // 3.1.2
+										 // 0xB1DFC0 : 0x0) // 3.1.1
 										 // 0xB1DF60 : 0x0) // 3.1.0
 										 // 0xBF8700 : 0x0) // 3.0.9
                                          // 0xBFB720 : 0x0) // 3.0.8
