@@ -112,7 +112,7 @@
     #define TARGET_MOUSEOVER    0x30 /* GUID */
 // }
 
-// 3.1.1 valid
+// 3.1.2 valid
 #define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x144BE80 : 0x0) // 3.1.2
 												 // 0x1421040 : 0x0) // 3.1.1
 												 // 0x141FFE0 : 0x0) // 3.1.0
@@ -168,19 +168,21 @@
                                                  // 0x11F0BAC : 0x0)        // 3.0.2
                                                  // 0xCAA0AC : 0xCC39EC)    // 2.4.2
 
-// 3.1.0 valid
+// 3.1.2 valid
 // as of 3.0.2, this value is 0 if a spell successfully cast
 // if the spell did not cast, it contains the ID of the most recently failed spell
 // only works for spells that play an error sound. not sure what makes this distinction.
 //
-#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x11472B0 : 0x0) // 3.1.0
+#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x11730F0 : 0x0) // 3.1.2
+													 // 0x11472B0 : 0x0) // 3.1.0
 													 // 0x122BB98 : 0x0) // 3.0.9
                                                      // 0x122EBB8 : 0x0) // 3.0.8
                                                      // 0x1227C98 : 0x0) // 3.0.3
                                                      // 0x1223B38 : 0x0) // 3.0.2
 
-// 3.1.1 valid 
-#define REFRESH_DELAY           ((IS_X86) ? 0x115B740 : 0x0) // 3.1.1
+// 3.1.2 valid 
+#define REFRESH_DELAY           ((IS_X86) ? 0x1187580 : 0x0) // 3.1.2 (not actually correct IMO - but shouldn't matter)
+										 // 0x115B740 : 0x0) // 3.1.1
 										 // 0x1142F4C : 0x0) // 3.1.0
 										 // 0x123F8C0 : 0x0) // 3.0.9
                                          // 0x12428E0 : 0x0) // 3.0.8
