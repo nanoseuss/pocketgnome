@@ -189,9 +189,6 @@
                                          // 0x12428E0 : 0x0) // 3.0.8
                                          // 0x123B5E0 : 0x0) // 3.0.3
                                          // 0x1237480 : 0x0) // 3.0.2
-// {
-    #define REFRESH_MAX_FPS     ((IS_X86) ? 0x08 : 0x0)  // /console maxfps, /console maxfpsbk
-// }
 
 // 3.1.2 valid
 /* 1 if it's open, 0 if it's not */
@@ -210,6 +207,9 @@
 
 
 // **************************** NOT USED/DATED ******************************************* //
+
+// 3.1.2. valid
+#define REFRESH_MAX_FPS     ((IS_X86) ? 0x118768C : 0x0) // 3.1.2 /console maxfps, /console maxfpsbk
 
 // 2.4.2 valid
 // NO LONGER VALID AS OF 3.0.2
