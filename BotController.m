@@ -1807,7 +1807,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     }
 
     // if we get here, there's nothing left to be done
-    float moreDelay = (isNode ? 1.0f : 0.5f) + [playerController castTimeRemaining] + ([playerController isLooting] ? 1.0f : 0.0f);
+    float moreDelay = (isNode ? 5.0f : 0.5f) + [playerController castTimeRemaining] + ([playerController isLooting] ? 5.0f : 0.0f);
     [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: moreDelay];
 }
 
