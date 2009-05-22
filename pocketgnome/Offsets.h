@@ -208,6 +208,9 @@
 
 // **************************** NOT USED/DATED ******************************************* //
 
+// 3.1.2  valid
+#define RED_TEXT_MESSAGE     ((IS_X86) ? 0x013FA620 : 0x0) // Red text error in wow interface
+
 // 3.1.2. valid
 #define REFRESH_MAX_FPS     ((IS_X86) ? 0x118768C : 0x0) // 3.1.2 /console maxfps, /console maxfpsbk
 
