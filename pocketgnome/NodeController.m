@@ -460,7 +460,7 @@ typedef enum {
     if(selectedRow == -1) return;
     
     // !!!: remove this hack when 10.5.7 ships
-    [controller makeWoWFront];
+    //[controller makeWoWFront];
     
     Node *node = [[_nodeDataList objectAtIndex: selectedRow] objectForKey: @"Node"];
     
@@ -537,7 +537,7 @@ typedef enum {
     
     if(nodeToMove) {
         // !!!: remove this hack when 10.5.7 ships
-        [controller makeWoWFront];
+        //[controller makeWoWFront];
         
         PGLog(@"Moving to node: %@", nodeToMove);
         [movementController moveToObject: nodeToMove andNotify: NO];
