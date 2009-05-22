@@ -303,7 +303,7 @@ static MobController* sharedController = nil;
     Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
     
     // !!!: remove this hack when 10.5.7 ships
-    [controller makeWoWFront];
+    //[controller makeWoWFront];
     
     
     [movementController turnToward: [mob position]];
@@ -376,7 +376,7 @@ static MobController* sharedController = nil;
         // PGLog(@"Moving to mob: %@", mobToMove);
         
         // !!!: remove this hack when 10.5.7 ships
-        [controller makeWoWFront];
+        //[controller makeWoWFront];
         
         [movementController moveToObject: mobToMove andNotify: NO];
         //[movementController moveToWaypoint: [Waypoint waypointWithPosition: mobPosition]];
