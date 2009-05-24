@@ -11,6 +11,7 @@
 #import "Controller.h"
 #import "MemoryAccess.h"
 #import "PlayerDataController.h"
+#import "Offsets.h"
 
 #import "ChatLogEntry.h"
 #import "ChatAction.h"
@@ -20,8 +21,6 @@
 #import <Foundation/NSAppleEventDescriptor.h>
 #import "Mail.h"    // http://developer.apple.com/samplecode/SBSendEmail/listing4.html
 #import "iChat.h"
-
-#define ChatLog_Start 0x1374FB0
 
 #define ChatLog_CounterOffset       0x8
 #define ChatLog_TimestampOffset     0xC
@@ -143,7 +142,7 @@
                     highestSequence = sequence;
                     foundAt = i;
                 }
-                NSString *chatEntry = [NSString stringWithUTF8String: buffer + ChatLog_DescriptionOffset ];
+                NSString *chatEntry = [NSString stringWithUTF8String: buffer];
 				//PGLog(@"Chat found: %@", chatEntry );
 				
                 if([chatEntry length]) {
