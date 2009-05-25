@@ -80,13 +80,6 @@
 #define COMBO_POINT_TARGET_UID      0x4   // 64 bit
 // in 3.0.x, the current time appears globally +0xC after COMBO_POINTS_STATIC
 
-// this is not used, and i'm currently not entirely sure what it means
-// the name is just a guess, but it appears to apply.
-#define PLAYER_LOGGED_IN    ((IS_X86) ? 0xAA50B4 : 0x0) // 3.1.0				(not 100% sure - but consistent on game close)
-									 // 0xB76FFC : 0x0) // 3.0.9
-                                     // 0xB79FFC : 0x0) // 3.0.8 Also: 0xB723E2
-                                     // 0xB720DC : 0x0) // 3.0.3
-
 // there's another interesting struct between combo points and targets
 // but i don't know what it does yet
 
@@ -161,8 +154,9 @@
 #define BAR9_OFFSET         0x180   // 9th hotbar (form3? beserker stance?)
 #define BAR10_OFFSET        0x1B0   // 10th hotbar (unknown)
 
-// 3.1.1 valid
-#define PLAYER_ON_BUILDING_STATIC       ((IS_X86) ? 0x111E81C : 0x0)        // 3.0.9
+// 3.1.2 valid
+#define PLAYER_ON_BUILDING_STATIC       ((IS_X86) ? 0x114A5FC : 0x0)		// 3.1.2
+												 // 0x111E81C : 0x0)        // 3.0.9
                                                  // 0x11F8F0C : 0x0)        // 3.0.9
                                                  // 0x11FBF2C : 0x0)        // 3.0.8
                                                  // 0x11F4D0C : 0x0)        // 3.0.3
@@ -227,6 +221,15 @@
 /* 0x96D3B0 2.3.3 Intel : 0x97DE60 2.3.3 PPC */
 /* 0x97DE50 2.3.2 PPC */
 /* 0x977E10 2.3.0 PPC */
+
+
+// this is not used, and i'm currently not entirely sure what it means
+// the name is just a guess, but it appears to apply.
+#define PLAYER_LOGGED_IN    ((IS_X86) ? 0xAA50B4 : 0x0) // 3.1.0				(not 100% sure - but consistent on game close)
+// 0xB76FFC : 0x0) // 3.0.9
+// 0xB79FFC : 0x0) // 3.0.8 Also: 0xB723E2
+// 0xB720DC : 0x0) // 3.0.3
+
 
 // both of these are busted in 3.0.2
 /* is the number of the last spell we tried to cast, nomatter if it went off or didn't */
