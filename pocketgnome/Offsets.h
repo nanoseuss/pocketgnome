@@ -176,7 +176,7 @@
                                                      // 0x1223B38 : 0x0) // 3.0.2
 
 // 3.1.2 valid 
-#define REFRESH_DELAY           ((IS_X86) ? 0x1187580 : 0x0) // 3.1.2 (not actually correct IMO - but shouldn't matter)
+#define REFRESH_DELAY           ((IS_X86) ? 0x1517A88 : 0x0) // 3.1.2
 										 // 0x115B740 : 0x0) // 3.1.1
 										 // 0x1142F4C : 0x0) // 3.1.0
 										 // 0x123F8C0 : 0x0) // 3.0.9
