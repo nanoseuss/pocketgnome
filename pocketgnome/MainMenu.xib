@@ -2,15 +2,15 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.02">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9G2133</string>
+		<string key="IBDocument.SystemVersion">9J61</string>
 		<string key="IBDocument.InterfaceBuilderVersion">670</string>
-		<string key="IBDocument.AppKitVersion">949.43</string>
+		<string key="IBDocument.AppKitVersion">949.46</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1957"/>
 			<integer value="2375"/>
 			<integer value="57"/>
+			<integer value="1957"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3974,6 +3974,9 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 			<object class="NSCustomObject" id="869824653">
 				<string key="NSClassName">QuestController</string>
 			</object>
+			<object class="NSCustomObject" id="695338593">
+				<string key="NSClassName">CorpseController</string>
+			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<object class="NSMutableArray" key="connectionRecords">
@@ -6873,6 +6876,30 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					</object>
 					<int key="connectionID">3175</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">controller</string>
+						<reference key="source" ref="695338593"/>
+						<reference key="destination" ref="148782052"/>
+					</object>
+					<int key="connectionID">3177</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">corpseController</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="695338593"/>
+					</object>
+					<int key="connectionID">3178</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">corpseController</string>
+						<reference key="source" ref="94147614"/>
+						<reference key="destination" ref="695338593"/>
+					</object>
+					<int key="connectionID">3179</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -9142,6 +9169,11 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<reference key="object" ref="869824653"/>
 						<reference key="parent" ref="1049"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">3176</int>
+						<reference key="object" ref="695338593"/>
+						<reference key="parent" ref="1049"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -9490,6 +9522,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>3149.IBPluginDependency</string>
 					<string>3165.IBPluginDependency</string>
 					<string>3172.IBPluginDependency</string>
+					<string>3176.IBPluginDependency</string>
 					<string>346.IBPluginDependency</string>
 					<string>346.ImportedFromIB2</string>
 					<string>348.IBPluginDependency</string>
@@ -9608,9 +9641,9 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{214, 345}, {700, 200}}</string>
+					<string>{{15, 559}, {700, 200}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{214, 345}, {700, 200}}</string>
+					<string>{{15, 559}, {700, 200}}</string>
 					<reference ref="9"/>
 					<string>{{49, 661}, {640, 200}}</string>
 					<reference ref="9"/>
@@ -9694,7 +9727,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
-					<string>{{435, 359}, {607, 197}}</string>
+					<string>{{435, 96}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{422, 211}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -9888,6 +9921,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<reference ref="9"/>
@@ -9952,7 +9986,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">3175</int>
+			<int key="maxID">3179</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -10107,10 +10141,12 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>attackWithinText</string>
 							<string>auraController</string>
 							<string>behaviorPopup</string>
+							<string>brokenWeaponsCheckbox</string>
 							<string>chatController</string>
 							<string>combatController</string>
 							<string>combatProfilePopup</string>
 							<string>controller</string>
+							<string>corpseController</string>
 							<string>gatherDistText</string>
 							<string>herbalismCheckbox</string>
 							<string>herbalismSkillText</string>
@@ -10164,10 +10200,12 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>id</string>
 							<string>AuraController</string>
 							<string>id</string>
+							<string>id</string>
 							<string>ChatController</string>
 							<string>CombatController</string>
 							<string>id</string>
 							<string>Controller</string>
+							<string>CorpseController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10351,6 +10389,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>botToolbarItem</string>
 							<string>chatLogController</string>
 							<string>chatLogToolbarItem</string>
+							<string>corpseController</string>
 							<string>currentStatusText</string>
 							<string>disableGUIScriptCheckbox</string>
 							<string>itemController</string>
@@ -10392,6 +10431,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>NSToolbarItem</string>
 							<string>ChatLogController</string>
 							<string>NSToolbarItem</string>
+							<string>CorpseController</string>
 							<string>id</string>
 							<string>NSButton</string>
 							<string>InventoryController</string>
@@ -10427,6 +10467,18 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="405012694">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">Controller.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">CorpseController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">controller</string>
+						<string key="NS.object.0">Controller</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">CorpseController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

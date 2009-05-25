@@ -36,6 +36,7 @@
 @class WaypointController;
 @class ProcedureController;
 @class QuestController;
+@class CorpseController;
 
 @class ScanGridView;
 
@@ -56,6 +57,8 @@
     IBOutlet ProcedureController    *procedureController;
 
 	IBOutlet QuestController		*questController;
+	
+	IBOutlet CorpseController		*corpseController;
 	
     IBOutlet NSView *view;
     
