@@ -67,6 +67,7 @@
 @property (readonly) NSString *playerName;
 @property (readonly) NSString *accountName;
 @property (readonly) NSString *serverName;
+@property (readonly) NSString *lastErrorMessage;
 
 - (BOOL)playerIsValid;
 - (void)setStructureAddress: (NSNumber*)address;

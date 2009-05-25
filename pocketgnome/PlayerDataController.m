@@ -153,6 +153,21 @@ static PlayerDataController* sharedController = nil;
     }
 }
 
+
+- (NSString*)lastErrorMessage {
+    if( LAST_RED_ERROR_MESSAGE ) {
+        char str[100];
+        str[99] = 0;
+        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: LAST_RED_ERROR_MESSAGE Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
+            NSString *string = [NSString stringWithUTF8String: str];
+            if([string length]) {
+                return string;
+            }
+        }
+    }
+    return @"";
+}
+
 - (NSString*)playerName {
     if( PLAYER_NAME_STATIC ) {
         char str[13];
