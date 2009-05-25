@@ -215,7 +215,7 @@
 #define CORPSE_STATIC_Z			((IS_X86) ? 0x13FA5C8 : 0x0)
 
 #define CORPSE_STATIC_X_RADAR	((IS_X86) ? 0x1301160 : 0x0)
-#defien CORPSE_STATIC_Y_RADAR	((IS_X86) ? 0x1301164 : 0x0)
+#define CORPSE_STATIC_Y_RADAR	((IS_X86) ? 0x1301164 : 0x0)
 
 // 3.1.2  valid
 #define LAST_RED_ERROR_MESSAGE     ((IS_X86) ? 0x013FA620 : 0x0) // Red text error in wow interface
