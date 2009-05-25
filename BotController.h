@@ -68,6 +68,7 @@
     int _currentHotkeyModifier, _currentPetAttackHotkeyModifier;
     int _currentHotkey, _currentPetAttackHotkey;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting;
+	BOOL _doCheckForBrokenWeapons;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -111,6 +112,7 @@
     IBOutlet NSButton *anyLevelCheckbox;
     
     IBOutlet id miningCheckbox;
+	IBOutlet id brokenWeaponsCheckbox;
     IBOutlet id herbalismCheckbox;
     IBOutlet id miningSkillText;
     IBOutlet id herbalismSkillText;

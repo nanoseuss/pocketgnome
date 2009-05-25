@@ -17,7 +17,7 @@
 #define GUID_HIGH32(x)    (UInt32)(((UInt64)(x) >> 32) & 0xFFFFFFFF00000000ULL);
 
 enum HighGuid {
-    HIGHGUID_ITEM           = 0x4100,   // 3.1, was 0x4000 before
+    HIGHGUID_ITEM           = 0x4580,   // 3.1, was 0x4000 before, 0x4100 in 3.1.1, 0x4580 in 3.1.2
     HIGHGUID_CONTAINER      = 0x4100,   // 3.1, was 0x4000 before
     HIGHGUID_PLAYER         = 0x1000,   // 3.1, was 0x0000 before
     HIGHGUID_GAMEOBJECT     = 0xF110,   // 3.1
