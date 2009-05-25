@@ -203,17 +203,15 @@
 #define ChatLog_Start			((IS_X86) ? 0x13A0E3C : 0x0) // 3.1.2
 										 // 0x1374FB0 : 0x0) // 3.1.1
 
+// 3.1.2 valid - ONLY valid if the player has released
+#define CORPSE_STATIC_X			((IS_X86) ? 0x13FA5C0 : 0x0)
+#define CORPSE_STATIC_Y			((IS_X86) ? 0x13FA5C4 : 0x0)
+#define CORPSE_STATIC_Z			((IS_X86) ? 0x13FA5C8 : 0x0)
 
 // **************************** NOT USED/DATED ******************************************* //
 
 
 // 3.1.2
-
-// ONLY valid if the player has released
-#define CORPSE_STATIC_X			((IS_X86) ? 0x13FA5C0 : 0x0)
-#define CORPSE_STATIC_Y			((IS_X86) ? 0x13FA5C4 : 0x0)
-#define CORPSE_STATIC_Z			((IS_X86) ? 0x13FA5C8 : 0x0)
-
 #define CORPSE_STATIC_X_RADAR	((IS_X86) ? 0x1301160 : 0x0)
 #define CORPSE_STATIC_Y_RADAR	((IS_X86) ? 0x1301164 : 0x0)
 
