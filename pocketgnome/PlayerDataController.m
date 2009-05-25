@@ -1039,6 +1039,13 @@ static PlayerDataController* sharedController = nil;
     [self performSelector: @selector(refreshPlayerData) withObject: nil afterDelay: _updateFrequency];
 }
 
-
+-(Position*)corpsePosition{
+	 MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	float pos[3] = {-1.0f, -1.0f, -1.0f };
+	if([memory loadDataForObject: self atAddress: CORPSE_STATIC_X Buffer: (Byte *)&pos BufLength: sizeof(float)*3])
+		return [Position positionWithX: pos[0] Y: pos[1] Z: pos[2]];
+	return nil;
+}
 
 @end

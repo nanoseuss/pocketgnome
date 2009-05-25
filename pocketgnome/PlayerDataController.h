@@ -91,6 +91,7 @@
 
 @property (readwrite, retain) Unit *pet;
 
+- (Position*)corpsePosition;
 - (Position*)position;
 - (Position*)deathPosition;
 - (float)directionFacing;
