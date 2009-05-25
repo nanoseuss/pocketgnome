@@ -22,6 +22,7 @@
 #import "InventoryController.h"
 #import "PlayersController.h"
 #import "QuestController.h"
+#import "CorpseController.h"
 
 #import "BetterSegmentedControl.h"
 #import "Behavior.h"
@@ -2077,7 +2078,14 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     
     // if the player is a Ghost...
     if( [playerController isGhost]) {
-        if( [playerController deathPosition] && [playerPosition distanceToPosition: [playerController deathPosition]] < 26.0 ) {
+		
+		// Try to find out corpse in the corp list!  deathPosition could be teh sux if we just logged in!
+		Position *corpsePosition = [corpseController findPositionbyGUID: [[playerController player] lowGUID]];
+		//PGLog(@"Position of corpse found: %@", corpsePosition);
+
+		if ( corpsePosition && [playerPosition distanceToPosition: corpsePosition] < 26.0 ){
+		
+        //if( [playerController deathPosition] && [playerPosition distanceToPosition: [playerController deathPosition]] < 26.0 ) {
             // we found our corpse
             [controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
             [movementController pauseMovement];

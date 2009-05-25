@@ -22,6 +22,7 @@
 @class ProcedureController;
 @class MemoryViewController;
 @class PlayerDataController;
+@class CorpseController;
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
@@ -42,6 +43,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet WaypointController  *routeController;
     IBOutlet ProcedureController *behaviorController;
     IBOutlet ChatLogController   *chatLogController;
+	IBOutlet CorpseController	 *corpseController;
 
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;

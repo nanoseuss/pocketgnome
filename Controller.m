@@ -18,6 +18,7 @@
 #import "PlayerDataController.h"
 #import "MemoryViewController.h"
 #import "PlayersController.h"
+#import "CorpseController.h"
 
 #import "CGSPrivate.h"
 
@@ -347,6 +348,7 @@ static Controller* sharedController = nil;
             if(objectType == TYPEID_CORPSE) {
                 if( ![_corpses containsObject: addr]) {
                     [_corpses addObject: addr];
+					//PGLog(@"Adding corpse: %@", addr);
                 } else { return; }
             }
             
@@ -409,6 +411,7 @@ static Controller* sharedController = nil;
         [itemController addAddresses: _items];
         [nodeController addAddresses: _gameObjects];
         [playersController addAddresses: _players];
+		[corpseController addAddresses: _corpses];
         
         //PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
         date = [NSDate date];
