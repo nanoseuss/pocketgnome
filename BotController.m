@@ -1076,6 +1076,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         
                         // then save our old action back
                         [[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+						
+						// Lets just check to see if there was an error
+						/*
+						usleep([controller refreshDelay]);
+						
+						if ( [spellController lastAttemptedActionID] == actionID ){
+							PGLog(@"Spell didn't cast - reason: %@", [playerController lastErrorMessage]);
+						}*/
                         
                     }
                     
