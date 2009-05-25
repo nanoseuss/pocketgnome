@@ -33,6 +33,10 @@
 #import "PTHeader.h"
 #import "Position.h"
 
+#import <Foundation/foundation.h>
+#import <SecurityFoundation/SFAuthorization.h>
+#import <Security/AuthorizationTags.h>
+
 typedef enum {
     wowNotOpenState =       0,
     memoryInvalidState =    1,
@@ -591,14 +595,14 @@ static Controller* sharedController = nil;
 }
 
 - (void)foundObjectListAddress: (NSNumber*)address {
-    PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
+    //PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
     MemoryAccess *memory = [self wowMemoryAccess];
     _foundPlayer = NO;
     if(memory && address && ([address unsignedIntValue] != 0)) {
         NSDate *date = [NSDate date];
         UInt32 playerGUID = 0;  // we only load the lower 32 bits, since the upper 32 are 0 for players
         if([memory loadDataForObject: self atAddress: PLAYER_GUID_STATIC Buffer: (Byte*)&playerGUID BufLength: sizeof(playerGUID)] && playerGUID) {
-            PGLog(@"Got player GUID: 0x%X", playerGUID);
+            //PGLog(@"Got player GUID: 0x%X", playerGUID);
             
             int count = 0;
             UInt32 startAddr = [address unsignedIntValue], value = 0, savedAddr = 0;
@@ -1908,6 +1912,57 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
     } else {
         NSLog(@"front");
     }
+}
+
+- (void)killWOW{
+	
+	pid_t wowPID = 0;
+    ProcessSerialNumber wowPSN = [self getWoWProcessSerialNumber];
+    GetProcessPID(&wowPSN, &wowPID);
+	
+	// Then we have a process to kill yay!
+	if ( wowPID > 0 ){
+		AuthorizationRef myAuthRef;
+		OSStatus myStatus = AuthorizationCopyPrivilegedReference(&myAuthRef, kAuthorizationFlagDefaults);
+
+		// w00t in as root - kill wow!
+		if (myStatus == errAuthorizationSuccess)
+		{
+			// prepare communication path - used to signal that process is loaded
+			FILE *myCommunicationsPipe = NULL;
+			char myReadBuffer[256];
+			
+			char *argv[3];
+			argv[0] = malloc(25);
+			argv[1] = NULL;
+			
+			snprintf(argv[0], 25, "%d", wowPID);
+			
+			myStatus = AuthorizationExecuteWithPrivileges(myAuthRef, "/bin/kill", 0, argv, &myCommunicationsPipe);
+			
+			// external app is running asynchronously - it will send to stdout when loaded
+			if (myStatus == errAuthorizationSuccess)
+			{
+				
+#ifdef PGLOGGING
+				for(;;) { 
+					int bytesRead = read(fileno(myCommunicationsPipe), myReadBuffer, sizeof(myReadBuffer)); 
+					if (bytesRead < 1) { // < 1
+						break; 
+					}
+					write(fileno(stdout), myReadBuffer, bytesRead); 
+					fflush(stdout);
+				}
+#else
+				read(fileno(myCommunicationsPipe), myReadBuffer, sizeof(myReadBuffer));
+#endif
+				fclose(myCommunicationsPipe);
+			}
+			
+			// release authorization reference
+			myStatus = AuthorizationFree (myAuthRef, kAuthorizationFlagDestroyRights);
+		}
+	}
 }
 
 @end

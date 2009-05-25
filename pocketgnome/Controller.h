@@ -116,6 +116,8 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 
 - (void)showMemoryView;
 
+- (void)killWOW;
+
 // factions stuff
 - (NSDictionary*)factionDict;
 - (UInt32)reactMaskForFaction: (UInt32)faction;

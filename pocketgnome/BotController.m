@@ -162,8 +162,7 @@
         self.pvpInBG = NO;
         self.pvpLeaveInactive = NO;
         self.pvpPlayWarning = NO;
-        
-        
+		
         [NSBundle loadNibNamed: @"Bot" owner: self];
     }
     return self;
@@ -724,6 +723,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* Temp. Enchant Condition          */
                 /* ******************************** */
             case VarietyTempEnchant:;
+				test = YES;
                 
                 if(test) PGLog(@"Doing Temp Enchant condition...");
                 
@@ -733,6 +733,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 conditionEval = ([condition comparator] == CompareExists) ? hadEnchant : !hadEnchant;
                 if(test) PGLog(@" --> Had enchant? %@. Result is %@.", YES_NO(hadEnchant), TRUE_FALSE(conditionEval));
                 
+				test = NO;
+				
                 break;
                 
                 
@@ -1829,9 +1831,9 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
             [movementController beginPatrol: 1 andAttack: NO];
         } else {
-            // PGLog(@"Finished something else...");
+            //PGLog(@"Finished something else...");
         }
-    }
+	}
 }
 
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint {
@@ -2126,6 +2128,33 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     }
     
     /* *** if we get here, we aren't in combat *** */
+	
+	// Lets check to see if we have some broken weapons
+	if(_doCheckForBrokenWeapons){
+		//PGLog(@"Checking for broken weapons...");
+		
+		Player *player = [playerController player];
+		Item *itemMainHand = [itemController itemForGUID: [player itemGUIDinSlot: SLOT_MAIN_HAND]];
+		Item *itemOffHand = [itemController itemForGUID: [player itemGUIDinSlot: SLOT_OFF_HAND]];
+		
+		int durabilityMainHand = [[itemMainHand durability] intValue];
+		int durabilityOffHand = [[itemOffHand durability] intValue];
+		
+		// If one of our weapons is broken, we should log out :-(  /cry
+		if ( durabilityMainHand == 0 || durabilityOffHand == 0 ){
+			
+			// Lets just kill the process, we could send "/logout" but then we will have to wait 20 seconds, and things like combat could take place etc...
+			PGLog(@"[Bot] Logging out due to broken weapons: Main Hand Durability(%d), Off Hand Durability(%d)", durabilityMainHand, durabilityOffHand);
+			
+			// Stop the bot
+			[self stopBot: nil];
+			
+			// Kill the process
+			[controller killWOW];
+			
+			return NO;
+		}
+	}
     
     // first, check if we are in combat
     // this is to compensate for MovementController calling evaluate while moving to a mob
@@ -2375,6 +2404,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         _herbLevel = [herbalismSkillText intValue];
         _doSkinning = [skinningCheckbox state];
         _skinLevel = [skinningSkillText intValue];
+		_doCheckForBrokenWeapons = [brokenWeaponsCheckbox intValue];
         
         int canSkinUpToLevel = 0;
         if(_skinLevel <= 100) {
