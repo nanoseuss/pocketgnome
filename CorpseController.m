@@ -19,11 +19,15 @@
 {
     self = [super init];
     if (self != nil) {
-        
         _corpseList = [[NSMutableArray array] retain];
-
     }
     return self;
+}
+
+- (void) dealloc
+{
+    [_corpseList release];
+    [super dealloc];
 }
 
 - (int)totalCorpses{

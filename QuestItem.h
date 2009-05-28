@@ -10,11 +10,11 @@
 
 
 @interface QuestItem : NSObject {
-	NSNumber *item;
-	NSNumber *quantity;
+	NSNumber *_item;
+	NSNumber *_quantity;
 }
 
-@property (retain) NSNumber* item;
-@property (retain) NSNumber* quantity;
+@property (readwrite, retain) NSNumber *item;
+@property (readwrite, retain) NSNumber *quantity;
 
 @end

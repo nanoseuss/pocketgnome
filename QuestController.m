@@ -15,8 +15,7 @@
 #import "QuestItem.h"
 
 // 3.1.1 valid
-#define QUEST_START_STATIC			((IS_X86) ? 0x14125F0 : 0x0)
-
+// #define QUEST_START_STATIC			((IS_X86) ? 0x14125F0 : 0x0)
 
 // Using QUEST_START_STATIC
 /* This quest list is a bit confusing... here is an example:
@@ -48,10 +47,6 @@
 
 @implementation QuestController
 
-- (void)awakeFromNib {
-	NSLog(@"%s", __FUNCTION__);
-}
-
 - (id) init {
     self = [super init];
     if (self != nil) {
@@ -59,6 +54,13 @@
     }
     return self;
 }
+
+- (void) dealloc
+{
+    [_playerQuests release];
+    [super dealloc];
+}
+
 
 - (NSArray*)playerQuests {
     return [[_playerQuests retain] autorelease];
@@ -76,16 +78,15 @@ typedef struct QuestInfo {
 	
 	// Get access to memory
 	MemoryAccess *wowMemory = [controller wowMemoryAccess];
-	NSLog(@"%@", playerDataController);
-	int i;
 	UInt32 playerAddress = [playerDataController baselineAddress];
 	
 	// Add the player's current quests to the array pls
+	int i;
 	for ( i = 0; i < 25; i++ ){
 		QuestInfo quest;
 		if([wowMemory loadDataForObject: self atAddress: (playerAddress + PlayerField_QuestStart) + i*sizeof(quest) Buffer:(Byte*)&quest BufLength: sizeof(quest)]) {
 			if ( quest.questID > 0 ){
-				[_playerQuests addObject:[[Quest alloc] initWithQuestID:[NSNumber numberWithInt:quest.questID]]];
+				[_playerQuests addObject: [Quest questWithID: [NSNumber numberWithInt: quest.questID]]];
 			}
 			else{
 				break;
@@ -94,10 +95,9 @@ typedef struct QuestInfo {
 	}
 	
 	// Get the data for each quest from WoWHead
-	int k;
-	for(k = 0; k < [_playerQuests count]; k++ ){
-		[[_playerQuests objectAtIndex:k] reloadQuestData];
-	}
+    for(Quest *quest in _playerQuests) {
+        [quest reloadQuestData];
+    }
 	
 	/*
 	 // No real point in using the below unless you want to find the Title IDs (faction)...  The below bytes simply go from 1 up to the max quest number... (bytes... bytes1 and bytes2 are always 0)
@@ -159,19 +159,14 @@ typedef struct QuestInfo {
 		return;
 	}
 	
-	int k, i;
-	Quest *tmp;
 	NSLog(@"Total quests: %i", [_playerQuests count] );
-	for(k = 0; k < [_playerQuests count]; k++ ){
-		tmp = [_playerQuests objectAtIndex:k];
+	for(Quest *quest in _playerQuests) {
 		
-		PGLog(@"Quest: %@ %@ %d %d %d", [tmp ID], [tmp name], [tmp._bytes1 intValue], [tmp._bytes2 intValue], [tmp._bytes3 intValue]);
+		PGLog(@"Quest: %@ %@", [quest questID], [quest name]);
 		
-		if ( [tmp requiredItemTotal] ){
-			for(i = 0; i < [tmp requiredItemTotal]; i++){
-				PGLog(@"  Required Item: %@ Quantity: %@", [tmp requiredItemIDIndex:i], [tmp requiredItemQuantityIndex:i]);	// crash here b/c of item
-			}
-		}
+        for(QuestItem *questItem in quest.itemRequirements){
+            PGLog(@"  Required Item: %@ Quantity: %@", [questItem item], [questItem quantity]);
+        }
 	}
 }
 

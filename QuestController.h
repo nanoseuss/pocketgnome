@@ -13,14 +13,13 @@
 
 @interface QuestController : NSObject {
     IBOutlet Controller             *controller;
-	IBOutlet PlayerDataController      *playerDataController;
+	IBOutlet PlayerDataController   *playerDataController;
 	
 	NSMutableArray			*_playerQuests;
 }
 
 // Holds all of our quest info
 - (NSArray*)playerQuests;
-
 
 // This populates the playerQuests array with quest data
 - (void)reloadPlayerQuests;

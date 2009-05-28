@@ -681,7 +681,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -792,7 +792,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 				7DC3FEF20D57C65700BEB58B /* MemoryAccessTool */,
 				7DC3FEFB0D57C6B900BEB58B /* InstallTool */,
 			);
@@ -1159,8 +1159,6 @@
 		7D72453E0D1511E20094665C /* Units */ = {
 			isa = PBXGroup;
 			children = (
-				03CEF7840FCCD93100B47336 /* Corpse.h */,
-				03CEF7850FCCD93100B47336 /* Corpse.m */,
 				7DB0ADE30EB02F0C00B81BC1 /* Aura.h */,
 				7DB0ADE40EB02F0C00B81BC1 /* Aura.m */,
 				7D7A6A470D270F130008C3FF /* WoWObject.h */,
@@ -1183,6 +1181,8 @@
 				7DAD11650E117BF000B0F7BD /* Macro.m */,
 				7D1BEE510F8733A400DF5FBF /* ChatLogEntry.h */,
 				7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */,
+				03CEF7840FCCD93100B47336 /* Corpse.h */,
+				03CEF7850FCCD93100B47336 /* Corpse.m */,
 				034429B60FAA3E1800E9DE03 /* Quest.h */,
 				034429B70FAA3E1800E9DE03 /* Quest.m */,
 				034429BB0FAA3E3800E9DE03 /* QuestItem.h */,
@@ -1414,7 +1414,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

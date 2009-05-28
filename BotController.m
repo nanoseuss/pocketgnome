@@ -724,7 +724,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 /* Temp. Enchant Condition          */
                 /* ******************************** */
             case VarietyTempEnchant:;
-				test = YES;
                 
                 if(test) PGLog(@"Doing Temp Enchant condition...");
                 
@@ -733,8 +732,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 BOOL hadEnchant = [item hasTempEnchantment];
                 conditionEval = ([condition comparator] == CompareExists) ? hadEnchant : !hadEnchant;
                 if(test) PGLog(@" --> Had enchant? %@. Result is %@.", YES_NO(hadEnchant), TRUE_FALSE(conditionEval));
-                
-				test = NO;
 				
                 break;
                 
@@ -2139,8 +2136,8 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
 		Item *itemMainHand = [itemController itemForGUID: [player itemGUIDinSlot: SLOT_MAIN_HAND]];
 		Item *itemOffHand = [itemController itemForGUID: [player itemGUIDinSlot: SLOT_OFF_HAND]];
 		
-		int durabilityMainHand = [[itemMainHand durability] intValue];
-		int durabilityOffHand = [[itemOffHand durability] intValue];
+		int durabilityMainHand = itemMainHand ? [[itemMainHand durability] intValue] : 1;
+		int durabilityOffHand = itemOffHand ? [[itemOffHand durability] intValue] : 1;
 		
 		// If one of our weapons is broken, we should log out :-(  /cry
 		if ( durabilityMainHand == 0 || durabilityOffHand == 0 ){
