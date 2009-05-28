@@ -28,7 +28,7 @@
 	
 	UInt32 value = 0;
     if([_memory loadDataForObject: self atAddress: ([self infoAddress] + CorpseField_OwnerGUID) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
-		return value;		
+		return value;
 	}
 	
 	return 0;

@@ -11,14 +11,40 @@
 
 @implementation QuestItem
 
-@synthesize item;
-@synthesize quantity;
+- (id) init
+{
+    self = [super init];
+    if (self != nil) {
+        self.item = nil;
+        self.quantity = nil;
+    }
+    return self;
+}
+
+@synthesize item = _item;
+@synthesize quantity = _quantity;
 
 - (void) dealloc {
-	[item release];
-	[quantity release];
+    self.item = nil;
+    self.quantity = nil;
 	
 	[super dealloc];
+}
+
+- (id)initWithCoder:(NSCoder *)decoder
+{
+	self = [self init];
+	if(self) {
+        self.item = [decoder decodeObjectForKey: @"Item"];
+        self.quantity = [decoder decodeObjectForKey: @"Quantity"];
+	}
+	return self;
+}
+
+-(void)encodeWithCoder:(NSCoder *)coder
+{
+    [coder encodeObject: self.item forKey: @"Item"];
+    [coder encodeObject: self.quantity forKey: @"Quantity"];
 }
 
 @end

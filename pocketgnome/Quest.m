@@ -15,23 +15,17 @@
 
 @implementation Quest
 
-@synthesize _bytes1;
-@synthesize _bytes2;
-@synthesize _bytes3;
-
 - (id) init
 {
     self = [super init];
     if (self != nil) {
-        _questID = nil;
-        _itemRequirements = nil;
-        _description = nil;
-        _rewards = nil;
-        _startNPC = nil;
-        _endNPC = nil;
-		_level = nil;
-		_requiredLevel = nil;
-		
+        self.questID = nil;
+        self.name = nil;
+        self.level = nil;
+        self.requiredLevel = nil;
+        self.startNPC = nil;
+        self.endNPC;
+        self.itemRequirements = nil;
     }
     return self;
 }
@@ -43,7 +37,7 @@
             [self release];
             return nil;
         }
-        _questID = [questID retain];
+        self.questID = questID;
 		
 		// Lets grab quest data...
 		//[self reloadQuestData];
@@ -51,22 +45,26 @@
     return self;
 }
 
++ (Quest*)questWithID: (NSNumber*)questID {
+    return [[[Quest alloc] initWithQuestID: questID] autorelease];
+}
+
 - (id)initWithCoder:(NSCoder *)decoder
 {
 	self = [super init];
 	if(self) {
-        self.ID = [decoder decodeObjectForKey: @"QuestID"];
+        self.questID = [decoder decodeObjectForKey: @"QuestID"];
         self.name = [decoder decodeObjectForKey: @"Name"];
 		self.level = [decoder decodeObjectForKey: @"Level"];
-		self.requiredlevel = [decoder decodeObjectForKey: @"RequiredLevel"];
-		self.startnpc = [decoder decodeObjectForKey: @"StartNPC"];
-		self.endnpc = [decoder decodeObjectForKey: @"EndNPC"];
-		self.itemrequirements = [decoder decodeObjectForKey: @"ItemRequirements"];
+		self.requiredLevel = [decoder decodeObjectForKey: @"RequiredLevel"];
+		self.startNPC = [decoder decodeObjectForKey: @"StartNPC"];
+		self.endNPC = [decoder decodeObjectForKey: @"EndNPC"];
+		self.itemRequirements = [decoder decodeObjectForKey: @"ItemRequirements"];
         
         if(self.name) {
             NSRange range = [self.name rangeOfString: @"html>"];
             if( ([self.name length] == 0) || (range.location != NSNotFound)) {
-                PGLog(@"Name for quest %@ is invalid.", self.ID);
+                PGLog(@"Name for quest %@ is invalid.", self.questID);
                 self.name = nil;
             }
         }
@@ -76,196 +74,44 @@
 
 -(void)encodeWithCoder:(NSCoder *)coder
 {
-    [coder encodeObject: self.ID forKey: @"QuestID"];
+    [coder encodeObject: self.questID forKey: @"QuestID"];
     [coder encodeObject: self.name forKey: @"Name"];
 	[coder encodeObject: self.level forKey: @"Level"];
-	[coder encodeObject: self.requiredlevel forKey: @"RequiredLevel"];
-	[coder encodeObject: self.startnpc forKey: @"StartNPC"];
-	[coder encodeObject: self.endnpc forKey: @"EndNPC"];
-	[coder encodeObject: self.endnpc forKey: @"ItemRequirements"];
-	
-	
+	[coder encodeObject: self.requiredLevel forKey: @"RequiredLevel"];
+	[coder encodeObject: self.startNPC forKey: @"StartNPC"];
+	[coder encodeObject: self.endNPC forKey: @"EndNPC"];
+	[coder encodeObject: self.itemRequirements forKey: @"ItemRequirements"];
 }
 
 - (void)dealloc {
-    self.ID = nil;
+    self.questID = nil;
     self.name = nil;
 	self.level = nil;
-	self.requiredlevel = nil;
-	self.startnpc = nil;
-	self.itemrequirements = nil;
+	self.requiredLevel = nil;
+	self.startNPC = nil;
+    self.endNPC;
+	self.itemRequirements = nil;
 	
-	[_itemRequirements release];
     [_connection release];
     [_downloadData release];
     
     [super dealloc];
 }
 
+@synthesize questID = _questID;
+@synthesize name = _name;
+@synthesize level = _level;
+@synthesize requiredLevel = _requiredLevel;
+@synthesize startNPC = _startNPC;
+@synthesize endNPC = _endNPC;
+@synthesize itemRequirements = _itemRequirements;
+
 #pragma mark -
 
-- (NSNumber*)ID {
-    NSNumber *temp = nil;
-    @synchronized (@"ID") {
-        temp = [_questID retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setID: (NSNumber*)ID {
-    id temp = nil;
-    [ID retain];
-    @synchronized (@"ID") {
-        temp = _questID;
-        _questID = ID;
-    }
-    [temp release];
-}
-
-- (NSString*)name {
-    NSString *temp = nil;
-    @synchronized (@"Name") {
-        temp = [_name retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setName: (NSString*)name {
-    id temp = [name retain];
-    @synchronized (@"Name") {
-        temp = _name;
-        _name = name;
-    }
-    [temp release];
-}
-
-- (NSNumber*)level {
-    NSNumber *temp = nil;
-    @synchronized (@"Level") {
-        temp = [_level retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setLevel: (NSNumber*)level {
-    id temp = nil;
-    [level retain];
-    @synchronized (@"Level") {
-        temp = _level;
-        _level = level;
-    }
-    [temp release];
-}
-
-- (NSNumber*)requiredlevel {
-    NSNumber *temp = nil;
-    @synchronized (@"RequiredLevel") {
-        temp = [_requiredLevel retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setRequiredlevel: (NSNumber*)requiredlevel {
-    id temp = nil;
-    [requiredlevel retain];
-    @synchronized (@"RequiredLevel") {
-        temp = _requiredLevel;
-        _requiredLevel = requiredlevel;
-    }
-    [temp release];
-}
-
-- (NSNumber*)startnpc {
-    NSNumber *temp = nil;
-    @synchronized (@"StartNPC") {
-        temp = [_startNPC retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setStartnpc: (NSNumber*)startnpc {
-    id temp = nil;
-    [startnpc retain];
-    @synchronized (@"StartNPC") {
-        temp = _startNPC;
-        _startNPC = startnpc;
-    }
-    [temp release];
-}
-
-- (NSNumber*)endnpc {
-    NSNumber *temp = nil;
-    @synchronized (@"EndNPC") {
-        temp = [_endNPC retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setEndnpc: (NSNumber*)endnpc {
-    id temp = nil;
-    [endnpc retain];
-    @synchronized (@"EndNPC") {
-        temp = _endNPC;
-        _endNPC = endnpc;
-    }
-    [temp release];
-}
-
-- (NSMutableArray*)itemrequirements {
-    NSNumber *temp = nil;
-    @synchronized (@"ItemRequirements") {
-        temp = [_itemRequirements retain];
-    }
-    return [temp autorelease];
-}
-
-- (void)setItemrequirements: (NSMutableArray*)itemrequirements {
-    id temp = nil;
-    [itemrequirements retain];
-    @synchronized (@"ItemRequirements") {
-        temp = _itemRequirements;
-        _itemRequirements = itemrequirements;
-    }
-    [temp release];
-}
-
 - (int)requiredItemTotal{
-	return [_itemRequirements count];
-}
-- (NSNumber*)requiredItemIDIndex: (int)index{
-	if ( index < [_itemRequirements count] ){
-		QuestItem *tmp = [_itemRequirements objectAtIndex:index];
-		if (tmp){
-			return [tmp item];
-		}
-		else{
-			return 0;
-		}
-	}
-	else{
-		NSLog(@"Requested invalid Index for _itemRequirements: %d", index);
-	}
-	
-	return 0;
-}
-- (NSNumber*)requiredItemQuantityIndex: (int)index{
-	if ( index < [_itemRequirements count] ){
-		QuestItem *tmp = [_itemRequirements objectAtIndex:index];
-		if (tmp){
-			return [tmp quantity];
-		}
-		else{
-			return 0;
-		}
-	}
-	else{
-		NSLog(@"Requested invalid Index for _itemRequirements: %d", index);
-	}
-	
-	return 0;
+	return [self.itemRequirements count];
 }
 
-//requiredItemQuantityIndex
 #pragma mark -
 
 //#define NAME_SEPARATOR      @"<table class=ttb width=300><tr><td colspan=2>"
@@ -293,12 +139,12 @@
 
 - (void)reloadQuestData {
     
-    if([[self ID] intValue] < 0 || [[self ID] intValue] > MaxQuestID)
+    if([[self questID] intValue] < 0 || [[self questID] intValue] > MaxQuestID)
         return;
     
     [_connection cancel];
     [_connection release];
-    _connection = [[NSURLConnection alloc] initWithRequest: [NSURLRequest requestWithURL: [NSURL URLWithString: [NSString stringWithFormat: @"http://www.wowhead.com/?quest=%@", [self ID]]]] delegate: self];
+    _connection = [[NSURLConnection alloc] initWithRequest: [NSURLRequest requestWithURL: [NSURL URLWithString: [NSString stringWithFormat: @"http://www.wowhead.com/?quest=%@", [self questID]]]] delegate: self];
     if(_connection) {
         [_downloadData release];
         _downloadData = [[NSMutableData data] retain];
@@ -344,7 +190,7 @@
         
         // check to see if this is a valid quest
         if( ([scanner scanUpToString: @"Error - Wowhead" intoString: nil]) && ![scanner isAtEnd]) {
-            int questID = [[self ID] intValue];
+            int questID = [[self questID] intValue];
             switch(questID) {
                 default:
                     self.name = @"[Unknown]";
@@ -355,7 +201,7 @@
             return;
         } else {
             if( [scanner scanUpToString: @"Bad Request" intoString: nil] && ![scanner isAtEnd]) {
-                int questID = [[self ID] intValue];
+                int questID = [[self questID] intValue];
                 PGLog(@"Error loading quest %d.", questID);
                 return;
             } else {
@@ -398,9 +244,9 @@
         if([scanner scanUpToString: REQD_LEVEL_SEPRATOR intoString: nil] && [scanner scanString: REQD_LEVEL_SEPRATOR intoString: nil]) {
             int requiredLevel = 0;
             if([scanner scanInt: &requiredLevel] && requiredLevel) {
-                self.requiredlevel = [NSNumber numberWithInt: requiredLevel];
+                self.requiredLevel = [NSNumber numberWithInt: requiredLevel];
             } else {
-                self.requiredlevel = [NSNumber numberWithInt: 0];
+                self.requiredLevel = [NSNumber numberWithInt: 0];
             }
         } else {
             [scanner setScanLocation: scanSave];
@@ -411,9 +257,9 @@
         if([scanner scanUpToString: START_SEPERATOR intoString: nil] && [scanner scanString: START_SEPERATOR intoString: nil]) {
             int start = 0;
             if([scanner scanInt: &start] && start) {
-                self.startnpc = [NSNumber numberWithInt: start];
+                self.startNPC = [NSNumber numberWithInt: start];
             } else {
-                self.startnpc = [NSNumber numberWithInt: 0];
+                self.startNPC = [NSNumber numberWithInt: 0];
             }
         } else {
             [scanner setScanLocation: scanSave];
@@ -424,9 +270,9 @@
         if([scanner scanUpToString: END_SEPERATOR intoString: nil] && [scanner scanString: END_SEPERATOR intoString: nil]) {
             int endnpc = 0;
             if([scanner scanInt: &endnpc] && endnpc) {
-                self.endnpc = [NSNumber numberWithInt: endnpc];
+                self.endNPC = [NSNumber numberWithInt: endnpc];
             } else {
-                self.endnpc = [NSNumber numberWithInt: 0];
+                self.endNPC = [NSNumber numberWithInt: 0];
             }
         } else {
             [scanner setScanLocation: scanSave];
@@ -450,7 +296,7 @@
 			while(searching){
 				if([scannerUpToRewards scanUpToString: ITEM_SEPERATOR intoString: nil] && [scannerUpToRewards scanString: ITEM_SEPERATOR intoString: nil]) {
 					int itemID = 0;
-					QuestItem *questItem = [[QuestItem alloc] init];
+					QuestItem *questItem = [[[QuestItem alloc] init] autorelease];
 					if([scannerUpToRewards scanInt: &itemID] && itemID) {
 						
 						// At this point we have the item ID #... now lets check to see if there is a quantity associated w/it
@@ -473,7 +319,7 @@
 			}
 			
 			// Make sure we save the items - duh!
-			self.itemrequirements = items;
+			self.itemRequirements = items;
 		}
 	}
 	

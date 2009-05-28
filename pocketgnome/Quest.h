@@ -12,12 +12,9 @@
 
 @interface Quest : NSObject {
     NSNumber *_questID;
-    
     NSString *_name;
-	NSString *_description;
 	
 	NSMutableArray *_itemRequirements;		// List of items that are needed to complete the quest
-	NSMutableArray *_rewards;				// List of items
 	
 	NSNumber *_startNPC;
 	NSNumber *_endNPC;
@@ -27,37 +24,20 @@
 	
 	NSURLConnection *_connection;
     NSMutableData *_downloadData;
-	
-	NSNumber *_bytes1;
-	NSNumber *_bytes2;
-	NSNumber *_bytes3;
 }
 
-@property (retain) NSNumber *_bytes1;
-@property (retain) NSNumber *_bytes2;
-@property (retain) NSNumber *_bytes3;
-
++ (Quest*)questWithID: (NSNumber*)questID;
 - (id)initWithQuestID: (NSNumber*)questID;
 
-- (NSNumber*)ID;
-- (void)setID: (NSNumber*)ID;
-- (NSString*)name;
-- (void)setName: (NSString*)name;
-- (NSNumber*)level;
-- (void)setLevel: (NSNumber*)level;
-- (NSNumber*)requiredlevel;
-- (void)setRequiredlevel: (NSNumber*)requiredlevel;
-- (NSNumber*)startnpc;
-- (void)setStartnpc: (NSNumber*)startnpc;
-- (NSNumber*)endnpc;
-- (void)setEndnpc: (NSNumber*)endnpc;
-- (NSMutableArray*)itemrequirements;
-- (void)setItemrequirements: (NSMutableArray*)itemrequirements;
-
+@property (readwrite, retain) NSNumber *questID;
+@property (readwrite, retain) NSString *name;
+@property (readwrite, retain) NSNumber *level;
+@property (readwrite, retain) NSNumber *requiredLevel;
+@property (readwrite, retain) NSNumber *startNPC;
+@property (readwrite, retain) NSNumber *endNPC;
+@property (readwrite, retain) NSMutableArray *itemRequirements;
 
 - (int)requiredItemTotal;
-- (NSNumber*)requiredItemIDIndex: (int)index;
-- (NSNumber*)requiredItemQuantityIndex: (int)index;
 
 - (void)reloadQuestData;
 
