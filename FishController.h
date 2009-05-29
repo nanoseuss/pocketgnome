@@ -11,8 +11,44 @@
 #import <Cocoa/Cocoa.h>
 
 
-@interface FishController : NSObject {
+@class SRRecorderControl;
 
+@class Controller;
+@class NodeController;
+@class PlayerDataController;
+@class MemoryAccess;
+@class ChatController;
+
+@class Node;
+
+@interface FishController : NSObject {
+    IBOutlet Controller             *controller;
+	IBOutlet NodeController			*nodeController;
+	IBOutlet PlayerDataController	*playerController;
+	IBOutlet ChatController			*chatController;
+	
+    IBOutlet NSView *view;
+	IBOutlet NSButton *startStopButton;
+	IBOutlet SRRecorderControl *fishingRecorder;
+	
+	BOOL _isFishing;
+	
+    NSSize minSectionSize, maxSectionSize;
 }
+
+
+// Controller interface
+@property (readonly) NSView *view;
+@property (readonly) NSString *sectionTitle;
+@property NSSize minSectionSize;
+@property NSSize maxSectionSize;
+
+
+- (IBAction)startStopFishing: (id)sender;
+
+- (void)fishBegin;
+- (void)clickBobber:(Node*)bobber;
+
+- (BOOL)moveMouseToWoWCoordsWithX: (float)x Y:(float)y Z:(float)z;
 
 @end
