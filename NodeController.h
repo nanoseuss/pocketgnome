@@ -63,6 +63,7 @@ typedef enum {
 - (void)finishedNode: (Node*)node;
 - (void)resetAllNodes;
 
+- (NSArray*)allFishingBobbers;
 - (NSArray*)allMiningNodes;
 - (NSArray*)allHerbalismNodes;
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type;

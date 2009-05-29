@@ -337,6 +337,19 @@ typedef enum {
 
 #pragma mark External Query
 
+
+- (NSArray*)allFishingBobbers{
+    NSMutableArray *nodes = [NSMutableArray array];
+    
+    for(Node *node in _nodeList) {
+		if ( [[node name] isEqualToString:@"Fishing Bobber"] ){
+			[nodes addObject: node];
+		}
+    }
+    
+    return nodes;
+}
+
 - (NSArray*)allMiningNodes {
     NSMutableArray *nodes = [NSMutableArray array];
     
