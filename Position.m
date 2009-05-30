@@ -169,4 +169,15 @@
     return fabsf([position zPosition] - [self zPosition]);
 }
 
+- (float)dotProduct: (Position*)position {
+	return [self xPosition]*[position xPosition] + [self yPosition]*[position yPosition] + [self zPosition]*[position zPosition];
+}
+
+- (Position*)difference: (Position*)position {
+	Position *diff = [[Position alloc] initWithX:[self xPosition] - [position xPosition]
+											   Y:[self yPosition] - [position yPosition]
+											   Z:[self zPosition] - [position zPosition]];
+	return diff;
+}
+
 @end

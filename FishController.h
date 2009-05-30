@@ -37,6 +37,8 @@
 	
 	BOOL _isFishing;
 	
+	int _xBobber, _yBobber;
+	
     NSSize minSectionSize, maxSectionSize;
 }
 
@@ -56,6 +58,6 @@
 - (void)fishBegin;
 - (void)clickBobber:(Node*)bobber;
 
-- (BOOL)moveMouseToWoWCoordsWithX: (float)x Y:(float)y Z:(float)z;
+//- (BOOL)moveMouseToWoWCoordsWithX: (float)x Y:(float)y Z:(float)z;
 
 @end
