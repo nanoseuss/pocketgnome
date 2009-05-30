@@ -27,6 +27,10 @@
 - (float)distanceToPosition2D: (Position*)position;
 - (float)verticalDistanceToPosition: (Position*)position;
 
+// Add some matrix methods crap
+- (float)dotProduct: (Position*)position;
+- (Position*)difference: (Position*)position;
+
 @end
 
 @protocol UnitPosition
