@@ -10,7 +10,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-
 @class SRRecorderControl;
 
 @class Controller;
@@ -18,6 +17,8 @@
 @class PlayerDataController;
 @class MemoryAccess;
 @class ChatController;
+
+@class ScanGridView;
 
 @class Node;
 
@@ -30,6 +31,9 @@
     IBOutlet NSView *view;
 	IBOutlet NSButton *startStopButton;
 	IBOutlet SRRecorderControl *fishingRecorder;
+	
+	IBOutlet NSWindow *overlayWindow;
+	IBOutlet ScanGridView *scanGrid;
 	
 	BOOL _isFishing;
 	
@@ -45,6 +49,9 @@
 
 
 - (IBAction)startStopFishing: (id)sender;
+
+- (IBAction)draw: (id)sender;
+- (IBAction)hide: (id)sender;
 
 - (void)fishBegin;
 - (void)clickBobber:(Node*)bobber;

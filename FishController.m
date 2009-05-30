@@ -17,11 +17,15 @@
 #import "ChatController.h"
 #import "Position.h"
 
+#import "ScanGridView.h"
+#import "TransparentWindow.h"
+
 #import <ShortcutRecorder/ShortcutRecorder.h>
 
 #define ANIMATION_CAST			8650752
 #define ANIMATION_MOVED			8650753
 #define ANIMATION_GONE			8716288
+								//262144   42205184
 
 #define M_DEG2RAD				0.01745329251f
 
@@ -55,6 +59,16 @@
     [fishingRecorder setKeyCombo: combo1];
     
     [fishingRecorder setDelegate: self];
+	
+	// set up overlay window
+    [overlayWindow setLevel: NSFloatingWindowLevel];
+    if([overlayWindow respondsToSelector: @selector(setCollectionBehavior:)]) {
+        [overlayWindow setCollectionBehavior: NSWindowCollectionBehaviorMoveToActiveSpace];
+    }
+	
+	[scanGrid setXIncrement: 16.0f];
+    [scanGrid setYIncrement: 16.0f];
+    [scanGrid display];
 }
 
 
@@ -138,7 +152,6 @@
 				   withObject: nil
 				   afterDelay: 0.1];
 	}
-	
 }
 
 // We want to check out bobber every 0.1 seconds to see if it has changed!
@@ -153,15 +166,15 @@
 	
 		// Click!
 		if ( animation == ANIMATION_MOVED ){
-			//PGLog(@"[Fishing] It moved!  Click it!");
+			PGLog(@"[Fishing] It moved!  Click it!");
 			[self clickBobber: sender];
 			return;
 			
 		}
 		
 		// Our bobber is gone! O no! I hope we clicked it!		
-		if ( animation == ANIMATION_GONE || (animation != ANIMATION_MOVED && animation != ANIMATION_CAST) ){
-			//PGLog(@"[Fishing] It's gone :(  %d", animation);
+		if ( animation == ANIMATION_GONE ){// || (animation != ANIMATION_MOVED && animation != ANIMATION_CAST) ){
+			PGLog(@"[Fishing] It's gone :(  %d", animation);
 			// This is where we should call to fish again! Let's add a delay in case of server lag, so we have time to auto-loot!
 			[self performSelector: @selector(fishBegin)
 					   withObject: nil
@@ -175,12 +188,12 @@
 				   afterDelay: 0.1];
 	}
 	else{
-		//PGLog(@"[Fishing] failbot?");
+		PGLog(@"[Fishing] failbot?");
 	}
 }
 
 - (void)clickBobber:(Node*)bobber{
-	//PGLog(@"[Fishing] Clicking %@  Position of bobber: %@", bobber, [bobber position]);
+	PGLog(@"[Fishing] Clicking %@  Position of bobber: %@", bobber, [bobber position]);
 	
 	Position *pos = [bobber position];
 	
@@ -191,30 +204,13 @@
 
 typedef struct CameraInfo{
 	UInt32		dwFoo1[2];
-	float	fPos[3];
+	float	fPos[3];			// Position of our camera
 	float	fViewMat[3][3];
 	UInt32		dwFoo2[2];
 	float	fFov;
 } CameraInfo;
 
 - (BOOL)moveMouseToWoWCoordsWithX: (float)x Y:(float)y Z:(float)z{
-	
-	CameraInfo camera;
-	
-	// I really need to initialize these to remove warnings?
-	int i,f;
-	for(i=0;i<3;i++){
-		for(f=0;f<3;f++){
-			camera.fViewMat[i][f]=0;
-		}
-		camera.fPos[i]=0;
-		
-		if ( i < 2 ){
-			camera.dwFoo1[i] = 0;
-			camera.dwFoo2[i] = 0;
-		}
-	}
-	camera.fFov = 0;
 	
 	// Lets get the camera info!
 	UInt32 cAddress1, cAddress2;
@@ -226,6 +222,19 @@ typedef struct CameraInfo{
 			// Now we can get the camera info! w00t!
 			CameraInfo camera;
 			if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (cAddress2) Buffer:(Byte*)&camera BufLength: sizeof(camera)]) {
+				/*
+				int i,f;
+				for(i=0;i<3;i++){
+					PGLog(@"[Fishing] fPos[%d]=%f", i, camera.fPos[i]);
+				}
+				for(i=0;i<3;i++){
+					for(f=0;f<3;f++){
+						PGLog(@"[Fishing] fViewMat[%d][%d]=%f", i, f, camera.fViewMat[i][f]);
+					}
+				}
+				PGLog(@"[Fishing] fFov: %f", camera.fFov);
+				
+				PGLog(@"[Fishing] Camera data loaded from 0x%X", cAddress2 );*/
 				
 				//CVec3 vDiff = vWoWPos - camera.vPos;
 				float fDiff[3];
@@ -239,6 +248,7 @@ typedef struct CameraInfo{
 				fDiff[1]*camera.fViewMat[0][1] +
 				fDiff[2]*camera.fViewMat[0][2];
 				if( fProd < 0 ){
+					PGLog(@"[Fishing] fProd < 0  %f", fProd);
 					return NO;
 				}
 				
@@ -277,13 +287,18 @@ typedef struct CameraInfo{
 				fCam[1] = -fView[2];
 				fCam[2] =  fView[0];
 				
+				CGRect windowRect = [controller wowWindowRect];
 				// Get our rect!
-				float    fScreenX = (windowRect.size.width)/2.0f;
-				float    fScreenY = (windowRect.size.height)/2.0f;
+				float    fScreenX = (windowRect.size.width - windowRect.origin.x)/2.0f;
+				float    fScreenY = (windowRect.size.height - windowRect.origin.y)/2.0f;
+				
+				//PGLog(@"[Fishing] WoW Window Coords: <%f,%f>", windowRect.size.width, windowRect.size.height);
 				
 				// Thanks pat0! Aspect ratio fix
 				float    fTmpX    = fScreenX/tan(((camera.fFov*44.0f)/2.0f)*M_DEG2RAD);
 				float    fTmpY    = fScreenY/tan(((camera.fFov*35.0f)/2.0f)*M_DEG2RAD);
+				
+				PGLog(@"Tmp: <%f,%f>   fScreen <%f,%f>", fTmpX, fTmpY, fScreenX, fScreenY);
 				
 				
 				NSPoint pctMouse;
@@ -292,19 +307,100 @@ typedef struct CameraInfo{
 				
 				PGLog(@"[Fishing] Clicking X:%f  Y:%f", pctMouse.x, pctMouse.y);
 				
-				if( pctMouse.x < 0 || pctMouse.y < 0 || pctMouse.x > rc.right || pctMouse.y > rc.bottom ){
+				if( pctMouse.x < 0 || pctMouse.y < 0 || pctMouse.x > windowRect.size.width || pctMouse.y > windowRect.size.height ){
 					return NO;
 				}
+				
+				PGLog(@"[Fishing] Window: <%f,%f>", windowRect.origin.x, windowRect.origin.y);
+				
+				/*
+				int minX = (windowRect.size.width*0.375f), maxX = windowRect.size.width - minX;
+				int minY = (windowRect.size.height*0.375f), maxY = windowRect.size.height - minY;
+				
+				NSPoint screenPt = NSZeroPoint; 
+				screenPt.x += windowRect.origin.x;
+				screenPt.y += ([[NSScreen mainScreen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
+				
+				PGLog(@"X:%f, Y:%F", screenPt.x, screenPt.y);
+				PGLog(@"minX:%f, minY:%F", minX, minY);*/
+				
+				NSPoint screenPt = pctMouse; 
+				screenPt.x += windowRect.origin.x;
+				screenPt.y += ([[overlayWindow screen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
+				//NSLog(@"Found pt in Q1 screen space: %@", NSStringFromPoint(screenPt));
+				// now we have screen point in Q1 space
+				
+				PGLog(@"[Fishing] Drawing <%f, %f>", screenPt.x, screenPt.y);
+				
+				PGLog(@"[Fishing] %f %f %f %f", windowRect.origin.x, [[overlayWindow screen] frame].size.height, windowRect.origin.y, windowRect.size.height);
+				
+				// create new window bounds
+				NSRect newRect = NSZeroRect;
+				newRect.origin = screenPt;
+				newRect = NSInsetRect(newRect, (15+20)*-1.0, (15+20)*-1.0);
+				
+				// create new window bounds
+				//NSRect newRect = NSMakeRect(minX+windowRect.origin.x, [[NSScreen mainScreen] frame].size.height - (maxY+windowRect.origin.y), 10, 10);
+				[overlayWindow setFrame: newRect display: YES];
+				[overlayWindow makeKeyAndOrderFront: nil];	
 				
 				//if( !::SetCursorPos(pctMouse.x,pctMouse.y) )
 				//	return NO;
 				
 				// New way to click?  http://stackoverflow.com/questions/726952/simulate-mouse-click-to-window-instead-of-screen
+				
+				/*
+				ProcessSerialNumber psn = [controller getWoWProcessSerialNumber];
+				CGEventRef CGEvent;
+				NSEvent *customEvent;
+				
+				
+				customEvent = [NSEvent mouseEventWithType: [event type]
+												 location: [event locationInWindow]
+											modifierFlags: [event modifierFlags] | NSCommandKeyMask
+												timestamp: [event timestamp]
+											 windowNumber: WID
+												  context: nil
+											  eventNumber: 0
+											   clickCount: 1
+												 pressure: 0];
+				
+				CGEvent = [customEvent CGEvent];
+				
+				//NSAssert(GetProcessForPID(PID, &psn) == noErr, @"GetProcessForPID failed!");
+				
+				CGEventPostToPSN(&psn, CGEvent);*/
 			}
 		}
 	}
 	
 	return YES;
+}
+
+- (IBAction)draw: (id)sender{
+	// get the window size/location
+    CGRect windowRect = [controller wowWindowRect];
+	
+    int minX = (windowRect.size.width*0.375f), maxX = windowRect.size.width - minX;
+    int minY = (windowRect.size.height*0.375f), maxY = windowRect.size.height - minY;
+	
+    NSPoint screenPt = NSZeroPoint; 
+    screenPt.x += windowRect.origin.x;
+    screenPt.y += ([[NSScreen mainScreen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
+	
+	PGLog(@"X:%f, Y:%F", screenPt.x, screenPt.y);
+	PGLog(@"minX:%f, minY:%F", minX, minY);
+    
+    // create new window bounds
+    NSRect newRect = NSMakeRect(minX+windowRect.origin.x, [[NSScreen mainScreen] frame].size.height - (maxY+windowRect.origin.y), maxX-minX, maxY-minY);
+    [overlayWindow setFrame: newRect display: YES];
+    [overlayWindow makeKeyAndOrderFront: nil];	
+	
+	PGLog(@"drawing!  %f %f", newRect.origin, newRect.size);
+}
+
+- (IBAction)hide: (id)sender{
+	[overlayWindow orderOut: nil];	
 }
 
 #pragma mark ShortcutRecorder Delegate
