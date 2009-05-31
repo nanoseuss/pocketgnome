@@ -213,6 +213,9 @@
 #define CORPSE_STATIC_Y			((IS_X86) ? 0x13FA5C4 : 0x0)
 #define CORPSE_STATIC_Z			((IS_X86) ? 0x13FA5C8 : 0x0)
 
+// 3.1.2 valid
+#define ON_MOUSE_OVER_GUID     ((IS_X86) ? 0x00AC6140 : 0x0) // Return the Object GUID of the item under your mouse, who said fishing ?
+
 // **************************** NOT USED/DATED ******************************************* //
 
 
