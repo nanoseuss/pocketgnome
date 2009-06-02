@@ -188,5 +188,8 @@
 - (IBAction)pvpBMSelectAction: (id)sender;
 - (IBAction)pvpTestWarning: (id)sender;
 
+// Little more flexibility - casts spells! Uses items/macros!
+- (BOOL)performAction: (int32_t) actionID;
+
 
 @end

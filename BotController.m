@@ -1028,7 +1028,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
             
             if( [rule resultType] > 0) {
-                int32_t oldActionID = 0, actionID = [rule actionID];
+                int32_t actionID = [rule actionID];
                 if(actionID > 0) {
                     BOOL canPerformAction = YES;
                     // if we are using an item or macro, apply a mask to the item number
@@ -1058,33 +1058,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                             if([target isNPC])  [mobController selectMob: (Mob*)target];
                             else                [playerController setPrimaryTarget: [target GUID]];
                         }
-                        
-                        // replace the first entry on the hotbar
-                        [[controller wowMemoryAccess] loadDataForObject: self atAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
-                        [[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
-                        
-                        // wow needs time to process the spell change
-                        usleep([controller refreshDelay]*2);
-                        
-                        // then post keydown if the chat box is not open
-                        if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
-                            [chatController pressHotkey: _currentHotkey withModifier: _currentHotkeyModifier];
-                        }
-
-                        // wow needs time to process the spell change before we change it back
-                        usleep([controller refreshDelay]);
-                        
-                        // then save our old action back
-                        [[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 						
-						// Lets just check to see if there was an error
-						/*
-						usleep([controller refreshDelay]);
-						
-						if ( [spellController lastAttemptedActionID] == actionID ){
-							PGLog(@"Spell didn't cast - reason: %@", [playerController lastErrorMessage]);
-						}*/
-                        
+						[self performAction:actionID];
                     }
                     
                     // time for the next rule?
@@ -3205,6 +3180,69 @@ NSMutableDictionary *_diffDict = nil;
     [[NSSound soundNamed: @"alarm"] play];
 }
 
+- (BOOL)performAction: (int32_t) actionID{
+	
+	int32_t oldActionID = 0;
+	
+	// "Load" it
+	if ( _currentHotkey <= 0 ){
+		// get hotkey settings
+		KeyCombo hotkey = [shortcutRecorder keyCombo];
+		_currentHotkeyModifier = hotkey.flags;
+		_currentHotkey = hotkey.code;
+	}
+	
+	// replace the first entry on the hotbar
+	[[controller wowMemoryAccess] loadDataForObject: self atAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	[[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
+	
+	// wow needs time to process the spell change
+	usleep([controller refreshDelay]*2);
+	
+	// then post keydown if the chat box is not open
+	if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
+		[chatController pressHotkey: _currentHotkey withModifier: _currentHotkeyModifier];
+	}
+	
+	// wow needs time to process the spell change before we change it back
+	usleep([controller refreshDelay]);
+	
+	// then save our old action back
+	[[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	
+	// Lets just check to see if there was an error
+	
+	 usleep([controller refreshDelay]);
+	 
+	 if ( [spellController lastAttemptedActionID] == actionID ){
+		 PGLog(@"Spell didn't cast: %@", [playerController lastErrorMessage]);
+		 
+		 // Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
+		 //   then kill wow?
+		 return NO;
+	 }
+	
+	return YES;
+}
+
+/*
+ - (IBAction)draw: (id)sender{
+ 
+ // get the window size/location
+ CGRect windowRect = [controller wowWindowRect];
+ 
+ int minX = (windowRect.size.width*0.375f), maxX = windowRect.size.width - minX;
+ int minY = (windowRect.size.height*0.375f), maxY = windowRect.size.height - minY;
+ 
+ NSPoint screenPt = NSZeroPoint; 
+ screenPt.x += windowRect.origin.x;
+ screenPt.y += ([[NSScreen mainScreen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
+ 
+ // create new window bounds
+ NSRect newRect = NSMakeRect(minX+windowRect.origin.x, [[NSScreen mainScreen] frame].size.height - (maxY+windowRect.origin.y), maxX-minX, maxY-minY);
+ [overlayWindow setFrame: newRect display: YES];
+ [overlayWindow makeKeyAndOrderFront: nil];	
+ }*/
 
 @end
 
