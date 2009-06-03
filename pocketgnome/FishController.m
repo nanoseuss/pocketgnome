@@ -7,20 +7,29 @@
 //
 
 #import "FishController.h"
-#import "Offsets.h"
-#import "MemoryAccess.h"
 #import "Controller.h"
 #import "NodeController.h"
-#import "Node.h"
 #import "PlayerDataController.h"
-#import "MemoryAccess.h"
 #import "ChatController.h"
+#import "BotController.h"
+#import "InventoryController.h"
+
+#import "Offsets.h"
+
+#import "Node.h"
 #import "Position.h"
+#import "MemoryAccess.h"
+#import "Player.h"
+#import "Item.h"
 
 #import "ScanGridView.h"
 #import "TransparentWindow.h"
 
 #import <ShortcutRecorder/ShortcutRecorder.h>
+
+#define USE_ITEM_MASK       0x80000000
+
+#define SPELL_FISHING			51294
 
 #define ANIMATION_CAST			8650752
 #define ANIMATION_MOVED			8650753
@@ -38,6 +47,8 @@
     if (self != nil) {
 		
 		_isFishing = NO;
+		_xBobber = 0;
+		_yBobber = 0;
 		
         [NSBundle loadNibNamed: @"Fishing" owner: self];
     }
@@ -96,6 +107,8 @@
 		_isFishing = YES;
 	}
 	
+	_applyLure = [applyLureCheckbox state];
+
 	// Lets start fishing!
 	[self fishBegin];
 }
@@ -105,18 +118,36 @@
 		return;
 	}
 	
-	// Send the fishing hotkey to wow!
-	KeyCombo fishingCombo = [fishingRecorder keyCombo];
-    int fishingHotkey = fishingCombo.code;
-    int fishingHotkeyModifier = fishingCombo.flags;
+	// Lets apply some lure if we need to!
+	[self applyLure];
 	
-	//PGLog(@"[Fishing] Sending key!");
-	[chatController pressHotkey: fishingHotkey withModifier: fishingHotkeyModifier];
+	// Fishing!
+	[botController performAction: SPELL_FISHING];
 	
 	// Find our player's fishing bobber! - we need to wait a couple seconds after cast, so the object list can re-populate
 	[self performSelector: @selector(findBobber)
 			   withObject: nil
 			   afterDelay: 2.0];
+}
+
+- (void)applyLure{
+	if ( !_applyLure ){
+		return;
+	}
+
+	Item *item = [itemController itemForGUID: [[playerController player] itemGUIDinSlot: SLOT_MAIN_HAND]];
+
+	if ( ![item hasTempEnchantment] ){
+		
+		// Lets actually use the item we want to apply!
+		[botController performAction:(USE_ITEM_MASK + 6530)];
+		
+		// Wait a bit before we cast the next one!
+		usleep([controller refreshDelay]);
+		
+		// Now use our fishing pole so it's applied!
+		[botController performAction:(USE_ITEM_MASK + [item entryID])];
+	}
 }
 
 
@@ -142,6 +173,8 @@
 			bobberFound = YES;
 			//PGLog(@"[Fishing] Found our bobber! %d", animation);
 			
+			_bobber = bobber;
+			
 			// Start scanning to  check for when the bobber animation changes!
 			[self performSelector: @selector(checkBobberAnimation:)
 					   withObject: bobber
@@ -160,63 +193,6 @@
 	}
 }
 
-- (void)findBobberOnScreen:(id)sender{
-	// create event source
-	CGEventSourceRef eventSource = CGEventSourceCreate(kCGEventSourceStatePrivate);
-	
-	ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
-	CGRect windowRect = [controller wowWindowRect];
-	
-    int min_x = (windowRect.size.width*0.375f), max_x = windowRect.size.width - min_x;
-    int min_y = (windowRect.size.height*0.375f), max_y = windowRect.size.height - min_y;
-	int x_interval = (max_x - min_x) / 8;
-	int y_interval = (max_y - min_y) / 8;
-	
-	// get ahold of the previous mouse position
-	NSPoint nsPreviousPt = [NSEvent mouseLocation];
-	CGPoint previousPt = CGPointMake(nsPreviousPt.x, nsPreviousPt.y);
-	
-	//[controller saveFrontProcess];
-	//[controller makeWoWFront];
-	usleep(10000);
-	BOOL foundBobber = NO;
-	int x=0,y=0,value=0;
-	for (x = min_x; x<max_x && !foundBobber;x+=x_interval)
-	{
-		for (y = min_y; y<max_y && !foundBobber;y+=y_interval)
-		{
-			// Lets get the GUID of the object the mouse is over!
-			[[controller wowMemoryAccess] loadDataForObject: self atAddress: ON_MOUSE_OVER_GUID Buffer: (Byte *)&value BufLength: sizeof(value)];
-			
-			CGPostMouseEvent(previousPt, FALSE, 2, FALSE, FALSE);
-			
-			CGPoint clickPt = CGPointMake( x, y );
-			CGEventRef moveTest = CGEventCreateMouseEvent(eventSource, kCGEventMouseMoved, clickPt, kCGMouseButtonLeft);
-			CGEventSetType(moveTest, kCGEventMouseMoved);
-			CGEventPostToPSN(&wowProcess, moveTest);
-			
-			PGLog(@"Searching <%d,%d> %d", x, y, value);
-
-			usleep(50);
-			if ( value > 0 )
-			{
-				PGLog(@"Found!  %d", value);
-				foundBobber = YES;
-			}
-			usleep(50);
-			
-			if(moveTest)    CFRelease(moveTest);
-		}
-	}
-	
-	//[controller restoreFrontProcess];
-	
-	if ( foundBobber ){
-		_xBobber = x;
-		_yBobber = y;
-	}
-}
-
 // We want to check out bobber every 0.1 seconds to see if it has changed!
 - (void)checkBobberAnimation:(id)sender{
 	if ( !_isFishing ){
@@ -231,12 +207,18 @@
 		if ( animation == ANIMATION_MOVED ){
 			PGLog(@"[Fishing] It moved!  Click it!");
 			[self clickBobber: sender];
+			
+			// This is where we should call to fish again! Let's add a delay in case of server lag, so we have time to auto-loot!
+			[self performSelector: @selector(fishBegin)
+					   withObject: nil
+					   afterDelay: 3.0];
+			
 			return;
 			
 		}
 		
 		// Our bobber is gone! O no! I hope we clicked it!		
-		if ( animation == ANIMATION_GONE ){// || (animation != ANIMATION_MOVED && animation != ANIMATION_CAST) ){
+		if ( animation == ANIMATION_GONE ){//|| (animation != ANIMATION_MOVED && animation != ANIMATION_CAST) ){
 			PGLog(@"[Fishing] It's gone :(  %d", animation);
 			// This is where we should call to fish again! Let's add a delay in case of server lag, so we have time to auto-loot!
 			[self performSelector: @selector(fishBegin)
@@ -245,6 +227,8 @@
 			
 			return;
 		}
+		
+		PGLog(@"[Fishing] Animation: %d", animation);
 				  
 		[self performSelector: @selector(checkBobberAnimation:)
 				   withObject: sender
@@ -258,10 +242,93 @@
 - (void)clickBobber:(Node*)bobber{
 	PGLog(@"[Fishing] Clicking %@  Position of bobber: %@", bobber, [bobber position]);
 	
-	Position *pos = [bobber position];
+	
+	UInt64 value = [bobber GUID];
+	
+	// write the mouse over GUID!
+	BOOL ret1, ret2;
+	// save this value to the target table
+	ret1 = [[controller wowMemoryAccess] saveDataForAddress: (ON_MOUSE_OVER_GUID) Buffer: (Byte *)&value BufLength: sizeof(value)];
+	ret2 = [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)];
 	
 	
-	[self moveMouse: pos];
+	
+	PGLog(@"Setting value to %qi, ret: %d  ret2: %d", value, ret1, ret2);
+
+	
+	KeyCombo hotkey = [fishingRecorder keyCombo];
+	int fishingHotkeyModifier = hotkey.flags;
+	int fishingHotkey = hotkey.code;
+
+	// wow needs time to process the spell change
+	usleep([controller refreshDelay]*4);
+
+	// then post keydown if the chat box is not open
+	if(![controller isWoWChatBoxOpen] || (fishingHotkey == kVK_F13)) {
+		[chatController pressHotkey: fishingHotkey withModifier: fishingHotkeyModifier];
+		PGLog(@"Sending keys!");
+	}
+	
+	// now interact with mouseover!
+	
+	
+	return;
+	
+	
+	if ( _xBobber == 0 || _yBobber == 0 )
+		return;
+	
+	// Bring wow to front!
+	[controller saveFrontProcess];
+	[controller makeWoWFront];
+	usleep(10000);
+	
+	CGPoint clickPt = CGPointMake(_xBobber, _yBobber);
+	
+	// get ahold of the previous mouse position
+	NSPoint nsPreviousPt = [NSEvent mouseLocation];
+	CGPoint previousPt = CGPointMake(nsPreviousPt.x, nsPreviousPt.y);
+	
+	CGEventSourceRef eventSource = CGEventSourceCreate(kCGEventSourceStatePrivate);
+	ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
+	
+	
+	// configure the various events
+	CGEventRef moveToBobber = CGEventCreateMouseEvent(eventSource, kCGEventMouseMoved, clickPt, kCGMouseButtonLeft);
+	CGEventRef moveToPrevPt = CGEventCreateMouseEvent(eventSource, kCGEventMouseMoved, previousPt, kCGMouseButtonLeft);
+	CGEventRef rightClickDn = CGEventCreateMouseEvent(eventSource, kCGEventRightMouseDown, clickPt, kCGMouseButtonRight);
+	CGEventRef rightClickUp = CGEventCreateMouseEvent(eventSource, kCGEventRightMouseUp, clickPt, kCGMouseButtonRight);
+	//_xBobber
+	
+	// bug in Tiger... event type isn't set in the Create method
+	CGEventSetType(rightClickDn, kCGEventRightMouseDown);
+	CGEventSetType(rightClickUp, kCGEventRightMouseUp);
+	CGEventSetType(moveToBobber, kCGEventMouseMoved);
+	CGEventSetType(moveToPrevPt, kCGEventMouseMoved);
+	
+	// post the mouse events
+	CGEventPostToPSN(&wowProcess, moveToBobber);
+	usleep(100000);	// wait 0.1 sec
+	CGEventPostToPSN(&wowProcess, rightClickDn);
+	CGEventPostToPSN(&wowProcess, rightClickUp);
+	usleep(100000); // wait 0.1 sec
+	CGEventPostToPSN(&wowProcess, moveToPrevPt);
+	
+	// release events
+	if(rightClickDn)    CFRelease(rightClickDn); 
+	if(rightClickUp)    CFRelease(rightClickUp); 
+	if(moveToBobber)    CFRelease(moveToBobber);
+	if(moveToPrevPt)    CFRelease(moveToPrevPt);
+	
+	NSPoint screenPt = NSZeroPoint; 
+	screenPt.x = _xBobber;
+	screenPt.y = _yBobber;
+	
+	PGLog(@"[Fishing] Clicking { %d, %d }", _xBobber, _yBobber);
+	
+	[controller restoreFrontProcess];
+	//Position *pos = [bobber position];
+	//[self moveMouse: pos];
 	
 	/*[self moveMouseToWoWCoordsWithX:[pos xPosition] 
 								  Y:[pos yPosition] 
@@ -269,87 +336,20 @@
 }
 
 
- typedef struct CameraInfo{
- UInt32		dwFoo1[2];
- float	fPos[3];			// Position of our camera
- float	fViewMat[3][3];
- UInt32		dwFoo2[2];
- float	fFov;
- } CameraInfo;
 
-
-// From http://www.gamedev.net/community/forums/topic.asp?topic_id=529305
-- (void)moveMouse: (Position*)gP {
-	 CGRect windowRect = [controller wowWindowRect];
-	 
-	 CameraInfo camera;
-	 // Lets get the camera info!
-	 UInt32 cAddress1, cAddress2;
-	 if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (CAMERA_PTR) Buffer: (Byte*)&cAddress1 BufLength: sizeof(cAddress1)] && cAddress1) {
-		 
-		 // We now have the address that is at CAMERA_PTR, lets add 0x782C to it and jump again!
-		 if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (cAddress1 + CAMERA_OFFSET) Buffer: (Byte*)&cAddress2 BufLength: sizeof(cAddress2)] && cAddress2) {
-			 
-			 // Now we can get the camera info! w00t!
-			 if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (cAddress2) Buffer:(Byte*)&camera BufLength: sizeof(camera)]) {
-				 PGLog(@"[Fishing] Camera data loaded from 0x%X", cAddress2 );
-			 }
-		 }
-	 }
-	 
-	 Position *camPosition = [[Position alloc] initWithX:camera.fPos[0] Y:camera.fPos[1] Z:camera.fPos[2]];
-	 Position *vecViewMatrix0 = [[Position alloc] initWithX:camera.fViewMat[0][0] Y:camera.fViewMat[0][1] Z:camera.fViewMat[0][2]];
-	 Position *vecViewMatrix1 = [[Position alloc] initWithX:camera.fViewMat[1][0] Y:camera.fViewMat[1][1] Z:camera.fViewMat[1][2]];
-	 Position *vecViewMatrix2 = [[Position alloc] initWithX:camera.fViewMat[2][0] Y:camera.fViewMat[2][1] Z:camera.fViewMat[2][2]];
-	 //NSArray *vecViewMatrix = [[NSArray alloc] initWithObjects:vecViewMatrix0, vecViewMatrix1, vecViewMatrix2, nil];
-	 
-	 Position *difference = [gP difference: camPosition];
+- (void)drawWithPt: (CGPoint)point{
 	
-	 if ( [difference dotProduct:vecViewMatrix0] < 0.0f ){
-		 PGLog(@"o noes!");
-		 return;
-	 }
-	 
-	 // Get the inverse!
-	 float inv[3][3];
-	 int i,j;
-	 for( i = 0; i < 3; i++ ) {
-		 for( j = 0; j < 3; j++ ) {
-			 inv[ i ][ j ] = camera.fViewMat[ j ][ i ];
-		 }
-	 }
-	 
-	 float View[3];
-	 View[0] = [difference xPosition] * camera.fViewMat[0][0] + [difference yPosition]*camera.fViewMat[1][0] + [difference zPosition]*camera.fViewMat[2][0];
-	 View[1] = [difference xPosition] * camera.fViewMat[0][1] + [difference yPosition]*camera.fViewMat[1][1] + [difference zPosition]*camera.fViewMat[2][1];
-	 View[2] = [difference xPosition] * camera.fViewMat[0][2] + [difference yPosition]*camera.fViewMat[1][2] + [difference zPosition]*camera.fViewMat[2][2];
-	 
-	 float Camera[3];
-	 Camera[0] = -View[1];
-	 Camera[1] = -View[2];
-	 Camera[2] = View[0];
-	 
-	 if ( Camera[2] > 0 ){
-		 float    ScreenX    = windowRect.size.width / 2.0f;
-		 float    ScreenY    = windowRect.size.height / 2.0f;
-		 
-		 // Thanks pat0! Aspect ratio fix
-		 
-		 float    TmpX    = ScreenX / tanf ( ( (camera.fFov * 44.0f) / 2.0f ) * M_DEG2RAD );
-		 float    TmpY    = ScreenY / tanf ( ( (camera.fFov * 35.0f) / 2.0f ) * M_DEG2RAD );
-		 
-		 float final_x    = ( Camera[0] * TmpX / Camera[2] ) + ScreenX;
-		 float final_y    = ( Camera[1] * TmpY / Camera[2] ) + ScreenY;	
-		 
-		 PGLog(@"[Fishing] { %0.2f, %0.2f }", final_x, final_y);
-	 }
-	 
-	 [camPosition release];
-	 [difference release];
-	 [vecViewMatrix0 release];
-	 [vecViewMatrix1 release];
-	 [vecViewMatrix2 release];
- }
+    NSPoint screenPt = NSZeroPoint; 
+    screenPt.x += point.x;
+    screenPt.y += point.y;
+	
+    // create new window bounds
+	NSRect newRect = NSMakeRect(point.x, [[NSScreen mainScreen] frame].size.height - (point.y), 40, 40);
+    [overlayWindow setFrame: newRect display: YES];
+    [overlayWindow makeKeyAndOrderFront: nil];	
+	
+	PGLog(@"drawing!  %f %f", newRect.origin, newRect.size);
+}
 
 - (IBAction)draw: (id)sender{
 	// get the window size/location
@@ -377,6 +377,11 @@
 	[overlayWindow orderOut: nil];	
 }
 
+- (IBAction)showBobberStructure: (id)sender{
+	[memoryViewController showObjectMemory: _bobber];
+    [controller showMemoryView];
+}
+
 #pragma mark ShortcutRecorder Delegate
 
 - (void)shortcutRecorder:(SRRecorderControl *)recorder keyComboDidChange:(KeyCombo)newKeyCombo {
@@ -390,7 +395,74 @@
 
 
 
-
+/*
+- (void)findBobberOnScreen:(id)sender{
+	
+	//[self moveMouse: sender];
+	
+	CGRect windowRect = [controller wowWindowRect];
+	
+    int min_x = (windowRect.size.width*0.375f), max_x = windowRect.size.width - min_x;
+    int min_y = (windowRect.size.height*0.375f), max_y = windowRect.size.height - min_y;
+	int x_interval = (max_x - min_x) / 8;
+	int y_interval = (max_y - min_y) / 8;
+	
+	[controller saveFrontProcess];
+	[controller makeWoWFront];
+	usleep(10000);
+	
+	_xBobber = 0;
+	_yBobber = 0;
+	
+	PGLog(@"[Fishing] Origin: {%0.2f,%0.2f}  Width:%0.2f  Height:%0.2f", windowRect.origin.x, windowRect.origin.y, windowRect.size.width, windowRect.size.height);
+	
+	BOOL foundBobber = NO;
+	int x=0,y=0,value=0, numFound=0;
+	for (x = min_x; x<max_x && !foundBobber;x+=x_interval){
+		for (y = min_y; y<max_y && !foundBobber;y+=y_interval){
+			
+			
+			CGPoint aPoint = CGPointMake(windowRect.origin.x + x, windowRect.origin.y + y);
+            CGPostMouseEvent(aPoint, TRUE, 2, FALSE, FALSE);
+			
+			usleep(10000);
+			
+			// Lets get the GUID of the object the mouse is over!
+			[[controller wowMemoryAccess] loadDataForObject: self atAddress: ON_MOUSE_OVER_GUID Buffer: (Byte *)&value BufLength: sizeof(value)];
+			
+			usleep(50);
+			if ( value > 0 )
+			{
+				PGLog(@"[Fishing] Found our bobber! %d  { %d, %d }", value, x, y);
+				_xBobber += x;
+				_yBobber += y;
+				numFound++;
+			}
+			usleep(50);
+			//if(moveTest)    CFRelease(moveTest);
+		}
+	}
+	
+	if ( numFound > 0 ){
+		_xBobber /= numFound;
+		_yBobber /= numFound;
+		
+		_xBobber += windowRect.origin.x;
+		_yBobber += windowRect.origin.y;
+		
+		// create new window bounds
+		//CGPoint point = CGPointMake(_xBobber, _yBobber);
+		
+		//[self drawWithPt:point];
+	}
+	
+	[controller restoreFrontProcess];
+	
+	//if ( foundBobber ){
+	PGLog(@"[Fishing] Found { %d, %d } from %d samples", _xBobber, _yBobber, numFound);
+	//}
+}
+*/
 /*
  typedef struct CameraInfo{
  UInt32		dwFoo1[2];
@@ -649,4 +721,87 @@
  return YES;
  }*/
 
+/*
+ // From http://www.gamedev.net/community/forums/topic.asp?topic_id=529305
+ - (void)moveMouse: (Position*)gP {
+ CGRect windowRect = [controller wowWindowRect];
+ 
+ CameraInfo camera;
+ // Lets get the camera info!
+ UInt32 cAddress1, cAddress2;
+ if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (CAMERA_PTR) Buffer: (Byte*)&cAddress1 BufLength: sizeof(cAddress1)] && cAddress1) {
+ 
+ // We now have the address that is at CAMERA_PTR, lets add 0x782C to it and jump again!
+ if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (cAddress1 + CAMERA_OFFSET) Buffer: (Byte*)&cAddress2 BufLength: sizeof(cAddress2)] && cAddress2) {
+ 
+ // Now we can get the camera info! w00t!
+ if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (cAddress2) Buffer:(Byte*)&camera BufLength: sizeof(camera)]) {
+ PGLog(@"[Fishing] Camera data loaded from 0x%X", cAddress2 );
+ }
+ }
+ }
+ 
+ Position *camPosition = [[Position alloc] initWithX:camera.fPos[0] Y:camera.fPos[1] Z:camera.fPos[2]];
+ Position *vecViewMatrix0 = [[Position alloc] initWithX:camera.fViewMat[0][0] Y:camera.fViewMat[0][1] Z:camera.fViewMat[0][2]];
+ Position *vecViewMatrix1 = [[Position alloc] initWithX:camera.fViewMat[1][0] Y:camera.fViewMat[1][1] Z:camera.fViewMat[1][2]];
+ Position *vecViewMatrix2 = [[Position alloc] initWithX:camera.fViewMat[2][0] Y:camera.fViewMat[2][1] Z:camera.fViewMat[2][2]];
+ //NSArray *vecViewMatrix = [[NSArray alloc] initWithObjects:vecViewMatrix0, vecViewMatrix1, vecViewMatrix2, nil];
+ 
+ Position *difference = [gP difference: camPosition];
+ 
+ if ( [difference dotProduct:vecViewMatrix0] < 0.0f ){
+ return;
+ }
+ 
+ PGLog(@"[Fishing] Difference: %@", difference);
+ 
+ // Get the inverse!
+ float inv[3][3];
+ int i,j;
+ for( i = 0; i < 3; i++ ) {
+ for( j = 0; j < 3; j++ ) {
+ inv[ i ][ j ] = camera.fViewMat[ j ][ i ];
+ }
+ }
+ 
+ float View[3];
+ View[0] = [difference xPosition] * camera.fViewMat[0][0] + [difference yPosition]*camera.fViewMat[1][0] + [difference zPosition]*camera.fViewMat[2][0];
+ View[1] = [difference xPosition] * camera.fViewMat[0][1] + [difference yPosition]*camera.fViewMat[1][1] + [difference zPosition]*camera.fViewMat[2][1];
+ View[2] = [difference xPosition] * camera.fViewMat[0][2] + [difference yPosition]*camera.fViewMat[1][2] + [difference zPosition]*camera.fViewMat[2][2];
+ 
+ PGLog(@"[Fishing] View: { %0.2f, %0.2f, %0.2f }", View[0], View[1], View[2] );
+ 
+ float Camera[3];
+ Camera[0] = -View[1];
+ Camera[1] = -View[2];
+ Camera[2] = View[0];
+ 
+ PGLog(@"[Fishing] Camera: { %0.2f, %0.2f, %0.2f }", Camera[0], Camera[1], Camera[2] );
+ 
+ if ( Camera[2] > 0 ){
+ float    ScreenX    = windowRect.size.width / 2.0f;
+ float    ScreenY    = windowRect.size.height / 2.0f;
+ 
+ // Thanks pat0! Aspect ratio fix
+ 
+ float    TmpX    = ScreenX / tanf ( ( (camera.fFov * 44.0f) / 2.0f ) * M_DEG2RAD );
+ float    TmpY    = ScreenY / tanf ( ( (camera.fFov * 35.0f) / 2.0f ) * M_DEG2RAD );
+ 
+ float final_x    = ( Camera[0] * TmpX / Camera[2] ) + ScreenX;
+ float final_y    = ( Camera[1] * TmpY / Camera[2] ) + ScreenY;	
+ 
+ PGLog(@"[Fishing] { %0.2f, %0.2f }", final_x, final_y);
+ 
+ CGPoint point = CGPointMake(final_x, final_y);
+ 
+ [self drawWithPt:point];
+ }
+ 
+ 
+ [camPosition release];
+ [difference release];
+ [vecViewMatrix0 release];
+ [vecViewMatrix1 release];
+ [vecViewMatrix2 release];
+ }*/
 @end
