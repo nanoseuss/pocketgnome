@@ -5,8 +5,6 @@
 //  Created by Jon Drummond on 12/23/08.
 //  Copyright 2008 Savory Software, LLC. All rights reserved.
 //
-//  Eventually I'll integrate GoneFishing.
-//
 
 #import <Cocoa/Cocoa.h>
 
@@ -17,8 +15,13 @@
 @class PlayerDataController;
 @class MemoryAccess;
 @class ChatController;
+@class BotController;
+@class InventoryController;
+@class MemoryViewController;
+@class LootController;
 
-@class ScanGridView;
+@class WoWObject;
+@class PTHotKey;
 
 @class Node;
 
@@ -27,21 +30,40 @@
 	IBOutlet NodeController			*nodeController;
 	IBOutlet PlayerDataController	*playerController;
 	IBOutlet ChatController			*chatController;
+	IBOutlet BotController			*botController;
+    IBOutlet InventoryController    *itemController;
+	IBOutlet MemoryViewController	*memoryViewController;
+	IBOutlet LootController			*lootController;
 	
-    IBOutlet NSView *view;
-	IBOutlet NSButton *startStopButton;
-	IBOutlet SRRecorderControl *fishingRecorder;
-	
-	IBOutlet NSWindow *overlayWindow;
-	IBOutlet ScanGridView *scanGrid;
+	IBOutlet NSButton				*applyLureCheckbox;
+	IBOutlet NSButton				*killWoWCheckbox;
+	IBOutlet NSButton				*showGrowlNotifications;
+	IBOutlet NSButton				*useReinforcedCrates;
+    IBOutlet NSView					*view;
+	IBOutlet NSButton				*startStopButton;
+	IBOutlet SRRecorderControl		*fishingRecorder;
+	IBOutlet NSPopUpButton			*luresPopUpButton;
+	IBOutlet NSTextField			*fishCaught;
+	IBOutlet NSTextField			*status;
+	IBOutlet NSTextField			*closeWoWTimer;
+	IBOutlet NSTableView			*statisticsTableView;
+	PTHotKey *startStopBotGlobalHotkey;
 	
 	BOOL _isFishing;
+	BOOL _useCrate;
+	int _applyLureAttempts;
 	
-	int _xBobber, _yBobber;
+	UInt64 _playerGUID;
+	UInt64 _bobberGUID;
+	
+	NSDate *_startTime;
+	
+	int _totalFishLooted;
+	
+	WoWObject *_bobber;
 	
     NSSize minSectionSize, maxSectionSize;
 }
-
 
 // Controller interface
 @property (readonly) NSView *view;
@@ -49,15 +71,13 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 
-
 - (IBAction)startStopFishing: (id)sender;
-
-- (IBAction)draw: (id)sender;
-- (IBAction)hide: (id)sender;
+- (IBAction)showBobberStructure: (id)sender;
 
 - (void)fishBegin;
 - (void)clickBobber:(Node*)bobber;
+- (BOOL)applyLure;
 
-//- (BOOL)moveMouseToWoWCoordsWithX: (float)x Y:(float)y Z:(float)z;
+- (BOOL)isFishing;
 
 @end

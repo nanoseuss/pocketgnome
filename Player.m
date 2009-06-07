@@ -62,14 +62,13 @@ enum PlayerFlags
     return NO;
 }
 
-
 - (GUID)itemGUIDinSlot: (CharacterSlot)slot {
     if(slot < 0 || slot >= SLOT_MAX) return 0;
     
     GUID value = 0;
     if([_memory loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_CharacterSlot + sizeof(GUID)*slot) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
-        if(GUID_HIPART(value) == HIGHGUID_ITEM)
-            return value;
+        //if(GUID_HIPART(value) == HIGHGUID_ITEM) - As of 3.1.3 I had to comment out this - i'm not sure why
+		return value;
     }
     return 0;
 }

@@ -88,8 +88,10 @@
 - (void)showObjectMemory: (id)object {
     if( [object conformsToProtocol: @protocol(WoWObjectMemory)]) {
         self.wowObject = object;
+		
+		PGLog(@"Count: %d", (([object memoryEnd] - [object memoryStart]) / sizeof(UInt32)));
         [self setBaseAddress: [NSNumber numberWithUnsignedInt: [object baseAddress]] 
-                   withCount: (([object memoryEnd] - [object memoryStart]) / sizeof(UInt32))];
+                   withCount: (([object memoryEnd] - [object memoryStart] + 0x1000) / sizeof(UInt32))];
     } else {
         self.wowObject = nil;
     }

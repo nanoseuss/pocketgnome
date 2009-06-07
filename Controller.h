@@ -23,6 +23,7 @@
 @class MemoryViewController;
 @class PlayerDataController;
 @class CorpseController;
+@class FishController;
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
@@ -44,12 +45,13 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet ProcedureController *behaviorController;
     IBOutlet ChatLogController   *chatLogController;
 	IBOutlet CorpseController	 *corpseController;
-
+	IBOutlet FishController		 *fishController;
+	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *itemsToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *playersToolbarItem, *mobsToolbarItem, *nodesToolbarItem, *routesToolbarItem, *behavsToolbarItem;
-    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem;
+    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *fishingToolbarItem;
     
     IBOutlet NSView *aboutView, *settingsView;
     IBOutlet NSImageView *aboutValidImage;

@@ -77,6 +77,7 @@
 
 - (Player*)player;
 - (UInt64)GUID;
+- (UInt32)lowGUID;
 
 - (BOOL)isDead;
 - (BOOL)isGhost;

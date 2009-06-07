@@ -372,7 +372,12 @@ static PlayerDataController* sharedController = nil;
     return 0;
 }
 
-
+- (UInt32)lowGUID {
+    UInt32 value = 0;
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [self infoAddress] Buffer: (Byte*)&value BufLength: sizeof(value)] && value)
+        return value;
+    return 0;
+}
 
 #pragma mark Player Health & Mana
 
