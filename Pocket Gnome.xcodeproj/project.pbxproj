@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		030C2A440FD80F0A00E80F7E /* Offsets.plist in Resources */ = {isa = PBXBuildFile; fileRef = 030C2A430FD80F0A00E80F7E /* Offsets.plist */; };
 		030C2E4D0FDC09B300E80F7E /* LootController.m in Sources */ = {isa = PBXBuildFile; fileRef = 030C2E4C0FDC09B300E80F7E /* LootController.m */; };
 		0323D2330FCF075C00BFEBFD /* mbobbleicon.gif in Resources */ = {isa = PBXBuildFile; fileRef = 0323D2320FCF075C00BFEBFD /* mbobbleicon.gif */; };
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
@@ -313,7 +312,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		030C2A430FD80F0A00E80F7E /* Offsets.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Offsets.plist; sourceTree = "<group>"; };
 		030C2E4B0FDC09B300E80F7E /* LootController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LootController.h; sourceTree = "<group>"; };
 		030C2E4C0FDC09B300E80F7E /* LootController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LootController.m; sourceTree = "<group>"; };
 		0323D2320FCF075C00BFEBFD /* mbobbleicon.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = mbobbleicon.gif; sourceTree = "<group>"; };
@@ -894,7 +892,6 @@
 				7D165A950D45761B00BDF5CA /* CGKeyCodeMap.plist */,
 				7DB0ABC80EABED7F00B81BC1 /* FactionTemplate.plist */,
 				8D1107310486CEB800E47090 /* Info.plist */,
-				030C2A430FD80F0A00E80F7E /* Offsets.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
 				7D54DCB80E08449F00E1B463 /* Condition NIBs */,
@@ -1625,7 +1622,6 @@
 				7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */,
 				7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */,
 				0323D2330FCF075C00BFEBFD /* mbobbleicon.gif in Resources */,
-				030C2A440FD80F0A00E80F7E /* Offsets.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
