@@ -272,6 +272,25 @@ static SpellController *sharedSpells = nil;
     return highestRankSpell;
 }
 
+- (Spell*)highestIDOfSpell: (Spell*)incSpell{
+	if(!incSpell) return nil;
+    
+    Spell *highestIDSpell = incSpell;
+    for(Spell *spell in [_spellBook allValues]) {
+        // if the spell names match
+        if([spell name] && [[spell name] isEqualToString: [incSpell name]]) {
+            // see which one has the higher rank
+            if( [[spell ID] intValue] > [[highestIDSpell ID] intValue]){
+                highestIDSpell = spell;
+				PGLog(@"%@", [spell ID]);
+				
+			}
+        }
+    }
+	
+	return highestIDSpell;	
+}
+
 - (BOOL)addSpellAsRecognized: (Spell*)spell {
     if(![spell ID]) return NO;
     if([[spell ID] unsignedIntValue] > 1000000) return NO;

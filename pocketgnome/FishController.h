@@ -19,6 +19,7 @@
 @class InventoryController;
 @class MemoryViewController;
 @class LootController;
+@class SpellController;
 
 @class WoWObject;
 @class PTHotKey;
@@ -34,6 +35,7 @@
     IBOutlet InventoryController    *itemController;
 	IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet LootController			*lootController;
+	IBOutlet SpellController		*spellController;
 	
 	IBOutlet NSButton				*applyLureCheckbox;
 	IBOutlet NSButton				*killWoWCheckbox;
@@ -52,6 +54,8 @@
 	BOOL _isFishing;
 	BOOL _useCrate;
 	int _applyLureAttempts;
+	
+	UInt32 _fishingSpellID;
 	
 	UInt64 _playerGUID;
 	UInt64 _bobberGUID;

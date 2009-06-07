@@ -43,6 +43,7 @@
 - (Spell*)spellForName: (NSString*)name;
 - (Spell*)spellForID: (NSNumber*)spellID;
 - (Spell*)highestRankOfSpell: (Spell*)spell;
+- (Spell*)highestIDOfSpell: (Spell*)spell;
 - (BOOL)addSpellAsRecognized: (Spell*)spell;
 
 - (void)didCastSpell: (Spell*)spell;
