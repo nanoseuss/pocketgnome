@@ -15,6 +15,7 @@
 #import "InventoryController.h"
 #import "MemoryViewController.h"
 #import "LootController.h"
+#import "SpellController.h"
 
 #import "Offsets.h"
 
@@ -23,6 +24,7 @@
 #import "MemoryAccess.h"
 #import "Player.h"
 #import "Item.h"
+#import "Spell.h"
 
 #import "PTHeader.h"
 
@@ -30,7 +32,6 @@
 
 #define USE_ITEM_MASK       0x80000000
 
-#define SPELL_FISHING			51294
 #define ITEM_REINFORCED_CRATE	44475
 
 // Fishing bobber flags
@@ -115,6 +116,17 @@
 		_playerGUID = [player GUID];
 	}
 	
+	Spell *fishingSpell = [spellController spellForName:@"Fishing"];
+	
+	if ( fishingSpell ){
+		// Now lets get the highest ID!
+		Spell *highest = [spellController highestIDOfSpell: fishingSpell];
+		_fishingSpellID = [[highest ID] intValue];
+	}
+	else{
+		PGLog(@"[Fishing] You need to learn fishing first!");
+	}
+	
 	// TO DO: Reset GUI!
 	_totalFishLooted = 0;
 	
@@ -153,7 +165,7 @@
 }
 
 -(BOOL)isFishing{
-	if ( [playerController spellCasting] == SPELL_FISHING ){
+	if ( [playerController spellCasting] == _fishingSpellID ){
 		return YES;
 	}
 		
@@ -198,7 +210,7 @@
 		}
 		
 		// If casting fails for some reason lets try again in a second!
-		if ( ![botController performAction: SPELL_FISHING] ){
+		if ( ![botController performAction: _fishingSpellID] ){
 			[self performSelector: @selector(fishBegin) withObject: nil afterDelay: 1.0];
 			
 			return;

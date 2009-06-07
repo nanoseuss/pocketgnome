@@ -7035,6 +7035,14 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					</object>
 					<int key="connectionID">3195</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">spellController</string>
+						<reference key="source" ref="349773279"/>
+						<reference key="destination" ref="191514424"/>
+					</object>
+					<int key="connectionID">3196</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -10143,7 +10151,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">3195</int>
+			<int key="maxID">3196</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -10653,11 +10661,9 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>showBobberStructure:</string>
 							<string>startStopFishing:</string>
-							<string>tmp:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 						</object>
@@ -10681,9 +10687,11 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>nodeController</string>
 							<string>playerController</string>
 							<string>showGrowlNotifications</string>
+							<string>spellController</string>
 							<string>startStopButton</string>
 							<string>statisticsTableView</string>
 							<string>status</string>
+							<string>useReinforcedCrates</string>
 							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -10703,9 +10711,11 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>NodeController</string>
 							<string>PlayerDataController</string>
 							<string>NSButton</string>
+							<string>SpellController</string>
 							<string>NSButton</string>
 							<string>NSTableView</string>
 							<string>NSTextField</string>
+							<string>NSButton</string>
 							<string>NSView</string>
 						</object>
 					</object>

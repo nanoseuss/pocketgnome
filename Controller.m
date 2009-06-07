@@ -195,6 +195,21 @@ static Controller* sharedController = nil;
         }
         [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedChatLogToolbarItem"];
     }
+	
+    // insert the new Fishing toolbar item if it hasn't been done before and it's not there
+    if(![[NSUserDefaults standardUserDefaults] boolForKey: @"AddedFishingToolbarItem"]) {
+        BOOL foundFishing = NO;
+        for(NSToolbarItem *item in [mainToolbar items]) {
+            if([[item itemIdentifier] isEqualToString: [fishingToolbarItem itemIdentifier]]) {
+                foundFishing = YES;
+            }
+        }
+        if(!foundFishing) {
+            PGLog(@"Inserting Fishing toolbar item.");
+            [mainToolbar insertItemWithItemIdentifier: [fishingToolbarItem itemIdentifier] atIndex: 1];
+        }
+        [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedFishingToolbarItem"];
+    }
     
     //UInt32 bleh = 3250009464u;
     //float bleh2;
