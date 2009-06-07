@@ -99,7 +99,7 @@ static InventoryController *sharedInventory = nil;
 #pragma mark -
 
 - (Item*)itemForGUID: (GUID)guid {
-    if(GUID_HIPART(guid) != HIGHGUID_ITEM) return nil;
+    //if(GUID_HIPART(guid) != HIGHGUID_ITEM) return nil; - As of 3.1.3 I had to comment out this - i'm not sure why
     
     for(Item *item in _itemList) {
         if( [item GUID] == guid )
@@ -405,6 +405,25 @@ static InventoryController *sharedInventory = nil;
     return menu;
 }
 
+/*
+- (NSMutableArray*)itemsInBags{
+	
+	UInt32 itemFieldContained = 0;
+	UInt32 lowPlayerGUID = [playerData lowGUID];
+	
+	NSMutableArray *items = [[NSMutableArray alloc] init];
+	
+	for(Item *item in _itemList) {
+
+		if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [item infoAddress] + 0x20 Buffer: (Byte *)&itemFieldContained BufLength: sizeof(itemFieldContained)]){
+			if ( itemFieldContained != lowPlayerGUID ){
+				[items addObject:item];
+			}
+		}
+	}
+	
+	return [items autorelease];
+}*/
 
 #pragma mark -
 #pragma mark TableView Delegate & Datasource

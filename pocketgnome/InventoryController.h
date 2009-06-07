@@ -10,10 +10,14 @@
 
 @class Item;
 
+@class Controller;
+@class PlayerDataController;
+@class MemoryViewController;
+
 @interface InventoryController : NSObject {
-    IBOutlet id controller;
-    IBOutlet id playerData;
-    IBOutlet id memoryViewController;
+    IBOutlet Controller *controller;
+    IBOutlet PlayerDataController *playerData;
+    IBOutlet MemoryViewController *memoryViewController;
 
     IBOutlet NSView *view;
     IBOutlet NSTableView *itemTable;
@@ -52,4 +56,6 @@
 - (NSMenu*)inventoryItemsMenu;
 - (NSMenu*)usableInventoryItemsMenu;
 - (NSMenu*)prettyInventoryItemsMenu;
+
+//- (NSMutableArray*)itemsInBags;
 @end

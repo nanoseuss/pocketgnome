@@ -19,6 +19,7 @@
 #import "MemoryViewController.h"
 #import "PlayersController.h"
 #import "CorpseController.h"
+#import "FishController.h"
 
 #import "CGSPrivate.h"
 
@@ -862,6 +863,12 @@ static Controller* sharedController = nil;
         minSize = [chatLogController minSectionSize];
         maxSize = [chatLogController maxSectionSize];
     }
+    if( [sender tag] == 13) {
+        newView = [fishController view];
+        addToTitle = [fishController sectionTitle];
+        minSize = [fishController minSectionSize];
+        maxSize = [fishController maxSectionSize];
+    }
     
     if(newView) {
         [self loadView: newView withTitle: addToTitle];
@@ -1412,6 +1419,7 @@ static Controller* sharedController = nil;
             NSToolbarSpaceItemIdentifier,
             [playerToolbarItem itemIdentifier], 
             [spellsToolbarItem itemIdentifier],
+			[fishingToolbarItem itemIdentifier],
             NSToolbarSpaceItemIdentifier,
             [playersToolbarItem itemIdentifier], 
             [mobsToolbarItem itemIdentifier], 
@@ -1433,14 +1441,15 @@ static Controller* sharedController = nil;
             [playerToolbarItem itemIdentifier], 
             [itemsToolbarItem itemIdentifier], 
             [spellsToolbarItem itemIdentifier],
-            [mobsToolbarItem itemIdentifier], 
+			[mobsToolbarItem itemIdentifier], 
             [playersToolbarItem itemIdentifier],
             [nodesToolbarItem itemIdentifier], 
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
             [memoryToolbarItem itemIdentifier],
             [prefsToolbarItem itemIdentifier],
-            [chatLogToolbarItem itemIdentifier], nil];
+            [chatLogToolbarItem itemIdentifier], 
+			[fishingToolbarItem itemIdentifier], nil];
 }
 
 #pragma mark -
@@ -1918,54 +1927,32 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
 }
 
 - (void)killWOW{
+	ProcessSerialNumber pSN = [self getWoWProcessSerialNumber];
+	if( pSN.lowLongOfPSN == kNoProcess) return;
+	NSLog(@"Quitting WoW");
 	
-	pid_t wowPID = 0;
-    ProcessSerialNumber wowPSN = [self getWoWProcessSerialNumber];
-    GetProcessPID(&wowPSN, &wowPID);
+	// send Quit apple event
+	OSStatus status;
+	AEDesc targetProcess = {typeNull, NULL};
+	AppleEvent theEvent = {typeNull, NULL};
+	AppleEvent eventReply = {typeNull, NULL}; 
 	
-	// Then we have a process to kill yay!
-	if ( wowPID > 0 ){
-		AuthorizationRef myAuthRef;
-		OSStatus myStatus = AuthorizationCopyPrivilegedReference(&myAuthRef, kAuthorizationFlagDefaults);
-
-		// w00t in as root - kill wow!
-		if (myStatus == errAuthorizationSuccess)
-		{
-			// prepare communication path - used to signal that process is loaded
-			FILE *myCommunicationsPipe = NULL;
-			char myReadBuffer[256];
-			
-			char *argv[3];
-			argv[0] = malloc(25);
-			argv[1] = NULL;
-			
-			snprintf(argv[0], 25, "%d", wowPID);
-			
-			myStatus = AuthorizationExecuteWithPrivileges(myAuthRef, "/bin/kill", 0, argv, &myCommunicationsPipe);
-			
-			// external app is running asynchronously - it will send to stdout when loaded
-			if (myStatus == errAuthorizationSuccess)
-			{
-				
-#ifdef PGLOGGING
-				for(;;) { 
-					int bytesRead = read(fileno(myCommunicationsPipe), myReadBuffer, sizeof(myReadBuffer)); 
-					if (bytesRead < 1) { // < 1
-						break; 
-					}
-					write(fileno(stdout), myReadBuffer, bytesRead); 
-					fflush(stdout);
-				}
-#else
-				read(fileno(myCommunicationsPipe), myReadBuffer, sizeof(myReadBuffer));
-#endif
-				fclose(myCommunicationsPipe);
-			}
-			
-			// release authorization reference
-			myStatus = AuthorizationFree (myAuthRef, kAuthorizationFlagDestroyRights);
-		}
-	}
+	status = AECreateDesc(typeProcessSerialNumber, &pSN, sizeof(pSN), &targetProcess);
+	require_noerr(status, AECreateDesc);
+	
+	status = AECreateAppleEvent(kCoreEventClass, kAEQuitApplication, &targetProcess, kAutoGenerateReturnID, kAnyTransactionID, &theEvent);
+	require_noerr(status, AECreateAppleEvent);
+	
+	status = AESend(&theEvent, &eventReply, kAENoReply + kAEAlwaysInteract, kAENormalPriority, kAEDefaultTimeout, NULL, NULL);
+	require_noerr(status, AESend);
+	
+AESend:;
+AECreateAppleEvent:;
+AECreateDesc:;
+	
+	AEDisposeDesc(&eventReply); 
+	AEDisposeDesc(&theEvent);
+AEDisposeDesc(&targetProcess);
 }
 
 @end

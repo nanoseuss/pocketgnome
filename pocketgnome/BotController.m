@@ -177,6 +177,8 @@
     [startstopRecorder setCanCaptureGlobalHotKeys: YES];
     [petAttackRecorder setCanCaptureGlobalHotKeys: YES];
     [interactWithRecorder setCanCaptureGlobalHotKeys: YES];
+	[mouseOverRecorder setCanCaptureGlobalHotKeys: YES];
+
     
     KeyCombo combo1 = { NSShiftKeyMask, kSRKeysF13 };
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyCode"])
@@ -202,19 +204,30 @@
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetFlags"])
         combo4.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetFlags"] intValue];
     
+    KeyCombo combo5 = { 0, -1 };
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"])
+        combo5.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"] intValue];
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"])
+        combo5.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"] intValue];
+	
     [shortcutRecorder setDelegate: nil];
     [startstopRecorder setDelegate: self];
     [petAttackRecorder setDelegate: nil];
     [interactWithRecorder setDelegate: nil];
+	[mouseOverRecorder setDelegate: nil];
+	
 
     [shortcutRecorder setKeyCombo: combo1];
     [startstopRecorder setKeyCombo: combo2];
     [petAttackRecorder setKeyCombo: combo3];
     [interactWithRecorder setKeyCombo: combo4];
+	[mouseOverRecorder setKeyCombo: combo5];
+
     
     [shortcutRecorder setDelegate: self];
     [petAttackRecorder setDelegate: self];
     [interactWithRecorder setDelegate: self];
+	[mouseOverRecorder setDelegate: self];
     
     // set up overlay window
     [overlayWindow setLevel: NSFloatingWindowLevel];
@@ -1161,9 +1174,9 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     int minY = (windowRect.size.height*0.375f), maxY = windowRect.size.height - minY;
     int incX = (maxX - minX)/16, incY = (maxY - minY)/16;
     
-    /*
+    
     // set up overlay window
-    NSPoint screenPt = NSZeroPoint; 
+    /*NSPoint screenPt = NSZeroPoint; 
     screenPt.x += windowRect.origin.x;
     screenPt.y += ([[NSScreen mainScreen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
     
@@ -2286,9 +2299,6 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
 
 
 - (IBAction)startBot: (id)sender {
-    _currentHotkey = -1;
-    _currentPetAttackHotkey = -1;
-    
      BOOL ignoreRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"IgnoreRoute"] boolValue];
     
     // gather appropriate information to start the bot
@@ -2717,6 +2727,11 @@ NSMutableDictionary *_diffDict = nil;
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"InteractWithTargetFlags"];
     }
     
+    if(recorder == mouseOverRecorder) {
+        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"MouseOverTargetCode"];
+        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"MouseOverTargetFlags"];
+    }
+	
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -3183,14 +3198,11 @@ NSMutableDictionary *_diffDict = nil;
 - (BOOL)performAction: (int32_t) actionID{
 	
 	int32_t oldActionID = 0;
-	
-	// "Load" it
-	if ( _currentHotkey <= 0 ){
-		// get hotkey settings
-		KeyCombo hotkey = [shortcutRecorder keyCombo];
-		_currentHotkeyModifier = hotkey.flags;
-		_currentHotkey = hotkey.code;
-	}
+
+	// get hotkey settings
+	KeyCombo hotkey = [shortcutRecorder keyCombo];
+	_currentHotkeyModifier = hotkey.flags;
+	_currentHotkey = hotkey.code;
 	
 	// replace the first entry on the hotbar
 	[[controller wowMemoryAccess] loadDataForObject: self atAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
@@ -3210,14 +3222,15 @@ NSMutableDictionary *_diffDict = nil;
 	// then save our old action back
 	[[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	
-	// Lets just check to see if there was an error
-	
-	 usleep([controller refreshDelay]);
+	// We don't want to check lastAttemptedActionID if it's not a spell!
+	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ){
+		return YES;
+	}
 	 
 	 if ( [spellController lastAttemptedActionID] == actionID ){
-		 PGLog(@"Spell didn't cast: %@", [playerController lastErrorMessage]);
+		 PGLog(@"[Bot] Spell didn't cast: %@", [playerController lastErrorMessage]);
 		 
-		 // Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
+		 // TO DO: Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
 		 //   then kill wow?
 		 return NO;
 	 }
@@ -3225,24 +3238,24 @@ NSMutableDictionary *_diffDict = nil;
 	return YES;
 }
 
-/*
- - (IBAction)draw: (id)sender{
- 
- // get the window size/location
- CGRect windowRect = [controller wowWindowRect];
- 
- int minX = (windowRect.size.width*0.375f), maxX = windowRect.size.width - minX;
- int minY = (windowRect.size.height*0.375f), maxY = windowRect.size.height - minY;
- 
- NSPoint screenPt = NSZeroPoint; 
- screenPt.x += windowRect.origin.x;
- screenPt.y += ([[NSScreen mainScreen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
- 
- // create new window bounds
- NSRect newRect = NSMakeRect(minX+windowRect.origin.x, [[NSScreen mainScreen] frame].size.height - (maxY+windowRect.origin.y), maxX-minX, maxY-minY);
- [overlayWindow setFrame: newRect display: YES];
- [overlayWindow makeKeyAndOrderFront: nil];	
- }*/
+- (BOOL)interactWithMouseOver{
+	
+	// get hotkey settings
+	KeyCombo hotkey = [mouseOverRecorder keyCombo];
+	
+	if ( hotkey.code < 0 ){
+		return NO;
+	}
+	
+	// Send out "interact with mouse over" keybinding!
+	if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
+		[chatController pressHotkey: hotkey.code  withModifier: hotkey.flags];
+		
+		return YES;
+	}
+	
+	return NO;
+}
 
 @end
 

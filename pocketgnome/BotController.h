@@ -135,6 +135,7 @@
     IBOutlet SRRecorderControl *petAttackRecorder;
     IBOutlet SRRecorderControl *startstopRecorder;
     IBOutlet SRRecorderControl *interactWithRecorder;
+	IBOutlet SRRecorderControl *mouseOverRecorder;
     PTHotKey *StartStopBotGlobalHotkey;
     
     IBOutlet NSTextField *statusText;
@@ -190,6 +191,6 @@
 
 // Little more flexibility - casts spells! Uses items/macros!
 - (BOOL)performAction: (int32_t) actionID;
-
+- (BOOL)interactWithMouseOver;
 
 @end
