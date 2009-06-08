@@ -116,12 +116,9 @@
 		_playerGUID = [player GUID];
 	}
 	
-	Spell *fishingSpell = [spellController spellForName:@"Fishing"];
-	
+	Spell *fishingSpell = [spellController playerSpellForName: @"Fishing"];
 	if ( fishingSpell ){
-		// Now lets get the highest ID!
-		Spell *highest = [spellController highestIDOfSpell: fishingSpell];
-		_fishingSpellID = [[highest ID] intValue];
+		_fishingSpellID = [[fishingSpell ID] intValue];
 	}
 	else{
 		PGLog(@"[Fishing] You need to learn fishing first!");
