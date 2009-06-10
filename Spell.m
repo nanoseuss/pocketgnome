@@ -287,7 +287,7 @@
     [_connection cancel];
     [_connection release];
     _connection = [[NSURLConnection alloc] initWithRequest: [NSURLRequest requestWithURL: [NSURL URLWithString: [NSString stringWithFormat: @"http://www.wowhead.com/?spell=%@", [self ID]]]] delegate: self];
-    if(_connection) {
+	if(_connection) {
         [_downloadData release];
         _downloadData = [[NSMutableData data] retain];
         //[_connection start];
@@ -321,7 +321,12 @@
 {
     // get the download as a string
     NSString *wowhead = [[[NSString alloc] initWithData: _downloadData encoding: NSUTF8StringEncoding] autorelease];
-    
+	
+	// The encoding failed?  O noes!  Lets try another! Fix from GO
+	if ( !wowhead || [wowhead length] == 0 ){
+		wowhead = [[[NSString alloc] initWithData: _downloadData encoding: NSASCIIStringEncoding] autorelease];
+	}
+	
     // release the connection, and the data object
     [_connection release];  _connection = nil;
     [_downloadData release]; _downloadData = nil;
@@ -488,10 +493,13 @@
             }
         } else {
             [scanner setScanLocation: scanSave]; // some spells dont have cooldowns
+			
+			// PGLog(@"Loaded: %@; Rank %@; %@ yards; %@ seconds; school: %@; dispel: %@", self.name, self.rank, self.range, self.cooldown, self.school, self.dispelType);
         }
-        
-        // PGLog(@"Loaded: %@; Rank %@; %@ yards; %@ seconds; school: %@; dispel: %@", self.name, self.rank, self.range, self.cooldown, self.school, self.dispelType);
     }
+	else{
+		PGLog(@"[Spell] Error grabbing data for Spell ID: %@", [self ID]);
+	}
 }
 
 
