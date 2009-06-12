@@ -38,6 +38,7 @@
 #import "Macro.h"
 #import "CombatProfileEditor.h"
 #import "CombatProfile.h"
+#import "Errors.h"
 
 #import "ScanGridView.h"
 #import "TransparentWindow.h"
@@ -3224,18 +3225,32 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// We don't want to check lastAttemptedActionID if it's not a spell!
 	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ){
-		return YES;
+		return ErrNone;
 	}
 	 
 	 if ( [spellController lastAttemptedActionID] == actionID ){
-		 PGLog(@"[Bot] Spell didn't cast: %@", [playerController lastErrorMessage]);
+		 int errID = [self errorValue:[playerController lastErrorMessage]];
+		 PGLog(@"[Bot] Spell didn't cast: %@", [playerController lastErrorMessage] );
+		 
+		 return errID;
 		 
 		 // TO DO: Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
 		 //   then kill wow?
-		 return NO;
 	 }
 	
-	return YES;
+	return ErrNone;
+}
+
+- (int)errorValue: (NSString*) errorMessage{
+	
+	if (  [errorMessage isEqualToString: INV_FULL] ){
+		return ErrInventoryFull;
+	}
+	else if ( [errorMessage isEqualToString:TARGET_LOS] ){
+		return ErrTargetNotInLOS;
+	}
+	
+	return ErrNotFound;
 }
 
 - (BOOL)interactWithMouseOver{

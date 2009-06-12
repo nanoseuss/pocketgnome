@@ -12,17 +12,21 @@
 
 @class Controller;
 @class InventoryController;
+@class ChatController;
 
 @interface LootController : NSObject {
     IBOutlet Controller             *controller;
 	IBOutlet InventoryController	*itemController;
+	IBOutlet ChatController			*chatController;
 	
 	NSMutableDictionary	*_itemsLooted;
-	NSMutableDictionary *_itemNameList;
 	
 	int		_lastLootedItem;
 }
 
-@property (readonly) NSMutableDictionary *itemsLooted;
+- (NSDictionary*)itemsLooted;
+- (void)resetLoot;
 
+- (BOOL)isLootWindowOpen;
+- (void)acceptLoot;
 @end

@@ -175,6 +175,8 @@
                                                      // 0x1227C98 : 0x0) // 3.0.3
                                                      // 0x1223B38 : 0x0) // 3.0.2
 
+#define LAST_SPELL_CAST						((IS_X86) ? 0x1513890 : 0x0) // 3.1.3
+
 // 3.1.2 valid 
 #define REFRESH_DELAY           ((IS_X86) ? 0x1517A88 : 0x0) // 3.1.2
 										 // 0x115B740 : 0x0) // 3.1.1
@@ -219,6 +221,12 @@
 // 3.1.3 valid
 #define ITEM_IN_LOOT_WINDOW	   ((IS_X86) ? 0x143E124 : 0x0 )	// This will ONLY appear while the window is open!
 																// Similar version is at 0x011713F - this will REMAIN set if the loot window is closed w/o looting, only difference
+// {
+#define LOOT_QUANTITY			0x8
+#define LOOT_INDEX				0x14
+#define LOOT_NEXT				0x20
+// }
+
 
 // **************************** NOT USED/DATED ******************************************* //
 

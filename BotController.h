@@ -190,7 +190,8 @@
 - (IBAction)pvpTestWarning: (id)sender;
 
 // Little more flexibility - casts spells! Uses items/macros!
-- (BOOL)performAction: (int32_t) actionID;
+- (BOOL)performAction: (int32_t)actionID;
 - (BOOL)interactWithMouseOver;
+- (int)errorValue: (NSString*)errorMessage;
 
 @end

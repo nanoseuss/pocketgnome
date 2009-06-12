@@ -18,10 +18,6 @@
 
 #import <Growl/GrowlApplicationBridge.h>
 
-#define BobberNode_CaughtFish_Offset    0xD0
-#define BobberNode_Visibility_Offset    0xD8    // could use a better name
-#define kBobberTemporarilyHidden        16000
-
 typedef enum {
     Filter_All              = -100,
     Filter_Mine_Herb        = -4,
@@ -119,7 +115,6 @@ typedef enum {
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
 @synthesize nodeTypeFilter = _nodeTypeFilter;
-@synthesize monitorFishing = _monitorFishing;
 @synthesize filterString;
 
 - (NSString*)sectionTitle {
@@ -337,17 +332,33 @@ typedef enum {
 
 #pragma mark External Query
 
-
-- (NSArray*)allFishingBobbers{
-    NSMutableArray *nodes = [NSMutableArray array];
+- (NSArray*)allFishingSchools{
+	NSArray *nodeList = [[_nodeList copy] autorelease];
+	NSMutableArray *nodes = [NSMutableArray array];
     
-    for(Node *node in _nodeList) {
-		if ( [[node name] isEqualToString:@"Fishing Bobber"] ){
+    for(Node *node in nodeList) {
+		if ( [node nodeType] == GAMEOBJECT_TYPE_FISHINGHOLE ){
 			[nodes addObject: node];
 		}
     }
     
     return nodes;
+}
+
+- (NSArray*)allFishingBobbers{
+	
+	// Make a copy or we will run into some "Collection <NSCFArray: 0x13a0e0> was mutated while being enumerated." errors and crash
+	//   Mainly b/c we access this from another thread
+	NSArray *nodeList = [[_nodeList copy] autorelease];
+	NSMutableArray *nodes = [NSMutableArray array];
+    
+	for(Node *node in nodeList) {
+		if ( [node nodeType] == GAMEOBJECT_TYPE_FISHING_BOBBER ){
+			[nodes addObject: node];
+		}
+	}
+    
+	return nodes;
 }
 
 - (NSArray*)allMiningNodes {
@@ -495,18 +506,6 @@ typedef enum {
     [self reloadNodeData: nil];
 }
 
-- (IBAction)monitorFishing: (id)sender {
-    if([sender state] == NSOnState) {
-        PGLog(@"Starting fish monitor");
-        [self fishingCheck];
-        [openMonitorFishingWindowButton setImage: [NSImage imageNamed: @"on"]];
-    } else {
-        PGLog(@"Stopping fish monitor");
-        [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(fishingCheck) object: nil];
-        [openMonitorFishingWindowButton setImage: [NSImage imageNamed: @"off"]];
-    }
-}
-
 - (IBAction)moveToStart: (id)sender {
     int tag = [moveToList selectedTag];
     if(tag <= 0) return;
@@ -561,65 +560,6 @@ typedef enum {
 
 - (IBAction)moveToStop: (id)sender {
     [movementController setPatrolRoute: nil];
-}
-
-#pragma mark Monitor Fishing
-
-- (void)fishingCheck {
-    // first, scan all objects for fishing bobbers
-    GUID playerGUID = [playerController GUID];
-    NSArray *validBobbers = [self nodesWithinDistance: 25.0f ofAbsoluteType: GAMEOBJECT_TYPE_FISHING_BOBBER];
-    for(Node *node in validBobbers) {
-        if(playerGUID == [node owner]) {
-            UInt32 value = 0;
-            if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([node baseAddress] + BobberNode_CaughtFish_Offset) Buffer: (Byte *)&value BufLength: sizeof(value)] && (value == 1)) {
-                // we caught a fish!
-                
-                // beep
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                if([[defaults objectForKey: @"FishingPlayAlertSound"] boolValue]) {
-                    [[NSSound soundNamed: @"splash"] play];
-                }
-                
-                // send a growl notification
-                if([[defaults objectForKey: @"FishingUseGrowl"] boolValue]) {
-                    if([GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
-                        [GrowlApplicationBridge notifyWithTitle: @"You Caught Something!"
-                                                    description: [NSString stringWithFormat: @"FISHY!"]
-                                               notificationName: @"FishCaught"
-                                                       iconData: [[NSImage imageNamed: @"Bobber"] TIFFRepresentation]
-                                                       priority: 0
-                                                       isSticky: NO
-                                                   clickContext: nil];
-                    }
-                }
-
-                // flash the screen to white and back
-                if([[defaults objectForKey: @"FishingFlashScreen"] boolValue]) {
-                    CGDisplayFadeReservationToken token = 0;
-                    CGError err = CGAcquireDisplayFadeReservation(4.0, &token);
-                    if(err == noErr) {
-                        CGDisplayFade(token, 0.35, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.5f, 0.5f, 0.5f, true);
-                        CGDisplayFade(token, 0.50, kCGDisplayBlendSolidColor,kCGDisplayBlendNormal, 0.5f, 0.5f, 0.5f, true);
-                        CGReleaseDisplayFadeReservation(token);
-                    }
-                }
-                
-                if([[defaults objectForKey: @"FishingHideOtherBobbers"] boolValue]) {
-                    UInt32 value = kBobberTemporarilyHidden;
-                    for(Node *bobber in validBobbers) {
-                        if(bobber == node) continue;    // skip mine
-                        [[controller wowMemoryAccess] saveDataForAddress: ([bobber baseAddress] + BobberNode_Visibility_Offset) Buffer: (Byte*)&value BufLength: sizeof(value)];
-                    }
-                }
-                
-                // call this function again in 5 seconds
-                [self performSelector: _cmd withObject: nil afterDelay: 5.0];
-                return;
-            }
-        }
-    }
-    [self performSelector: _cmd withObject: nil afterDelay: 0.1];
 }
 
 @end

@@ -11,6 +11,7 @@
 #import "MemoryViewController.h"
 #import "Offsets.h"
 #import "Item.h"
+#import "WoWObject.h"
 
 @interface InventoryController ()
 - (void)reloadItemData;
@@ -110,7 +111,8 @@ static InventoryController *sharedInventory = nil;
 
 - (Item*)itemForID: (NSNumber*)itemID {
     if( !itemID || [itemID intValue] <= 0) return nil;
-    for(Item *item in _itemList) {
+	NSArray* itemList = [[_itemList copy] autorelease];
+    for(Item *item in itemList) {
         if( [itemID isEqualToNumber: [NSNumber numberWithInt: [item entryID]]] )
             return [[item retain] autorelease];
     }
@@ -411,10 +413,22 @@ static InventoryController *sharedInventory = nil;
 	UInt32 itemFieldContained = 0;
 	UInt32 lowPlayerGUID = [playerData lowGUID];
 	
+	PGLog(@"called");
+	
 	NSMutableArray *items = [[NSMutableArray alloc] init];
+	int objectType = TYPEID_UNKNOWN;
 	
 	for(Item *item in _itemList) {
+		
+		if ( [item isBag] ){
+			
+			int ownerGUID = GUID_LOW32([item ownerUID])
+			int containerGUID = GUID_LOW32([item containerUID])
+			
+			PGLog(@"[Item] GUID: %qu  Size: %d Owner:%d  Container: %d", [item GUID], [item bagSize], ownerGUID, containerGUID );
 
+		}
+		
 		if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [item infoAddress] + 0x20 Buffer: (Byte *)&itemFieldContained BufLength: sizeof(itemFieldContained)]){
 			if ( itemFieldContained != lowPlayerGUID ){
 				[items addObject:item];
