@@ -37,7 +37,6 @@
 	IBOutlet LootController			*lootController;
 	IBOutlet SpellController		*spellController;
 	IBOutlet MovementController		*movementController;
-	IBOutlet MovementController2	*movementController2;
 	
 	IBOutlet NSButton				*applyLureCheckbox;
 	IBOutlet NSButton				*killWoWCheckbox;
