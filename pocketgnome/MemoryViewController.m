@@ -17,7 +17,6 @@
 @end
 
 @interface MemoryViewController (Internal)
-- (void)setBaseAddress: (NSNumber*)address;
 - (void)setBaseAddress: (NSNumber*)address withCount: (int)count;
 @end
 
@@ -31,12 +30,15 @@
         self.currentAddress = nil;
         _displayCount = 0;
         self.wowObject = nil;
+		_lastValues = [[NSMutableDictionary dictionary] retain];
     }
     return self;
 }
 
 - (void)dealloc {
     self.currentAddress = nil;
+	
+	[_lastValues release];
     
     [super dealloc];
 }
@@ -88,8 +90,6 @@
 - (void)showObjectMemory: (id)object {
     if( [object conformsToProtocol: @protocol(WoWObjectMemory)]) {
         self.wowObject = object;
-		
-		PGLog(@"Count: %d", (([object memoryEnd] - [object memoryStart]) / sizeof(UInt32)));
         [self setBaseAddress: [NSNumber numberWithUnsignedInt: [object baseAddress]] 
                    withCount: (([object memoryEnd] - [object memoryStart] + 0x1000) / sizeof(UInt32))];
     } else {
@@ -135,7 +135,7 @@
     UInt32 startAddress = [self.currentAddress unsignedIntValue];
     MemoryAccess *memory = [controller wowMemoryAccess];
     
-    if(!startAddress || !memory || ([self displayFormat] == 2)) {
+    if(!startAddress || !memory || ([self displayFormat] == 2) || ([self displayFormat] == 5)) {
         NSBeep();
         return;
     }
@@ -193,6 +193,49 @@
     return 0;
 }
 
+- (IBAction)saveValues: (id)sender{
+	
+	unsigned startAddress = [self.currentAddress unsignedIntValue];
+	size_t size = ([self displayFormat] == 2) ? sizeof(uint64_t) : sizeof(uint32_t);
+	size = ([self displayFormat] == 5) ? sizeof(uint16_t) : size;
+    
+	uint32_t value32;
+	int i;
+	for ( i = 0; i < _displayCount; i++ ){
+		 uint32_t addr = startAddress + i*size;	
+		
+		MemoryAccess *memory = [controller wowMemoryAccess];
+        int ret = [memory readAddress: addr Buffer: (Byte*)&value32 BufLength: sizeof(value32)];
+        if((ret == KERN_SUCCESS)) {
+			
+			if ( [self displayFormat] == 2 ){
+				uint64_t value64;
+                [memory loadDataForObject: self atAddress: addr Buffer: (Byte*)&value64 BufLength: sizeof(uint64_t)];
+				[_lastValues setObject:[NSNumber numberWithLong:value64] forKey:[NSNumber numberWithInt:addr]];
+			}
+			else if ( [self displayFormat] == 3 ){
+                float floatVal;
+                [memory loadDataForObject: self atAddress: addr Buffer: (Byte*)&floatVal BufLength: sizeof(float)];
+				[_lastValues setObject:[NSNumber numberWithFloat:floatVal] forKey:[NSNumber numberWithInt:addr]];
+			}
+			else if ( [self displayFormat] == 5 ){
+				uint16_t value16 = 0;
+				[memory loadDataForObject: self atAddress: addr Buffer: (Byte*)&value16 BufLength: sizeof(uint16_t)];
+				[_lastValues setObject:[NSNumber numberWithInt:value16] forKey:[NSNumber numberWithInt:addr]];
+			}
+			else{
+				uint32_t value32;
+				[memory loadDataForObject: self atAddress: addr Buffer: (Byte*)&value32 BufLength: sizeof(uint32_t)];
+				[_lastValues setObject:[NSNumber numberWithInt:value32] forKey:[NSNumber numberWithInt:addr]];
+			}
+		}
+	}
+}
+
+- (IBAction)clearValues: (id)sender{
+	[_lastValues removeAllObjects];
+}
+
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
     if(rowIndex == -1)      return nil;
     if(![self validState])  return nil;
@@ -201,6 +244,7 @@
     //uint64_t value64, targetID = 0;
     unsigned startAddress = [self.currentAddress unsignedIntValue];
     size_t size = ([self displayFormat] == 2) ? sizeof(uint64_t) : sizeof(uint32_t);
+	size = ([self displayFormat] == 5) ? sizeof(uint16_t) : size;
     
     uint32_t addr = startAddress + rowIndex*size;
     
@@ -211,11 +255,15 @@
         return [NSString stringWithFormat: @"+0x%X", (addr - startAddress)];
     }
     
+	if( [[aTableColumn identifier] isEqualToString: @"Saved"] ) {
+		
+		return [_lastValues objectForKey:[NSNumber numberWithInt:addr]];
+	}
+	
     if( [[aTableColumn identifier] isEqualToString: @"Value"] ) {
         MemoryAccess *memory = [controller wowMemoryAccess];
         int ret = [memory readAddress: addr Buffer: (Byte*)&value32 BufLength: sizeof(value32)];
         if((ret == KERN_SUCCESS)) {
-
             if([self displayFormat] == 0)
                 return [NSString stringWithFormat: @"%u", value32];
             if([self displayFormat] == 1)
@@ -232,6 +280,11 @@
             }
             if([self displayFormat] == 4) {
                 return [NSString stringWithFormat: @"0x%X", value32];
+            }
+            if([self displayFormat] == 5) {
+				uint16_t value16 = 0;
+				[memory loadDataForObject: self atAddress: addr Buffer: (Byte*)&value16 BufLength: sizeof(uint16_t)];
+                return [NSString stringWithFormat: @"%d", value16];
             }
         } else {
             return [NSString stringWithFormat: @"(error: %d)", ret];
@@ -284,6 +337,10 @@
         float value = [anObject floatValue];
         [[controller wowMemoryAccess] saveDataForAddress: ([self.currentAddress unsignedIntValue] + rowIndex*4) Buffer: (Byte*)&value BufLength: sizeof(value)];
     }
+    if(type == 5) {
+        UInt16 value = [anObject intValue];
+        [[controller wowMemoryAccess] saveDataForAddress: ([self.currentAddress unsignedIntValue] + rowIndex*4) Buffer: (Byte*)&value BufLength: sizeof(value)];
+    }
 }
 
 - (void)tableDoubleClick: (id)sender {
@@ -291,6 +348,7 @@
     
     unsigned startAddress = [self.currentAddress unsignedIntValue];
     size_t size = ([self displayFormat] == 2) ? sizeof(uint64_t) : sizeof(uint32_t);
+	size = ([self displayFormat] == 5) ? sizeof(uint16_t) : size;
     
     uint32_t addr = startAddress + [sender clickedRow]*size;
     

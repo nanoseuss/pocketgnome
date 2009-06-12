@@ -16,8 +16,10 @@
 #import "MemoryViewController.h"
 #import "LootController.h"
 #import "SpellController.h"
+#import "MovementController.h"
 
 #import "Offsets.h"
+#import "Errors.h"
 
 #import "Node.h"
 #import "Position.h"
@@ -34,15 +36,11 @@
 
 #define ITEM_REINFORCED_CRATE	44475
 
-// Fishing bobber flags
-#define ANIM_FLAG_MOVED			0x1
-#define ANIM_FLAG_GONE			0x10000
-#define ANIM_FLAG_UNKNOWN		0xF0001
 
-//When reading animation as 32-bit integer:
-#define ANIMATION_CAST			8650752
-#define ANIMATION_MOVED			8650753
-#define ANIMATION_GONE			8716288
+#define OFFSET_MOVED			0xB4		// When this is 1 the bobber has moved!  Offset from the base address
+#define OFFSET_STATUS			0xB6		// This is 132 when the bobber is normal, shortly after it moves it's 148, then finally finishes at 133 (is it animation state?)
+	#define STATUS_NORMAL		132
+#define OFFSET_VISIBILITY		0xC0		// Set this to 0 to hide the bobber!
 
 // TO DO:
 //	Log out on full inventory
@@ -51,6 +49,22 @@
 //  Check for GMs?
 //	Add a check for the following items: "Reinforced Crate", "Borean Leather Scraps", then /use them :-)
 //  Select a route to run back in case you are killed (add a delay until res option as well?)
+//  /use Bloated Mud Snapper
+//  Recast if didn't land near the school?
+//  new bobber detection method?  fire event when it's found?  Can check for invalid by firing off [node validToLoot]
+//  turn on keyboard turning if we're facing a node?
+//  make sure user has bobbers in inventory
+//  closing wow will crash PG - fix this
+
+@interface FishController (Internal)
+- (void)updateFishCount;
+- (void)startFishing;
+- (void)stopFishing;
+- (void)fishBegin;
+- (BOOL)applyLure;
+- (Node*)faceNearestSchool;
+@end
+
 
 @implementation FishController
 
@@ -59,17 +73,33 @@
     if (self != nil) {
 		
 		_isFishing = NO;
-		_useCrate = NO;
 		_playerGUID = 0;
-		_bobberGUID = 0;
 		_totalFishLooted = 0;
-		_startTime = nil;
+		_ignoreIsFishing = NO;
+		_bobber = nil;
+		_useContainer = 0;
+		
+		// UI options
+		_optApplyLure = NO;
+		_optKillWow = NO;
+		_optShowGrowl = NO;
+		_optUseContainers = NO;
+		_optFaceSchool = NO;
+		_optRecast = NO;
+		_optHideOtherBobbers = NO;
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(fishLooted:) 
                                                      name: ItemLootedNotification 
                                                    object: nil];
-		
+        [[NSNotificationCenter defaultCenter] addObserver: self 
+												 selector: @selector(playerHasDied:) 
+													 name: PlayerHasDiedNotification 
+												   object: nil];
+        [[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(playerIsInvalid:) 
+                                                     name: PlayerIsInvalidNotification 
+                                                   object: nil];
 		
         [NSBundle loadNibNamed: @"Fishing" owner: self];
     }
@@ -107,66 +137,83 @@
 // Called when player clicks start/stop fishing!
 - (IBAction)startStopFishing: (id)sender {	
 
-	Player *player = [playerController player];
-	if ( !player ) {
+	if ( ![playerController playerIsValid] ){
+		[status setStringValue: [NSString stringWithFormat:@"Player not valid!"]];
 		return;
 	}
 	
-	if ( _playerGUID == 0 ){
-		_playerGUID = [player GUID];
-	}
+	// This never changes, so lets store it so we aren't reading it during our main thread
+	_playerGUID = [[playerController player] GUID];
 	
 	Spell *fishingSpell = [spellController playerSpellForName: @"Fishing"];
 	if ( fishingSpell ){
 		_fishingSpellID = [[fishingSpell ID] intValue];
 	}
 	else{
-		PGLog(@"[Fishing] You need to learn fishing first!");
+		[status setStringValue: [NSString stringWithFormat:@"You need to learn fishing!"]];
+		return;
 	}
 	
-	// TO DO: Reset GUI!
-	_totalFishLooted = 0;
+	// Load up our GUI checkboxes!
+	_optApplyLure			= [applyLureCheckbox state];
+	_optKillWow				= [killWoWCheckbox state];
+	_optShowGrowl			= [showGrowlNotifications state];
+	_optUseContainers		= [useContainers state];
+	_optFaceSchool			= [faceSchool state];
+	_optRecast				= [recastIfMiss state];
+	_optHideOtherBobbers	= [hideOtherBobbers state];
 	
-	// Reset lure attempts
+	// Reset our fishing variables!
 	_applyLureAttempts = 0;
+	_ignoreIsFishing = NO;
 	
 	if ( _isFishing ){
-		[startStopButton setTitle: @"Start Fishing"];
-		_isFishing = NO;
+		[self stopFishing];
 	}
 	else{
-		[startStopButton setTitle: @"Stop Fishing"];
-		_isFishing = YES;
-		
-		// Save what time we started!
-		_startTime = [NSDate date];
-		
-		// Start our "kill wow" timer if we need to
-		if ( [killWoWCheckbox state] ){
-
-			// Kill it in a wee bit
-			[self performSelector: @selector(closeWoW) withObject: nil afterDelay:[closeWoWTimer floatValue]*60*60 ];
-		}
+		[self startFishing];
 	}
-
-	// Lets start fishing!
-	[self fishBegin];
 }
 
--(void)closeWoW{
-	// Only kill wow if we're still fishing!
+- (void)startFishing{
+	_isFishing = YES;
+	
+	[startStopButton setTitle: @"Stop Fishing"];
+	
+	// Reset our loot!
+	_totalFishLooted = 0;
+	[lootController resetLoot];
+	//[statisticsTableView reloadData];
+	//[self updateFishCount];
+	
+	// Start our "kill wow" timer if we need to
+	if ( _optKillWow ){
+		[self performSelector: @selector(closeWoW) withObject: nil afterDelay:[closeWoWTimer floatValue]*60*60 ];
+	}
+	
+	// Fire off a thread to handle all fishing!
+	[NSThread detachNewThreadSelector: @selector(fishingController) toTarget: self withObject: nil];
+}
+
+- (void)stopFishing{
+	[startStopButton setTitle: @"Start Fishing"];
+	
+	_isFishing = NO;
+}
+
+- (void)closeWoW{
 	if ( _isFishing ){
-		PGLog(@"[Fishing] Timer expired, closing WoW!");
+		[self stopFishing];
+		
+		// Sleep a bit so threads can stop
+		usleep(3000000);
+		
 		[controller killWOW];
 	}
 }
 
--(BOOL)isFishing{
-	if ( [playerController spellCasting] == _fishingSpellID ){
-		return YES;
-	}
-		
-	return NO;
+- (BOOL)isFishing{
+	return ( ([playerController spellCasting] == _fishingSpellID) ? YES : NO);
 }
 
 - (void)fishBegin{
@@ -176,65 +223,66 @@
 	
 	// Well we don't want to fish if something killed us do we!
 	if ( [playerController isDead] ){
-		[self startStopFishing:nil];
+		[self stopFishing];
 		return;
 	}
 	
 	// Lets apply some lure if we need to!
 	if ( [self applyLure] ){
-		
-		// Well we now need to wait for the lure to be applied, so lets come back to fishing in 3 seconds :-)
-		[self performSelector: @selector(fishBegin) withObject: nil afterDelay: 3.0];
-		
 		return;
 	}
 	
+	// Do we want to face the nearest school?
+	if ( _optFaceSchool ){
+		_nearbySchool = [self faceNearestSchool];
+	}
+	
 	// We don't want to start fishing if we already are!
-	if ( ![self isFishing] ){
+	if ( ![self isFishing] || _ignoreIsFishing ){
 		
+		// Reset this!  We only want this to be YES when we have to re-cast b/c we're not close to a school!
+		_ignoreIsFishing = NO;
 		
 		// Do we need to use a crate?
-		if ( _useCrate && [useReinforcedCrates state] ){
+		if ( _useContainer > 0 && _optUseContainers ){
 			
 			// Use our crate!
-			[botController performAction:(USE_ITEM_MASK + ITEM_REINFORCED_CRATE)];
+			[botController performAction:(USE_ITEM_MASK + _useContainer)];
 			
-			// Wait a bit before we cast the next one!
+			// Wait a bit so we can loot it!
 			usleep([controller refreshDelay]*2);
 			
-			// Reset our BOOL!
-			_useCrate = NO;
+			// Reset our container item ID!
+			_useContainer = 0;
+			
+			[status setStringValue: [NSString stringWithFormat:@"Empyting a container"]];
 		}
 		
 		// If casting fails for some reason lets try again in a second!
-		if ( ![botController performAction: _fishingSpellID] ){
-			[self performSelector: @selector(fishBegin) withObject: nil afterDelay: 1.0];
+		int castSuccess = [botController performAction: _fishingSpellID];
+		[status setStringValue: [NSString stringWithFormat:@"Fishing"]];
+		if ( castSuccess != ErrNone ){
 			
-			return;
+			// Check for "full inventory" and kill wow if we get here :/
+			if ( castSuccess == ErrInventoryFull ){
+				[status setStringValue: [NSString stringWithFormat:@"Closing WoW, Inventory is Full"]];
+				
+				[self closeWoW];
+			}
 		}
-		
-		// Find our player's fishing bobber! - we need to wait a couple seconds after cast, so the object list can re-populate
-		[self performSelector: @selector(findBobber) withObject: nil afterDelay: 2.0];
-	}
-	else{
-		
-		// If we get here, my logic is more than likely fail (it happens from time to time)
-		[self performSelector: @selector(fishBegin) withObject: nil afterDelay: [playerController castTimeRemaining] + 1.0f];
 	}
 }
 
 - (BOOL)applyLure{
-	if ( ![applyLureCheckbox state] ){
+	if ( !_optApplyLure ){
 		return NO;
 	}
-
+	
 	Item *item = [itemController itemForGUID: [[playerController player] itemGUIDinSlot: SLOT_MAIN_HAND]];
 	if ( ![item hasTempEnchantment] && _applyLureAttempts < 3 ){
 		
 		int lureItemID = [[luresPopUpButton selectedItem] tag];
-		
-		//TO DO: Make sure the user has some in their inventory!
-		
+
 		// Lets actually use the item we want to apply!
 		[botController performAction:(USE_ITEM_MASK + lureItemID)];
 		
@@ -250,6 +298,10 @@
 		// Are we casting the lure on our fishing pole?
 		if ( [playerController spellCasting] > 0 ){
 			_applyLureAttempts = 0;
+			[status setStringValue: [NSString stringWithFormat:@"Applying Lure"]];
+			
+			// This will "pause" our main thread until this is complete!
+			usleep(3500000);
 		}
 		else{
 			_applyLureAttempts++;
@@ -261,106 +313,132 @@
 	return NO;
 }
 
+- (Node*)faceNearestSchool{
+	NSArray *fishingSchools = [nodeController allFishingSchools];
+	Position *playerPosition = [playerController position];
+	
+	float closestDistance = INFINITY;
+	float distance = INFINITY;
+	Node *closestNode = nil;
+	for ( Node *school in fishingSchools ){
+		distance = [playerPosition distanceToPosition: [school position]];
+		
+		if ( distance <= 25.0f && distance < closestDistance ){
+			closestNode = school;
+			closestDistance = distance;
+		}
+	}
+	
+	// Then we have a fishing pool w/in range!
+	if ( closestNode != nil ){
+		[movementController turnToward: [closestNode position]];
+		return closestNode;
+	}
+	
+	return nil;
+}
 
-// Lets find our bobber - then start monitoring it every 0.1 seconds
-- (void)findBobber{
-	if ( !_isFishing ){
-		return;
-	}
-	
-	NSArray *fishingBobbers = [nodeController allFishingBobbers];
-	BOOL bobberFound = NO;
-	
-	for ( Node *bobber in fishingBobbers ){
-		
-		// We need to check to see if it is our players - and that it isn't a previous one!
-		UInt32 animation = 0;
-		[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([bobber baseAddress] + 0xB4) Buffer: (Byte *)&animation BufLength: sizeof(animation)];
+
+// We just want to run this in it's own thread, basically it will just find our bobbers for us :-)
+- (void)fishingController{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	UInt16 stat, bouncing;
+	int lootWindowOpenCount = 0;
+	BOOL clicked = NO;
+
+	while ( _isFishing ){
+		// Find our bobber!
+		for ( Node *bobber in [nodeController allFishingBobbers] ){
+			// If this isn't 132, then the bobber is gone or just got activated!  (I believe this is the animation state, but not 100% sure)
+			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)] ){
 			
-		// BAM our player's bobber is found yay!
-		if ( [bobber owner] == _playerGUID && animation != ANIMATION_GONE ){
-			bobberFound = YES;
-			_bobber = bobber;
-			_bobberGUID = [bobber GUID];
-			
-			// Start scanning to  check for when the bobber animation changes!
-			[self performSelector: @selector(checkBobberAnimation:)
-					   withObject: bobber
-					   afterDelay: 0.1];
+				if ( [bobber owner] == _playerGUID && stat == STATUS_NORMAL ){
+					// Then we found a new bobber!
+					if ( _bobber != bobber ){
+						_bobber = bobber;
+						
+						//[memoryViewController setBaseAddress:[NSNumber numberWithInt:[_bobber baseAddress]]];
+						
+						// Should we check to see if it landed nearby?
+						if ( _nearbySchool && _optFaceSchool && _optRecast ){
+							float distance = [[bobber position] distanceToPosition: [_nearbySchool position]];
+							
+							// Reset this, otherwise we might try to read it when we don't want to! ( = crash)
+							_nearbySchool = nil;
+							
+							// Fish again! Didn't land in the school!
+							if ( distance > 5.0f ){
+								_ignoreIsFishing = YES;
+								
+								[self fishBegin];
+							}
+						}
+					}
+			}
+			}
+			// not ours - hide it?
+			else if ( _optHideOtherBobbers && _bobber != bobber ){
+				UInt8 value = 0;
+				[[controller wowMemoryAccess] saveDataForAddress: ([bobber baseAddress] + OFFSET_VISIBILITY) Buffer: (Byte *)&value BufLength: sizeof(value)];
+			}
 		}
-	}
-	
-	// We should have found it :(  If we didn't lets keep searching!
-	if ( !bobberFound ){
 		
-		// But wai!  Shouldn't we be fishing?
-		if ( ![self isFishing] ){
+		// Check to see if we should take action on our bobber!
+		if ( _bobber ){
+			// Grab some values!
+			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([_bobber baseAddress] + OFFSET_MOVED) Buffer: (Byte *)&bouncing BufLength: sizeof(bouncing)] ){
+				[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([_bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)];
+				
+				// Time to click!
+				if ( bouncing && !clicked ){
+					[status setStringValue: [NSString stringWithFormat:@"Looting"]];
+					clicked = YES;
+					
+					// Save our target to mouseover!
+					UInt64 value = [_bobber GUID];
+					if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)] ){
+						
+						// wow needs time to process the change
+						usleep([controller refreshDelay]);
+						
+						// Use our hotkey!
+						if ( ![botController interactWithMouseOver] ){
+							[status setStringValue: [NSString stringWithFormat:@"Did you forget to bind your Interact with Mouseover?"]];
+						}
+					}
+				}
+			}
 			
-			// Still searching when bobber is gone?  This makes me sad!  Fish again!
-			[self fishBegin];
+			// Our bobber is gone! O noes!  Set it to nil so on next pass we start fishing again!
+			if ( stat != STATUS_NORMAL ){
+				_bobber = nil;
+				clicked = NO;
+			}
+			
+			// Sometimes the loot window sticks, i hate it, lets add a fix!
+			if ( [lootController isLootWindowOpen] ){
+				lootWindowOpenCount++;
+				
+				// Loot window has been open too long lets accept it!
+				if ( lootWindowOpenCount > 20 ){
+					[lootController acceptLoot];
+				}
+			}
 		}
-		
-		// Keep looking!
 		else{
-			[self performSelector: @selector(findBobber)
-					   withObject: nil
-					   afterDelay: 0.1];
-		}
-	}
-}
 
-// We want to check out bobber every 0.1 seconds to see if it has changed!
-- (void)checkBobberAnimation:(id)sender{
-	if ( !_isFishing ){
-		return;
+			// Only start fishing again if we're not casting!  We could be fishing our applying Lure!
+			if ( ![playerController spellCasting] ){
+				[self fishBegin];
+				lootWindowOpenCount = 0;
+			}
+		}
+		
+		// Sleep for 0.1 seconds
+		usleep(100000);
 	}
 	
-	UInt32 animation = 0;
-	if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([sender baseAddress] + 0xB4) Buffer: (Byte *)&animation BufLength: sizeof(animation)]) {
-
-		// Click!
-		if ( (animation & ANIM_FLAG_MOVED) == 0x1 ){
-			[self clickBobber: sender];
-			
-			// This is where we should call to fish again! Let's add a delay in case of server lag, so we have time to auto-loot!
-			[self performSelector: @selector(fishBegin)
-					   withObject: nil
-					   afterDelay: 3.0];
-		
-			return;
-		}
-		
-		// Not fishing anymore?  Well lets stop searching and fish again!
-		if ( ![self isFishing] ){
-			[self performSelector: @selector(fishBegin)
-					   withObject: nil
-					   afterDelay: 1.0];
-			
-			return;
-		}
-		  
-		[self performSelector: @selector(checkBobberAnimation:)
-				   withObject: sender
-				   afterDelay: 0.1];
-	}
-}
-
-- (void)clickBobber:(Node*)bobber{
-	UInt64 value = [bobber GUID];
-	
-	// Save our target to mouseover!
-	if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)] ){
-		
-		// wow needs time to process the change
-		usleep([controller refreshDelay]);
-		
-		// Use our hotkey!
-		if ( ![botController interactWithMouseOver] ){
-			PGLog(@"[Fishing] Unable to interact with MouseOver! Someone forgot to bind their key!");
-		}
-	}
-	
-	return;
+	[pool drain];
 }
 
 - (void)updateFishCount{
@@ -372,30 +450,54 @@
 	[statisticsTableView reloadData];
 }
 
+- (IBAction)showBobberStructure: (id)sender{
+	if ( _bobber == nil || !_isFishing ){
+		return;
+	}
+	
+	if ( [_bobber infoAddress] > 0 ){
+		[memoryViewController setBaseAddress:[NSNumber numberWithInt:[_bobber baseAddress]]];
+		//[memoryViewController showObjectMemory: _bobber];
+		[controller showMemoryView];
+	}
+}
+
+- (IBAction)tmp: (id)sender{
+	
+	//[itemController itemsInBags];
+	
+}
+
+#pragma mark Notifications
+
 // Called whenever ANY item is looted
 - (void)fishLooted: (NSNotification*)notification {
 	if ( !_isFishing )
 		return;
 	
 	NSNumber *itemID = (NSNumber *)[notification object];
-
+	
 	// Lets use the crate we looted!
 	if ( [itemID intValue] == ITEM_REINFORCED_CRATE ){
-		_useCrate = YES;
+		_useContainer = ITEM_REINFORCED_CRATE;
 	}
-		
+	
 	_totalFishLooted++;
 	
 	[self updateFishCount];
 }
 
-- (IBAction)showBobberStructure: (id)sender{
-	if ( _bobber == nil || !_isFishing ){
-		return;
-	}
+- (void)playerHasDied: (NSNotification*)not { 
+	[status setStringValue: [NSString stringWithFormat:@"Player has died, fishing stopped"]];
+	[self stopFishing];
 	
-	[memoryViewController showObjectMemory: _bobber];
-    [controller showMemoryView];
+}
+
+- (void)playerIsInvalid: (NSNotification*)not {
+    if( _isFishing ) {
+		[status setStringValue: [NSString stringWithFormat:@"Player is no longer valid, fishing stopped"]];
+        [self stopFishing];
+    }
 }
 
 #pragma mark ShortcutRecorder Delegate

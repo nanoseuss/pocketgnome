@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="1957"/>
 			<integer value="57"/>
 			<integer value="2375"/>
-			<integer value="1957"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -7043,6 +7043,22 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					</object>
 					<int key="connectionID">3196</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">movementController</string>
+						<reference key="source" ref="349773279"/>
+						<reference key="destination" ref="290834434"/>
+					</object>
+					<int key="connectionID">3197</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">chatController</string>
+						<reference key="source" ref="145982638"/>
+						<reference key="destination" ref="115843792"/>
+					</object>
+					<int key="connectionID">3198</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -10151,7 +10167,7 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">3196</int>
+			<int key="maxID">3206</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -10661,9 +10677,11 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>showBobberStructure:</string>
 							<string>startStopFishing:</string>
+							<string>tmp:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 						</object>
@@ -10677,21 +10695,26 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>chatController</string>
 							<string>closeWoWTimer</string>
 							<string>controller</string>
+							<string>faceSchool</string>
 							<string>fishCaught</string>
 							<string>fishingRecorder</string>
+							<string>hideOtherBobbers</string>
 							<string>itemController</string>
 							<string>killWoWCheckbox</string>
 							<string>lootController</string>
 							<string>luresPopUpButton</string>
 							<string>memoryViewController</string>
+							<string>movementController</string>
+							<string>movementController2</string>
 							<string>nodeController</string>
 							<string>playerController</string>
+							<string>recastIfMiss</string>
 							<string>showGrowlNotifications</string>
 							<string>spellController</string>
 							<string>startStopButton</string>
 							<string>statisticsTableView</string>
 							<string>status</string>
-							<string>useReinforcedCrates</string>
+							<string>useContainers</string>
 							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -10701,15 +10724,20 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>ChatController</string>
 							<string>NSTextField</string>
 							<string>Controller</string>
+							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>SRRecorderControl</string>
+							<string>NSButton</string>
 							<string>InventoryController</string>
 							<string>NSButton</string>
 							<string>LootController</string>
 							<string>NSPopUpButton</string>
 							<string>MemoryViewController</string>
+							<string>MovementController</string>
+							<string>MovementController2</string>
 							<string>NodeController</string>
 							<string>PlayerDataController</string>
+							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>SpellController</string>
 							<string>NSButton</string>
@@ -10758,11 +10786,13 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>chatController</string>
 							<string>controller</string>
 							<string>itemController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>ChatController</string>
 							<string>Controller</string>
 							<string>InventoryController</string>
 						</object>
@@ -10780,11 +10810,15 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>clearTable:</string>
+							<string>clearValues:</string>
+							<string>saveValues:</string>
 							<string>setCustomAddress:</string>
 							<string>snapshotMemory:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10918,6 +10952,41 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">MovementController2</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">prefsChanged:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>chatController</string>
+							<string>combatController</string>
+							<string>controller</string>
+							<string>mobController</string>
+							<string>playerData</string>
+							<string>useSmoothTurning</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>PlayerDataController</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">MovementController2.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<reference key="sourceIdentifier" ref="7323395"/>
 				</object>
@@ -10971,7 +11040,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>faceNode:</string>
 							<string>filterList:</string>
 							<string>filterNodes:</string>
-							<string>monitorFishing:</string>
 							<string>moveToStart:</string>
 							<string>moveToStop:</string>
 							<string>resetList:</string>
@@ -10979,7 +11047,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10999,7 +11066,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>moveToList</string>
 							<string>movementController</string>
 							<string>nodeTable</string>
-							<string>openMonitorFishingWindowButton</string>
 							<string>playerController</string>
 							<string>view</string>
 						</object>
@@ -11009,7 +11075,6 @@ YWwgYW5kIGxlc3MgbWVjaGFuaWNhbCwgYnV0IHR1cm5zIGFyZSBzbG93ZXIgYW5kIHdpZGVyLg</stri
 							<string>id</string>
 							<string>id</string>
 							<string>NSPopUpButton</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>PlayerDataController</string>

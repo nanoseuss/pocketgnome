@@ -18,6 +18,7 @@
     IBOutlet NSView *view;
     NSNumber *currentAddress;
     NSTimer *_refreshTimer;
+	NSMutableDictionary *_lastValues;
     
     float refreshFrequency;
     int _displayFormat;
@@ -37,9 +38,13 @@
 
 - (void)showObjectMemory: (id)object;
 
+- (void)setBaseAddress: (NSNumber*)address;
+
 - (IBAction)setCustomAddress: (id)sender;
 - (IBAction)clearTable: (id)sender;
 - (IBAction)snapshotMemory: (id)sender;
+- (IBAction)saveValues: (id)sender;
+- (IBAction)clearValues: (id)sender;
 
 - (int)displayFormat;
 - (void)setDisplayFormat: (int)displayFormat;

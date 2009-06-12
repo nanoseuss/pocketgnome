@@ -44,10 +44,6 @@ typedef enum {
     float _updateFrequency;
     NSSize minSectionSize, maxSectionSize;
     int _nodeTypeFilter;
-    
-    // fishing
-    BOOL _monitorFishing;
-    IBOutlet id openMonitorFishingWindowButton;
 }
 
 @property (readonly) NSView *view;
@@ -63,6 +59,7 @@ typedef enum {
 - (void)finishedNode: (Node*)node;
 - (void)resetAllNodes;
 
+- (NSArray*)allFishingSchools;
 - (NSArray*)allFishingBobbers;
 - (NSArray*)allMiningNodes;
 - (NSArray*)allHerbalismNodes;
@@ -74,7 +71,6 @@ typedef enum {
 - (IBAction)faceNode: (id)sender;
 - (IBAction)targetNode: (id)sender;
 - (IBAction)filterList: (id)sender;
-- (IBAction)monitorFishing: (id)sender;
 
 - (IBAction)moveToStart: (id)sender;
 - (IBAction)moveToStop: (id)sender;

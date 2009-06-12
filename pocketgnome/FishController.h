@@ -20,8 +20,8 @@
 @class MemoryViewController;
 @class LootController;
 @class SpellController;
+@class MovementController;
 
-@class WoWObject;
 @class PTHotKey;
 
 @class Node;
@@ -36,11 +36,16 @@
 	IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet LootController			*lootController;
 	IBOutlet SpellController		*spellController;
+	IBOutlet MovementController		*movementController;
+	IBOutlet MovementController2	*movementController2;
 	
 	IBOutlet NSButton				*applyLureCheckbox;
 	IBOutlet NSButton				*killWoWCheckbox;
 	IBOutlet NSButton				*showGrowlNotifications;
-	IBOutlet NSButton				*useReinforcedCrates;
+	IBOutlet NSButton				*useContainers;
+	IBOutlet NSButton				*faceSchool;
+	IBOutlet NSButton				*recastIfMiss;
+	IBOutlet NSButton				*hideOtherBobbers;
     IBOutlet NSView					*view;
 	IBOutlet NSButton				*startStopButton;
 	IBOutlet SRRecorderControl		*fishingRecorder;
@@ -51,20 +56,28 @@
 	IBOutlet NSTableView			*statisticsTableView;
 	PTHotKey *startStopBotGlobalHotkey;
 	
+	//Checkbox options
+	BOOL _optApplyLure;
+	BOOL _optKillWow;
+	BOOL _optShowGrowl;
+	BOOL _optUseContainers;
+	BOOL _optFaceSchool;
+	BOOL _optRecast;
+	BOOL _optHideOtherBobbers;
+	
 	BOOL _isFishing;
-	BOOL _useCrate;
+	BOOL _ignoreIsFishing;
+	
 	int _applyLureAttempts;
+	int _totalFishLooted;
+	int _useContainer;
+	
+	Node *_nearbySchool;
 	
 	UInt32 _fishingSpellID;
-	
 	UInt64 _playerGUID;
-	UInt64 _bobberGUID;
-	
-	NSDate *_startTime;
-	
-	int _totalFishLooted;
-	
-	WoWObject *_bobber;
+
+	Node *_bobber;
 	
     NSSize minSectionSize, maxSectionSize;
 }
@@ -78,10 +91,8 @@
 - (IBAction)startStopFishing: (id)sender;
 - (IBAction)showBobberStructure: (id)sender;
 
-- (void)fishBegin;
-- (void)clickBobber:(Node*)bobber;
-- (BOOL)applyLure;
+- (IBAction)tmp: (id)sender;
 
 - (BOOL)isFishing;
-
+	
 @end
