@@ -94,7 +94,7 @@
     self.inCombat = NO;
     self.attackUnit = nil;
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
-    if(botController.isBotting) PGLog(@"------ Player Leaving Combat ------");
+    if(botController.isBotting) PGLog(@"------ Player Leaving Combat ------ (conclude combat)");
     [botController playerLeavingCombat];
 }
 
@@ -138,7 +138,7 @@
         if(self.inCombat) {
             [NSObject cancelPreviousPerformRequestsWithTarget: self];
             self.inCombat = NO;
-            if(botController.isBotting) PGLog(@"------ Player Leaving Combat ------");
+            if(botController.isBotting) PGLog(@"------ Player Leaving Combat ------ (verifyCombatState)");
             [botController playerLeavingCombat];
             return;
         }

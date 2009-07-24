@@ -1336,7 +1336,13 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
 
 - (void)skinMob: (Mob*)mob {
     float distanceToUnit = [[playerController position] distanceToPosition2D: [mob position]];
-    if( ![mob isValid] || ![mob isSkinnable] || (distanceToUnit > 5.0f) || (_mobToSkinPoint.x <= 0) || (_mobToSkinPoint.y <= 0)) {
+	KeyCombo lootCombo = [interactWithRecorder keyCombo];
+    int lootTargetHotkey = lootCombo.code;
+    int lootTargetHotkeyModifier = lootCombo.flags;
+    BOOL useLootHotkey = (lootTargetHotkey >= 0);
+	BOOL weSkinned = NO;
+	
+	if( ![mob isValid] || ![mob isSkinnable] || (distanceToUnit > 5.0f) || (((_mobToSkinPoint.x <= 0) || (_mobToSkinPoint.y <= 0)) && (!useLootHotkey))) {
         // reset skin variables and bail
         PGLog(@"[Loot] Mob is not skinnable or has already been skinned.");
         [self finishSkin];
@@ -1351,89 +1357,98 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             return;
         }
     }
-    
-    // get wow process number
-    ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
-    ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
-    GetFrontProcess(&oldProcess);
-    
-    // figure out which workspace WoW is in
-    int thisSpace, wowSpace;
-    int delay = 10000, timeWaited = 0;
-    BOOL wasWoWHidden = [controller isWoWHidden];
-    if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
-    CGSConnection cgsConnection = _CGSDefaultConnection();
-    CGSGetWorkspace(cgsConnection, &thisSpace);
-    while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
-        usleep(delay);
-        timeWaited += delay;
-    }
-    CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
-    
-    BOOL weMadeWoWFront = NO;
-    
-    // move wow to the front if necessary
-    if(![controller isWoWFront]) {
-        // move to WoW's workspace
-        if(thisSpace != wowSpace) {
-            CGSSetWorkspace(cgsConnection, wowSpace);
-            usleep(100000);
-        }
-        
-        // and set it as front process
-        SetFrontProcess(&wowProcess);
-        usleep(100000);
-        
-        weMadeWoWFront = YES;
-    }
-    
-    // verify our loot point
-    CGPoint clickPt = CGPointZero;
-    CGPostMouseEvent(_mobToSkinPoint, FALSE, 2, FALSE, FALSE);
-    usleep(10000);
-    if( [playerController mouseoverID] == [mob GUID] ) {
-        // our loot point is correct
-        clickPt = _mobToSkinPoint;
-        //PGLog(@"Skin point is correct: (%.2f, %.2f).", clickPt.x, clickPt.y);
-    } else {
-        // we've got to search for the point again
-        if([mob isValid]) {
-            clickPt = _mobToSkinPoint = [self scanForObjectOnScreen: mob];
-            //PGLog(@"Skin point NOT correct. Scanning for new point: (%.2f, %.2f)", clickPt.x, clickPt.y);
-        }
-    }
-    
-    // right click on the loot point to skin
-    BOOL weSkinned = NO;
-    if(clickPt.x && clickPt.y && [controller isWoWFront]) {
-        // move the mouse into position and click
-        weSkinned = YES;
-        CGInhibitLocalEvents(YES);
-        CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
-        PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
-        usleep(100000);	// wait
-        PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
-        usleep(30000);
-        PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
-        usleep(100000);	// wait
-        CGInhibitLocalEvents(NO);
-    }
-    
-    // bring our prevous app to the front
-    
-    if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
-    if(weMadeWoWFront) {
-        // bring our prevous app to the front
-        if(thisSpace != wowSpace) {
-            CGSSetWorkspace(cgsConnection, thisSpace);
-            usleep(100000);
-        }
-        SetFrontProcess(&oldProcess);
-        usleep(100000);
-    }
+	
+	// check to see if the loot hotkeyis mapped, and if so use that to skin
+	if(useLootHotkey) {
+		PGLog(@"Skinning with loot hotkey applied...");
+		[mobController selectMob: (Mob*)mob];
+		[chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
+		usleep(3000000);
+		weSkinned = YES; // wish I could some extra verification that just assuming it...
+	} else {
+		PGLog(@"Skinning without loot hotkey applied...");
+		// get wow process number
+		ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
+		ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
+		GetFrontProcess(&oldProcess);
+		
+		// figure out which workspace WoW is in
+		int thisSpace, wowSpace;
+		int delay = 10000, timeWaited = 0;
+		BOOL wasWoWHidden = [controller isWoWHidden];
+		if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
+		CGSConnection cgsConnection = _CGSDefaultConnection();
+		CGSGetWorkspace(cgsConnection, &thisSpace);
+		while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
+			usleep(delay);
+			timeWaited += delay;
+		}
+		CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
+		
+		BOOL weMadeWoWFront = NO;
+		
+		// move wow to the front if necessary
+		if(![controller isWoWFront]) {
+			// move to WoW's workspace
+			if(thisSpace != wowSpace) {
+				CGSSetWorkspace(cgsConnection, wowSpace);
+				usleep(100000);
+			}
+			
+			// and set it as front process
+			SetFrontProcess(&wowProcess);
+			usleep(100000);
+			
+			weMadeWoWFront = YES;
+		}
+		
+		// verify our loot point
+		CGPoint clickPt = CGPointZero;
+		CGPostMouseEvent(_mobToSkinPoint, FALSE, 2, FALSE, FALSE);
+		usleep(10000);
+		if( [playerController mouseoverID] == [mob GUID] ) {
+			// our loot point is correct
+			clickPt = _mobToSkinPoint;
+			//PGLog(@"Skin point is correct: (%.2f, %.2f).", clickPt.x, clickPt.y);
+		} else {
+			// we've got to search for the point again
+			if([mob isValid]) {
+				clickPt = _mobToSkinPoint = [self scanForObjectOnScreen: mob];
+				//PGLog(@"Skin point NOT correct. Scanning for new point: (%.2f, %.2f)", clickPt.x, clickPt.y);
+			}
+		}
+		
+		// right click on the loot point to skin
+		if(clickPt.x && clickPt.y && [controller isWoWFront]) {
+			// move the mouse into position and click
+			weSkinned = YES;
+			CGInhibitLocalEvents(YES);
+			CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
+			PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
+			usleep(100000);	// wait
+			PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
+			usleep(30000);
+			PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
+			usleep(100000);	// wait
+			CGInhibitLocalEvents(NO);
+		}
+		
+		// bring our prevous app to the front
+		
+		if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
+		if(weMadeWoWFront) {
+			// bring our prevous app to the front
+			if(thisSpace != wowSpace) {
+				CGSSetWorkspace(cgsConnection, thisSpace);
+				usleep(100000);
+			}
+			SetFrontProcess(&oldProcess);
+			usleep(100000);
+		}
+	}
     
     _lootAttempt++;
-    if(weSkinned) {
+    if(!weSkinned) {
         PGLog(@"[Loot] Attempt %d: skinning again in 3.0 seconds.", _lootAttempt);
         [self performSelector: @selector(skinMob:) withObject: self.mobToSkin afterDelay: 3.0f];
         return;
@@ -1600,9 +1615,15 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 if(self.doLooting) {
                     // make sure this mob is even lootable
                     // sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
-                    if( ![_mobsToLoot containsObject: unit] && ([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable])) {
-                        [_mobsToLoot addObject: (Mob*)unit];
+                    PGLog(@"[Loot]: Checking to see if the mob is lootable...");
+                    usleep(500000);
+                    if([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable]) {
+                        if ([_mobsToLoot containsObject: unit]) {
+                            PGLog(@"[Loot]: %@ was already in the loot list, remove first", unit);
+                            [_mobsToLoot removeObject: unit];
+                        }
                         PGLog(@"[Loot]: Adding %@ to loot list.", unit);
+                        [_mobsToLoot addObject: (Mob*)unit];
                     }
                 }
             }
@@ -1735,6 +1756,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 CGInhibitLocalEvents(NO);
             } else {
                 if(useLootHotkey) {
+                    PGLog(@"Using the loot hotkey to loot now");
                     weLooted = YES;
                     [chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
                 } else {
@@ -1794,8 +1816,8 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                     }
                 }
                 
-                // PGLog(@"Will verify loot in %.2f seconds.", 2.0f);
-                [self performSelector: @selector(verifyLoot:) withObject: (Mob*)unit afterDelay: 2.0f];
+                PGLog(@"Will verify loot in %.2f seconds.", 2.5f);
+                [self performSelector: @selector(verifyLoot:) withObject: (Mob*)unit afterDelay: 2.5f];
                 return;
             } else {
                 [self finishLoot: (Mob*)unit];
@@ -1948,6 +1970,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
             if(mobToLoot && [mobToLoot isValid] && [mobToLoot isLootable]) {
+                PGLog(@"[mobToLoot] Acquired a mob to loot: %@", mobToLoot);
                 return mobToLoot;
             }
         }
