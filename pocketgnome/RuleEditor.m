@@ -49,6 +49,7 @@
         _spellsMenu = nil;
         _itemsMenu = nil;
         _macrosMenu = nil;
+		_interactMenu = nil;
     }
     return self;
 }
@@ -102,13 +103,16 @@
     [_spellsMenu release];  _spellsMenu = nil;
     [_itemsMenu release];   _itemsMenu = nil;
     [_macrosMenu release];  _macrosMenu = nil;
+	[_interactMenu release]; _interactMenu = nil;
     [_conditionList removeAllObjects];
 
     // get our result menus
-    _spellsMenu = [[[ActionMenusController sharedMenus] menuType: MenuType_Spell actionID: [rule actionID]] retain];        // [[spellController playerSpellsMenu] retain];
-    _itemsMenu  = [[[ActionMenusController sharedMenus] menuType: MenuType_Inventory actionID: [rule actionID]] retain];    // [[inventoryController prettyInventoryItemsMenu] retain];
-    _macrosMenu = [[[ActionMenusController sharedMenus] menuType: MenuType_Macro actionID: [rule actionID]] retain];        // [[self createMacroMenu] retain];
-    [conditionResultTypeSegment selectSegmentWithTag: [rule resultType]];
+    _spellsMenu		= [[[ActionMenusController sharedMenus] menuType: MenuType_Spell actionID: [rule actionID]] retain];        // [[spellController playerSpellsMenu] retain];
+    _itemsMenu		= [[[ActionMenusController sharedMenus] menuType: MenuType_Inventory actionID: [rule actionID]] retain];    // [[inventoryController prettyInventoryItemsMenu] retain];
+    _macrosMenu		= [[[ActionMenusController sharedMenus] menuType: MenuType_Macro actionID: [rule actionID]] retain];        // [[self createMacroMenu] retain];
+	_interactMenu	= [[[ActionMenusController sharedMenus] menuType: MenuType_Interact actionID: [rule actionID]] retain];    // [[inventoryController prettyInventoryItemsMenu] retain];
+
+	[conditionResultTypeSegment selectSegmentWithTag: [rule resultType]];
     [self setResultType: conditionResultTypeSegment];   // this also sets the menu
     
     
@@ -282,6 +286,9 @@
         
         [resultActionDropdown setMenu: noActionMenu];
         [resultActionDropdown selectItemWithTag: 0];
+    }
+	if([sender selectedTag] == ActionType_Interact) {
+        [resultActionDropdown setMenu: _interactMenu];        
     }
     
     if( [[resultActionDropdown menu] itemWithTag: oldTag] ) {

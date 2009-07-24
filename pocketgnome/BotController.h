@@ -8,6 +8,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#define USE_ITEM_MASK       0x80000000
+#define USE_MACRO_MASK      0x40000000
+
 @class Mob;
 @class Unit;
 @class Rule;
@@ -164,6 +167,7 @@
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue;
 
 // Input from MovementController;
+- (float)interactWith:(UInt32)entryID;
 - (void)reachedUnit: (WoWObject*)unit;
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;

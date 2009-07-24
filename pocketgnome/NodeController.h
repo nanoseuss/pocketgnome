@@ -65,6 +65,7 @@ typedef enum {
 - (NSArray*)allHerbalismNodes;
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type;
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level;
+- (Node*)closestNodeForInteraction:(UInt32)entryID;
 
 - (IBAction)filterNodes: (id)sender;
 - (IBAction)resetList: (id)sender;

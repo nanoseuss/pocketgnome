@@ -417,6 +417,17 @@ typedef enum {
     return finalList;
 }
 
+- (Node*)closestNodeForInteraction:(UInt32)entryID {
+    NSArray *nodeList = _nodeList;
+    Position *playerPosition = [(PlayerDataController*)playerController position];
+    for(Node* node in nodeList) {
+		if( [node isValid] && [node entryID]==entryID && [node isUseable] && ([playerPosition distanceToPosition: [node position]] <= 8) ) {
+            return node;
+        }
+    }
+	PGLog(@"[Bot] No node for interaction");
+    return nil;
+}
 
 #pragma mark Tableview Bullshit
 

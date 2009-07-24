@@ -73,6 +73,7 @@
                includeFriendly: (BOOL)friendly
                 includeNeutral: (BOOL)neutral
                 includeHostile: (BOOL)hostile;
+- (Mob*)closesMobForInteraction:(UInt32)entryID;
 
 - (IBAction)filterMobs: (id)sender;
 - (IBAction)updateTracking: (id)sender;
