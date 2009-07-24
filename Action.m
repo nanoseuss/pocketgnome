@@ -80,6 +80,8 @@
 - (BOOL)isPerform {
     if((self.type >= ActionType_Spell) && (self.type <= ActionType_Macro))
         return YES;
+	if(self.type == ActionType_Interact)
+		return YES;
     return NO;
 }
 

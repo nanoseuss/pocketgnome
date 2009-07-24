@@ -41,6 +41,7 @@
     BOOL _stopAtEnd;
     BOOL _notifyForObjectMove;
     int _patrolCount, _jumpCooldown, _waypointDoneCount;
+	int _lastInteraction;
     NSDate *_lastJumpTime, *_lastDirectionCorrection, *movementExpiration;
     Position *lastSavedPosition;
     NSTimer *_movementTimer;

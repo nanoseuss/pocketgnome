@@ -473,23 +473,17 @@ enum AutomatorIntervalType {
     // get our waypoint
     Waypoint *wp = [[self currentRoute] waypointAtIndex: [waypointTable clickedRow]];
     _editWaypoint = wp;
+	wp.action.type = [sender tag];
+	
+	PGLog(@"Modifying WP %@ to %d", wp, wp.action.type);
     
-    // PGLog(@"Modifying WP %@", wp);
-    
-    int type = 0;
-    if(([sender tag] == ActionType_Spell) && wp.action.isPerform) {
+	int type = 0;
+	if(wp.action.type == ActionType_None)
+		type = 0;
+	else if(wp.action.type == ActionType_Delay)
+		type = 1;
+    else
         type = 2;
-    } else {
-        if([sender tag] != wp.action.type) {
-            wp.action.value = [NSNumber numberWithInt: 0];
-        }
-        wp.action.type = type = [sender tag];
-        
-        if(wp.action.type == ActionType_Delay)
-            type = 1;
-        if(wp.action.type == ActionType_Spell)
-            type = 2;
-    }
     
     // we only need to setup the GUI if this is a non-normal type
     if( [wp.action type] != ActionType_None ) {
@@ -570,13 +564,13 @@ enum AutomatorIntervalType {
     } else {
         wp.action.type = ActionType_None;
         
-        /* waypoint actions are not currently enabled
+        // waypoint actions are not currently enabled
         if([[wpActionIDPopUp selectedItem] tag] == 0.0f) {    // if no action specified, set back to normal
             wp.action.type = ActionType_None;
         } else {
             wp.action.type = [wpActionTypeSegments selectedTag];
             wp.action.value = [NSNumber numberWithUnsignedInt: [[wpActionIDPopUp selectedItem] tag]];
-        }*/
+        }
         //PGLog(@"Action: %@", wp.action.value);
     }
     
@@ -754,14 +748,8 @@ enum AutomatorIntervalType {
         int type = 0;
         if((wp.action.type <= ActionType_None) || (wp.action.type >= ActionType_Max))
             type = 0;
-        if(wp.action.isPerform) {
-            //PGLog(@"%d is PERFORM (%d)", rowIndex, wp.action.type);
-            type = 2;
-        }
-        if(wp.action.type == ActionType_Delay) {
-            //PGLog(@"%d is DELAY (%d)", rowIndex, wp.action.type);
-            type = 1;
-        }
+		else
+			type = wp.action.type;
         return [NSNumber numberWithInt: type];
     }
     
@@ -781,6 +769,9 @@ enum AutomatorIntervalType {
         if(wp.action.type == ActionType_Macro) {
             return [NSString stringWithFormat: @"Macro: %@", wp.action.value];
         }
+		if(wp.action.type == ActionType_Interact) {
+			return [NSString stringWithFormat: @"Interact: %@", wp.action.value];
+		}
         return [NSString stringWithFormat: @"X: %.1f; Y: %.1f; Z: %.1f", [[wp position] xPosition], [[wp position] yPosition], [[wp position] zPosition]];
     }
     

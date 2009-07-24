@@ -38,6 +38,7 @@
 @property BOOL stopAtEnd;
 @property BOOL shouldNotify;
 @property int waypointDoneCount;
+@property int lastInteraction;
 @end
 
 @interface MovementController (Internal)
@@ -107,6 +108,7 @@
 @synthesize movementExpiration;
 @synthesize waypointDoneCount = _waypointDoneCount;
 @synthesize stopAtEnd = _stopAtEnd;
+@synthesize lastInteraction = _lastInteraction;
 
 @synthesize shouldNotify = _notifyForObjectMove;
 
@@ -384,16 +386,66 @@
 }
 
 - (void)moveToNextWaypoint {
+	if( [[self destination] action].type != ActionType_Interact ) {
+		self.lastInteraction = -1;
+	}
     // check for waypoint-initiated actions
-    if( [[self destination] action].type == ActionType_Delay ) {
+	PGLog(@"[Move] Performing type %d at waypoint %d.", [[self destination] action].type, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+	
+	// NO ACTION
+	if( [[self destination] action].type == ActionType_None ) {
+        [self realMoveToNextWaypoint];
+		return;
+		
+	// Time for a delay!
+	} else if( [[self destination] action].type == ActionType_Delay ) {
         PGLog(@"[Move] Performing %.2f second delay at waypoint %d.", [[self destination] action].delay, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
         [self pauseMovement];
         [self performSelector: @selector(realMoveToNextWaypoint)
                    withObject: nil
                    afterDelay: [[[self destination] action] delay]];
         return;
-    } else {
+		
+	// Lets interact w/something!
+	} else if( [[self destination] action].type == ActionType_Interact ) {
+        PGLog(@"[Move] Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+		if(self.lastInteraction != [[[self patrolRoute] waypoints] indexOfObject: [self destination]]) {
+			self.lastInteraction = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
+			[self pauseMovement];
+			NSNumber *n = [[self destination] action].value;
+			float moreDelay = 2+[botController interactWith:[n unsignedIntValue]];
+			[self performSelector: @selector(realMoveToNextWaypoint)
+					   withObject: nil
+					   afterDelay: moreDelay];
+		} else {
+			PGLog(@"[Movement] Should never be here methinks");
+			//		[self realMoveToNextWaypoint];
+		}
+  		return;
+		
+	// Otherwise we want to use an item/macro/spell
+    } else  {
+        PGLog(@"[Move] Performing action %d at waypoint %d.", [[self destination] action].actionID, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+		
+		int32_t actionID = [[self destination] action].actionID;
+		//		 BOOL canPerformAction = YES;
+		switch([[self destination] action].type) {
+			case ActionType_Item: 
+				actionID = (USE_ITEM_MASK + actionID);
+				break;
+			case ActionType_Macro:
+				actionID = (USE_MACRO_MASK + actionID);
+				break;
+			// We don't need to do anything here since we don't need a mask for a spell!
+			case ActionType_Spell:
+				//				canPerformAction = [spellController canCastSpellWithID: [NSNumber numberWithUnsignedInt: actionID]];
+				break;
+			default:
+				break;
+		}
+		[botController performAction:actionID];
         [self realMoveToNextWaypoint];
+        return;
     }
 }
 

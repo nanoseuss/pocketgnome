@@ -78,7 +78,7 @@ typedef enum eGameObjectTypes {
 
 - (NSString*)stringForNodeType: (UInt32)typeID;
 - (NSImage*)imageForNodeType: (UInt32)typeID;
-
+- (BOOL)isUseable;
 // - (void)loadNodeName;
 
 @end

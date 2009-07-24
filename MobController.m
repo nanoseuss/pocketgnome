@@ -438,6 +438,25 @@ static MobController* sharedController = nil;
     return withinRangeMobs;
 }
 
+- (Mob*)closesMobForInteraction:(UInt32)entryID {
+    
+    Position *playerPosition = [(PlayerDataController*)playerData position];
+    
+    for(Mob *mob in _mobList) {
+        float distance = [playerPosition distanceToPosition: [mob position]];
+		
+        if((distance != INFINITY) && (distance <= 9)) {
+            int faction = [mob factionTemplate];
+            // only include: valid mobs, mobs that aren't dead, friendly, selectable mobs
+            if( [mob isValid] && [mob entryID] == entryID && ![mob isDead] && ![mob isPet] )
+                return mob;
+        }
+    }
+	
+    PGLog(@"[Mob] No mob for interaction");
+    return nil;
+}
+
 #pragma mark -
 
 - (void)doCombatScan {

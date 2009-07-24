@@ -345,6 +345,31 @@ enum eNodeNameStructFields {
     }
 }
 
+- (BOOL)isUseable {
+    switch([self nodeType]) {
+        case GAMEOBJECT_TYPE_DOOR:
+        case GAMEOBJECT_TYPE_BUTTON:
+        case GAMEOBJECT_TYPE_QUESTGIVER:
+        case GAMEOBJECT_TYPE_CONTAINER:
+        case GAMEOBJECT_TYPE_BINDER:
+        case GAMEOBJECT_TYPE_CHAIR:
+        case GAMEOBJECT_TYPE_TEXT:
+        case GAMEOBJECT_TYPE_GOOBER:
+        case GAMEOBJECT_TYPE_RITUAL:
+        case GAMEOBJECT_TYPE_MAILBOX:
+		case GAMEOBJECT_TYPE_AUCTIONHOUSE:
+        case GAMEOBJECT_TYPE_PORTAL:
+        case GAMEOBJECT_TYPE_MEETING_STONE:
+        case GAMEOBJECT_TYPE_FLAGSTAND:
+        case GAMEOBJECT_TYPE_GUILDBANK:
+        case GAMEOBJECT_TYPE_TRAPDOOR:
+            return YES;
+            break;
+        default:
+            return NO;
+    }
+}
+
 #pragma mark Deprecated Thottbot Loading
 
 /*

@@ -46,9 +46,6 @@
 #import <Growl/GrowlApplicationBridge.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
 
-#define USE_ITEM_MASK       0x80000000
-#define USE_MACRO_MASK      0x40000000
-
 #define DeserterSpellID         26013
 #define HonorlessTargetSpellID  2479 
 #define HonorlessTarget2SpellID 46705
@@ -2057,6 +2054,162 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     }
     
     return nil;
+}
+
+- (float)interactWith:(UInt32)entryID {
+	Node *nodeToInteract = [nodeController closestNodeForInteraction:entryID];
+	Mob *mobToInteract = [mobController closesMobForInteraction:entryID];
+	
+	WoWObject *unit = nodeToInteract;
+	
+	Position *playerPosition = [playerController position];
+	float mobDistance = [playerPosition distanceToPosition: [nodeToInteract position]];
+	float nodeDistance = [playerPosition distanceToPosition: [mobToInteract position]];
+	
+	if(([mobToInteract isValid] && mobDistance < nodeDistance) || ![nodeToInteract isValid])
+		unit = mobToInteract;
+	
+	PGLog(@"[Bot] Interacting %@", unit);
+	
+	if([unit isValid]) {
+		//		[movementController pauseMovement];
+		
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: unit];
+		
+		BOOL isNode = [unit isKindOfClass: [Node class]];
+		
+		KeyCombo lootCombo = [interactWithRecorder keyCombo];
+		int lootTargetHotkey = lootCombo.code;
+		int lootTargetHotkeyModifier = lootCombo.flags;
+		BOOL useLootHotkey = (lootTargetHotkey >= 0);
+		
+		if(self.doLooting || isNode) {
+			Position *playerPosition = [playerController position];
+			float distanceToUnit = [playerPosition distanceToPosition2D: [unit position]];
+			//		[movementController turnToward: [unit position]];
+			
+			// get wow process number
+			ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
+			ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
+			GetFrontProcess(&oldProcess);
+			
+			// figure out which workspace WoW is in
+			int thisSpace, wowSpace;
+			int delay = 10000, timeWaited = 0;
+			BOOL wasWoWHidden = [controller isWoWHidden];
+			if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
+			CGSConnection cgsConnection = _CGSDefaultConnection();
+			CGSGetWorkspace(cgsConnection, &thisSpace);
+			while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
+				usleep(delay);
+				timeWaited += delay;
+			}
+			CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
+			
+			// get ahold of the current mouse position
+			CGPoint clickPt = CGPointZero, previousPt = CGPointMake([NSEvent mouseLocation].x, [[NSScreen mainScreen] frame].size.height - [NSEvent mouseLocation].y);
+			
+			BOOL weLooted = NO, weMadeWoWFront = NO, unitIsMob = ([unit isKindOfClass: [Mob class]] && [unit isNPC]);
+			
+			if([unit isValid] && (distanceToUnit <= 9.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+				// PGLog(@"[Loot] Reached unit: %@. Attempting to loot.", unit);
+				if(unitIsMob) {
+					[mobController selectMob: (Mob*)unit];
+				} else {
+					[playerController setPrimaryTarget: [unit GUID]];
+				}
+				
+				if(![controller isWoWFront] && !useLootHotkey) {
+					// move to WoW's workspace
+					if(thisSpace != wowSpace) {
+						CGSSetWorkspace(cgsConnection, wowSpace);
+						usleep(100000);
+					}
+					
+					// and set it as front process
+					SetFrontProcess(&wowProcess);
+					usleep(100000);
+					
+					weMadeWoWFront = YES;
+				}
+				
+				// find the point to click on if we aren't using the loot hotkey
+				NSDate *date = [NSDate date];
+				if(!useLootHotkey) {
+					clickPt = [self scanForObjectOnScreen: unit];
+				}
+				
+				// for mobs, ensure the point is valid
+				if(clickPt.x && clickPt.y && unitIsMob) {
+					CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
+					usleep(10000);
+					if( [playerController mouseoverID] != [unit GUID] ) {
+						// PGLog(@"[Loot] Click point { %.2f, %.2f } is invalid. Rescanning.", clickPt.x, clickPt.y);
+						clickPt = [self scanForObjectOnScreen: unit];
+					}
+				}
+				
+				// if we're using the hotkey, this will fail since we never set clickPt
+				if(clickPt.x && clickPt.y && [controller isWoWFront]) {
+					PGLog(@"[Loot] Located %@ at { %.2f, %.2f } after %.2f seconds.  Looting.", unit, clickPt.x, clickPt.y, [date timeIntervalSinceNow]*-1.0);
+					weLooted = YES;
+					
+					CGInhibitLocalEvents(YES);
+					
+					// move the mouse into position
+					CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);   // move
+					
+					// post our right click
+					PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
+					usleep(100000);	// wait
+					PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
+					usleep(30000);
+					PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
+					usleep(200000);
+					
+					PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, previousPt, wowProcess);
+					
+					CGInhibitLocalEvents(NO);
+				} else {
+					if(useLootHotkey) {
+						weLooted = YES;
+						[chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
+					} else {
+						PGLog(@"[Loot] Unable to locate %@ on the screen or wow is not frontmost.", unit);
+					}
+				}
+				
+			} else {
+				// the unit was not within 5 yards
+			}
+			
+			if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
+			if(weMadeWoWFront) {
+				// bring our prevous app to the front
+				if(thisSpace != wowSpace) {
+					CGSSetWorkspace(cgsConnection, thisSpace);
+					usleep(100000);
+				}
+				SetFrontProcess(&oldProcess);
+				usleep(100000);
+			}
+			
+			// if it was a node, we're done now regardless of if we looted or not
+			// we have to do this since nodes remain in memory after being looted
+			// so either we got it or we can't find it on the screen -- done either way
+			//		if(isNode) {
+			//			[nodeController finishedNode: (Node*)unit];
+			//			[movementController finishMovingToObject: unit];
+			//		}
+			
+			
+		}
+		
+		// if we get here, there's nothing left to be done
+		float moreDelay = (isNode ? 2.0f : 0.5f) + [playerController castTimeRemaining] + ([playerController isLooting] ? 5.0f : 0.0f);
+		return moreDelay;
+	}
+	return 0;
 }
 
 - (BOOL)evaluateSituation {

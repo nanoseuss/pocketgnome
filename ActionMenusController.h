@@ -12,11 +12,14 @@
 @class BotController;
 @class SpellController;
 @class InventoryController;
+@class MobController;
+@class NodeController;
 
 typedef enum ActionMenuTypes {
     MenuType_Spell      = 1,
     MenuType_Inventory  = 2,
     MenuType_Macro      = 3,
+    MenuType_Interact   = 5,
     
 } ActionMenuType;
 
@@ -26,6 +29,8 @@ typedef enum ActionMenuTypes {
     IBOutlet BotController *botController;
     IBOutlet SpellController *spellController;
     IBOutlet InventoryController *inventoryController;
+    IBOutlet MobController *mobController;
+    IBOutlet NodeController *nodeController;
 }
 
 + (ActionMenusController *)sharedMenus;

@@ -11,10 +11,13 @@
 #import "Controller.h"
 #import "SpellController.h"
 #import "InventoryController.h"
+#import "MobController.h"
+#import "NodeController.h"
 
 #import "Macro.h"
 #import "Spell.h"
 #import "Item.h"
+#import "Node.h"
 
 @implementation ActionMenusController
 
@@ -156,6 +159,45 @@ static ActionMenusController *sharedMenus = nil;
     return macroMenu;
 }
 
+- (NSMenu*)createInteractMenu {
+    
+    // Generate the Macros menu
+    NSMenu *interactMenu = [[[NSMenu alloc] initWithTitle: @"Interact Menu"] autorelease];
+    
+    NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle: @"Interact with NPC" action: nil keyEquivalent: @""] autorelease];
+    [item setAttributedTitle: [[[NSAttributedString alloc] initWithString: @"Interact with NPC" 
+                                                               attributes: [NSDictionary dictionaryWithObjectsAndKeys: [NSFont boldSystemFontOfSize: 0], NSFontAttributeName, nil]] autorelease]];
+	[item setIndentationLevel: 0];
+	[item setTag: 1];
+	[interactMenu addItem: item];
+	PGLog(@"interact menu %@", mobController);
+	for(Mob *mob in [mobController mobsWithinDistance:8 levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO]) {
+		item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", [mob name]] action: nil keyEquivalent: @""] autorelease];
+		[item setTag: [mob entryID]];
+		[item setIndentationLevel: 1];
+		[item setRepresentedObject: mob];
+		[interactMenu addItem: item];
+	}
+	
+	
+	item = [[[NSMenuItem alloc] initWithTitle: @"Interact with node" action: nil keyEquivalent: @""] autorelease];
+    [item setAttributedTitle: [[[NSAttributedString alloc] initWithString: @"Interact with node" 
+                                                               attributes: [NSDictionary dictionaryWithObjectsAndKeys: [NSFont boldSystemFontOfSize: 0], NSFontAttributeName, nil]] autorelease]];
+	[item setIndentationLevel: 0];
+	[item setTag: 2];
+	[interactMenu addItem: item];
+	
+	for(Node *node in [nodeController nodesWithinDistance:8 ofType:AnyNode maxLevel:9000]) {
+		item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", [node name]] action: nil keyEquivalent: @""] autorelease];
+		[item setTag: [node entryID]];
+		[item setIndentationLevel: 1];
+		[item setRepresentedObject: node];
+		[interactMenu addItem: item];
+	}
+	
+    return interactMenu;
+}
+
 #pragma mark -
 
 
@@ -171,6 +213,9 @@ static ActionMenusController *sharedMenus = nil;
             break;
         case MenuType_Macro:
             theMenu = [self createMacroMenu];
+            break;
+        case MenuType_Interact:
+            theMenu = [self createInteractMenu];
             break;
         default:
             return nil;

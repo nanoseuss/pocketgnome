@@ -33,7 +33,7 @@
     
     NSMutableArray *_conditionList;
     
-    NSMenu *_spellsMenu, *_itemsMenu, *_macrosMenu;
+    NSMenu *_spellsMenu, *_itemsMenu, *_macrosMenu, *_interactMenu;
     BOOL validSelection;
 }
 
