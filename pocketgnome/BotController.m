@@ -2978,14 +2978,22 @@ NSMutableDictionary *_diffDict = nil;
                                                clickContext: nil];             
                 }
                 
-                PGLog(@"[PvP] PvP environment valid. Starting bot in 5 seconds.");
-                [controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
-                [self performSelector: @selector(startBot:) withObject: nil afterDelay: 5.0f];
+				
+				if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
+					PGLog(@"[PvP] Waiting for Preparation buff to fade");
+					[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
+					//[self performSelector: @selector(stopBot:) withObject: nil afterDelay: 0.5];
+				}
+				else{
+					PGLog(@"[PvP] PvP environment valid. Starting bot in 5 seconds.");
+					[controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
+					[self performSelector: @selector(startBot:) withObject: nil afterDelay: 5.0f];
+				}
             }
         }
         
-        if( spellID == WaitingToRezSpellID) {
-            // if we are waiting to rez, pause the bot (incase it is not)
+		// if we are waiting to rez, pause the bot (incase it is not)
+        if( spellID == WaitingToRezSpellID ) {
             [movementController pauseMovement];
         }
         
@@ -3011,6 +3019,13 @@ NSMutableDictionary *_diffDict = nil;
         
         UInt32 spellID = [[(Spell*)[[notification userInfo] objectForKey: @"Spell"] ID] unsignedIntValue];
         
+		
+		if ( spellID == PreparationSpellID ){
+			PGLog(@"[PvP] Preparation faded, starting bot in 5 seconds...");
+			[controller setCurrentStatus: @"PvP: Preparation faded, starting bot in 5 seconds..."];
+			[self performSelector: @selector(startBot:) withObject: nil afterDelay: 5.0];
+		}
+		
         if( (spellID == DeserterSpellID) ) {     // deserter
             PGLog(@"[PvP] Deserter has faded...");
             if(self.pvpEntryID) {
