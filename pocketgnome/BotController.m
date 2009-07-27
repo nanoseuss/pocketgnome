@@ -3428,22 +3428,96 @@ NSMutableDictionary *_diffDict = nil;
 		 // TO DO: Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
 		 //   then kill wow?
 	 }
-	
+	int castspellSuccess = [self errorValue:[playerController lastErrorMessage]];
+	if ( castspellSuccess != ErrNone ){
+		
+		// Check for "full inventory" and kill wow if we get here :/
+		if ( castspellSuccess == ErrInventoryFull ){
+			//PGLog(@"[Bot] inventory is full%@");	 
+			//[FishingController closeWoW];
+		}
+		else if ( castspellSuccess == ErrTargetNotInLOS ){
+			// PGLog(@"[Bot] Target LOS%@");
+			[movementController moveSideStepRight];
+		}
+		else if ( castspellSuccess == ErrTargetNotInFrnt ){
+			// PGLog(@"[Bot] Target Behind us..%@");
+			[movementController moveSideStepLeft];
+		}
+		else if ( castspellSuccess == ErrCantMove ){
+			// PGLog(@"[Bot] Stop Moving!!%@");
+			[movementController pauseMovement];
+		}
+		else if ( castspellSuccess == ErrWrng_Way ){
+			// PGLog(@"[Bot] Target Behind us..%@");
+			[movementController moveSideStepLeft];
+		}
+		else if ( castspellSuccess == ErrAttack_Stunned ){
+			
+			//pvp trinket?
+		}
+		else if ( castspellSuccess == ErrTargetOutRange ){
+			[movementController moveForwardStop];
+			
+		}
+		else if ( castspellSuccess == ErrTargetOutRange2 ){
+			[movementController moveForwardStop];
+		}
+		
+		
+		
+		// TO DO: Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
+		//   then kill wow?
+	}
 	return ErrNone;
 }
 
+
 - (int)errorValue: (NSString*) errorMessage{
-	
 	if (  [errorMessage isEqualToString: INV_FULL] ){
+		//disable looting
 		return ErrInventoryFull;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_LOS] ){
+		
+		[movementController moveSideStepLeft];
 		return ErrTargetNotInLOS;
 	}
-	
+	else if ( [errorMessage isEqualToString:TARGET_FRNT] ){
+		[movementController moveSideStepLeft];
+		return ErrTargetNotInFrnt;
+	}
+	else if ( [errorMessage isEqualToString:CANT_MOVE] ){
+		[movementController pauseMovement];
+		return ErrCantMove;
+	}
+	else if ( [errorMessage isEqualToString:WRNG_WAY] ){
+		[movementController moveSideStepLeft];
+		return ErrWrng_Way;
+	}
+	else if ( [errorMessage isEqualToString:ATTACK_STUNNED] ){
+		//pvp trinket?
+		return ErrAttack_Stunned;
+	}
+	else if ( [errorMessage isEqualToString:NOT_YET] ){
+		return ErrSpell_Cooldown;
+	}
+	else if ( [errorMessage isEqualToString:NOT_RDY] ){
+		return ErrSpellNot_Ready;
+	}
+	else if ( [errorMessage isEqualToString:NOT_RDY2] ){
+		return ErrSpellNot_Ready2;
+	}
+	else if ( [errorMessage isEqualToString:TARGET_RNGE] ){
+		[movementController moveForwardnStop];
+		return ErrTargetOutRange;
+	}
+	else if ( [errorMessage isEqualToString:TARGET_RNGE2] ){
+		[movementController moveForwardnStop];
+		return ErrTargetOutRange2;
+	}
 	return ErrNotFound;
 }
-
 - (BOOL)interactWithMouseOver{
 	
 	// get hotkey settings
@@ -3464,4 +3538,5 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 @end
+
 

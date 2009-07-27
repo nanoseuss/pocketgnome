@@ -51,7 +51,9 @@
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;
-
+- (void)moveForwardnStop;
+- (void)moveSideStepRight;
+- (void)moveSideStepLeft;
 - (void)moveBackwardStart;
 - (void)moveBackwardStop;
 
@@ -412,18 +414,28 @@
 		if(self.lastInteraction != [[[self patrolRoute] waypoints] indexOfObject: [self destination]]) {
 			self.lastInteraction = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
 			[self pauseMovement];
+			PGLog(@"[Move] Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 			NSNumber *n = [[self destination] action].value;
 			float moreDelay = 2+[botController interactWith:[n unsignedIntValue]];
+			usleep(2000000);
+			[chatController sendKeySequence: [NSString stringWithFormat: @"/click MerchantFrameCloseButton%c", '\n']];
+			[botController interactWith:[n unsignedIntValue]];
+			usleep(2000000);
+			[chatController sendKeySequence: [NSString stringWithFormat: @"/click MerchantFrameCloseButton%c", '\n']];
+			[botController interactWith:[n unsignedIntValue]];
+			usleep(2000000);
+			[chatController sendKeySequence: [NSString stringWithFormat: @"/click MerchantFrameCloseButton%c", '\n']];
 			[self performSelector: @selector(realMoveToNextWaypoint)
 					   withObject: nil
 					   afterDelay: moreDelay];
 		} else {
 			PGLog(@"[Movement] Should never be here methinks");
+			[self pauseMovement];
 			//		[self realMoveToNextWaypoint];
 		}
   		return;
 		
-	// Otherwise we want to use an item/macro/spell
+		// Otherwise we want to use an item/macro/spell
     } else  {
         PGLog(@"[Move] Performing action %d at waypoint %d.", [[self destination] action].actionID, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 		
@@ -444,6 +456,7 @@
 				break;
 		}
 		[botController performAction:actionID];
+		usleep(4000000);
         [self realMoveToNextWaypoint];
         return;
     }
@@ -461,8 +474,10 @@
     //PGLog(@"Set jump cooldown to %d (between %d, and %d)", self.jumpCooldown, min, max);
     
     // jump!
+	self.moveSideStepLeft;
     if(![controller isWoWChatBoxOpen]) {
         [chatController jump];
+		self.moveSideStepLeft;
     }
 }
 
@@ -493,7 +508,8 @@
 
 // if we're near our target, move to the next
     float playerSpeed = [playerData speed];
-    if(distance2d < playerSpeed/2.0)  {
+    //if(distance2d < playerSpeed/2.0)  {
+		if(distance2d <= 5.0)  {
         if(!self.unit) {
             if([botController isBotting]) {
                 if([botController shouldProceedFromWaypoint: [self destination]]) {
@@ -590,7 +606,63 @@
         CFRelease(wKeyUp);
     }
 }
-
+- (void)moveSideStepRight {
+    [self setIsMoving: NO];
+	ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+	// post another key down
+	CGEventRef keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_E, TRUE);
+	if(keyStroke) {
+		CGEventPostToPSN(&wowPSN, keyStroke);
+		CFRelease(keyStroke);
+	}
+	
+	usleep(180000);
+	// then post key up, twice
+	keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_E, FALSE);
+	if(keyStroke) {
+		CGEventPostToPSN(&wowPSN, keyStroke);
+		CGEventPostToPSN(&wowPSN, keyStroke);
+		CFRelease(keyStroke);
+	}
+}
+- (void)moveSideStepLeft {
+    [self setIsMoving: NO];
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+	// post another key down
+	CGEventRef keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_Q, TRUE);
+	if(keyStroke) {
+		CGEventPostToPSN(&wowPSN, keyStroke);
+		CFRelease(keyStroke);
+	}
+	
+	usleep(180000);
+	// then post key up, twice
+	keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_Q, FALSE);
+	if(keyStroke) {
+		CGEventPostToPSN(&wowPSN, keyStroke);
+		CGEventPostToPSN(&wowPSN, keyStroke);
+		CFRelease(keyStroke);
+	}
+}
+- (void)moveForwardnStop {
+    [self setIsMoving: YES];
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    
+    // post another key down
+    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_UpArrow, TRUE);
+    if(wKeyDown) {
+        CGEventPostToPSN(&wowPSN, wKeyDown);
+        CFRelease(wKeyDown);
+    }
+    usleep(800000);
+    // then post key up, twice
+    CGEventRef wKeyUp = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_UpArrow, FALSE);
+    if(wKeyUp) {
+        CGEventPostToPSN(&wowPSN, wKeyUp);
+        CGEventPostToPSN(&wowPSN, wKeyUp);
+        CFRelease(wKeyUp);
+    }
+}
 - (void)moveBackwardStop {
     [self setIsMoving: NO];
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
