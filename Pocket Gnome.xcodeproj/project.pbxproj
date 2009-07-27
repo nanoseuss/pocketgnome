@@ -823,6 +823,7 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
+			comments = "combat movment";
 			name = WoWWaypoint;
 			sourceTree = "<group>";
 		};
