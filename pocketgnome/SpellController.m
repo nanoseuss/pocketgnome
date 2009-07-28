@@ -274,8 +274,7 @@ static SpellController *sharedSpells = nil;
 
 - (Spell*)playerSpellForName: (NSString*)spellName{
 	if(!spellName) return nil;
-    
-    Spell *highestIDSpell = nil;
+
     for(Spell *spell in [self playerSpells]) {
         // if the spell names match
         if([spell name] && [[spell name] isEqualToString: spellName]) {

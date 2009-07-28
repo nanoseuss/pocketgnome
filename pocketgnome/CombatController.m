@@ -17,6 +17,7 @@
 #import "Mob.h"
 #import "Player.h"
 #import "CombatProfile.h"
+#import "PlayersController.h"
 
 @interface CombatController ()
 @property BOOL inCombat;
@@ -57,6 +58,7 @@
         _combatUnits = [[NSMutableArray array] retain];
         _attackQueue = [[NSMutableArray array] retain];
         _blacklist = [[NSMutableArray array] retain];
+		_unitsAttackingMe = [[NSMutableArray array] retain];
         _initialDistances = [[NSMutableDictionary dictionary] retain];
         
         //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
@@ -121,6 +123,11 @@
 - (NSArray*)attackQueue {
     return [[_attackQueue retain] autorelease];
 }
+
+- (NSArray*)unitsAttackingMe {
+    return [[_unitsAttackingMe retain] autorelease];
+}
+
 
 #pragma mark (Internal) State Maintenence
 
@@ -216,6 +223,8 @@
            ) {
             if([self addUnitToCombatList: unit]) {
                 [botController addingUnit: unit];
+				
+				PGLog(@"[Combat] Adding %@ to combat list!", unit);
             }
             // disabled for now.
             //if([self combatEnabled])
@@ -458,6 +467,7 @@
     [_blacklist removeAllObjects];
     [_combatUnits removeAllObjects];
     [_attackQueue removeAllObjects];
+	[_unitsAttackingMe removeAllObjects];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
     // [self setInCombat: NO andNotify: NO];
 }
@@ -641,4 +651,39 @@
     return NO;
 }
 
+// We're going to use this for our Player panel, for now
+- (void)doCombatSearch{
+
+	// get list of all targets
+    NSMutableArray *targetsWithinRange = [NSMutableArray array];
+    
+	// add all mobs + players
+	[targetsWithinRange addObjectsFromArray: [mobController allMobs]];
+	[targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
+	[targetsWithinRange addObjectsFromArray: _combatUnits];
+	
+	// Now that we have all of our mobs/players sorted by range, lets see who is attacking us :-)
+	Player *player = [playerData player];
+	if ( [targetsWithinRange count] > 0 ){
+		for(Unit* unit in targetsWithinRange) {
+			GUID targetID = [unit targetID];
+			if(   self.inCombat                                                 // if we're in combat
+			   && ![playerData isFriendlyWithFaction: [unit factionTemplate]]	// don't display if friendly!
+			   && ((targetID > 0) || [unit isFleeing] )                         // if it has SOMETHING targeted or is fleeing
+			   && (   (targetID == [player GUID])								// if it has us targeted
+				   || ([player hasPet] && (targetID == [player petGUID])))      // ... or our pet
+			   ) {
+				
+				// Only add it if the unit isn't already in here!
+				if ( ![_unitsAttackingMe containsObject: unit] ){
+					[_unitsAttackingMe addObject: unit];
+				}
+			}
+			// Remove the unit if it's in the array!
+			else if ( [_unitsAttackingMe containsObject: unit] ){
+				[_unitsAttackingMe removeObject:unit];
+			}
+		}
+	}
+}
 @end

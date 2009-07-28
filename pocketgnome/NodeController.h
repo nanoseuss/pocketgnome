@@ -39,7 +39,7 @@ typedef enum {
 
     NSDictionary *_miningDict;
     NSDictionary *_herbalismDict;
-
+	
     NSTimer *_updateTimer;
     float _updateFrequency;
     NSSize minSectionSize, maxSectionSize;
@@ -51,7 +51,6 @@ typedef enum {
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 @property float updateFrequency;
-@property BOOL monitorFishing;
 
 - (void)addAddresses: (NSArray*)addresses;
 // - (BOOL)addNode: (Node*)node;

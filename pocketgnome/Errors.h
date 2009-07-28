@@ -13,20 +13,22 @@ typedef enum CastError {
     ErrNone = 0,
 	ErrNotFound = 1,
     ErrInventoryFull = 2,				// @"Inventory is Full"
-    ErrTargetNotInLOS = 3,				// 
-	ErrCantMove = 4,				// 
-	ErrTargetNotInFrnt = 5,				//
-	ErrWrng_Way = 6,                 // 
-	ErrSpell_Cooldown  = 7,        // 
-	ErrAttack_Stunned  = 8,        //
-	ErrSpellNot_Ready  = 9,        // 
-	ErrTargetOutRange  = 10,        // 
-	ErrTargetOutRange2  = 11,        // 
-	ErrSpellNot_Ready2  = 12,        //
+    ErrTargetNotInLOS = 3,
+	ErrCantMove = 4,
+	ErrTargetNotInFrnt = 5,	
+	ErrWrng_Way = 6,
+	ErrSpell_Cooldown  = 7,
+	ErrAttack_Stunned  = 8,
+	ErrSpellNot_Ready  = 9,
+	ErrTargetOutRange  = 10,
+	ErrTargetOutRange2  = 11,
+	ErrSpellNot_Ready2  = 12,
+	ErrSpellNotReady = 13,
 } CastError;
 
 #define INV_FULL			@"Inventory is Full"
 #define TARGET_LOS			@"Target not in line of sight"
+#define SPELL_NOT_READY		@"Spell is not ready yet."
 #define CANT_MOVE			@"Can't do that while moving"
 #define TARGET_FRNT			@"Target needs to be in front of you."
 #define WRNG_WAY			@"You are facing the wrong way!"
@@ -36,4 +38,3 @@ typedef enum CastError {
 #define ATTACK_STUNNED	    @"Can't attack while stunned."
 #define TARGET_RNGE			@"Out of range."
 #define TARGET_RNGE2		@"You are too far away!"
-

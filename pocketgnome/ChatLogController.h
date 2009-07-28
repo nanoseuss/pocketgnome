@@ -19,7 +19,9 @@
     IBOutlet NSPredicateEditor *ruleEditor;
     IBOutlet NSArrayController *chatActionsController;
     IBOutlet NSPanel *relayPanel;
-    
+	
+	IBOutlet NSButton *enableGrowlNotifications;
+
     NSUInteger passNumber;
     BOOL _shouldScan, _lastPassFoundChat;
     NSMutableArray *_chatLog, *_chatActions;
@@ -27,7 +29,6 @@
     NSDateFormatter *_timestampFormat;
     NSSortDescriptor *_passNumberSortDescriptor;
     NSSortDescriptor *_relativeOrderSortDescriptor;
-    
 }
 
 // Controller interface

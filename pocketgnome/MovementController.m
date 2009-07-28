@@ -49,11 +49,6 @@
 - (void)resetMovementTimer;
 - (void)moveToNextWaypoint;
 
-- (void)moveForwardStart;
-- (void)moveForwardStop;
-- (void)moveForwardnStop;
-- (void)moveSideStepRight;
-- (void)moveSideStepLeft;
 - (void)moveBackwardStart;
 - (void)moveBackwardStop;
 
@@ -284,6 +279,8 @@
 - (void)moveToWaypoint: (Waypoint*)waypoint {
     [self setDestination: waypoint];
     [self moveToPosition: [waypoint position]];
+	
+	//PGLog(@"[Move] Moving to %@", waypoint );
 }
 
 - (void)moveToObject: (WoWObject*)unit andNotify: (BOOL)notify {
@@ -392,7 +389,7 @@
 		self.lastInteraction = -1;
 	}
     // check for waypoint-initiated actions
-	PGLog(@"[Move] Performing type %d at waypoint %d.", [[self destination] action].type, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+	//PGLog(@"[Move] Performing type %d at waypoint %d.", [[self destination] action].type, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 	
 	// NO ACTION
 	if( [[self destination] action].type == ActionType_None ) {
@@ -410,33 +407,26 @@
 		
 	// Lets interact w/something!
 	} else if( [[self destination] action].type == ActionType_Interact ) {
-        PGLog(@"[Move] Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
-		if(self.lastInteraction != [[[self patrolRoute] waypoints] indexOfObject: [self destination]]) {
-			self.lastInteraction = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
-			[self pauseMovement];
-			PGLog(@"[Move] Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
-			NSNumber *n = [[self destination] action].value;
-			float moreDelay = 2+[botController interactWith:[n unsignedIntValue]];
-			usleep(2000000);
-			[chatController sendKeySequence: [NSString stringWithFormat: @"/click MerchantFrameCloseButton%c", '\n']];
-			[botController interactWith:[n unsignedIntValue]];
-			usleep(2000000);
-			[chatController sendKeySequence: [NSString stringWithFormat: @"/click MerchantFrameCloseButton%c", '\n']];
-			[botController interactWith:[n unsignedIntValue]];
-			usleep(2000000);
-			[chatController sendKeySequence: [NSString stringWithFormat: @"/click MerchantFrameCloseButton%c", '\n']];
-			[self performSelector: @selector(realMoveToNextWaypoint)
-					   withObject: nil
-					   afterDelay: moreDelay];
-		} else {
-			PGLog(@"[Movement] Should never be here methinks");
-			[self pauseMovement];
-			//		[self realMoveToNextWaypoint];
-		}
+
+		// Stop moving
+		[self pauseMovement];
+		PGLog(@"[Move] Performing interaction %d at waypoint %d.", self.lastInteraction, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+		NSNumber *n = [[self destination] action].value;
+		
+		// Lets interact w/the target!
+		[botController interactWith:[n unsignedIntValue]];
+		
+		[self performSelector: @selector(realMoveToNextWaypoint)
+				   withObject: nil
+				   afterDelay: 2.0];
+
   		return;
 		
 		// Otherwise we want to use an item/macro/spell
     } else  {
+		
+		// Stop moving
+		[self pauseMovement];
         PGLog(@"[Move] Performing action %d at waypoint %d.", [[self destination] action].actionID, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
 		
 		int32_t actionID = [[self destination] action].actionID;
@@ -456,8 +446,10 @@
 				break;
 		}
 		[botController performAction:actionID];
-		usleep(4000000);
-        [self realMoveToNextWaypoint];
+		
+		[self performSelector: @selector(realMoveToNextWaypoint)
+				   withObject: nil
+				   afterDelay: 2.0];
         return;
     }
 }
@@ -474,10 +466,8 @@
     //PGLog(@"Set jump cooldown to %d (between %d, and %d)", self.jumpCooldown, min, max);
     
     // jump!
-	self.moveSideStepLeft;
     if(![controller isWoWChatBoxOpen]) {
         [chatController jump];
-		self.moveSideStepLeft;
     }
 }
 
@@ -508,8 +498,8 @@
 
 // if we're near our target, move to the next
     float playerSpeed = [playerData speed];
-    //if(distance2d < playerSpeed/2.0)  {
-		if(distance2d <= 5.0)  {
+    if(distance2d < playerSpeed/2.0)  {
+		//if(distance2d <= 5.0)  {
         if(!self.unit) {
             if([botController isBotting]) {
                 if([botController shouldProceedFromWaypoint: [self destination]]) {
@@ -606,63 +596,7 @@
         CFRelease(wKeyUp);
     }
 }
-- (void)moveSideStepRight {
-    [self setIsMoving: NO];
-	ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
-	// post another key down
-	CGEventRef keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_E, TRUE);
-	if(keyStroke) {
-		CGEventPostToPSN(&wowPSN, keyStroke);
-		CFRelease(keyStroke);
-	}
-	
-	usleep(180000);
-	// then post key up, twice
-	keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_E, FALSE);
-	if(keyStroke) {
-		CGEventPostToPSN(&wowPSN, keyStroke);
-		CGEventPostToPSN(&wowPSN, keyStroke);
-		CFRelease(keyStroke);
-	}
-}
-- (void)moveSideStepLeft {
-    [self setIsMoving: NO];
-    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
-	// post another key down
-	CGEventRef keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_Q, TRUE);
-	if(keyStroke) {
-		CGEventPostToPSN(&wowPSN, keyStroke);
-		CFRelease(keyStroke);
-	}
-	
-	usleep(180000);
-	// then post key up, twice
-	keyStroke = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_ANSI_Q, FALSE);
-	if(keyStroke) {
-		CGEventPostToPSN(&wowPSN, keyStroke);
-		CGEventPostToPSN(&wowPSN, keyStroke);
-		CFRelease(keyStroke);
-	}
-}
-- (void)moveForwardnStop {
-    [self setIsMoving: YES];
-    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
-    
-    // post another key down
-    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_UpArrow, TRUE);
-    if(wKeyDown) {
-        CGEventPostToPSN(&wowPSN, wKeyDown);
-        CFRelease(wKeyDown);
-    }
-    usleep(800000);
-    // then post key up, twice
-    CGEventRef wKeyUp = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_UpArrow, FALSE);
-    if(wKeyUp) {
-        CGEventPostToPSN(&wowPSN, wKeyUp);
-        CGEventPostToPSN(&wowPSN, wKeyUp);
-        CFRelease(wKeyUp);
-    }
-}
+
 - (void)moveBackwardStop {
     [self setIsMoving: NO];
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
@@ -916,7 +850,7 @@
         if(self.lastSavedPosition && (distanceMoved > ([playerData speedMax]/2.0)) ) {
             float secondsFromNow = ([playerPosition distanceToPosition: position]/[playerData speedMax]) + 4.0;
             self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: secondsFromNow];
-            // PGLog(@"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
+            //PGLog(@"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
         }
     } else {
         if( [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection] > 2.0) {

@@ -209,7 +209,7 @@
                 
                 if(passNumber > 0 && ![entry isWhisperSent]) {
                     if(![controller isWoWFront]) {
-                        if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+                        if( [enableGrowlNotifications state] && [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
                             [GrowlApplicationBridge notifyWithTitle: [entry isSpoken] ? [NSString stringWithFormat: @"%@ %@...", [entry playerName], [entry typeVerb]] : [NSString stringWithFormat: @"%@ (%@)", [entry playerName], [entry isChannel] ? [entry channel] : [entry typeName]]
                                                         description: [entry text]
                                                    notificationName: @"PlayerReceivedMessage"

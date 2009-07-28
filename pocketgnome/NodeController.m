@@ -346,18 +346,18 @@ typedef enum {
 }
 
 - (NSArray*)allFishingBobbers{
-	
+
 	// Make a copy or we will run into some "Collection <NSCFArray: 0x13a0e0> was mutated while being enumerated." errors and crash
 	//   Mainly b/c we access this from another thread
 	NSArray *nodeList = [[_nodeList copy] autorelease];
 	NSMutableArray *nodes = [NSMutableArray array];
-    
+	
 	for(Node *node in nodeList) {
 		if ( [node nodeType] == GAMEOBJECT_TYPE_FISHING_BOBBER ){
 			[nodes addObject: node];
 		}
 	}
-    
+	
 	return nodes;
 }
 
@@ -425,7 +425,7 @@ typedef enum {
             return node;
         }
     }
-	PGLog(@"[Bot] No node for interaction");
+	PGLog(@"[Node] No node for interaction");
     return nil;
 }
 
