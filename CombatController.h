@@ -15,10 +15,12 @@
 @class BotController;
 @class MovementController;
 @class PlayerDataController;
+@class PlayersController;
 
 @interface CombatController : NSObject {
     IBOutlet Controller *controller;
     IBOutlet PlayerDataController *playerData;
+	IBOutlet PlayersController *playersController;
     IBOutlet BotController *botController;
     IBOutlet MobController *mobController;
     IBOutlet ChatController *chatController;
@@ -32,6 +34,7 @@
     NSMutableArray *_combatUnits;
     NSMutableArray *_attackQueue;
     NSMutableArray *_blacklist;
+	NSMutableArray *_unitsAttackingMe;
     NSMutableDictionary *_initialDistances;
 }
 
@@ -51,6 +54,7 @@
 // combat state
 - (NSArray*)combatUnits;
 - (NSArray*)attackQueue;
+- (NSArray*)unitsAttackingMe;
 
 // mob status
 - (BOOL)isUnitBlacklisted: (Unit*)unit;
@@ -59,7 +63,8 @@
 - (void)disposeOfUnit: (Unit*)unit;
 - (void)cancelAllCombat;
 
-
+// get all units we're in combat with!
+- (void)doCombatSearch;
 
 ////// INPUTS //////
 // --> playerEnteringCombat

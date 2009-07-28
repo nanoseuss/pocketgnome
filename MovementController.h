@@ -75,5 +75,8 @@
 
 - (void)turnToward: (Position*)position;
 
+- (void)moveForwardStart;
+- (void)moveForwardStop;
+
 - (IBAction)prefsChanged: (id)sender;
 @end

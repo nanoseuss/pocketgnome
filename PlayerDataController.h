@@ -34,11 +34,14 @@
     id memoryViewController;
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
+	IBOutlet NSTableView *combatTable;
     // IBOutlet NSTextField *stanceText; // 3.0.8 removed
 
     NSNumber *_baselineAddress;
     NSNumber *_playerAddress;
     BOOL _validState, _lastState;
+	
+	NSMutableArray *_combatDataList;
     
     Unit *_pet;
     unsigned _playerHealth, _playerMaxHealth;
@@ -121,16 +124,22 @@
 - (BOOL)isIndoors;
 - (BOOL)isOutdoors;
 
+
 - (UInt32)spellCasting;
 - (float)castTime;
 - (float)castTimeRemaining;
 - (UInt32)currentTime;
+
+- (int)haste;
+- (int)GCD;	// returned in milliseconds
 
 - (IBAction)setPlayerDirectionInMemory: (id)sender;
 - (IBAction)showPlayerStructure: (id)sender;
 - (IBAction)showAuraWindow: (id)sender;
 
 - (void)refreshPlayerData;
+
+- (BOOL)isInBG;
 
 
 @end

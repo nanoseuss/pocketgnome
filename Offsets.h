@@ -227,6 +227,8 @@
 #define LOOT_NEXT				0x20
 // }
 
+// Current zone the player is in (ID)
+#define PLAYER_CURRENT_ZONE		((IS_X86) ? 0xACA618 : 0x0 )	// Also ACB1CC
 
 // **************************** NOT USED/DATED ******************************************* //
 

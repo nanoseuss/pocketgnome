@@ -73,6 +73,7 @@
     
     int _currentHotkeyModifier, _currentPetAttackHotkeyModifier;
     int _currentHotkey, _currentPetAttackHotkey;
+	UInt32 _lastSpellCastGameTime;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting;
 	BOOL _doCheckForBrokenWeapons;
     int _miningLevel, _herbLevel, _skinLevel;
@@ -89,15 +90,12 @@
     NSDate *stopDate;
     
     // pvp shit
-    int pvpEntryID;
-    Mob *pvpBattlemaster;
-    BOOL _pvpInBG, _isPvPing;
-    BOOL _pvpAutoJoin, _pvpAutoQueue, _pvpAutoRelease;
+    BOOL _isPvPing;
+    BOOL _pvpAutoJoin, _pvpAutoRelease;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
     int _pvpCheckCount;
     IBOutlet NSButton *pvpStartStopButton;
     IBOutlet NSPanel *pvpBMSelectPanel;
-    IBOutlet NSButton *pvpAutoQueueCheckbox;
     IBOutlet NSButton *pvpAutoJoinCheckbox;
     IBOutlet NSButton *pvpAutoReleaseCheckbox;
     IBOutlet NSImageView *pvpBannerImage;
@@ -167,7 +165,7 @@
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue;
 
 // Input from MovementController;
-- (float)interactWith:(UInt32)entryID;
+- (void)interactWith:(UInt32)entryID;
 - (void)reachedUnit: (WoWObject*)unit;
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;
@@ -189,7 +187,6 @@
 
 // PvP shit
 - (IBAction)pvpStartStop: (id)sender;
-- (IBAction)pvpValidateBattlemaster: (id)sender;
 - (IBAction)pvpBMSelectAction: (id)sender;
 - (IBAction)pvpTestWarning: (id)sender;
 

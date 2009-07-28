@@ -21,6 +21,8 @@
 #import "Player.h"
 #import "Position.h"
 
+#import "ImageAndTextCell.h"
+
 #import <Growl/GrowlApplicationBridge.h>
 
 @interface PlayerDataController ()
@@ -78,6 +80,8 @@ static PlayerDataController* sharedController = nil;
         savedLevel = 0;
         self.wasDead = NO;
            
+		_combatDataList = [[NSMutableArray array] retain];
+		
         [[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(applicationWillTerminate:) 
                                                      name: NSApplicationWillTerminateNotification 
@@ -105,10 +109,17 @@ static PlayerDataController* sharedController = nil;
     
     self.minSectionSize = [self.view frame].size;
     self.maxSectionSize = [self.view frame].size;
+	
+	[combatTable setDoubleAction: @selector(combatTableDoubleClick:)];
     
     float freq = [[NSUserDefaults standardUserDefaults] floatForKey: @"PlayerUpdateFrequency"];
     if(freq <= 0.0f) freq = 0.35;
     self.updateFrequency = freq;
+	
+	ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
+    [imageAndTextCell setEditable: NO];
+    [[combatTable tableColumnWithIdentifier: @"Class"] setDataCell: imageAndTextCell];
+    [[combatTable tableColumnWithIdentifier: @"Race"] setDataCell: imageAndTextCell];
 }
 
 - (void)applicationWillTerminate: (NSNotification*)notification {
@@ -750,6 +761,44 @@ static PlayerDataController* sharedController = nil;
     return NO;
 }
 
+// Determine what the current player's GCD is w/respect to haste (obviously ignoring talents)
+- (int)GCD{
+	//newCastTime = (castTime/(1+(hasteRating/3279)))	
+	float baseGCD = 1.5f;
+	
+	if ([[self player] unitClass] == UnitClass_Rogue ){
+		baseGCD = 1.0f;
+	}
+	
+	// Don't bother with druids (we should just check on if they are in cat form)
+	if ([[self player] unitClass] == UnitClass_Druid ){
+		return 0;
+	}
+
+	// Only calculate if we're not level 80!
+	if ( [self level] != 80 ){
+		return (int)(baseGCD*1000.0f);
+	}
+	
+	int haste = [self haste];
+	if ( haste > 0 ){
+		return (int)(1000*(baseGCD/(1.0f+(haste/3279))));	
+	}
+	
+	return (int)(baseGCD*1000.0f);
+}
+
+- (int)haste {
+    MemoryAccess *memory = [controller wowMemoryAccess];
+    if(memory) {
+        UInt32 value = 0;
+        if([memory loadDataForObject: self atAddress: [self baselineAddress] + PlayerField_Haste Buffer: (Byte *)&value BufLength: sizeof(value)] && value)
+            return value;
+    }
+    return 0;
+}
+
+
 - (UInt32)spellCasting {
     MemoryAccess *memory = [controller wowMemoryAccess];
     if([self isCasting] && memory) {
@@ -1038,8 +1087,52 @@ static PlayerDataController* sharedController = nil;
             [combatController playerLeavingCombat];
         }
         _lastCombatState = combatState;
-        
-        
+		
+		// Lets see which mobs are attacking us!
+		if ( combatState ){
+			[combatController doCombatSearch];
+		}
+		
+		[_combatDataList removeAllObjects];
+		
+		// only resort and display the table if the window is visible
+		if( [[combatTable window] isVisible]) {
+			
+			NSArray *units = [combatController unitsAttackingMe];
+			for(Unit *unit in units) {
+				
+				if( ![unit isValid] )
+					continue;
+				
+				float distance = [[self position] distanceToPosition: [unit position]];
+				
+				BOOL isHostile = [self isHostileWithFaction: [unit factionTemplate]];
+				BOOL isNeutral = (!isHostile && ![self isFriendlyWithFaction: [unit factionTemplate]]);
+				
+				
+				unsigned level = [unit level];
+				if(level > 100) level = 0;
+				
+				[_combatDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+											 unit,                                                                @"Player",
+											 [NSString stringWithFormat: @"0x%X", [unit lowGUID]],                @"ID",
+											 [NSString stringWithFormat: @"%@%@", [unit isPet] ? @"[Pet] " : @"", [Unit stringForClass: [unit unitClass]]],                             @"Class",
+											 [Unit stringForRace: [unit race]],                                   @"Race",
+											 [Unit stringForGender: [unit gender]],                               @"Gender",
+											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
+											 [NSNumber numberWithUnsignedInt: level],                             @"Level",
+											 [NSNumber numberWithFloat: distance],                                @"Distance", 
+											 (isNeutral ? @"4" : (isHostile ? @"2" : @"5")),                      @"Status",
+											 [unit iconForRace: [unit race] gender: [unit gender]],               @"RaceIcon",
+											 [NSImage imageNamed: [Unit stringForGender: [unit gender]]],         @"GenderIcon",
+											 [unit iconForClass: [unit unitClass]],                               @"ClassIcon",
+											 nil]];
+			}
+			
+			// Update our combat table!
+			[_combatDataList sortUsingDescriptors: [combatTable sortDescriptors]];
+			[combatTable reloadData];
+		}
     }
     [self performSelector: @selector(refreshPlayerData) withObject: nil afterDelay: _updateFrequency];
 }
@@ -1051,6 +1144,101 @@ static PlayerDataController* sharedController = nil;
 	if([memory loadDataForObject: self atAddress: CORPSE_STATIC_X Buffer: (Byte *)&pos BufLength: sizeof(float)*3])
 		return [Position positionWithX: pos[0] Y: pos[1] Z: pos[2]];
 	return nil;
+}
+
+- (BOOL)isInBG{
+	UInt32 zone = 0;
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: PLAYER_CURRENT_ZONE Buffer: (Byte *)&zone BufLength: sizeof(zone)] && zone) {
+		switch(zone){
+			case 4384:	// Strand of the Ancients
+			case 3358:	// Arathi Basin
+			case 3277:	// Warsong Gulch
+			case 2597:	// Alterac Valley
+			case 3820:	// Eye of the Storm
+				return YES;
+			default:
+				return NO;
+		}
+    }
+	
+	return NO;
+}
+
+#pragma mark -
+#pragma mark TableView Delegate & Datasource
+
+- (void)tableView:(NSTableView *)aTableView sortDescriptorsDidChange:(NSArray *)oldDescriptors {
+    [combatTable reloadData];
+}
+
+- (int)numberOfRowsInTableView:(NSTableView *)aTableView {
+	return [_combatDataList count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+    if(rowIndex == -1 || rowIndex >= [_combatDataList count]) return nil;
+	
+    if([[aTableColumn identifier] isEqualToString: @"Distance"])
+        return [NSString stringWithFormat: @"%.2f", [[[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
+    
+    if([[aTableColumn identifier] isEqualToString: @"Status"]) {
+        NSString *status = [[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Status"];
+        if([status isEqualToString: @"1"])  status = @"Combat";
+        if([status isEqualToString: @"2"])  status = @"Hostile";
+        if([status isEqualToString: @"3"])  status = @"Dead";
+        if([status isEqualToString: @"4"])  status = @"Neutral";
+        if([status isEqualToString: @"5"])  status = @"Friendly";
+        return [NSImage imageNamed: status];
+    }
+    
+    return [[_combatDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+}
+
+- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex
+{
+    if( aRowIndex == -1 || aRowIndex >= [_combatDataList count]) return;
+    
+    if ([[aTableColumn identifier] isEqualToString: @"Race"]) {
+        [(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"RaceIcon"]];
+    }
+    if ([[aTableColumn identifier] isEqualToString: @"Class"]) {
+        [(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"ClassIcon"]];
+    }
+    /*
+    // do text color
+    if( ![aCell respondsToSelector: @selector(setTextColor:)] )
+        return;
+    
+	Unit *unit = [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"];
+	PGLog(@"[Player] %qu %qu", [[self player] targetID], [unit GUID] );
+	if ( [[self player] targetID] == [unit GUID]){
+		PGLog(@"setting...");
+		
+		//[aCell setTextColor: [NSColor redColor]];
+	}
+	*/
+	return;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
+    return NO;
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectTableColumn:(NSTableColumn *)aTableColumn {
+    if( [[aTableColumn identifier] isEqualToString: @"RaceIcon"])
+        return NO;
+    if( [[aTableColumn identifier] isEqualToString: @"ClassIcon"])
+        return NO;
+    return YES;
+}
+
+- (void)combatTableDoubleClick: (id)sender {
+    if( [sender clickedRow] == -1 || [sender clickedRow] >= [[combatController unitsAttackingMe] count] ) return;
+	
+	//PGLog(@"[Bot] Doublie clicked!");
+    
+    //[memoryViewController showObjectMemory: [[[combatController combatUnits] objectAtIndex: [sender clickedRow]] objectForKey: @"Player"]];
+    //[controller showMemoryView];
 }
 
 @end

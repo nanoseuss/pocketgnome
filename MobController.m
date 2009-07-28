@@ -446,7 +446,7 @@ static MobController* sharedController = nil;
         float distance = [playerPosition distanceToPosition: [mob position]];
 		
         if((distance != INFINITY) && (distance <= 9)) {
-            int faction = [mob factionTemplate];
+            //int faction = [mob factionTemplate];
             // only include: valid mobs, mobs that aren't dead, friendly, selectable mobs
             if( [mob isValid] && [mob entryID] == entryID && ![mob isDead] && ![mob isPet] )
                 return mob;

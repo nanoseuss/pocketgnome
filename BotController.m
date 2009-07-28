@@ -65,11 +65,7 @@
 @property (readwrite, retain) Unit *preCombatUnit;
 
 // pvp
-@property (readwrite, retain) Mob *pvpBattlemaster;
-@property (readwrite, assign) int pvpEntryID;
 @property (readwrite, assign) BOOL isPvPing;
-@property (readwrite, assign) BOOL pvpInBG;
-@property (readwrite, assign) BOOL pvpAutoQueue;
 @property (readwrite, assign) BOOL pvpAutoJoin;
 @property (readwrite, assign) BOOL pvpPlayWarning;
 @property (readwrite, assign) BOOL pvpLeaveInactive;
@@ -97,6 +93,8 @@
 // pvp
 - (void)pvpStop;
 - (void)pvpStart;
+
+- (void)rePop: (NSNumber *)count;
 
 @end
 
@@ -148,17 +146,14 @@
         
         _procedureInProgress = nil;
         _didPreCombatProcedure = NO;
+		_lastSpellCastGameTime = 0;
         
         _mobsToLoot = [[NSMutableArray array] retain];
         
         // wipe pvp options
         self.isPvPing = NO;
         self.pvpAutoRelease = NO;
-        self.pvpAutoQueue = NO;
         self.pvpAutoJoin = NO;
-        self.pvpBattlemaster = nil;
-        self.pvpEntryID = 0;
-        self.pvpInBG = NO;
         self.pvpLeaveInactive = NO;
         self.pvpPlayWarning = NO;
 		
@@ -247,11 +242,7 @@
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
 @synthesize preCombatUnit;
-@synthesize pvpBattlemaster;
-@synthesize pvpEntryID;
-@synthesize pvpInBG = _pvpInBG;
 @synthesize isPvPing = _isPvPing;
-@synthesize pvpAutoQueue = _pvpAutoQueue;
 @synthesize pvpAutoJoin = _pvpAutoJoin;
 @synthesize pvpPlayWarning = _pvpPlayWarning;
 @synthesize pvpLeaveInactive = _pvpLeaveInactive;
@@ -1020,6 +1011,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                    afterDelay: delayTime];
         return;
     }
+	
+	// Are we out of the GCD? note: we are ignoring the delay in performAction here, ideally we would subtract that from GCD
+	if ( _lastSpellCastGameTime > 0 && (_lastSpellCastGameTime + ( [playerController GCD])) >= [playerController currentTime] ){
+        [self performSelector: _cmd
+                   withObject: state 
+                   afterDelay: 0.1];
+        return;
+	}
     
     // have we exceeded our maximum attempts on this rule?
     if(attempts > 3) {
@@ -1070,7 +1069,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                             else                [playerController setPrimaryTarget: [target GUID]];
                         }
 						
-						[self performAction:actionID];
+						int actionResult = [self performAction:actionID];
+						if ( actionResult == ErrSpellNotReady ){
+							attempts = 3;
+							PGLog(@"[Bot] Spell isn't ready! Skipping any further attempts");
+						}
                     }
                     
                     // time for the next rule?
@@ -1460,7 +1463,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
 #pragma mark -
 #pragma mark [Input] CombatController
 
-// This method is pure notification.  It's up to EvaluateSituaion or an incomming AddingUnit to initiate any attacking.
+// This method is pure notification.  It's up to EvaluateSituation or an incomming AddingUnit to initiate any attacking.
 - (void)playerEnteringCombat {
     // if we're not even botting, bail
     if(![self isBotting]) return;
@@ -1512,31 +1515,34 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     if(![self isBotting]) return;
     
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        // PGLog(@"Starting combat procedure (current: %@).", [self procedureInProgress]);
+        //PGLog(@"[Bot] Starting combat procedure (current: %@).", [self procedureInProgress]);
         // stop and attack
         [self cancelCurrentProcedure];
         
         // check to see if we are supposed to be in melee range
         if( self.theBehavior.meleeCombat) {
+			//PGLog(@"[Bot] Should be in melee range!");
         
             // see if we are moving to this unit already
             if( ![[movementController moveToObject] isEqualToObject: unit]) {
                 float distance = [[playerController position] distanceToPosition2D: [unit position]];
                 
-                if( distance > 5.0f) {
+                if( distance > 4.5f) {
                     // if we are more than 5 yards away, move to this unit
                     PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
                     [movementController moveToObject: unit andNotify: YES];
                 } else  {
                     // if we are in melee range, stop
+					//PGLog(@"[Bot] In melee range!");
                     [movementController pauseMovement];
                 }
             } else {
-                //PGLog(@"Already moving to %@", unit);
+                //PGLog(@"[Bot] Already moving to %@", unit);
                 // if we are already moving to the unit, make sure we keep going
                 [movementController resumeMovement];
             }
         } else {
+			//PGLog(@"[Bot] Don't need to be in melee!");
             // if we don't need to be in melee, pause
             [movementController pauseMovement];
         }
@@ -1563,11 +1569,11 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
     if(self.isPvPing && ([[playerController position] verticalDistanceToPosition: [unit position]] > vertOffset)) {
-        PGLog(@"[PvP] Adding mob is beyond vertical offset limit; ignoring.");
+        PGLog(@"[Bot] Added mob is beyond vertical offset limit; ignoring.");
         return;
     }
     
-    PGLog(@"Add! %@", unit);
+    //PGLog(@"[Bot] Adding %@", unit);
     
     if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
         NSString *unitName = ([unit name]) ? [unit name] : nil;
@@ -2056,160 +2062,29 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     return nil;
 }
 
-- (float)interactWith:(UInt32)entryID {
-	Node *nodeToInteract = [nodeController closestNodeForInteraction:entryID];
+- (void)interactWith:(UInt32)entryID {
 	Mob *mobToInteract = [mobController closesMobForInteraction:entryID];
 	
-	WoWObject *unit = nodeToInteract;
+	//PGLog(@"[Bot] Interacting %@", mobToInteract);
 	
-	Position *playerPosition = [playerController position];
-	float mobDistance = [playerPosition distanceToPosition: [nodeToInteract position]];
-	float nodeDistance = [playerPosition distanceToPosition: [mobToInteract position]];
-	
-	if(([mobToInteract isValid] && mobDistance < nodeDistance) || ![nodeToInteract isValid])
-		unit = mobToInteract;
-	
-	PGLog(@"[Bot] Interacting %@", unit);
-	
-	if([unit isValid]) {
-		//		[movementController pauseMovement];
+	if([mobToInteract isValid]) {
 		
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: unit];
+		// Don't want to move!
+		[movementController pauseMovement];
 		
-		BOOL isNode = [unit isKindOfClass: [Node class]];
-		
-		KeyCombo lootCombo = [interactWithRecorder keyCombo];
-		int lootTargetHotkey = lootCombo.code;
-		int lootTargetHotkeyModifier = lootCombo.flags;
-		BOOL useLootHotkey = (lootTargetHotkey >= 0);
-		
-		if(self.doLooting || isNode) {
-			Position *playerPosition = [playerController position];
-			float distanceToUnit = [playerPosition distanceToPosition2D: [unit position]];
-			//		[movementController turnToward: [unit position]];
+		// Save our target to mouseover!
+		UInt64 value = [mobToInteract GUID];
+		if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)] ){
 			
-			// get wow process number
-			ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
-			ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
-			GetFrontProcess(&oldProcess);
+			// wow needs time to process the change
+			usleep([controller refreshDelay]);
 			
-			// figure out which workspace WoW is in
-			int thisSpace, wowSpace;
-			int delay = 10000, timeWaited = 0;
-			BOOL wasWoWHidden = [controller isWoWHidden];
-			if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
-			CGSConnection cgsConnection = _CGSDefaultConnection();
-			CGSGetWorkspace(cgsConnection, &thisSpace);
-			while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
-				usleep(delay);
-				timeWaited += delay;
+			// Use our hotkey!
+			if ( ![self interactWithMouseOver] ){
+				//[status setStringValue: [NSString stringWithFormat:@"Did you forget to bind your Interact with Mouseover?"]];
 			}
-			CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
-			
-			// get ahold of the current mouse position
-			CGPoint clickPt = CGPointZero, previousPt = CGPointMake([NSEvent mouseLocation].x, [[NSScreen mainScreen] frame].size.height - [NSEvent mouseLocation].y);
-			
-			BOOL weLooted = NO, weMadeWoWFront = NO, unitIsMob = ([unit isKindOfClass: [Mob class]] && [unit isNPC]);
-			
-			if([unit isValid] && (distanceToUnit <= 9.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
-				// PGLog(@"[Loot] Reached unit: %@. Attempting to loot.", unit);
-				if(unitIsMob) {
-					[mobController selectMob: (Mob*)unit];
-				} else {
-					[playerController setPrimaryTarget: [unit GUID]];
-				}
-				
-				if(![controller isWoWFront] && !useLootHotkey) {
-					// move to WoW's workspace
-					if(thisSpace != wowSpace) {
-						CGSSetWorkspace(cgsConnection, wowSpace);
-						usleep(100000);
-					}
-					
-					// and set it as front process
-					SetFrontProcess(&wowProcess);
-					usleep(100000);
-					
-					weMadeWoWFront = YES;
-				}
-				
-				// find the point to click on if we aren't using the loot hotkey
-				NSDate *date = [NSDate date];
-				if(!useLootHotkey) {
-					clickPt = [self scanForObjectOnScreen: unit];
-				}
-				
-				// for mobs, ensure the point is valid
-				if(clickPt.x && clickPt.y && unitIsMob) {
-					CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
-					usleep(10000);
-					if( [playerController mouseoverID] != [unit GUID] ) {
-						// PGLog(@"[Loot] Click point { %.2f, %.2f } is invalid. Rescanning.", clickPt.x, clickPt.y);
-						clickPt = [self scanForObjectOnScreen: unit];
-					}
-				}
-				
-				// if we're using the hotkey, this will fail since we never set clickPt
-				if(clickPt.x && clickPt.y && [controller isWoWFront]) {
-					PGLog(@"[Loot] Located %@ at { %.2f, %.2f } after %.2f seconds.  Looting.", unit, clickPt.x, clickPt.y, [date timeIntervalSinceNow]*-1.0);
-					weLooted = YES;
-					
-					CGInhibitLocalEvents(YES);
-					
-					// move the mouse into position
-					CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);   // move
-					
-					// post our right click
-					PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
-					usleep(100000);	// wait
-					PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
-					usleep(30000);
-					PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
-					usleep(200000);
-					
-					PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, previousPt, wowProcess);
-					
-					CGInhibitLocalEvents(NO);
-				} else {
-					if(useLootHotkey) {
-						weLooted = YES;
-						[chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
-					} else {
-						PGLog(@"[Loot] Unable to locate %@ on the screen or wow is not frontmost.", unit);
-					}
-				}
-				
-			} else {
-				// the unit was not within 5 yards
-			}
-			
-			if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
-			if(weMadeWoWFront) {
-				// bring our prevous app to the front
-				if(thisSpace != wowSpace) {
-					CGSSetWorkspace(cgsConnection, thisSpace);
-					usleep(100000);
-				}
-				SetFrontProcess(&oldProcess);
-				usleep(100000);
-			}
-			
-			// if it was a node, we're done now regardless of if we looted or not
-			// we have to do this since nodes remain in memory after being looted
-			// so either we got it or we can't find it on the screen -- done either way
-			//		if(isNode) {
-			//			[nodeController finishedNode: (Node*)unit];
-			//			[movementController finishMovingToObject: unit];
-			//		}
-			
-			
 		}
-		
-		// if we get here, there's nothing left to be done
-		float moreDelay = (isNode ? 2.0f : 0.5f) + [playerController castTimeRemaining] + ([playerController isLooting] ? 5.0f : 0.0f);
-		return moreDelay;
 	}
-	return 0;
 }
 
 - (BOOL)evaluateSituation {
@@ -2272,7 +2147,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     if( [combatController combatEnabled] && [combatController inCombat] ) {
     
         if(![[combatController combatUnits] count]) {
-            // PGLog(@"We are in combat, but show no mobs.");
+            PGLog(@"We are in combat, but show no mobs.");
             [mobController doCombatScan];
         }
         
@@ -2282,13 +2157,13 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         [combatUnits sortUsingFunction: DistanceFromPositionCompare context: playerPosition]; 
         for(Unit *unit in combatUnits) {
             if(unit && [unit isValid] && ![unit isDead] && ([[unit position] verticalDistanceToPosition: playerPosition] <= vertOffset)) {
-                // PGLog(@"Found existing combat, attacking: %@", unit);
+                PGLog(@"Found existing combat, attacking: %@", unit);
                 [movementController pauseMovement];
                 [combatController disposeOfUnit: unit];
                 return YES;
             }
         }
-        // PGLog(@"Still no mobs detected after combat scan.");
+        PGLog(@"Still no mobs detected after combat scan.");
     }
     
     /* *** if we get here, we aren't in combat *** */
@@ -2642,7 +2517,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     
     PGLog(@"[Bot] Stopped.");
     
-    if(self.isPvPing && self.pvpEntryID) {
+    if(self.isPvPing) {
         PGLog(@"[Bot] Bot stopped but PvP is ongoing...");
         //[self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 5.0];
     }
@@ -2811,25 +2686,10 @@ NSMutableDictionary *_diffDict = nil;
                                        isSticky: NO
                                    clickContext: nil];
     }
-
-    // release
-    int repopTry = 0;
     
+	//PGLog(@"[PvP] Repop crap: %d %d", self.isPvPing, self.pvpAutoRelease);
     if(!self.isPvPing || !self.pvpAutoRelease) {
-        while( ![playerController isGhost]) {
-            if(repopTry > 10) {
-                PGLog(@"[Bot] Repop failed after 10 tries.  Ending bot.");
-                [self stopBot: nil];
-                [controller setCurrentStatus: @"Bot: Failed to Release. Stopped."];
-                return;
-            }
-            PGLog(@"[Bot] Attempting to repop %d.", ++repopTry);
-            
-            [chatController enter];         // open/close chat box
-            usleep(100000);
-            [chatController releaseBody];   // release
-            usleep(1000000);
-        }
+		[self rePop:[NSNumber numberWithInt:0]];
     } else {
         PGLog(@"[PvP] Relying on an addon to release us.");
     }
@@ -2845,6 +2705,29 @@ NSMutableDictionary *_diffDict = nil;
     } else {
         PGLog(@"[PvP] Ignoring Corpse Run route because we are PvPing.");
     }
+}
+
+- (void)rePop: (NSNumber *)count{
+	if ( ![playerController isGhost]) {
+		int try = [count intValue];
+		try++;
+		// ONLY stop bot if we're not in PvP (we'll auto res in PvP!)
+		if(try > 10 && !self.isPvPing) {
+			PGLog(@"[Bot] Repop failed after 10 tries.  Ending bot.");
+			[self stopBot: nil];
+			[controller setCurrentStatus: @"Bot: Failed to Release. Stopped."];
+			return;
+		}
+		PGLog(@"[Bot] Attempting to repop %d.", try);
+		
+		[chatController enter];         // open/close chat box
+		usleep(100000);
+		[chatController releaseBody];   // release
+		usleep(10000);
+		
+		// Try again every 5 seconds pls
+		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 5.0];
+	}
 }
 
 - (void)playerIsValid: (NSNotification*)not { 
@@ -2916,8 +2799,10 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark PvP!
 
 - (void)auraGain: (NSNotification*)notification {
-    
+
+	// Player is PvPing!
     if(self.isPvPing) {
+		Player *player = [playerController player];
         UInt32 spellID = [[(Spell*)[[notification userInfo] objectForKey: @"Spell"] ID] unsignedIntValue];
         // honorless target
         if( (spellID == HonorlessTargetSpellID) || (spellID == HonorlessTarget2SpellID) || (spellID == [[[spellController spellForName: @"Honorless Target"] ID] unsignedIntValue]) ) {
@@ -2925,13 +2810,10 @@ NSMutableDictionary *_diffDict = nil;
             // cancel the PvP checks
             [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
             
-            if(self.pvpInBG) {
-                // we're done with the battleground
-                PGLog(@"[PvP] Honorless Target. PvP must be done.");
-                self.pvpInBG = NO;
+			// Player just left the BG, so lets stop the bot!
+			if ( ![playerController isInBG] ){
+                PGLog(@"[PvP] PvP is done.");
                 [self stopBot: nil];
-                
-                Player *player = [playerController player];
                 
                 // check for deserter
                 BOOL hasDeserter = NO;
@@ -2956,16 +2838,13 @@ NSMutableDictionary *_diffDict = nil;
                     [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 10.0];
                     return;
                 }
-                
-                if(self.pvpEntryID) {
-                    [controller setCurrentStatus: @"PvP: Waiting for Honorless Target to fade."];
-                    PGLog(@"[PvP] Waiting for Honorless to fade before re-queueing..."); // Will search for battlemaster in 1 second.");
-                    [self performSelector: @selector(pvpFindBattlemaster:) withObject: [NSNumber numberWithBool: YES] afterDelay: 1.0];
-                    return;
-                }
+				
+				[controller setCurrentStatus: @"PvP: Queuing in 5 seconds..."];
+				PGLog(@"[PvP] Queuing in 5 seconds...");
+				[self performSelector: @selector(pvpQueueBattleground) withObject:nil afterDelay: 5.0];
+
+			// Just entered the BG!
             } else {
-                // we just entered the battleground
-                self.pvpInBG = YES;
                 
                 if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
                     // [GrowlApplicationBridge setGrowlDelegate: @""];
@@ -2996,6 +2875,12 @@ NSMutableDictionary *_diffDict = nil;
         if( spellID == WaitingToRezSpellID ) {
             [movementController pauseMovement];
         }
+		
+		// If we have preparation buff lets not move!
+		if ( spellID == PreparationSpellID ) {
+			PGLog(@"[PvP] Preparation buff found, pausing movement!");
+			[movementController pauseMovement];
+		}
         
         // play alarm if we get Idle or Inactive
         if( (spellID == IdleSpellID) && self.pvpPlayWarning) {     // honorless target
@@ -3018,21 +2903,28 @@ NSMutableDictionary *_diffDict = nil;
     if(self.isPvPing) {
         
         UInt32 spellID = [[(Spell*)[[notification userInfo] objectForKey: @"Spell"] ID] unsignedIntValue];
+		BOOL playerInBG =  [playerController isInBG];
         
 		
 		if ( spellID == PreparationSpellID ){
-			PGLog(@"[PvP] Preparation faded, starting bot in 5 seconds...");
-			[controller setCurrentStatus: @"PvP: Preparation faded, starting bot in 5 seconds..."];
-			[self performSelector: @selector(startBot:) withObject: nil afterDelay: 5.0];
+			PGLog(@"[PvP] Preparation faded, starting bot in 2 seconds...");
+			[controller setCurrentStatus: @"PvP: Preparation faded, starting bot in 2 seconds..."];
+			[self performSelector: @selector(startBot:) withObject: nil afterDelay: 2.0];
 		}
 		
-        if( (spellID == DeserterSpellID) ) {     // deserter
-            PGLog(@"[PvP] Deserter has faded...");
-            if(self.pvpEntryID) {
-                PGLog(@"[PvP] Searching for battlemaster...");
-                [self performSelector: @selector(pvpFindBattlemaster:) withObject: [NSNumber numberWithBool: YES] afterDelay: 1.0];
-            }
-        }
+		// We only care to check these if the player isn't in a BG!
+		if ( !playerInBG ){
+			if( (spellID == DeserterSpellID) ) {     // deserter
+				PGLog(@"[PvP] Deserter has faded, queueing...");
+				[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 1.0];
+			}
+			
+			if( (spellID == HonorlessTargetSpellID) || (spellID == HonorlessTarget2SpellID) || (spellID == [[[spellController spellForName: @"Honorless Target"] ID] unsignedIntValue]) ) {
+				//PGLog(@"[PvP] Honorless target has faded, queueing...");
+				
+				//[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 1.0];
+			}
+		}
     }
 }
 
@@ -3048,172 +2940,30 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpQueueBattleground {
-    if([self.pvpBattlemaster isValid]) {
-        self.pvpInBG = NO;
-        
-        
-        [controller setCurrentStatus: @"PvP: Queueing..."];
-        
-        // target the battlemaster
-        [mobController selectMob: self.pvpBattlemaster];
-        usleep(100000);
-        
-        PGLog(@"[PvP] Searching for \"%@\" (%d) on the screen.", [self.pvpBattlemaster name], self.pvpEntryID);
-        // get wow process number
-        ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
-        ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
-        GetFrontProcess(&oldProcess);
-        
-        // figure out which workspace WoW is in
-        int thisSpace, wowSpace;
-        int delay = 10000, timeWaited = 0;
-        BOOL wasWoWHidden = [controller isWoWHidden];
-        if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
-        CGSConnection cgsConnection = _CGSDefaultConnection();
-        CGSGetWorkspace(cgsConnection, &thisSpace);
-        while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
-            usleep(delay);
-            timeWaited += delay;
-        }
-        CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
-        
-        BOOL weMadeWoWFront = NO;
-        
-        // move wow to the front if necessary
-        if(![controller isWoWFront]) {
-            // move to WoW's workspace
-            if(thisSpace != wowSpace) {
-                CGSSetWorkspace(cgsConnection, wowSpace);
-                usleep(100000);
-            }
-            
-            // and set it as front process
-            SetFrontProcess(&wowProcess);
-            usleep(500000);
-            
-            weMadeWoWFront = YES;
-        }
-        // --- end stupid bring to front routine
-        
-        // find the bitch
-        BOOL weClicked = NO;
-        CGPoint point = [self scanForObjectOnScreen: self.pvpBattlemaster];
-        if(point.x && point.y && [controller isWoWFront]) {
-            
-            CGPostMouseEvent(point, FALSE, 2, FALSE, FALSE);
-            usleep(25000);
-            if( [playerController mouseoverID] == [self.pvpBattlemaster GUID] ) {
-                
-                //PGLog(@"Found battlemaster at %@", NSStringFromPoint(NSPointFromCGPoint(point)));
-                // move the mouse and click
-                CGInhibitLocalEvents(YES);
-                
-                // post our right click
-                weClicked = YES;
-                PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, point, wowProcess);
-                usleep(100000);	// wait
-                PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, point, wowProcess);
-                usleep(30000);
-                PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, point, wowProcess);
-                
-                CGInhibitLocalEvents(NO);
-                usleep(250000);	// wait 0.25
-            }
-            
-        }
-        
-        // hide wow if it was hidden, bring any other app back to the front
-        if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
-        if(weMadeWoWFront) {
-            // bring our prevous app to the front
-            if(thisSpace != wowSpace) {
-                CGSSetWorkspace(cgsConnection, thisSpace);
-                usleep(100000);
-            }
-            SetFrontProcess(&oldProcess);
-            usleep(100000);
-        }
-        
-        
-        if(!weClicked) {
-            PGLog(@"[PvP] Could not locate the battlemaster on the screen. Trying again in 5 seconds.");
-            [self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 5.0];
-            return;
-        }
-        
-        if( [playerController interactGUID] == [self.pvpBattlemaster GUID]) {
-            PGLog(@"[PvP] Opened Battlemaster window.");
-            if(!self.pvpAutoQueue) {
-                usleep(2000000);
-                [chatController sendKeySequence: [NSString stringWithFormat: @"/script JoinBattlefield(0);%c", '\n']];
-                PGLog(@"[PvP] JoinBattlefield() sent.");
-            } else {
-                PGLog(@"[PvP] Relying on addon to Auto-Queue.");
-            }
-            if(![controller isWoWChatBoxOpen]) [chatController jump];  // jump to clear AFK
-            PGLog(@"[PvP] Will check for PvP entry every 10 seconds.");
-            self.pvpCheckCount = 0;
-            
-            [controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
-            [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 10.0];
-        } else {
-            PGLog(@"[PvP] Not interacting with Battlemaster. Trying again...");
-            [self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 5.0];
-            return;
-        }
-        
-    } else {
-        PGLog(@"[PvP] Can't queue battleground with invalid battlemaster.");
-    }
-}
+	
+	if ( [playerController isInBG] ){
+		PGLog(@"[PvP] Why are we trying to queue if we're in the PG?");
+		return;
+	}
+	
+	PGLog(@"[PvP] Queueing...");
+	[controller setCurrentStatus: @"PvP: Queueing..."];
+	
+	// Open PvP screen
+	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
+	usleep(10000);
+	
+	// Lets queue!
+	[chatController enter];             // open/close chat box
+	usleep(100000);
+	[chatController sendKeySequence: [NSString stringWithFormat: @"/script JoinBattlefield(0);%c", '\n']];
 
-- (void)pvpFindBattlemaster: (NSNumber*)keepTrying {
-    Mob *battleMaster = nil;
-    
-    if( [auraController unit: [playerController player] hasAura: HonorlessTargetSpellID] && [keepTrying boolValue] ) {
-        [self performSelector: _cmd withObject: keepTrying afterDelay: 1.0];
-        return;
-    }
-
-    [controller setCurrentStatus: @"PvP: Searching for Battlemaster..."];
-    
-    // find the battlemaster
-    if(self.pvpEntryID) {
-        // we have a saved battlemaster entry ID
-        PGLog(@"[PvP] Searching for Battlemaster %d", self.pvpEntryID);
-        battleMaster = [mobController mobWithEntryID: self.pvpEntryID];
-    } else {
-        // we don't have a saved battlemaster entry ID
-        PGLog(@"[PvP] Searching for Battlemaster from player target.");
-        battleMaster = [mobController playerTarget];
-        //PGLog(@"[PvP] Found %@ as player target.", battleMaster);
-    }
-    
-    // validate this battlemaster
-    if(battleMaster && [battleMaster isValid] && [battleMaster isBattlemaster]) {
-        self.pvpBattlemaster = battleMaster;
-        self.pvpEntryID = [battleMaster entryID];
-    } else {
-        self.pvpBattlemaster = nil;
-        if(self.pvpEntryID) PGLog(@"[PvP] Could not find battlemaster %d!", self.pvpEntryID);
-        else                PGLog(@"[PvP] Could not find battlemaster!");
-    }
-    
-    if([self.pvpBattlemaster isValid] && ([self.pvpBattlemaster entryID] == self.pvpEntryID)) {
-        // battlemaster is valid
-        PGLog(@"[PvP] Battlemaster \"%@\" (%d) is valid.", [self.pvpBattlemaster name], self.pvpEntryID);
+	usleep(10000);
         
-        // if we are already PvPing, requeue!
-        if(self.isPvPing) {
-            [self pvpQueueBattleground];
-        } else {
-            return; // nothing else to do here
-        }
-    } else {
-        if([keepTrying boolValue]) {
-            [self performSelector: _cmd withObject: keepTrying afterDelay: 1.0];
-        }
-    }
+	if(![controller isWoWChatBoxOpen]) [chatController jump];  // jump to clear AFK
+	self.pvpCheckCount = 0;
+	[controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
+	[self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 10.0];
 }
 
 - (void)pvpCheck {
@@ -3226,26 +2976,22 @@ NSMutableDictionary *_diffDict = nil;
             if(![controller isWoWChatBoxOpen]) [chatController jump];
         }
     
-        // if the battlemaster is invalid, we are probably inside a BG
-        if(![self.pvpBattlemaster isValid] || (self.pvpEntryID != [self.pvpBattlemaster entryID])) {
-            // if we weren't previously in a BG, we are now...
-            // PGLog(@"[PvP] Battlemaster has become invalid.");
-            self.pvpBattlemaster = nil;
-            
-            // check for deserter
-            if( ![auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
-                return;
-            }
-        } else {
-            if(!self.pvpAutoJoin) {
-                [chatController sendKeySequence: [NSString stringWithFormat: @"/script AcceptBattlefieldPort(1,1);%c", '\n']];
-            } else {
-                // PGLog(@"[PvP] Relying on addon to Auto-Join.");
-            }
-        }
+		// check for deserter
+		if( ![auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
+			return;
+		}
+
+		if(!self.pvpAutoJoin) {
+			[chatController sendKeySequence: [NSString stringWithFormat: @"/script AcceptBattlefieldPort(1,1);%c", '\n']];
+		} else {
+                PGLog(@"[PvP] Relying on addon to Auto-Join.");
+		}
         
         [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 10.0];
     }
+	else{
+		PGLog(@"[PvP] Not PvPing, why are we here?");
+	}
 }
 
 - (NSString*)pvpButtonTitle {
@@ -3256,14 +3002,10 @@ NSMutableDictionary *_diffDict = nil;
 - (void)pvpStop {
     [self stopBot: nil];
     
-    self.pvpBattlemaster = nil;
-    self.pvpEntryID = 0;
     
     self.isPvPing = NO;
     self.pvpAutoRelease = NO;
-    self.pvpAutoQueue = NO;
     self.pvpAutoJoin = NO;
-    self.pvpInBG = NO;
     self.pvpLeaveInactive = NO;
     self.pvpPlayWarning = NO;
     self.pvpCheckCount = 0;
@@ -3303,17 +3045,19 @@ NSMutableDictionary *_diffDict = nil;
 
         return;
     }
-    
-    if(!self.pvpBattlemaster || !self.pvpEntryID) {
-        // PGLog(@"[PvP] Presenting PvP dialog...");
-        
+
+	// If we're not PvPing - we want to start!
+    if(!self.isPvPing) {
+		[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
+
         if(([controller reactMaskForFaction: [player factionTemplate]] & 0x2)) {
             [pvpBannerImage setImage: [NSImage imageNamed: @"BannerAlliance"]];
         } else {
             [pvpBannerImage setImage: [NSImage imageNamed: @"BannerHorde"]];
         }
-        
-        [self performSelector: @selector(pvpValidateBattlemaster:) withObject: nil];
+		
+		// If we don't do this here, then we will show the below screen forever! o noes!
+		self.isPvPing = YES;
         
         [NSApp beginSheet: pvpBMSelectPanel
            modalForWindow: [self.view window]
@@ -3322,25 +3066,19 @@ NSMutableDictionary *_diffDict = nil;
               contextInfo: nil];
         return;
     }
-    
+	
+	// Close the PvP window!
+	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
+	
     self.pvpCheckCount = 0;
     self.pvpAutoJoin = [pvpAutoJoinCheckbox state];
-    self.pvpAutoQueue = [pvpAutoQueueCheckbox state];
     self.pvpAutoRelease = [pvpAutoReleaseCheckbox state];
     self.pvpPlayWarning = [pvpPlayWarningCheckbox state];
     self.pvpLeaveInactive = [pvpLeaveInactiveCheckbox state];
     
     // off we go...?
-    self.isPvPing = YES;
     PGLog(@"[PvP] Starting...");
-    
-    if([self.pvpBattlemaster isValid]) {
-        PGLog(@"[PvP] Battlemaster set. Queueing...");
-        [self pvpQueueBattleground];
-    } else {
-        PGLog(@"[PvP] No valid Battlemaster was chosen.");
-        [self pvpStop];
-    }
+	[self pvpQueueBattleground];
     
     [self willChangeValueForKey: @"pvpButtonTitle"];
     [self didChangeValueForKey: @"pvpButtonTitle"];
@@ -3354,23 +3092,10 @@ NSMutableDictionary *_diffDict = nil;
     }
 }
 
-- (IBAction)pvpValidateBattlemaster: (id)sender {
-    // reset current battlemaster
-    self.pvpBattlemaster = nil;
-    self.pvpEntryID = 0;
-    
-    // find new one
-    [self performSelector: @selector(pvpFindBattlemaster:) withObject: [NSNumber numberWithBool: NO]];
-    
-    if(!self.pvpBattlemaster) NSBeep();
-}
-
 - (void)pvpSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
     [pvpBMSelectPanel orderOut: nil];
 
     if(returnCode == NSCancelButton) {
-        self.pvpBattlemaster = nil;
-        self.pvpEntryID = 0;
         return;
     }
     
@@ -3387,29 +3112,32 @@ NSMutableDictionary *_diffDict = nil;
     [[NSSound soundNamed: @"alarm"] play];
 }
 
+// If we're casting a spell, we need to make the assumption of a 1.5 second GCD (1500000 microseconds)
 - (BOOL)performAction: (int32_t) actionID{
-	
 	int32_t oldActionID = 0;
-
+	
 	// get hotkey settings
 	KeyCombo hotkey = [shortcutRecorder keyCombo];
 	_currentHotkeyModifier = hotkey.flags;
 	_currentHotkey = hotkey.code;
+	
+	UInt32 cooldown = [controller refreshDelay]*2;
 	
 	// replace the first entry on the hotbar
 	[[controller wowMemoryAccess] loadDataForObject: self atAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	[[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
 	
 	// wow needs time to process the spell change
-	usleep([controller refreshDelay]*2);
-	
+	usleep(cooldown);
+
 	// then post keydown if the chat box is not open
 	if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
 		[chatController pressHotkey: _currentHotkey withModifier: _currentHotkeyModifier];
+		_lastSpellCastGameTime = [playerController currentTime];
 	}
 	
 	// wow needs time to process the spell change before we change it back
-	usleep([controller refreshDelay]);
+	usleep(cooldown);
 	
 	// then save our old action back
 	[[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
@@ -3438,11 +3166,11 @@ NSMutableDictionary *_diffDict = nil;
 		}
 		else if ( castspellSuccess == ErrTargetNotInLOS ){
 			// PGLog(@"[Bot] Target LOS%@");
-			[movementController moveSideStepRight];
+			[movementController moveForwardStop];
 		}
 		else if ( castspellSuccess == ErrTargetNotInFrnt ){
 			// PGLog(@"[Bot] Target Behind us..%@");
-			[movementController moveSideStepLeft];
+			[movementController moveForwardStop];
 		}
 		else if ( castspellSuccess == ErrCantMove ){
 			// PGLog(@"[Bot] Stop Moving!!%@");
@@ -3450,7 +3178,7 @@ NSMutableDictionary *_diffDict = nil;
 		}
 		else if ( castspellSuccess == ErrWrng_Way ){
 			// PGLog(@"[Bot] Target Behind us..%@");
-			[movementController moveSideStepLeft];
+			[movementController moveForwardStop];
 		}
 		else if ( castspellSuccess == ErrAttack_Stunned ){
 			
@@ -3479,24 +3207,21 @@ NSMutableDictionary *_diffDict = nil;
 		return ErrInventoryFull;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_LOS] ){
-		
-		[movementController moveSideStepLeft];
 		return ErrTargetNotInLOS;
 	}
+	else if ( [errorMessage isEqualToString:SPELL_NOT_READY] ){
+		return ErrSpellNotReady;
+	}
 	else if ( [errorMessage isEqualToString:TARGET_FRNT] ){
-		[movementController moveSideStepLeft];
 		return ErrTargetNotInFrnt;
 	}
 	else if ( [errorMessage isEqualToString:CANT_MOVE] ){
-		[movementController pauseMovement];
 		return ErrCantMove;
 	}
 	else if ( [errorMessage isEqualToString:WRNG_WAY] ){
-		[movementController moveSideStepLeft];
 		return ErrWrng_Way;
 	}
 	else if ( [errorMessage isEqualToString:ATTACK_STUNNED] ){
-		//pvp trinket?
 		return ErrAttack_Stunned;
 	}
 	else if ( [errorMessage isEqualToString:NOT_YET] ){
@@ -3509,13 +3234,12 @@ NSMutableDictionary *_diffDict = nil;
 		return ErrSpellNot_Ready2;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_RNGE] ){
-		[movementController moveForwardnStop];
 		return ErrTargetOutRange;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_RNGE2] ){
-		[movementController moveForwardnStop];
 		return ErrTargetOutRange2;
 	}
+
 	return ErrNotFound;
 }
 - (BOOL)interactWithMouseOver{
@@ -3530,7 +3254,7 @@ NSMutableDictionary *_diffDict = nil;
 	// Send out "interact with mouse over" keybinding!
 	if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
 		[chatController pressHotkey: hotkey.code  withModifier: hotkey.flags];
-		
+
 		return YES;
 	}
 	
