@@ -68,8 +68,9 @@
                                              // 0xB9EBE8 : 0x0) // 3.0.8
                                              // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
 
-// 3.1.2 valid
-#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xACB12C : 0x0) // 3.1.2
+// 3.2.0 valid
+#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB9D8AC : 0x0) // 3.2.0
+											 // 0xACB12C : 0x0) // 3.1.2
 											 // 0xAA508C : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB76FD0 : 0x0) // 3.0.9
                                              // 0xB79FD0 : 0x0) // 3.0.8
@@ -78,7 +79,7 @@
                                              // 0x9AF048 : 0x9D7C6D) // 2.4.3
                                              // 0x9B1008 : 0x9D8C55) // 2.4.2
                                              // 0x9A8008 : 0x9CDC5D) // 2.4.1
-#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xACB12C : 0x0) // same as above on Intel
+#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xB9D8AC : 0x0) // same as above on Intel
 #define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86
 #define COMBO_POINT_TARGET_UID      0x4   // 64 bit
 // in 3.0.x, the current time appears globally +0xC after COMBO_POINTS_STATIC
@@ -169,12 +170,13 @@
                                                  // 0x11F0BAC : 0x0)        // 3.0.2
                                                  // 0xCAA0AC : 0xCC39EC)    // 2.4.2
 
-// 3.1.2 valid
+// 3.2.0 valid
 // as of 3.0.2, this value is 0 if a spell successfully cast
 // if the spell did not cast, it contains the ID of the most recently failed spell
 // only works for spells that play an error sound. not sure what makes this distinction.
 //
-#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x11730F0 : 0x0) // 3.1.2
+#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x125EA54 : 0x0) // 3.2.0
+													 // 0x11730F0 : 0x0) // 3.1.2
 													 // 0x11472B0 : 0x0) // 3.1.0
 													 // 0x122BB98 : 0x0) // 3.0.9
                                                      // 0x122EBB8 : 0x0) // 3.0.8
@@ -192,9 +194,10 @@
                                          // 0x123B5E0 : 0x0) // 3.0.3
                                          // 0x1237480 : 0x0) // 3.0.2
 
-// 3.1.2 valid
+// 3.2.0 valid
 /* 1 if it's open, 0 if it's not */
-#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xB49DA0 : 0x0) // 3.1.2
+#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xC22B20 : 0x0) // 3.2.0
+										 // 0xB49DA0 : 0x0) // 3.1.2
 										 // 0xB1DFC0 : 0x0) // 3.1.1
 										 // 0xB1DF60 : 0x0) // 3.1.0
 										 // 0xBF8700 : 0x0) // 3.0.9
@@ -207,14 +210,10 @@
                                          // 0xA37DD0 2.4.1 PPC
                                          // 0x9D79E0 2.3.3 PPC
 
-
-#define ChatLog_Start			((IS_X86) ? 0x13A0E3C : 0x0) // 3.1.2
+// 3.2.0 valid
+#define CHATLOG_START			((IS_X86) ? 0x14C3EB8 : 0x0) // 3.2.0
+										 // 0x13A0E3C : 0x0) // 3.1.2
 										 // 0x1374FB0 : 0x0) // 3.1.1
-
-
-// 3.1.2 valid
-#define CAMERA_PTR				((IS_X86) ? 0x139FE44 : 0x0)
-#define CAMERA_OFFSET			((IS_X86) ? 0x782C : 0x0)
 
 // 3.1.2 valid - ONLY valid if the player has released
 #define CORPSE_STATIC_X			((IS_X86) ? 0x13FA5C0 : 0x0)
@@ -250,16 +249,22 @@
 #define CLICK_TO_MOVE			((IS_X86) ? 0x12708FC : 0x0 )
 #define CLICK_TO_MOVE_ACTION	((IS_X86) ? 0x12709D4 : 0x0 )
 
+// 3.2.0  valid
+#define LAST_RED_ERROR_MESSAGE  ((IS_X86) ? 0x1540BE0 : 0x0) // 3.2.0 valid
+											// 0x013FA620 : 0x0) // Red text error in wow interface
+
 
 // **************************** NOT USED/DATED ******************************************* //
+
+// 3.1.2 valid
+#define CAMERA_PTR				((IS_X86) ? 0x139FE44 : 0x0)
+#define CAMERA_OFFSET			((IS_X86) ? 0x782C : 0x0)
 
 
 // 3.1.2
 #define CORPSE_STATIC_X_RADAR	((IS_X86) ? 0x1301160 : 0x0)
 #define CORPSE_STATIC_Y_RADAR	((IS_X86) ? 0x1301164 : 0x0)
 
-// 3.1.2  valid
-#define LAST_RED_ERROR_MESSAGE     ((IS_X86) ? 0x013FA620 : 0x0) // Red text error in wow interface
 
 // 3.1.2. valid
 #define REFRESH_MAX_FPS     ((IS_X86) ? 0x118768C : 0x0) // 3.1.2 /console maxfps, /console maxfpsbk
