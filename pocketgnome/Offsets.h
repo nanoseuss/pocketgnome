@@ -11,7 +11,7 @@
  
 #import "ObjectConstants.h"
 
-#define VALID_WOW_VERSION   @"3.1.3"
+#define VALID_WOW_VERSION   @"3.2.0"
 #define PLAYER_LEVEL_CAP    80
 
 // not valid for PPC!
@@ -39,7 +39,8 @@
 
 
 
-#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0x13A0020 : 0x0)		// 3.1.2
+#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0xC34180 : 0x0)			// 3.2.0
+											 // 0x13A0020 : 0x0)		// 3.1.2 & 3.1.3
 											 // 0x13741E0 : 0x0)        // 3.1.1
 											 // 0x1374180 : 0x0)        // 3.1.0
 											 // 0x14A6C80 : 0x0)        // 3.0.9
@@ -51,15 +52,17 @@
                                              // 0xEB0D46 : 0xEC8F9E  // 2.4.2
                                              // 0xEB0C80 : 0xEC8EE0  // 2.4.2
 
-// 3.1.2 valid	
-#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xAC9440 : 0x0)	// 3.1.2
+// 3.2.0 valid	
+#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xB9BEE0 : 0x0) // 3.2.0
+											 // 0xAC9440 : 0x0)	// 3.1.2 & 3.1.3
 											 // 0xAA3400 : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB75420 : 0x0) // 3.0.9
                                              // 0xB78420 : 0x0) // 3.0.8
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
                        
-// 3.1.2 valid
-#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xAED328 : 0x0) // 3.1.2
+// 3.2.0 valid
+#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xBFAE88 : 0x0) // 3.2.0
+											 // 0xAED328 : 0x0) // 3.1.2 & 3.1.3
 											 // 0xAC6F08 : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB9BBE8 : 0x0) // 3.0.9
                                              // 0xB9EBE8 : 0x0) // 3.0.8
@@ -83,8 +86,9 @@
 // there's another interesting struct between combo points and targets
 // but i don't know what it does yet
 
-// 3.1.2 valid
-#define TARGET_TABLE_STATIC ((IS_X86) ? 0xACB210 : 0x0) // 3.1.2
+// 3.2.0 valid
+#define TARGET_TABLE_STATIC ((IS_X86) ? 0xB9D990 : 0x0) // 3.2.0
+									 // 0xACB210 : 0x0) // 3.1.2
 									 // 0xAA5170 : 0x0) // 3.1.0 & 3.1.1
 									 // 0xB77090 : 0x0) // 3.0.9
                                      // 0xB7A090 : 0x0) // 3.0.8
@@ -106,8 +110,9 @@
     #define TARGET_MOUSEOVER    0x30 /* GUID */
 // }
 
-// 3.1.2 valid
-#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x144BE80 : 0x0) // 3.1.2
+// 3.2.0 valid
+#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x15955A0 : 0x0) // 3.2.0
+												 // 0x144BE80 : 0x0) // 3.1.2
 												 // 0x1421040 : 0x0) // 3.1.1
 												 // 0x141FFE0 : 0x0) // 3.1.0
 												 // 0x1558240 : 0x0) // 3.0.9
@@ -131,9 +136,10 @@
                                                  // 0xF3E240 : 0xF56068  // 2.4.2
                                                  // 0xF347E0 : 0xF4A398  // 2.4.1
 
-// 3.1.2 valid
+// 3.2.0 valid
 // static main hotbar ( uint32[12], spell ID)
-#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x143EE40 : 0x0) // 3.1.2
+#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x1588500 : 0x0) // 3.2.0
+									 // 0x143EE40 : 0x0) // 3.1.2 & 3.1.3
 									 // 0x1413000 : 0x0) // 3.1.1
 									 // 0x1412FA0 : 0x0) // 3.1.0
 									 // 0x154A1E0 : 0x0) // 3.0.9
@@ -215,20 +221,35 @@
 #define CORPSE_STATIC_Y			((IS_X86) ? 0x13FA5C4 : 0x0)
 #define CORPSE_STATIC_Z			((IS_X86) ? 0x13FA5C8 : 0x0)
 
-// 3.1.2 valid
-#define ON_MOUSE_OVER_GUID     ((IS_X86) ? 0xAC6140 : 0x0) // Return the Object GUID of the item under your mouse, who said fishing ?
+// 3.2.0 valid
+// This will ONLY appear while the window is open!
+// Similar version is at 0x125CDE0 - this will REMAIN set if the loot window is closed w/o looting, only difference
+#define ITEM_IN_LOOT_WINDOW	   ((IS_X86) ? 0x157e0e4 : 0x0 )	
 
-// 3.1.3 valid
-#define ITEM_IN_LOOT_WINDOW	   ((IS_X86) ? 0x143E124 : 0x0 )	// This will ONLY appear while the window is open!
-																// Similar version is at 0x011713F - this will REMAIN set if the loot window is closed w/o looting, only difference
 // {
 #define LOOT_QUANTITY			0x8
 #define LOOT_INDEX				0x14
 #define LOOT_NEXT				0x20
 // }
 
-// Current zone the player is in (ID)
-#define PLAYER_CURRENT_ZONE		((IS_X86) ? 0xACA618 : 0x0 )	// Also ACB1CC
+// 3.2.0 valid
+#define PLAYER_CURRENT_ZONE		((IS_X86) ?	0xB980F8 : 0x0 )	// 3.2.0 valid
+												// 0xACA618 : 0x0 )	// 3.1.3 valid  //Also 0xACB1CC  Current zone the player is in (ID)
+
+// 3.2.0 valid
+#define CD_OBJ_LIST_STATIC		((IS_X86) ? 0x125E940 : 0x0 )	// 3.2.0 valid
+										 // 0x1172FE0 : 0x0 )	// 3.1.3 valid
+	#define CD_NEXT_ADDRESS	0x4
+	#define CD_SPELLID		0x8
+	#define CD_COOLDOWN		0x20
+	#define CD_COOLDOWN2	0x14
+	#define CD_STARTTIME	0x1C	// Also 0x10
+	#define CD_GCD			0x2C	// Also 0x2C
+
+// 3.2.0 valid
+#define CLICK_TO_MOVE			((IS_X86) ? 0x12708FC : 0x0 )
+#define CLICK_TO_MOVE_ACTION	((IS_X86) ? 0x12709D4 : 0x0 )
+
 
 // **************************** NOT USED/DATED ******************************************* //
 
