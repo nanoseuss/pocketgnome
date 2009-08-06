@@ -44,8 +44,8 @@ enum eGameObjectFields
 #define NODE_NAMESTRUCT_POINTER_OFFSET     0x198
 
 enum eNodeNameStructFields {
-    NAMESTRUCT_NAME_PTR         = 0x88,
-    NAMESTRUCT_ENTRY_ID         = 0x98,
+    NAMESTRUCT_NAME_PTR         = 0x90,
+    NAMESTRUCT_ENTRY_ID         = 0xA0,
 };
 
 @interface Node ()
