@@ -130,8 +130,8 @@ enum eUnitBaseFields {
     
     // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
     
-    BaseField_Auras_ValidCount          = 0xDBC,
-    BaseField_Auras_Start               = 0xC4C,
+    BaseField_Auras_ValidCount          = 0xDB4,
+    BaseField_Auras_Start               = 0xC34,
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)

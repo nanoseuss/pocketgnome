@@ -15,8 +15,9 @@
 #define PLAYER_LEVEL_CAP    80
 
 // not valid for PPC!
-// 3.1.2 valid
-#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x139FEC8 : 0x0)		// 3.1.2
+// 3.2.0 valid
+#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x153FD48 : 0x0)		// 3.2.0
+											 // 0x139FEC8 : 0x0)		// 3.1.2
 											 // 0x1374088 : 0x0)        // 3.1.1
 											 // 0x1374028 : 0x0)        // 3.1.0
 											 // 0x14A6B28 : 0x0)        // 3.0.9
@@ -27,7 +28,8 @@
 
 
 
-#define SERVER_NAME_STATIC          ((IS_X86) ? 0x13A05A6 : 0x0)		// 3.1.2
+#define SERVER_NAME_STATIC          ((IS_X86) ? 0x1540426 : 0x0)		// 3.2.0
+											 // 0x13A05A6 : 0x0)		// 3.1.2
 											 // 0x1374766 : 0x0)        // 3.1.1
 											 // 0x1374706 : 0x0)        // 3.1.0
 											 // 0x14A6F86 : 0x0)        // 3.0.9
@@ -161,8 +163,9 @@
 #define BAR9_OFFSET         0x180   // 9th hotbar (form3? beserker stance?)
 #define BAR10_OFFSET        0x1B0   // 10th hotbar (unknown)
 
-// 3.1.2 valid
-#define PLAYER_ON_BUILDING_STATIC       ((IS_X86) ? 0x114A5FC : 0x0)		// 3.1.2
+// 3.2.0 valid
+#define PLAYER_IN_BUILDING_STATIC       ((IS_X86) ? 0x13EBB64 : 0x0)		// 3.2.0 (also 0x159DE40)
+												 // 0x114A5FC : 0x0)		// 3.1.2
 												 // 0x111E81C : 0x0)        // 3.0.9
                                                  // 0x11F8F0C : 0x0)        // 3.0.9
                                                  // 0x11FBF2C : 0x0)        // 3.0.8
@@ -215,10 +218,10 @@
 										 // 0x13A0E3C : 0x0) // 3.1.2
 										 // 0x1374FB0 : 0x0) // 3.1.1
 
-// 3.1.2 valid - ONLY valid if the player has released
-#define CORPSE_STATIC_X			((IS_X86) ? 0x13FA5C0 : 0x0)
-#define CORPSE_STATIC_Y			((IS_X86) ? 0x13FA5C4 : 0x0)
-#define CORPSE_STATIC_Z			((IS_X86) ? 0x13FA5C8 : 0x0)
+// 3.2.0 valid - ONLY valid if the player has released
+#define CORPSE_STATIC_X			((IS_X86) ? 0x1540B80 : 0x0)				// 0x13EB860 (for minimap)
+#define CORPSE_STATIC_Y			((IS_X86) ? 0x1540B84 : 0x0)				// 0x13EB864 (for minimap)
+#define CORPSE_STATIC_Z			((IS_X86) ? 0x1540B88 : 0x0)
 
 // 3.2.0 valid
 // This will ONLY appear while the window is open!
