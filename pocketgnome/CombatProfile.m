@@ -31,6 +31,13 @@
         self.attackAnyLevel = YES;
         self.ignoreElite = YES;
         self.ignoreLevelOne = YES;
+		
+		// Healing
+		self.healingEnabled = NO;
+		self.autoFollowTarget = NO;
+		self.yardsBehindTarget = 10.0f;
+		self.healingRange = 40.0f;
+		self.mountEnabled = NO;
 
         self.attackRange = 20.0f;
         self.attackLevelMin = 2;
@@ -69,7 +76,13 @@
     copy.attackAnyLevel = self.attackAnyLevel;
     copy.ignoreElite = self.ignoreElite;
     copy.ignoreLevelOne = self.ignoreLevelOne;
-
+	
+	copy.healingEnabled = self.healingEnabled;
+    copy.autoFollowTarget = self.autoFollowTarget;
+    copy.yardsBehindTarget = self.yardsBehindTarget;
+	copy.healingRange = self.healingRange;
+	copy.mountEnabled = self.mountEnabled;
+	
     copy.attackRange = self.attackRange;
     copy.attackLevelMin = self.attackLevelMin;
     copy.attackLevelMax = self.attackLevelMax;
@@ -94,6 +107,12 @@
         self.ignoreElite = [[decoder decodeObjectForKey: @"IgnoreElite"] boolValue];
         self.ignoreLevelOne = [[decoder decodeObjectForKey: @"IgnoreLevelOne"] boolValue];
 
+		self.healingEnabled = [[decoder decodeObjectForKey: @"HealingEnabled"] boolValue];
+        self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
+		self.yardsBehindTarget = [[decoder decodeObjectForKey: @"YardsBehindTarget"] floatValue];
+		self.healingRange = [[decoder decodeObjectForKey: @"HealingRange"] floatValue];
+		self.mountEnabled = [[decoder decodeObjectForKey: @"MountEnabled"] boolValue];
+		
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
         self.attackLevelMin = [[decoder decodeObjectForKey: @"AttackLevelMin"] intValue];
         self.attackLevelMax = [[decoder decodeObjectForKey: @"AttackLevelMax"] intValue];
@@ -114,6 +133,12 @@
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreElite] forKey: @"IgnoreElite"];
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreLevelOne] forKey: @"IgnoreLevelOne"];
 
+	[coder encodeObject: [NSNumber numberWithBool: self.healingEnabled] forKey: @"HealingEnabled"];
+    [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
+    [coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTarget] forKey: @"YardsBehindTarget"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.healingRange] forKey: @"HealingRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.mountEnabled] forKey: @"MountEnabled"];
+	
     [coder encodeObject: [NSNumber numberWithFloat: self.attackRange] forKey: @"AttackRange"];
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMin] forKey: @"AttackLevelMin"];
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMax] forKey: @"AttackLevelMax"];
@@ -139,6 +164,12 @@
 @synthesize attackAnyLevel;
 @synthesize ignoreElite;
 @synthesize ignoreLevelOne;
+
+@synthesize healingEnabled;
+@synthesize autoFollowTarget;
+@synthesize yardsBehindTarget;
+@synthesize healingRange;
+@synthesize mountEnabled;
 
 @synthesize attackRange;
 @synthesize attackLevelMin;

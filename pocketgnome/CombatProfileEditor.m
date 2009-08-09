@@ -135,7 +135,6 @@ static CombatProfileEditor *sharedEditor = nil;
         return;
     }
     
-    // create a new route
     [self addCombatProfile: [CombatProfile combatProfileWithName: name]];
     [sender setStringValue: @""];
 }

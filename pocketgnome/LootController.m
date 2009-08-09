@@ -11,6 +11,7 @@
 #import	"Controller.h"
 #import "InventoryController.h"
 #import "ChatController.h"
+#import "PlayerDataController.h"
 
 #import "Item.h"
 #import "Offsets.h"
@@ -34,6 +35,8 @@
     }
     return self;
 }
+
+@synthesize lastTimeItemWasLooted = _lastTimeItemWasLooted;
 
 - (void)dealloc {
 	[_itemsLooted release];
@@ -70,9 +73,11 @@
 		//PGLog(@"[Loot] Adding new item!  %@", [itemController nameForID: [NSNumber numberWithInt:lootedItem]]);
 	}
 	
-	// Call our notifier!
-	[[NSNotificationCenter defaultCenter] postNotificationName: ItemLootedNotification object: [NSNumber numberWithInt:itemID]];
-	
+	_lastTimeItemWasLooted = [playerDataController currentTime];
+
+	[self performSelectorOnMainThread: @selector(itemLooted:)
+						   withObject: key
+						waitUntilDone: NO];
 }
 
 // Running in it's own thread!
@@ -108,7 +113,10 @@
 					
 					i++;
 				}
-
+				
+				[self performSelectorOnMainThread: @selector(allItemsLooted)
+									withObject: nil
+									waitUntilDone: NO];
 			}
 			else if ( lootedItem == 0 ){
 				_lastLootedItem = 0;
@@ -120,6 +128,25 @@
 	}
 	
 	[pool drain];
+}
+
+// This should really be called "item is in the window" vs. looted.  No checks are done here to see if the item makes it into your bag
+- (void) itemLooted: (NSNumber *) itemID{
+	// Call our notifier!
+	[[NSNotificationCenter defaultCenter] postNotificationName: ItemLootedNotification object: itemID];
+}
+
+- (void) allItemsLooted{
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(allItemsLooted) object: nil];
+	
+	// Only call our notifier if the loot window isn't open!
+	if ( ![self isLootWindowOpen] ){
+		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: nil];
+	}
+	// Lets check again shortly!
+	else{
+		[self performSelector: @selector(allItemsLooted) withObject: nil afterDelay: 0.1f];
+	}
 }
 
 #define MAX_ITEMS_IN_LOOT_WINDOW			10

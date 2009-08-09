@@ -39,6 +39,7 @@
 }
 
 @property BOOL combatEnabled;
+@property BOOL healingEnabled;
 @property (readonly, retain) Unit *attackUnit;
 
 // combat status

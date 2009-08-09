@@ -58,6 +58,10 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     [self sendKeySequence: [NSString stringWithFormat: @"/script RepopMe();%c", '\n']];
 }
 
+- (void)dismount {
+    [self sendKeySequence: [NSString stringWithFormat: @"/dismount%c", '\n']];
+}
+
 - (void)retrieveCorpse {
     [self sendKeySequence: [NSString stringWithFormat: @"/script RetrieveCorpse();%c", '\n']];
 }
@@ -163,6 +167,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
 }
 
 - (void)sendKeySequence:(NSString*)keySequence {
+	
 	ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
     if(wowPSN.lowLongOfPSN == kNoProcess && wowPSN.highLongOfPSN == kNoProcess) {
@@ -271,7 +276,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
 - (void)pressHotkey: (int)hotkey withModifier: (unsigned int)modifier {
     if((hotkey < 0) || (hotkey > 128)) return;
     //if(modifier < 0 || modifier > 3) return;
-    
+	
     // PGLog(@"Pressing %d with flags 0x%X", hotkey, modifier);
     
     unsigned int flags = modifier;

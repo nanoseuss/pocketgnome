@@ -130,7 +130,7 @@
         for(i = 0; i< 60; i++) {
             finishedAt = i;
             char buffer[400];
-            UInt32 logStart = ChatLog_Start + ChatLog_NextEntryOffset*i;
+            UInt32 logStart = CHATLOG_START + ChatLog_NextEntryOffset*i;
             if([memory loadDataForObject: self atAddress: logStart Buffer: (Byte *)&buffer BufLength: sizeof(buffer)-1])
             {
                 //GUID unitGUID = *(GUID*)(buffer + ChatLog_UnitGUIDOffset);

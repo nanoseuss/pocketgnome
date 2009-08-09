@@ -490,7 +490,7 @@ static PlayerDataController* sharedController = nil;
 
 - (BOOL)isIndoors {
     UInt32 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (PLAYER_ON_BUILDING_STATIC) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (PLAYER_IN_BUILDING_STATIC) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
         return (value == 1);
     }
     return NO;
@@ -516,6 +516,23 @@ static PlayerDataController* sharedController = nil;
     [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Vertical) Buffer: (Byte *)&direction BufLength: sizeof(direction)];
 }
 
+- (void)setClickToMove:(Position*)position{
+	float pos[3] = {0.0f, 0.0f, 0.0f};
+	UInt32 move = 4;
+	pos[0] = [position xPosition];
+	pos[1] = [position yPosition];
+	pos[2] = [position zPosition];
+	
+    [[controller wowMemoryAccess] saveDataForAddress: CLICK_TO_MOVE Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
+	[[controller wowMemoryAccess] saveDataForAddress: CLICK_TO_MOVE_ACTION Buffer: (Byte *)&move BufLength: sizeof(move)];
+}
+
+- (BOOL)isCTMActive{
+	UInt32 value = 0;
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: CLICK_TO_MOVE_ACTION Buffer: (Byte*)&value BufLength: sizeof(value)];
+    return (value == 4);
+}
+
 // 1 read
 - (float)directionFacing {
     float floatValue = -1.0;
@@ -528,9 +545,20 @@ static PlayerDataController* sharedController = nil;
     [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Horizontal) Buffer: (Byte*)&direction BufLength: sizeof(direction)];
 }
 
+- (void)setMovementFlags:(UInt32)movementFlags {
+    [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_MovementFlags) Buffer: (Byte*)&movementFlags BufLength: sizeof(movementFlags)];
+}
+
 // 1 read
 - (UInt32)movementFlags {
     UInt32 value = 0;
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self baselineAddress] + BaseField_MovementFlags) Buffer: (Byte*)&value BufLength: sizeof(value)];
+    return value;
+}
+
+// 1 read
+- (UInt64)movementFlags64 {
+    UInt64 value = 0;
     [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self baselineAddress] + BaseField_MovementFlags) Buffer: (Byte*)&value BufLength: sizeof(value)];
     return value;
 }
@@ -614,6 +642,14 @@ static PlayerDataController* sharedController = nil;
 - (UInt64)interactGUID {
     UInt64 value = 0;
     if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (TARGET_TABLE_STATIC + TARGET_INTERACT) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
+        return value;
+    }
+    return 0;
+}
+
+- (UInt64)focusGUID {
+    UInt64 value = 0;
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (TARGET_TABLE_STATIC + TARGET_FOCUS) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
         return value;
     }
     return 0;
@@ -761,6 +797,7 @@ static PlayerDataController* sharedController = nil;
     return NO;
 }
 
+/*
 // Determine what the current player's GCD is w/respect to haste (obviously ignoring talents)
 - (int)GCD{
 	//newCastTime = (castTime/(1+(hasteRating/3279)))	
@@ -786,7 +823,7 @@ static PlayerDataController* sharedController = nil;
 	}
 	
 	return (int)(baseGCD*1000.0f);
-}
+}*/
 
 - (int)haste {
     MemoryAccess *memory = [controller wowMemoryAccess];
@@ -921,6 +958,10 @@ static PlayerDataController* sharedController = nil;
 
 - (IBAction)showAuraWindow: (id)sender {
     [[AuraController sharedController] showAurasPanel];
+}
+
+- (IBAction)showCooldownWindow: (id)sender {
+	[spellController showCooldownPanel];
 }
 
 #pragma mark -
@@ -1126,6 +1167,8 @@ static PlayerDataController* sharedController = nil;
 											 [unit iconForRace: [unit race] gender: [unit gender]],               @"RaceIcon",
 											 [NSImage imageNamed: [Unit stringForGender: [unit gender]]],         @"GenderIcon",
 											 [unit iconForClass: [unit unitClass]],                               @"ClassIcon",
+											 [unit isLootable],													  @"Lootable",
+											 [unit isSkinnable],												  @"Skinnable",
 											 nil]];
 			}
 			
@@ -1133,6 +1176,12 @@ static PlayerDataController* sharedController = nil;
 			[_combatDataList sortUsingDescriptors: [combatTable sortDescriptors]];
 			[combatTable reloadData];
 		}
+		
+		// Reload our CD info!
+		[spellController reloadCooldownInfo];
+		
+		// Update our bot timer!
+		[botController updateRunningTimer];
     }
     [self performSelector: @selector(refreshPlayerData) withObject: nil afterDelay: _updateFrequency];
 }

@@ -100,7 +100,11 @@
 - (Position*)deathPosition;
 - (float)directionFacing;
 - (void)setDirectionFacing: (float)direction;
+- (void)setMovementFlags:(UInt32)movementFlags;
+- (void)setClickToMove:(Position*)position;
+- (BOOL)isCTMActive;
 - (UInt32)movementFlags;
+- (UInt64)movementFlags64;
 - (void)faceToward: (Position*)position;
 - (float)speed;
 - (float)speedMax;
@@ -112,6 +116,7 @@
 - (UInt64)targetID;
 - (UInt64)mouseoverID;
 - (UInt64)interactGUID;
+- (UInt64)focusGUID;
 - (UInt64)comboPointUID;
 
 - (BOOL)isInCombat;
@@ -131,11 +136,12 @@
 - (UInt32)currentTime;
 
 - (int)haste;
-- (int)GCD;	// returned in milliseconds
+//- (int)GCD;	// returned in milliseconds
 
 - (IBAction)setPlayerDirectionInMemory: (id)sender;
 - (IBAction)showPlayerStructure: (id)sender;
 - (IBAction)showAuraWindow: (id)sender;
+- (IBAction)showCooldownWindow: (id)sender;
 
 - (void)refreshPlayerData;
 

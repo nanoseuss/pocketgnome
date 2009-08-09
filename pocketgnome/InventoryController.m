@@ -102,7 +102,10 @@ static InventoryController *sharedInventory = nil;
 - (Item*)itemForGUID: (GUID)guid {
     //if(GUID_HIPART(guid) != HIGHGUID_ITEM) return nil; - As of 3.1.3 I had to comment out this - i'm not sure why
     
-    for(Item *item in _itemList) {
+	// To be thread safe - there another way for this?
+	NSArray *itemList = [[_itemList copy] autorelease];
+
+    for(Item *item in itemList) {
         if( [item GUID] == guid )
             return [[item retain] autorelease];
     }

@@ -14,6 +14,7 @@
 @class Controller;
 @class PlayerDataController;
 
+@class BetterTableView;
 @class PTHotKey;
 @class SRRecorderControl;
 
@@ -29,7 +30,7 @@
     IBOutlet id movementController;
     IBOutlet id combatController;
 
-    IBOutlet id waypointTable;
+    IBOutlet BetterTableView *waypointTable;
     
     IBOutlet NSView *view;
     IBOutlet RouteVisualizationView *visualizeView;
@@ -106,6 +107,7 @@
 - (IBAction)moveToWaypoint: (id)sender;
 - (IBAction)testWaypointSequence: (id)sender;
 - (IBAction)stopMovement: (id)sender;
+- (IBAction)closestWaypoint: (id)sender;
 
 // waypoint automation
 - (IBAction)openAutomatorPanel: (id)sender;

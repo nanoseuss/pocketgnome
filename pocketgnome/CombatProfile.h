@@ -17,6 +17,10 @@
     
     BOOL combatEnabled, onlyRespond, attackNeutralNPCs, attackHostileNPCs, attackPlayers, attackPets;
     BOOL attackAnyLevel, ignoreElite, ignoreLevelOne;
+	
+	// Healing
+	BOOL healingEnabled, autoFollowTarget, mountEnabled;
+	float yardsBehindTarget, healingRange;
     
     float attackRange;
     int attackLevelMin, attackLevelMax;
@@ -45,6 +49,12 @@
 @property (readwrite, assign) BOOL attackAnyLevel;
 @property (readwrite, assign) BOOL ignoreElite;
 @property (readwrite, assign) BOOL ignoreLevelOne;
+
+@property (readwrite, assign) BOOL healingEnabled;
+@property (readwrite, assign) BOOL autoFollowTarget;
+@property (readwrite, assign) float yardsBehindTarget;
+@property (readwrite, assign) float healingRange;
+@property (readwrite, assign) BOOL mountEnabled;
 
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) int attackLevelMin;

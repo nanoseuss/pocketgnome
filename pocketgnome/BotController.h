@@ -40,6 +40,7 @@
 @class ProcedureController;
 @class QuestController;
 @class CorpseController;
+@class LootController;
 
 @class ScanGridView;
 
@@ -55,6 +56,7 @@
     IBOutlet AuraController         *auraController;
     IBOutlet InventoryController    *itemController;
     IBOutlet PlayersController      *playersController;
+	IBOutlet LootController			*lootController;
 
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
@@ -83,20 +85,23 @@
     NSString *_procedureInProgress;
     Mob *_mobToSkin;
     Unit *preCombatUnit;
-    CGPoint _mobToSkinPoint;
     NSMutableArray *_mobsToLoot;
-    int _reviveAttempt, _lootAttempt;
+    int _reviveAttempt, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
     NSDate *stopDate;
+	NSDate *_botStarted;
     
+	// improved loot shit
+	WoWObject *_unitToLoot;
+	UInt32 _lastAttemptedLoot;	// Store the time of our last try!
+	
     // pvp shit
     BOOL _isPvPing;
-    BOOL _pvpAutoJoin, _pvpAutoRelease;
+    BOOL _pvpAutoRelease;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
     int _pvpCheckCount;
     IBOutlet NSButton *pvpStartStopButton;
     IBOutlet NSPanel *pvpBMSelectPanel;
-    IBOutlet NSButton *pvpAutoJoinCheckbox;
     IBOutlet NSButton *pvpAutoReleaseCheckbox;
     IBOutlet NSImageView *pvpBannerImage;
     IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
@@ -135,13 +140,16 @@
     IBOutlet SRRecorderControl *shortcutRecorder;
     IBOutlet SRRecorderControl *petAttackRecorder;
     IBOutlet SRRecorderControl *startstopRecorder;
-    IBOutlet SRRecorderControl *interactWithRecorder;
 	IBOutlet SRRecorderControl *mouseOverRecorder;
+	IBOutlet SRRecorderControl *mountRecorder;
     PTHotKey *StartStopBotGlobalHotkey;
     
     IBOutlet NSTextField *statusText;
+	IBOutlet NSTextField *runningTimer;
     IBOutlet NSWindow *overlayWindow;
     IBOutlet ScanGridView *scanGrid;
+	
+	int _test;
 }
 
 @property (readonly) NSView *view;
@@ -165,7 +173,6 @@
 - (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue;
 
 // Input from MovementController;
-- (void)interactWith:(UInt32)entryID;
 - (void)reachedUnit: (WoWObject*)unit;
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;
@@ -176,6 +183,7 @@
 - (IBAction)startStopBot: (id)sender;
 - (IBAction)testHotkey: (id)sender;
 
+- (void)updateRunningTimer;
 //- (void)performAction: (Action*)action;
 
 - (IBAction)editCombatProfiles: (id)sender;
@@ -192,7 +200,12 @@
 
 // Little more flexibility - casts spells! Uses items/macros!
 - (BOOL)performAction: (int32_t)actionID;
-- (BOOL)interactWithMouseOver;
 - (int)errorValue: (NSString*)errorMessage;
+- (BOOL)interactWithMouseoverGUID: (UInt64) guid;
+- (void)interactWithMob:(UInt32)entryID;
+
+- (void) updateRunningTimer;
+
+- (IBAction)testRandomStuff: (id)sender;
 
 @end

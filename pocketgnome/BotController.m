@@ -23,6 +23,7 @@
 #import "PlayersController.h"
 #import "QuestController.h"
 #import "CorpseController.h"
+#import "LootController.h"
 
 #import "BetterSegmentedControl.h"
 #import "Behavior.h"
@@ -66,7 +67,6 @@
 
 // pvp
 @property (readwrite, assign) BOOL isPvPing;
-@property (readwrite, assign) BOOL pvpAutoJoin;
 @property (readwrite, assign) BOOL pvpPlayWarning;
 @property (readwrite, assign) BOOL pvpLeaveInactive;
 @property (readwrite, assign) BOOL pvpAutoRelease;
@@ -93,8 +93,14 @@
 // pvp
 - (void)pvpStop;
 - (void)pvpStart;
+- (void)pvpCheck;
 
 - (void)rePop: (NSNumber *)count;
+
+- (void)skinMob: (Mob*)mob;
+- (void)skinOrFinish;
+- (BOOL)unitValidToHeal: (Unit*)unit;
+- (BOOL)playerWithinRange: (float)distance;
 
 @end
 
@@ -141,20 +147,24 @@
                                                  selector: @selector(auraFade:) 
                                                      name: BuffFadeNotification 
                                                    object: nil];
-
-
-        
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(itemsLooted:) 
+                                                     name: AllItemsLootedNotification 
+                                                   object: nil];
+		
         _procedureInProgress = nil;
         _didPreCombatProcedure = NO;
 		_lastSpellCastGameTime = 0;
+		_botStarted = nil;
+		_unitToLoot = nil;
+		_lastAttemptedLoot = 0;
+		_mobToSkin = nil;
         
         _mobsToLoot = [[NSMutableArray array] retain];
         
         // wipe pvp options
         self.isPvPing = NO;
-        self.pvpAutoRelease = NO;
-        self.pvpAutoJoin = NO;
-        self.pvpLeaveInactive = NO;
+        self.pvpAutoRelease = NO;        self.pvpLeaveInactive = NO;
         self.pvpPlayWarning = NO;
 		
         [NSBundle loadNibNamed: @"Bot" owner: self];
@@ -169,9 +179,8 @@
     [shortcutRecorder setCanCaptureGlobalHotKeys: YES];
     [startstopRecorder setCanCaptureGlobalHotKeys: YES];
     [petAttackRecorder setCanCaptureGlobalHotKeys: YES];
-    [interactWithRecorder setCanCaptureGlobalHotKeys: YES];
 	[mouseOverRecorder setCanCaptureGlobalHotKeys: YES];
-
+	[mountRecorder setCanCaptureGlobalHotKeys: YES];
     
     KeyCombo combo1 = { NSShiftKeyMask, kSRKeysF13 };
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyCode"])
@@ -192,36 +201,34 @@
         combo3.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackFlags"] intValue];
         
     KeyCombo combo4 = { 0, -1 };
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetCode"])
-        combo4.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetCode"] intValue];
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetFlags"])
-        combo4.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"InteractWithTargetFlags"] intValue];
-    
-    KeyCombo combo5 = { 0, -1 };
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"])
-        combo5.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"] intValue];
+        combo4.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"] intValue];
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"])
-        combo5.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"] intValue];
+        combo4.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"] intValue];
+	
+	KeyCombo combo5 = { 0, -1 };
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"MountCode"])
+        combo5.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MountCode"] intValue];
+    if([[NSUserDefaults standardUserDefaults] objectForKey: @"MountFlags"])
+        combo5.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MountFlags"] intValue];
 	
     [shortcutRecorder setDelegate: nil];
     [startstopRecorder setDelegate: self];
     [petAttackRecorder setDelegate: nil];
-    [interactWithRecorder setDelegate: nil];
 	[mouseOverRecorder setDelegate: nil];
-	
+	[mountRecorder setDelegate: nil];
 
     [shortcutRecorder setKeyCombo: combo1];
     [startstopRecorder setKeyCombo: combo2];
     [petAttackRecorder setKeyCombo: combo3];
-    [interactWithRecorder setKeyCombo: combo4];
-	[mouseOverRecorder setKeyCombo: combo5];
-
+	[mouseOverRecorder setKeyCombo: combo4];
+	[mountRecorder setKeyCombo: combo5];
     
     [shortcutRecorder setDelegate: self];
     [petAttackRecorder setDelegate: self];
-    [interactWithRecorder setDelegate: self];
 	[mouseOverRecorder setDelegate: self];
-    
+    [mountRecorder setDelegate: self];
+	
     // set up overlay window
     [overlayWindow setLevel: NSFloatingWindowLevel];
     if([overlayWindow respondsToSelector: @selector(setCollectionBehavior:)]) {
@@ -243,7 +250,6 @@
 @synthesize maxSectionSize;
 @synthesize preCombatUnit;
 @synthesize isPvPing = _isPvPing;
-@synthesize pvpAutoJoin = _pvpAutoJoin;
 @synthesize pvpPlayWarning = _pvpPlayWarning;
 @synthesize pvpLeaveInactive = _pvpLeaveInactive;
 @synthesize pvpAutoRelease = _pvpAutoRelease;
@@ -315,6 +321,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         BOOL conditionEval = NO;
         if([condition unit] == UnitNone) goto loopEnd;
         if([condition unit] == UnitTarget && !target) goto loopEnd;
+		if([condition unit] == UnitFriend && !target) goto loopEnd;
         
         switch([condition variety]) {
             case VarietyNone:;
@@ -346,8 +353,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                         qualityValue = ([condition type] == TypeValue) ? [thePlayer currentPowerOfType: UnitPower_RunicPower] : [thePlayer percentPowerOfType: UnitPower_RunicPower];
                     } else goto loopEnd;
                 } else {
-                    // get unit as either target or player's pet
-                    Unit *aUnit = ([condition unit] == UnitTarget) ? target : [playerController pet];
+                    // get unit as either target or player's pet or friend
+                    Unit *aUnit = ([condition unit] == UnitTarget || [condition unit] == UnitFriend) ? target : [playerController pet];
                     if( ![aUnit isValid]) goto loopEnd;
                     if( [condition quality] == QualityHealth ) {
                         qualityValue = ([condition type] == TypeValue) ? [aUnit currentHealth] : [aUnit percentHealth];
@@ -392,7 +399,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 if( [condition state] == StateAlive ) {
                     if( [condition unit] == UnitPlayer)
                         conditionEval = ( [condition comparator] == CompareIs ) ? ![playerController isDead] : ![playerController isDead];
-                    else if( [condition unit] == UnitTarget)
+                    else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend )
                         conditionEval = ( [condition comparator] == CompareIs ) ? ![target isDead] : [target isDead];
                     else if( [condition unit] == UnitPlayerPet) {
                         if(playerController.pet == nil) {
@@ -407,7 +414,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 if( [condition state] == StateCombat ) {
                     if( [condition unit] == UnitPlayer)
                         conditionEval = ( [condition comparator] == CompareIs ) ? [combatController inCombat] : ![combatController inCombat];
-                    else if( [condition unit] == UnitTarget)
+                    else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend )
                         conditionEval = ( [condition comparator] == CompareIs ) ? [target isInCombat] : ![target isInCombat];
                     else if( [condition unit] == UnitPlayerPet)
                         conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isInCombat] : ![playerController.pet isInCombat];
@@ -419,7 +426,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 if( [condition state] == StateCasting ) {
                     if( [condition unit] == UnitPlayer)
                         conditionEval = ( [condition comparator] == CompareIs ) ? [playerController isCasting] : ![playerController isCasting];
-                    else if( [condition unit] == UnitTarget)
+                    else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend )
                         conditionEval = ( [condition comparator] == CompareIs ) ? [target isCasting] : ![target isCasting];
                     else if( [condition unit] == UnitPlayerPet)
                         conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isCasting] : ![playerController.pet isCasting];
@@ -432,7 +439,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     if(test) PGLog(@"Doing State IsMounted condition...");
                     Unit *aUnit = nil;
                     if( [condition unit] == UnitPlayer)         aUnit = thePlayer;
-                    else if( [condition unit] == UnitTarget)    aUnit = target;
+                    else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend )    aUnit = target;
                     else if( [condition unit] == UnitPlayerPet) aUnit = playerController.pet;
                     if(test) PGLog(@" --> Testing unit %@", aUnit);
                     
@@ -502,7 +509,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     if( ![playerController playerIsValid]) goto loopEnd;
                     aUnit = thePlayer;
                 } else {
-                    aUnit = ([condition unit] == UnitTarget) ? target : [playerController pet];
+                    aUnit = ([condition unit] == UnitTarget || [condition unit] == UnitFriend) ? target : [playerController pet];
                 }
                 
                 if( [aUnit isValid]) {
@@ -564,7 +571,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     if( ![playerController playerIsValid]) goto loopEnd;
                     aUnit = thePlayer;
                 } else {
-                    aUnit = ([condition unit] == UnitTarget) ? target : [playerController pet];
+                    aUnit = ([condition unit] == UnitTarget || [condition unit] == UnitFriend) ? target : [playerController pet];
                 }
                 
                 if( [aUnit isValid]) {
@@ -945,9 +952,37 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // if we did the Patrolling procdure, go back to evaluate
     if([[state objectForKey: @"Procedure"] isEqualToString: PatrollingProcedure]) {
+		
+		
+		// Are we on an air mount?  And on the ground?  Shit lets jump!
+		UInt32 movementFlags = [playerController movementFlags];
+		//PGLog(@"[Bot] Movement flags: 0x%qx  0x%x   0%x   0x%x", [playerController movementFlags64], [playerController movementFlags], ([playerController movementFlags] & 0x1000000), ([playerController movementFlags] & 0x3000000));
+		//PGLog(@"[Bot] Test: %d  %d",  (movementFlags & 0x1000000) == 0x1000000, ( movementFlags & 0x3000000) != 0x3000000);
+		/*		// Check to see if we just mounted?
+		 if( [[state objectForKey: @"Mount"] intValue] > 0 ) {
+		 if (![controller isWoWChatBoxOpen]) {
+		 PGLog(@"[Bot] Just mounted, jumping");
+		 [chatController jump];
+		 }
+		 }*/
+		
+		if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
+			if (![controller isWoWChatBoxOpen]) {
+				usleep(200000);
+				PGLog(@"[Bot] Just mounted, jumping");
+				[chatController jump];
+			}
+		}
+		
+
         [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25];
         //[self evaluateSituation];
     }
+	
+	// if we did the Healing procdure, go back to evaluate
+    if([[state objectForKey: @"Procedure"] isEqualToString: HealingProcedure]) {
+		 [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
+	}
 }
 
 - (void)performProcedureWithState: (NSDictionary*)state {
@@ -955,7 +990,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if there's another procedure running, we gotta stop it
     if( self.procedureInProgress && ![self.procedureInProgress isEqualToString: [state objectForKey: @"Procedure"]]) {
         [self cancelCurrentProcedure];
-        // PGLog(@"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
+        //PGLog(@"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
     }
     
     if(![self procedureInProgress]) {
@@ -982,6 +1017,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     int attempts = [[state objectForKey: @"RuleAttempts"] intValue];
     int actions = [[state objectForKey: @"ActionsPerformed"] intValue];
     
+	// if we're healing - is our target still valid?
+	if( [[self procedureInProgress] isEqualToString: HealingProcedure] && ![self unitValidToHeal:target] )
+	{
+		[self finishCurrentProcedure: state];
+		return;
+	}
+	
     // send your pet to attack
     if( [self.theBehavior usePet] && [playerController pet]) {
         if( [[self procedureInProgress] isEqualToString: PreCombatProcedure] || [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
@@ -1000,7 +1042,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // delay our next rule until we can cast
     if( [playerController isCasting] ) {
-        
         // try to be smart about how long we wait
         float delayTime = [playerController castTimeRemaining]/2.0f;
         if(delayTime < RULE_EVAL_DELAY_SHORT) delayTime = RULE_EVAL_DELAY_SHORT;
@@ -1012,17 +1053,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         return;
     }
 	
-	// Are we out of the GCD? note: we are ignoring the delay in performAction here, ideally we would subtract that from GCD
-	if ( _lastSpellCastGameTime > 0 && (_lastSpellCastGameTime + ( [playerController GCD])) >= [playerController currentTime] ){
-        [self performSelector: _cmd
+	// We don't want to cast if our GCD is active!
+	if ( [spellController isGCDActive] ){
+		[self performSelector: _cmd
                    withObject: state 
                    afterDelay: 0.1];
-        return;
+		return;
 	}
     
     // have we exceeded our maximum attempts on this rule?
     if(attempts > 3) {
-        PGLog(@"  Exceeded maximum (3) attempts on action %d. Skipping.", [[procedure ruleAtIndex: completed] actionID]);
+        PGLog(@"  Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
         [self performSelector: _cmd
                    withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
                                 [state objectForKey: @"Procedure"],             @"Procedure",
@@ -1050,7 +1091,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                             actionID = (USE_MACRO_MASK + actionID);
                             break;
                         case ActionType_Spell:
-                            canPerformAction = [spellController canCastSpellWithID: [NSNumber numberWithUnsignedInt: actionID]];
+                            canPerformAction = ![spellController isSpellOnCooldown: actionID];
                             break;
                         default:
                             break;
@@ -1069,23 +1110,51 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                             else                [playerController setPrimaryTarget: [target GUID]];
                         }
 						
+						// Select target if we're healing!
+						if ( [[self procedureInProgress] isEqualToString: HealingProcedure] ){
+							
+							BOOL isTargetPlayer = NO;
+							for(Condition *condition in [rule conditions]) {
+								if(![condition enabled]) continue;  // skip disabled conditions
+								if ( [condition unit] == UnitPlayer && [condition variety] == VarietyHealth ){
+									isTargetPlayer = YES;
+									break;
+								}
+							}
+							// Select ourself if we have to!
+							if ( isTargetPlayer ){
+								[playerController setPrimaryTarget: [[playerController player] GUID]];
+							}
+							// Select target
+							else{
+								if([target isNPC])  [mobController selectMob: (Mob*)target];
+								else                [playerController setPrimaryTarget: [target GUID]];	
+							}
+						}
+						
 						int actionResult = [self performAction:actionID];
+						if ( [rule resultType] == ActionType_Spell ){
+							//PGLog(@"[Bot] Cast %@", [[spellController spellForID:[NSNumber numberWithInt:actionID]] name]);
+							//[spellController cooldownLeftForSpellID:actionID];
+						}
 						if ( actionResult == ErrSpellNotReady ){
 							attempts = 3;
 							PGLog(@"[Bot] Spell isn't ready! Skipping any further attempts");
 						}
+						else if ( actionResult == ErrInvalidTarget ){
+							// Lets get a new target!
+						}
+						else if ( actionResult == ErrTargetNotInLOS ){
+							
+						}
                     }
-                    
+	
                     // time for the next rule?
                     // for now we have to ignore items, since they cast spells that are different from their own ID
                     if( ([rule resultType] == ActionType_Item) || ([rule resultType] == ActionType_Macro) || ([spellController lastAttemptedActionID] == 0) || !canPerformAction ) {
                         
                         if([rule resultType] == ActionType_Spell) {
-                            Spell *spell = [spellController spellForID: [NSNumber numberWithInt: actionID]];
                             if(canPerformAction) {
-                                
-                                // tell the spell controller so it can track cooldowns
-                                [spellController didCastSpell: spell];
                                 
                                 // special rule for Vanish
                                 if(([[self procedureInProgress] isEqualToString: CombatProcedure]) && 
@@ -1146,318 +1215,181 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark Loot Helpers
 
-void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, ProcessSerialNumber psn)
-{
-    CGEventRef event = CGEventCreateMouseEvent(NULL, type, location, button);
-    if(event) {
-        CGEventSetType(event, type);
-        CGEventPostToPSN(&psn, event);
-        CFRelease(event);
-    }
-}
-
-- (CGPoint)scanForObjectOnScreen: (WoWObject*)unit {
-    if(![controller isWoWFront]) return CGPointZero;
-    
-    GUID unitID = [unit GUID];
-    
-    PGLog(@"Scanning for 0x%XULL on the screen...", unitID);
-    
-    // get the window size/location
-    CGRect windowRect = [controller wowWindowRect];
-        
-    CGPoint foundPt = CGPointZero, firstPt = CGPointZero;
-    float foundX = 0, foundY = 0, numFound = 0;
-    
-    // okay, so the middle didn't work. lets try a small square around the center
-    int i, j;
-    int minX = (windowRect.size.width*0.375f), maxX = windowRect.size.width - minX;
-    int minY = (windowRect.size.height*0.375f), maxY = windowRect.size.height - minY;
-    int incX = (maxX - minX)/16, incY = (maxY - minY)/16;
-    
-    
-    // set up overlay window
-    /*NSPoint screenPt = NSZeroPoint; 
-    screenPt.x += windowRect.origin.x;
-    screenPt.y += ([[NSScreen mainScreen] frame].size.height - (windowRect.origin.y + windowRect.size.height));
-    
-    // create new window bounds
-    NSRect newRect = NSMakeRect(minX+windowRect.origin.x, [[NSScreen mainScreen] frame].size.height - (maxY+windowRect.origin.y), maxX-minX, maxY-minY);
-    [overlayWindow setFrame: newRect display: YES];
-    [overlayWindow makeKeyAndOrderFront: nil];
-    
-    [scanGrid setXIncrement: 16.0f];
-    [scanGrid setYIncrement: 16.0f];
-    [scanGrid display];*/
-    
-    //NSDate *date = [NSDate date];
-    
-    // scan the window for the mob
-    for(j=minY; j<maxY; j=j+incY) {
-        for(i=minX; i<maxX; i=i+incX) {
-            CGPoint aPoint = CGPointMake(windowRect.origin.x + i, windowRect.origin.y + j);
-            CGPostMouseEvent(aPoint, FALSE, 2, FALSE, FALSE);
-            usleep(7500); // 7500
-            if( [playerController mouseoverID] == unitID ) {
-                //PGLog(@"[1/4 Scan]: Found loot point (%.2f, %.2f) after %.2f sec; incX = %d, incY = %d", windowRect.origin.x + i, windowRect.origin.y + j, [date timeIntervalSinceNow]*-1.0f, incX, incY);
-                //return CGPointMake(windowRect.origin.x + i, windowRect.origin.y + j);
-                
-                foundX += (windowRect.origin.x + i);
-                foundY += (windowRect.origin.y + j);
-                numFound++;
-
-                if(numFound == 1) {
-                    firstPt = aPoint;
-                }
-                
-                // break early if we've found 10 points
-                if(numFound >= 5.0f) {
-                    j = maxY;
-                    break;
-                }
-            }
-            //[scanGrid setScanPoint: CGPointMake(aPoint.x, [[NSScreen mainScreen] frame].size.height - aPoint.y)];
-            //[scanGrid display];
-            //usleep(100000);
-        }
-    }
-    
-    // PGLog(@"[1/4 Scan]: Failed after %.2f sec; incX = %d, incY = %d", [date timeIntervalSinceNow]*-1.0f, incX, incY);
-    //[overlayWindow orderOut: nil];
-    if(numFound > 0) {
-        foundPt.x = foundX / numFound;
-        foundPt.y = foundY / numFound;
-        // PGLog(@"[1/4 Scan]: Found avg loot point (%.2f, %.2f) with %.0f samples; incX = %d, incY = %d", foundPt.x, foundPt.y, numFound, incX, incY);
-        
-        // verify that this average point actually works
-        CGPostMouseEvent(foundPt, FALSE, 2, FALSE, FALSE);
-        usleep(10000);
-        if( [playerController mouseoverID] == unitID ) {
-            //PGLog(@"[1/4 Scan] Using average point.");
-            return foundPt;
-        } else {
-            //PGLog(@"[1/4 Scan] Using first point.");
-            return firstPt;
-        }
-    }
-    
-    // okay that didn't work, well try a bigger square
-    minX = (windowRect.size.width/5.0f), maxX = windowRect.size.width - minX;
-    minY = (windowRect.size.height/5.0f), maxY = windowRect.size.height - minY;
-    foundX = foundY = numFound = 0;
-    foundPt = firstPt = CGPointZero;
-    
-    // scan the window for the mob
-    for(j=minY; j<maxY; j=j+24) {
-        for(i=minX; i<maxX; i=i+24) {
-            CGPostMouseEvent(CGPointMake(windowRect.origin.x + i, windowRect.origin.y + j), FALSE, 2, FALSE, FALSE);
-            usleep(7500); // 7500
-            if( [playerController mouseoverID] == unitID ) {
-                //PGLog(@"FOUND MOB AT: (%d, %d) after %.2f sec", i, j, [start timeIntervalSinceNow]*-1.0);
-                //return CGPointMake(windowRect.origin.x + i, windowRect.origin.y + j);
-                
-                foundX += (windowRect.origin.x + i);
-                foundY += (windowRect.origin.y + j);
-                numFound++;
-
-                if(numFound == 1) {
-                    firstPt = CGPointMake(windowRect.origin.x + i, windowRect.origin.y + j);
-                }
-                
-                // break early if we've found 10 points
-                if(numFound >= 5.0f) {
-                    j = maxY;
-                    break;
-                }
-                //return CGPointMake(windowRect.origin.x + i, windowRect.origin.y + j);
-            }
-        }
-    }
-    
-    if(numFound > 0) {
-        foundPt.x = foundX / numFound;
-        foundPt.y = foundY / numFound;
-        // PGLog(@"[3/5 Scan]: Found avg loot point (%.2f, %.2f) with %.0f samples", foundPt.x, foundPt.y, numFound);
-        
-        // verify that this average point actually works
-        CGPostMouseEvent(foundPt, FALSE, 2, FALSE, FALSE);
-        usleep(10000);
-        if( [playerController mouseoverID] == unitID ) {
-            //PGLog(@"[3/5 Scan] Using average point.");
-            return foundPt;
-        } else {
-            //PGLog(@"[3/5 Scan] Using first point.");
-            return firstPt;
-        }
-    }
-    
-    return CGPointZero;
-}
-
-- (void)finishLoot: (Mob*)mob {
-    _lootAttempt = 0;
-    [_mobsToLoot removeObject: mob];
-    [movementController finishMovingToObject: mob];
-    PGLog(@"[Loot] Removed %@ from loot list. %d remain.", mob, [_mobsToLoot count]);
-    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: mob];
-}
-
-- (void)finishSkin {
-    self.mobToSkin = nil;
-    _mobToSkinPoint = CGPointZero;
-    _lootAttempt = 0;
-}
-
-- (void)verifyLoot: (Mob*)mob {
-    // up our loot attempt counter
-    _lootAttempt++;
-    
-    // check to see if the mob was successfully looted
-    if( ![mob isLootable] ) {
-        PGLog(@"[Loot] Loot success for %@", mob);
-        [self finishLoot: mob];
-        
-        // should we skin it?
-        if(self.mobToSkin) {
-            PGLog(@"[Loot] Skinning %@", mob);
-            [self performSelector: @selector(skinMob:) withObject: self.mobToSkin afterDelay: 1];
-            return;
-        }
-    } else {
-        if(_lootAttempt > 2) {
-            PGLog(@"[Loot] Ignoring %@ after 3 failed loot attempts.", mob);
-            [self finishLoot: mob];
-        }
-    }
-    
-    // the mob was not successfully looted.
-    [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
-}
-
-- (void)skinMob: (Mob*)mob {
-    float distanceToUnit = [[playerController position] distanceToPosition2D: [mob position]];
-	KeyCombo lootCombo = [interactWithRecorder keyCombo];
-    int lootTargetHotkey = lootCombo.code;
-    int lootTargetHotkeyModifier = lootCombo.flags;
-    BOOL useLootHotkey = (lootTargetHotkey >= 0);
-	BOOL weSkinned = NO;
+- (void)lootUnit: (WoWObject*) unit{
 	
-	if( ![mob isValid] || ![mob isSkinnable] || (distanceToUnit > 5.0f) || (((_mobToSkinPoint.x <= 0) || (_mobToSkinPoint.y <= 0)) && (!useLootHotkey))) {
-        // reset skin variables and bail
-        PGLog(@"[Loot] Mob is not skinnable or has already been skinned.");
-        [self finishSkin];
-        [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
-        return;
-    } else {
-        // check our loot attempt count
-        if(_lootAttempt > 2) {
-            PGLog(@"[Loot] Exceeded 3 attempts at skinning; ignoring this mob.");
-            [self finishSkin];
-            [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
-            return;
+    BOOL isNode = [unit isKindOfClass: [Node class]];
+	
+    if(self.doLooting || isNode) {
+        Position *playerPosition = [playerController position];
+        float distanceToUnit = [playerPosition distanceToPosition2D: [unit position]];
+        [movementController turnToward: [unit position]];
+		
+        if([unit isValid] && (distanceToUnit <= 5.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+            
+			PGLog(@"[Loot] Looting : %@", unit);
+			
+			_lastAttemptedLoot = [playerController currentTime];
+			_unitToLoot = unit;
+			self.mobToSkin = (Mob*)unit;
+			
+			// Lets do this instead of the loot hotkey!
+			[self interactWithMouseoverGUID: [unit GUID]];
+			
+			// In the off chance that no items are actually looted
+			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 2.5];	
+        } 
+		else {
+			PGLog(@"[Bot] Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", [unit isValid], distanceToUnit <= 5.0, unit );
+			
+			[_mobsToLoot removeObject: _unitToLoot];
+			
+			// Not 100% sure why we need this, but it seems important?
+			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: _unitToLoot];
+			
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];	
         }
     }
+}
+
+// Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
+- (void)verifyLootSuccess{
 	
-	// check to see if the loot hotkeyis mapped, and if so use that to skin
-	if(useLootHotkey) {
-		PGLog(@"Skinning with loot hotkey applied...");
-		[mobController selectMob: (Mob*)mob];
-		[chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
-		usleep(3000000);
-		weSkinned = YES; // wish I could some extra verification that just assuming it...
-	} else {
-		PGLog(@"Skinning without loot hotkey applied...");
-		// get wow process number
-		ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
-		ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
-		GetFrontProcess(&oldProcess);
+	// Check if the player is casting still (herbalism/mining/skinning)
+	if ( [playerController isCasting] ){
+		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];
 		
-		// figure out which workspace WoW is in
-		int thisSpace, wowSpace;
-		int delay = 10000, timeWaited = 0;
-		BOOL wasWoWHidden = [controller isWoWHidden];
-		if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
-		CGSConnection cgsConnection = _CGSDefaultConnection();
-		CGSGetWorkspace(cgsConnection, &thisSpace);
-		while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
-			usleep(delay);
-			timeWaited += delay;
+		return;
+	}
+	
+	// Check for loot window open?  Or we don't care?
+	
+	// Just fire off the notification that never went off!
+	if ( _unitToLoot ){
+		//PGLog(@"[Loot] There weren't items to loot! Well, snapshit, lets check for skinning/herb");
+		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
+	}
+}
+
+// This is called EVERY time an item is looted, so if there are two items in the loot window it WILL be called twice!
+- (void)itemsLooted: (NSNotification*)notification {
+	
+	if ( !self.isBotting )
+		return;
+
+		
+	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
+	if ( _unitToLoot ){
+		
+		// Mob was looted, so lets remove him!
+		[_mobsToLoot removeObject: _unitToLoot];
+
+		// How long did it take?  Do we need more?
+		PGLog(@"[Loot] Looting completed in %0.2f seconds. %d mobs to loot remain", ((float)([lootController lastTimeItemWasLooted] - _lastAttemptedLoot))/1000.0f, [_mobsToLoot count]);
+		_lastAttemptedLoot = [playerController currentTime];	// We do this so when we start to skin, we have an accurate read of how long it took!
+		
+		// If it's a node, remove it from the node list!
+		if ( [_unitToLoot isKindOfClass: [Node class]] ){
+			[nodeController finishedNode: (Node*)_unitToLoot];	
 		}
-		CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
+	
+		// Not 100% sure why we need this, but it seems important?
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: _unitToLoot];
+	}
+	// Here from skinning!
+	else if ( self.mobToSkin ){
+		PGLog(@"[Loot] Skinning completed in %0.2f seconds", ((float)([lootController lastTimeItemWasLooted] - _lastAttemptedLoot))/1000.0f);
+	}
+	// Otherwise we were probably mining/herbing!
+	
+	// Lets skin the mob, or we're done!
+	[self skinOrFinish];
+	
+	// No longer need this unit!
+	_unitToLoot = nil;
+}
+
+- (void)skinOrFinish{
+
+	Mob *mob = self.mobToSkin;
+	BOOL canSkin = NO;
+	BOOL unitIsMob = ([mob isKindOfClass: [Mob class]] && [mob isNPC]);
+	
+	// Should we be skinning?
+	if ( ( _doSkinning || _doHerbalism ) && self.mobToSkin && unitIsMob ){
 		
-		BOOL weMadeWoWFront = NO;
-		
-		// move wow to the front if necessary
-		if(![controller isWoWFront]) {
-			// move to WoW's workspace
-			if(thisSpace != wowSpace) {
-				CGSSetWorkspace(cgsConnection, wowSpace);
-				usleep(100000);
-			}
-			
-			// and set it as front process
-			SetFrontProcess(&wowProcess);
-			usleep(100000);
-			
-			weMadeWoWFront = YES;
-		}
-		
-		// verify our loot point
-		CGPoint clickPt = CGPointZero;
-		CGPostMouseEvent(_mobToSkinPoint, FALSE, 2, FALSE, FALSE);
-		usleep(10000);
-		if( [playerController mouseoverID] == [mob GUID] ) {
-			// our loot point is correct
-			clickPt = _mobToSkinPoint;
-			//PGLog(@"Skin point is correct: (%.2f, %.2f).", clickPt.x, clickPt.y);
+		// Up to skinning 100, you can find out the highest level mob you can skin by: ((Skinning skill)/10)+10.
+		// From skinning level 100 and up the formula is simply: (Skinning skill)/5.
+		int canSkinUpToLevel = 0;
+		if(_skinLevel <= 100) {
+			canSkinUpToLevel = (_skinLevel/10)+10;
 		} else {
-			// we've got to search for the point again
-			if([mob isValid]) {
-				clickPt = _mobToSkinPoint = [self scanForObjectOnScreen: mob];
-				//PGLog(@"Skin point NOT correct. Scanning for new point: (%.2f, %.2f)", clickPt.x, clickPt.y);
-			}
+			canSkinUpToLevel = (_skinLevel/5);
 		}
 		
-		// right click on the loot point to skin
-		if(clickPt.x && clickPt.y && [controller isWoWFront]) {
-			// move the mouse into position and click
-			weSkinned = YES;
-			CGInhibitLocalEvents(YES);
-			CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
-			PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
-			usleep(100000);	// wait
-			PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
-			usleep(30000);
-			PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
-			usleep(100000);	// wait
-			CGInhibitLocalEvents(NO);
-		}
-		
-		// bring our prevous app to the front
-		
-		if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
-		if(weMadeWoWFront) {
-			// bring our prevous app to the front
-			if(thisSpace != wowSpace) {
-				CGSSetWorkspace(cgsConnection, thisSpace);
-				usleep(100000);
+		if ( _doSkinning || _doHerbalism ) {
+			if ( canSkinUpToLevel >= [mob level] ) {
+				
+				_skinAttempt = 0;
+				
+				[self skinMob:mob];
+				
+				canSkin = YES;
+			} 
+			else {
+				PGLog(@"[Loot] The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
 			}
-			SetFrontProcess(&oldProcess);
-			usleep(100000);
 		}
 	}
-    
-    _lootAttempt++;
-    if(!weSkinned) {
-        PGLog(@"[Loot] Attempt %d: skinning again in 3.0 seconds.", _lootAttempt);
-        [self performSelector: @selector(skinMob:) withObject: self.mobToSkin afterDelay: 3.0f];
+	
+	// We're done looting+skinning!
+	if ( !canSkin ){
+		PGLog(@"[Loot] All looting complete!");
+		
+		// Lets perform a patrol proc?
+		if ( [self shouldProceedFromWaypoint:nil] ){	// Shouldn't this be called shouldNotProceed?!?  hmmm
+		
+			// We HAVE to cancel in the event this function is called multiple times
+			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(evaluateSituation) object: nil];
+		
+			// 0.1 seconds should be enough
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		}
+	}
+}
+
+// It actually takes 1.2 - 3.0 seconds for [mob isSkinnable] to change to the correct status, this makes me very sad as a human, seconds wasted!
+- (void)skinMob: (Mob*)mob {
+    float distanceToUnit = [[playerController position] distanceToPosition2D: [mob position]];
+	 
+	_skinAttempt++;
+	
+	// We tried for 2.0 seconds, lets bail
+	if ( _skinAttempt > 20 ){
+		PGLog(@"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
+		self.mobToSkin = nil;
+		//[movementController finishMovingToObject: (Unit*)mob];
+		
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
+		
+		return;
+	}
+	
+	// Set to null so our loot notifier realizes we shouldn't try to skin again :P
+	self.mobToSkin = nil;
+	
+	// Not able to skin :/
+	if( ![mob isValid] || ![mob isSkinnable] || distanceToUnit > 5.0f ) {
+		
+		[self performSelector: @selector(skinMob:) withObject:mob afterDelay:0.1f];
+		
+        //[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
         return;
-    } else {
-        // skin is complete or some parameter is invalid. we're done.
-        [self finishSkin];
-        [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.5f];
-        return;
-    }
+    } 
+	
+	PGLog(@"[Loot] Skinning!");
+	
+	// Lets interact w/the mob!
+	[self interactWithMouseoverGUID: [mob GUID]];
 }
 
 #pragma mark -
@@ -1510,6 +1442,53 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     }
 }
 
+- (BOOL)unitValidToHeal: (Unit*)unit{
+	Position *playerPosition = [playerController position];
+	
+	if ( [playerPosition distanceToPosition: [unit position]] < [theCombatProfile healingRange] && [unit percentHealth] < 100 && ![unit isDead] && [unit currentHealth] != 1 ){
+		return YES;
+	}
+	
+	return NO;
+}
+
+- (void)healUnit: (Unit*)unit{
+	if(![self isBotting]) return;
+    
+    if( ![[self procedureInProgress] isEqualToString: HealingProcedure] ) {
+
+        // stop other procedures
+        [self cancelCurrentProcedure];
+		
+		// start the combat procedure
+        [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
+                                          HealingProcedure,                 @"Procedure",
+                                          [NSNumber numberWithInt: 0],      @"CompletedRules",
+                                          unit,                             @"Target", nil]];
+	}
+}
+
+
+- (Unit*)unitToHeal{
+	// get list of all targets
+    NSMutableArray *targetsWithinRange = [NSMutableArray array];
+	[targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
+	
+	// sort by range
+    Position *playerPosition = [playerController position];
+    [targetsWithinRange sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
+	
+	// Find one nearby to heal!
+    if ( [targetsWithinRange count] ) {
+        for ( Unit *unit in targetsWithinRange ) {
+			if ( [self unitValidToHeal:unit] ){
+				return unit;
+			}
+        }
+    }
+    
+    return nil;
+}
 
 - (void)attackUnit: (Unit*)unit {
     if(![self isBotting]) return;
@@ -1527,7 +1506,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             if( ![[movementController moveToObject] isEqualToObject: unit]) {
                 float distance = [[playerController position] distanceToPosition2D: [unit position]];
                 
-                if( distance > 4.5f) {
+                if( distance > 5.0f) {
                     // if we are more than 5 yards away, move to this unit
                     PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
                     [movementController moveToObject: unit andNotify: YES];
@@ -1618,7 +1597,6 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 if(self.doLooting) {
                     // make sure this mob is even lootable
                     // sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
-                    PGLog(@"[Loot]: Checking to see if the mob is lootable...");
                     usleep(500000);
                     if([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable]) {
                         if ([_mobsToLoot containsObject: unit]) {
@@ -1649,6 +1627,21 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     //}
 }
 
+/*
+- (void)lootNodeWhenOnGround: (WoWObject*)unit{
+	
+	PGLog(@"[Bot] Movement flags 0x%x %d", [playerController movementFlags], [playerController movementFlags] & 0x0);
+	
+	// Is our player on the ground?
+	if ( ( [playerController movementFlags] & 0x0 ) == 0x0 ){
+		[self lootUnit: unit];
+		return;
+	}
+	
+	// Wait for fall time!
+	[self performSelector: @selector(lootNodeWhenOnGround:) withObject: unit afterDelay:0.1f];
+}*/
+
 #pragma mark -
 #pragma mark [Input] MovementController
 
@@ -1656,181 +1649,33 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: unit];
     [movementController pauseMovement];
-
+	
     // if it's a player, or a non-dead NPC, we must be doing melee combat
     if( [unit isPlayer] || ([unit isNPC] && ![(Unit*)unit isDead])) {
         PGLog(@"[Bot] Reached melee range with %@", unit);
         return;
     }
-    
-    BOOL isNode = [unit isKindOfClass: [Node class]];
-    
-    KeyCombo lootCombo = [interactWithRecorder keyCombo];
-    int lootTargetHotkey = lootCombo.code;
-    int lootTargetHotkeyModifier = lootCombo.flags;
-    BOOL useLootHotkey = (lootTargetHotkey >= 0);
-    
-    if(self.doLooting || isNode) {
-        Position *playerPosition = [playerController position];
-        float distanceToUnit = [playerPosition distanceToPosition2D: [unit position]];
-        [movementController turnToward: [unit position]];
-        
-        // get wow process number
-        ProcessSerialNumber oldProcess = { kNoProcess, kNoProcess };
-        ProcessSerialNumber wowProcess = [controller getWoWProcessSerialNumber];
-        GetFrontProcess(&oldProcess);
-        
-        // figure out which workspace WoW is in
-        int thisSpace, wowSpace;
-        int delay = 10000, timeWaited = 0;
-        BOOL wasWoWHidden = [controller isWoWHidden];
-        if(wasWoWHidden) ShowHideProcess( &wowProcess, YES);
-        CGSConnection cgsConnection = _CGSDefaultConnection();
-        CGSGetWorkspace(cgsConnection, &thisSpace);
-        while(!IsProcessVisible(&wowProcess) && (timeWaited < 500000)) {
-            usleep(delay);
-            timeWaited += delay;
-        }
-        CGSGetWindowWorkspace(cgsConnection, [controller getWOWWindowID], &wowSpace);
-        
-        // get ahold of the current mouse position
-        CGPoint clickPt = CGPointZero, previousPt = CGPointMake([NSEvent mouseLocation].x, [[NSScreen mainScreen] frame].size.height - [NSEvent mouseLocation].y);
-        
-        BOOL weLooted = NO, weMadeWoWFront = NO, unitIsMob = ([unit isKindOfClass: [Mob class]] && [unit isNPC]);
-        
-        if([unit isValid] && (distanceToUnit <= 5.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
-            // PGLog(@"[Loot] Reached unit: %@. Attempting to loot.", unit);
-            if(unitIsMob) {
-                [mobController selectMob: (Mob*)unit];
-            } else {
-                [playerController setPrimaryTarget: [unit GUID]];
-            }
-            
-            if(![controller isWoWFront] && !useLootHotkey) {
-                // move to WoW's workspace
-                if(thisSpace != wowSpace) {
-                    CGSSetWorkspace(cgsConnection, wowSpace);
-                    usleep(100000);
-                }
-                
-                // and set it as front process
-                SetFrontProcess(&wowProcess);
-                usleep(100000);
-                
-                weMadeWoWFront = YES;
-            }
-            
-            // find the point to click on if we aren't using the loot hotkey
-            NSDate *date = [NSDate date];
-            if(!useLootHotkey) {
-                clickPt = [self scanForObjectOnScreen: unit];
-            }
-            
-            // for mobs, ensure the point is valid
-            if(clickPt.x && clickPt.y && unitIsMob) {
-                CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
-                usleep(10000);
-                if( [playerController mouseoverID] != [unit GUID] ) {
-                    // PGLog(@"[Loot] Click point { %.2f, %.2f } is invalid. Rescanning.", clickPt.x, clickPt.y);
-                    clickPt = [self scanForObjectOnScreen: unit];
-                }
-            }
-            
-            // if we're using the hotkey, this will fail since we never set clickPt
-            if(clickPt.x && clickPt.y && [controller isWoWFront]) {
-                PGLog(@"[Loot] Located %@ at { %.2f, %.2f } after %.2f seconds.  Looting.", unit, clickPt.x, clickPt.y, [date timeIntervalSinceNow]*-1.0);
-                weLooted = YES;
-                
-                CGInhibitLocalEvents(YES);
-                
-                // move the mouse into position
-                CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);   // move
-                
-                // post our right click
-                PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
-                usleep(100000);	// wait
-                PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
-                usleep(30000);
-                PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
-                usleep(200000);
-                
-                PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, previousPt, wowProcess);
-                
-                CGInhibitLocalEvents(NO);
-            } else {
-                if(useLootHotkey) {
-                    PGLog(@"Using the loot hotkey to loot now");
-                    weLooted = YES;
-                    [chatController pressHotkey: lootTargetHotkey withModifier: lootTargetHotkeyModifier];
-                } else {
-                    PGLog(@"[Loot] Unable to locate %@ on the screen or wow is not frontmost.", unit);
-                }
-            }
-            
-        } else {
-            // the unit was not within 5 yards
-        }
-        
-        if(wasWoWHidden) ShowHideProcess( &wowProcess, NO);
-        if(weMadeWoWFront) {
-            // bring our prevous app to the front
-            if(thisSpace != wowSpace) {
-                CGSSetWorkspace(cgsConnection, thisSpace);
-                usleep(100000);
-            }
-            SetFrontProcess(&oldProcess);
-            usleep(100000);
-        }
-        
-        // if it was a node, we're done now regardless of if we looted or not
-        // we have to do this since nodes remain in memory after being looted
-        // so either we got it or we can't find it on the screen -- done either way
-        if(isNode) {
-            [nodeController finishedNode: (Node*)unit];
-            [movementController finishMovingToObject: unit];
-        }
-        
-        // deal with mobs
-        if(unitIsMob) {
-            if(weLooted) {
-                
-                // Up to skinning 100, you can find out the highest level mob you can skin by: ((Skinning skill)/10)+10.
-                // From skinning level 100 and up the formula is simply: (Skinning skill)/5.
-                
-                int canSkinUpToLevel = 0;
-                if(_skinLevel <= 100) {
-                    canSkinUpToLevel = (_skinLevel/10)+10;
-                } else {
-                    canSkinUpToLevel = (_skinLevel/5);
-                }
-                
-                self.mobToSkin = nil;
-                if(_doSkinning) {
-                    if((canSkinUpToLevel >= [(Mob*)unit level])) {
-                        _mobToSkinPoint = clickPt;
-                        self.mobToSkin = (Mob*)unit;
-                    } else {
-                        PGLog(@"[Loot] %@ is above your max skinning level (%d).", unit, canSkinUpToLevel);
-                    }
-                } else if(_doHerbalism) {
-                    if((canSkinUpToLevel >= [(Mob*)unit level])) {
-                        _mobToSkinPoint = clickPt;
-                        self.mobToSkin = (Mob*)unit;
-                    }
-                }
-                
-                PGLog(@"Will verify loot in %.2f seconds.", 2.5f);
-                [self performSelector: @selector(verifyLoot:) withObject: (Mob*)unit afterDelay: 2.5f];
-                return;
-            } else {
-                [self finishLoot: (Mob*)unit];
-            }
-        }
-    }
-
-    // if we get here, there's nothing left to be done
-    float moreDelay = (isNode ? 5.0f : 0.5f) + [playerController castTimeRemaining] + ([playerController isLooting] ? 5.0f : 0.0f);
-    [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: moreDelay];
+	
+	// If it's a node, we'll need to dismount (in case we are flying) - then we need to have a delay (for fall time)
+	if ( [unit isKindOfClass: [Node class]] && [[playerController player] isMounted] ){
+		
+		// In case we didn't stop? Sometimes this happens, it makes me a sad panda
+		[movementController pauseMovement];
+		
+		// for funs?
+		
+		[playerController setClickToMove:[unit position]];
+		
+		[chatController enter];         // open/close chat box
+		usleep(100000);
+		[chatController dismount];   // release
+		
+		// Wait for fall time!
+		[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:2.5f];
+	}
+	else{
+		[self lootUnit: unit];
+	}
 }
 
 - (void)finishedRoute: (Route*)route {
@@ -1972,8 +1817,8 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         
         // find a valid mob to loot
         for(mobToLoot in _mobsToLoot) {
-            if(mobToLoot && [mobToLoot isValid] && [mobToLoot isLootable]) {
-                PGLog(@"[mobToLoot] Acquired a mob to loot: %@", mobToLoot);
+            if(mobToLoot && [mobToLoot isValid]) { // removed [mobToLoot isLootable] here, as sometimes a mob isn't lootable but we want to skin it!
+                //PGLog(@"[mobToLoot] Acquired a mob to loot: %@", mobToLoot);
                 return mobToLoot;
             }
         }
@@ -2062,31 +1907,6 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     return nil;
 }
 
-- (void)interactWith:(UInt32)entryID {
-	Mob *mobToInteract = [mobController closesMobForInteraction:entryID];
-	
-	//PGLog(@"[Bot] Interacting %@", mobToInteract);
-	
-	if([mobToInteract isValid]) {
-		
-		// Don't want to move!
-		[movementController pauseMovement];
-		
-		// Save our target to mouseover!
-		UInt64 value = [mobToInteract GUID];
-		if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)] ){
-			
-			// wow needs time to process the change
-			usleep([controller refreshDelay]);
-			
-			// Use our hotkey!
-			if ( ![self interactWithMouseOver] ){
-				//[status setStringValue: [NSString stringWithFormat:@"Did you forget to bind your Interact with Mouseover?"]];
-			}
-		}
-	}
-}
-
 - (BOOL)evaluateSituation {
     if(![self isBotting])                   return NO;
     if(![playerController playerIsValid])   return NO;
@@ -2112,6 +1932,15 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
     // 6) Check for nodes to harvest, harvest if necessary.
     // 7) Resume movement if needed, nothing else to do.
     
+	// Check for preparation buff
+	if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
+		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
+		[movementController pauseMovement];
+		
+		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+		
+		return YES;
+	 }
     
     // if the player is a Ghost...
     if( [playerController isGhost]) {
@@ -2136,13 +1965,99 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         }
         return NO;
     }
+	
+	
+	
+	//*** HEALING PROCESS
+	//	1. Find a nearby player
+	//	2. Heal said player
+	//	3. Move to follow if we need to?
+	
+	
+	// Check to see if we should be healing!
+	if ( [theCombatProfile healingEnabled] ){
+		
+		Unit *healUnit = nil;
+		Unit *followUnit = nil;
+		// We have a follow target already!
+		if ( [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f ){
+			// Lets make sure we're not trying to use a route too!
+			self.theRoute = nil;
+			
+			UInt64 followGUID = [playerController focusGUID];
+			
+			// Check to see if someone is focused!
+			if ( followGUID ){
+				for(Unit *unit in [playersController allPlayers]) {
+					if ( [unit GUID] == followGUID ){
+						followUnit = unit;
+						
+						// We only want to heal this guy if his health is low!
+						if ( ![unit isDead] && [unit percentHealth] < 100 ){
+							healUnit = unit;
+						}
+						
+						break;
+					}
+				}
+			}
+			else{
+				[controller setCurrentStatus: @"Bot: Unable to follow, please set a focus target"];
+				return YES;
+			}
+		}
+		
+		// Don't have anyone to heal? Well lets grab one!
+		if ( !healUnit ){
+			healUnit = [self unitToHeal];
+		}
+		
+		// Time to heal!
+		if ( healUnit ){
+			PGLog(@"Healing %@", healUnit);
+			[self healUnit:healUnit];
+			return YES;
+		}
+		
+		// Should we auto follow the focus target?
+		if ( followUnit && [theCombatProfile autoFollowTarget] && [theCombatProfile yardsBehindTarget] > 0.0f ){
+			
+			// Is our target mounted?  Are we? If not lets!
+			if ( [theCombatProfile mountEnabled] && [healUnit isMounted] && ![[playerController player] isMounted] && ![playerController isCasting]){
+				KeyCombo hotkey = [mountRecorder keyCombo];
+				if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
+					[chatController pressHotkey: hotkey.code  withModifier: hotkey.flags];
+					
+					// Check our position again shortly!
+					[self performSelector: _cmd withObject: nil afterDelay: 1.5f];
+					return YES;
+				}
+			}
+			
+			// Should we move toward our target?
+			Position *playerPosition = [[playerController player] position];
+			float range = [playerPosition distanceToPosition: [followUnit position]];
+			if(range >= [theCombatProfile yardsBehindTarget]) {
+				//PGLog(@"[Healing] Not within %0.2f yards of target, %0.2f away, moving closer", [theCombatProfile yardsBehindTarget], range);
+				
+				if ( ![playerController isCasting] && ![playerController isCTMActive] ){
+					[playerController setClickToMove: [followUnit position]];
+				}
+				
+				// Check our position again shortly!
+				[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+				
+				return YES;
+			}
+		}
+	}
     
     // check to see if we are moving to attack a unit and bail if we are
     if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
         // PGLog(@"attackUnit == moveToObject");
         return NO;
     }
-    
+	
     // first, check if we are in combat already (we agrod something by accident, whatever)
     if( [combatController combatEnabled] && [combatController inCombat] ) {
     
@@ -2216,11 +2131,17 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             if([mobToLoot isValid] && (mobToLootDist < INFINITY)) {
                 [controller setCurrentStatus: @"Bot: Looting Mobs"];
                 PGLog(@"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-                if(mobToLootDist <= 5.0)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.5f];
+                if(mobToLootDist <= 5.0)    [self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
                 else                        [movementController moveToObject: mobToLoot andNotify: YES];
                 return YES;
             }
+			else{
+				PGLog(@"[Loot] Mob found, but either isn't valid (%d) or is too far away (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY) );
+			}
         }
+		else{
+			//PGLog(@"[Loot] We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
+		}
     }
     
     // otherwise, attack the unit
@@ -2258,7 +2179,7 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
             self.preCombatUnit = nil;
         }
     }
-    
+	
     // check for mining and herbalism
     if(![movementController moveToObject]) {
         NSMutableArray *nodes = [NSMutableArray array];
@@ -2279,12 +2200,21 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
                 }
             }
             
+			// We have a valid node!
             if([nodeToLoot isValid] && (nodeDist != INFINITY)) {
-                [movementController pauseMovement];
-                // PGLog(@"Found closest node to loot: %@ at dist %.2f", nodeToLoot, closestNode);
-                if(nodeDist <= 5.0)     [self reachedUnit: nodeToLoot];
-                else                    [movementController moveToObject: nodeToLoot andNotify: YES];
-                return YES;
+				
+				// Check for nearby hostiles?
+				if ( ![self playerWithinRange:150.0f] ){
+				
+					[movementController pauseMovement];
+					// PGLog(@"Found closest node to loot: %@ at dist %.2f", nodeToLoot, closestNode);
+					if(nodeDist <= 5.0)     [self reachedUnit: nodeToLoot];
+					else                    [movementController moveToObject: nodeToLoot andNotify: YES];
+					return YES;
+				}
+				else{
+					PGLog(@"[Bot] Hostile player near node, ignoring %@", nodeToLoot);
+				}
             }
         }
     }
@@ -2303,6 +2233,24 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
         [self performSelector: _cmd withObject: nil afterDelay: 0.1];
     }
     return NO;
+}
+
+- (BOOL)playerWithinRange: (float)distance{
+	
+	Position *playerPosition = [[playerController player] position];
+	
+	// extract valid targets from all targets
+	for(Unit *unit in [playersController allPlayers]) {
+		//if ( [playerController isHostileWithFaction: [unit factionTemplate]] ){
+			float range = [playerPosition distanceToPosition: [unit position]];
+			if(range <= distance) {
+				PGLog(@"[Bot] Hostile in Range (%.2fy): %@", range, unit);
+				return YES;
+			}
+		//}
+	}
+			
+	return NO;
 }
 
 #pragma mark IBActions
@@ -2501,7 +2449,34 @@ void PostMouseEvent(CGEventType type, CGMouseButton button, CGPoint location, Pr
 
         [self evaluateSituation];
     }
-    
+	
+	if ( !self.isPvPing || _botStarted == nil ){
+		_botStarted = [[NSDate date] retain];
+	}
+}
+
+- (void)updateRunningTimer{
+	int duration = (int) [[NSDate date] timeIntervalSinceDate: _botStarted];
+	
+	NSMutableString *runningFor = [NSMutableString stringWithFormat:@"Running for: "];
+	
+	if ( duration > 0 ){
+		// Prob a better way for this heh
+		int seconds = duration % 60;
+		duration /= 60;
+		int minutes = duration % 60;
+		duration /= 60;
+		int hours = duration % 24;
+		duration /= 24;
+		int days = duration;
+		
+		if (days > 0) [runningFor appendString:[NSString stringWithFormat:@"%d day%@", days, (days > 1) ? @"s " : @" "]];
+		if (hours > 0) [runningFor appendString:[NSString stringWithFormat:@"%d hour%@", hours, (hours > 1) ? @"s " : @" "]];
+		if (minutes > 0) [runningFor appendString:[NSString stringWithFormat:@"%d minute%@", minutes, (minutes > 1) ? @"s " : @" "]];
+		if (seconds > 0) [runningFor appendString:[NSString stringWithFormat:@"%d second%@", seconds, (seconds > 1) ? @"s " : @""]];
+		
+		[runningTimer setStringValue: runningFor];
+	}
 }
 
 - (IBAction)stopBot: (id)sender {
@@ -2687,11 +2662,11 @@ NSMutableDictionary *_diffDict = nil;
                                    clickContext: nil];
     }
     
-	//PGLog(@"[PvP] Repop crap: %d %d", self.isPvPing, self.pvpAutoRelease);
-    if(!self.isPvPing || !self.pvpAutoRelease) {
+	if ( !self.pvpAutoRelease ){
 		[self rePop:[NSNumber numberWithInt:0]];
-    } else {
-        PGLog(@"[PvP] Relying on an addon to release us.");
+	}
+	else{
+        PGLog(@"[Bot] Relying on an addon to release us.");
     }
     
     // run back if we have a route
@@ -2782,14 +2757,14 @@ NSMutableDictionary *_diffDict = nil;
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"PetAttackFlags"];
     }
     
-    if(recorder == interactWithRecorder) {
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"InteractWithTargetCode"];
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"InteractWithTargetFlags"];
-    }
-    
     if(recorder == mouseOverRecorder) {
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"MouseOverTargetCode"];
         [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"MouseOverTargetFlags"];
+    }
+	
+    if(recorder == mountRecorder) {
+        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"MountCode"];
+        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"MountFlags"];
     }
 	
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -2809,6 +2784,7 @@ NSMutableDictionary *_diffDict = nil;
             
             // cancel the PvP checks
             [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
+			PGLog(@"[PvP] Cancelling PvP Checks...");
             
 			// Player just left the BG, so lets stop the bot!
 			if ( ![playerController isInBG] ){
@@ -2858,16 +2834,16 @@ NSMutableDictionary *_diffDict = nil;
                 }
                 
 				
-				if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
+				/*if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
 					PGLog(@"[PvP] Waiting for Preparation buff to fade");
 					[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
 					//[self performSelector: @selector(stopBot:) withObject: nil afterDelay: 0.5];
 				}
-				else{
+				else{*/
 					PGLog(@"[PvP] PvP environment valid. Starting bot in 5 seconds.");
 					[controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
 					[self performSelector: @selector(startBot:) withObject: nil afterDelay: 5.0f];
-				}
+				//}
             }
         }
         
@@ -2875,12 +2851,6 @@ NSMutableDictionary *_diffDict = nil;
         if( spellID == WaitingToRezSpellID ) {
             [movementController pauseMovement];
         }
-		
-		// If we have preparation buff lets not move!
-		if ( spellID == PreparationSpellID ) {
-			PGLog(@"[PvP] Preparation buff found, pausing movement!");
-			[movementController pauseMovement];
-		}
         
         // play alarm if we get Idle or Inactive
         if( (spellID == IdleSpellID) && self.pvpPlayWarning) {     // honorless target
@@ -2907,9 +2877,10 @@ NSMutableDictionary *_diffDict = nil;
         
 		
 		if ( spellID == PreparationSpellID ){
-			PGLog(@"[PvP] Preparation faded, starting bot in 2 seconds...");
-			[controller setCurrentStatus: @"PvP: Preparation faded, starting bot in 2 seconds..."];
-			[self performSelector: @selector(startBot:) withObject: nil afterDelay: 2.0];
+			PGLog(@"[PvP] Preparation faded, resuming movement...");
+			[controller setCurrentStatus: @"PvP: Preparation faded, resuming movement..."];
+			//[self performSelector: @selector(startBot:) withObject: nil afterDelay: 2.0];
+			//[movementController resumeMovement];
 		}
 		
 		// We only care to check these if the player isn't in a BG!
@@ -2939,8 +2910,7 @@ NSMutableDictionary *_diffDict = nil;
     }
 }
 
-- (void)pvpQueueBattleground {
-	
+- (void)pvpQueueBattleground{
 	if ( [playerController isInBG] ){
 		PGLog(@"[PvP] Why are we trying to queue if we're in the PG?");
 		return;
@@ -2963,35 +2933,39 @@ NSMutableDictionary *_diffDict = nil;
 	if(![controller isWoWChatBoxOpen]) [chatController jump];  // jump to clear AFK
 	self.pvpCheckCount = 0;
 	[controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
-	[self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 10.0];
+	[self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 15.0];
 }
 
 - (void)pvpCheck {
+
     if(self.isPvPing) {
         [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
         
+		// Keep us away from AFK!
         self.pvpCheckCount++;
         if(self.pvpCheckCount >= 6) {
             self.pvpCheckCount = 0;
-            if(![controller isWoWChatBoxOpen]) [chatController jump];
+            if(![controller isWoWChatBoxOpen]) {
+				PGLog(@"[PvP] Jumping to avoid AFK!");
+				[chatController jump];
+			}
         }
-    
-		// check for deserter
-		if( ![auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
+
+		// don't queue if the player has deserter!
+		if( [auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
 			return;
 		}
 
-		if(!self.pvpAutoJoin) {
+		// Lets join the BG!
+		if ( ![controller isWoWChatBoxOpen] ){
+			[chatController enter];
+			usleep(100000);
 			[chatController sendKeySequence: [NSString stringWithFormat: @"/script AcceptBattlefieldPort(1,1);%c", '\n']];
-		} else {
-                PGLog(@"[PvP] Relying on addon to Auto-Join.");
+			usleep(10000);
 		}
         
-        [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 10.0];
+        [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 15.0];
     }
-	else{
-		PGLog(@"[PvP] Not PvPing, why are we here?");
-	}
 }
 
 - (NSString*)pvpButtonTitle {
@@ -3002,10 +2976,8 @@ NSMutableDictionary *_diffDict = nil;
 - (void)pvpStop {
     [self stopBot: nil];
     
-    
     self.isPvPing = NO;
     self.pvpAutoRelease = NO;
-    self.pvpAutoJoin = NO;
     self.pvpLeaveInactive = NO;
     self.pvpPlayWarning = NO;
     self.pvpCheckCount = 0;
@@ -3033,21 +3005,10 @@ NSMutableDictionary *_diffDict = nil;
         return;
     }
 
-    if( [auraController unit: player hasAura: HonorlessTargetSpellID] || [auraController unit: player hasAura: HonorlessTarget2SpellID] ) {
-        NSBeep();
-
-        NSAlert *alert = [[[NSAlert alloc] init] autorelease]; 
-        [alert addButtonWithTitle: @"Okay"];
-        [alert setMessageText: @"Honorless Target"]; 
-        [alert setInformativeText: @"Please wait for Honorless Target to fade before starting PvP."];
-        [alert setAlertStyle: NSWarningAlertStyle]; 
-        [alert beginSheetModalForWindow: [self.view window] modalDelegate: self didEndSelector: nil contextInfo: nil]; 
-
-        return;
-    }
-
 	// If we're not PvPing - we want to start!
     if(!self.isPvPing) {
+		_botStarted = [[NSDate date] retain];
+		
 		[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
 
         if(([controller reactMaskForFaction: [player factionTemplate]] & 0x2)) {
@@ -3071,7 +3032,6 @@ NSMutableDictionary *_diffDict = nil;
 	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
 	
     self.pvpCheckCount = 0;
-    self.pvpAutoJoin = [pvpAutoJoinCheckbox state];
     self.pvpAutoRelease = [pvpAutoReleaseCheckbox state];
     self.pvpPlayWarning = [pvpPlayWarningCheckbox state];
     self.pvpLeaveInactive = [pvpLeaveInactiveCheckbox state];
@@ -3149,7 +3109,7 @@ NSMutableDictionary *_diffDict = nil;
 	 
 	 if ( [spellController lastAttemptedActionID] == actionID ){
 		 int errID = [self errorValue:[playerController lastErrorMessage]];
-		 PGLog(@"[Bot] Spell didn't cast: %@", [playerController lastErrorMessage] );
+		 PGLog(@"[Bot] Spell (%d) didn't cast: %@", actionID, [playerController lastErrorMessage] );
 		 
 		 return errID;
 		 
@@ -3161,8 +3121,12 @@ NSMutableDictionary *_diffDict = nil;
 		
 		// Check for "full inventory" and kill wow if we get here :/
 		if ( castspellSuccess == ErrInventoryFull ){
-			//PGLog(@"[Bot] inventory is full%@");	 
-			//[FishingController closeWoW];
+			if ( _doLooting ){
+				PGLog(@"[Bot] Inventory full, closing WoW");
+				[self updateStatus: @"Inventory full, closing WoW"];
+				
+				[self stopBot:nil];
+			}
 		}
 		else if ( castspellSuccess == ErrTargetNotInLOS ){
 			// PGLog(@"[Bot] Target LOS%@");
@@ -3239,28 +3203,68 @@ NSMutableDictionary *_diffDict = nil;
 	else if ( [errorMessage isEqualToString:TARGET_RNGE2] ){
 		return ErrTargetOutRange2;
 	}
+	else if ( [errorMessage isEqualToString:INVALID_TARGET] ){
+		return ErrInvalidTarget;
+	}
 
 	return ErrNotFound;
 }
-- (BOOL)interactWithMouseOver{
-	
-	// get hotkey settings
-	KeyCombo hotkey = [mouseOverRecorder keyCombo];
-	
-	if ( hotkey.code < 0 ){
-		return NO;
-	}
-	
-	// Send out "interact with mouse over" keybinding!
-	if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
-		[chatController pressHotkey: hotkey.code  withModifier: hotkey.flags];
 
-		return YES;
+
+- (void)interactWithMob:(UInt32)entryID {
+	Mob *mobToInteract = [mobController closesMobForInteraction:entryID];
+	
+	if([mobToInteract isValid]) {
+		[self interactWithMouseoverGUID:[mobToInteract GUID]];
+	}
+}
+
+// This will set the GUID of the mouseover + trigger interact with mouseover!
+- (BOOL)interactWithMouseoverGUID: (UInt64) guid{
+	if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&guid BufLength: sizeof(guid)] ){
+		
+		// wow needs time to process the change
+		usleep([controller refreshDelay]);
+		
+		// Use our hotkey!
+		KeyCombo hotkey = [mouseOverRecorder keyCombo];
+		
+		if ( hotkey.code < 0 ){
+			return NO;
+		}
+		
+		// Send out "interact with mouse over" keybinding!
+		if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
+			[chatController pressHotkey: hotkey.code  withModifier: hotkey.flags];
+			
+			return YES;
+		}
 	}
 	
 	return NO;
 }
 
+- (IBAction)testRandomStuff: (id)sender{
+	//[playerController setClickToMove];
+	/*
+	UInt32 movementFlags = 0;
+	movementFlags = [playerController movementFlags];
+	
+	PGLog(@"Flags: 0x%x", movementFlags);
+	
+	if ( _test ){
+		movementFlags = 0x80000001;
+		PGLog(@"Setting movement flags to 0x%x", movementFlags);
+		[playerController setMovementFlags:movementFlags];
+		_test = 0;
+	}
+	else{
+		movementFlags = 0x80000000;
+		PGLog(@"Setting movement flags to 0x%x", movementFlags);
+		[playerController setMovementFlags:movementFlags];
+		_test = 1;
+	}*/
+}
 @end
 
 

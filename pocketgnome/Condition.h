@@ -30,6 +30,7 @@ typedef enum UnitComponents {
     UnitPlayer = 1,
     UnitTarget = 2,
     UnitPlayerPet = 3,
+	UnitFriend = 4,
 } ConditionUnit;
 
 typedef enum QualityComponents {

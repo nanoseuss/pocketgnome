@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.02">
+<archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.03">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">9E17</string>
-		<string key="IBDocument.InterfaceBuilderVersion">670</string>
-		<string key="IBDocument.AppKitVersion">949.33</string>
-		<string key="IBDocument.HIToolboxVersion">352.00</string>
+		<string key="IBDocument.SystemVersion">9J61</string>
+		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.AppKitVersion">949.46</string>
+		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="1" id="9"/>
@@ -13,6 +13,15 @@
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+		</object>
+		<object class="NSMutableDictionary" key="IBDocument.Metadata">
+			<bool key="EncodedWithXMLCoder">YES</bool>
+			<object class="NSArray" key="dict.sortedKeys">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+			</object>
+			<object class="NSMutableArray" key="dict.values">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1000">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1036,9 +1045,9 @@
 							<reference ref="288593286"/>
 							<reference ref="353020440"/>
 							<reference ref="981583352"/>
-							<reference ref="599068317"/>
 							<reference ref="906173422"/>
 							<reference ref="852849854"/>
+							<reference ref="599068317"/>
 						</object>
 						<reference key="parent" ref="1002"/>
 					</object>
@@ -1433,7 +1442,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{21, 934}, {575, 188}}</string>
+					<string>{{21, 965}, {575, 188}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{285, 369}, {575, 188}}</string>
@@ -1518,6 +1527,725 @@
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<object class="IBPartialClassDescription">
+					<string key="className">AuraController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>aurasPanel</string>
+							<string>aurasPanelTable</string>
+							<string>controller</string>
+							<string>mobController</string>
+							<string>playerController</string>
+							<string>spellController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSPanel</string>
+							<string>NSTableView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>PlayerDataController</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">AuraController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BetterSegmentedControl</string>
+					<string key="superclassName">NSSegmentedControl</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">BetterSegmentedControl.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BotController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeHotkeyHelp:</string>
+							<string>closeLootHotkeyHelp:</string>
+							<string>editCombatProfiles:</string>
+							<string>hotkeyHelp:</string>
+							<string>lootHotkeyHelp:</string>
+							<string>pvpBMSelectAction:</string>
+							<string>pvpStartStop:</string>
+							<string>pvpTestWarning:</string>
+							<string>startBot:</string>
+							<string>startStopBot:</string>
+							<string>stopBot:</string>
+							<string>testHotkey:</string>
+							<string>updateStatus:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>anyLevelCheckbox</string>
+							<string>atkHostileNPCsCheckbox</string>
+							<string>atkNeutralNPCsCheckbox</string>
+							<string>atkPlayersCheckbox</string>
+							<string>attackWithinText</string>
+							<string>auraController</string>
+							<string>behaviorPopup</string>
+							<string>brokenWeaponsCheckbox</string>
+							<string>chatController</string>
+							<string>combatController</string>
+							<string>combatProfilePopup</string>
+							<string>controller</string>
+							<string>corpseController</string>
+							<string>gatherDistText</string>
+							<string>herbalismCheckbox</string>
+							<string>herbalismSkillText</string>
+							<string>hotkeyHelpPanel</string>
+							<string>ignoreEliteCheckbox</string>
+							<string>interactWithRecorder</string>
+							<string>itemController</string>
+							<string>lootCheckbox</string>
+							<string>lootHotkeyHelpPanel</string>
+							<string>maxLevelPopup</string>
+							<string>maxLevelText</string>
+							<string>minLevelPopup</string>
+							<string>minLevelText</string>
+							<string>miningCheckbox</string>
+							<string>miningSkillText</string>
+							<string>mobController</string>
+							<string>mouseOverRecorder</string>
+							<string>movementController</string>
+							<string>nodeController</string>
+							<string>overlayWindow</string>
+							<string>petAttackRecorder</string>
+							<string>playerController</string>
+							<string>playersController</string>
+							<string>procedureController</string>
+							<string>pvpAutoJoinCheckbox</string>
+							<string>pvpAutoReleaseCheckbox</string>
+							<string>pvpBMSelectPanel</string>
+							<string>pvpBannerImage</string>
+							<string>pvpLeaveInactiveCheckbox</string>
+							<string>pvpPlayWarningCheckbox</string>
+							<string>pvpStartStopButton</string>
+							<string>questController</string>
+							<string>routePopup</string>
+							<string>runningTimer</string>
+							<string>scanGrid</string>
+							<string>shortcutRecorder</string>
+							<string>skinningCheckbox</string>
+							<string>skinningSkillText</string>
+							<string>spellController</string>
+							<string>startStopButton</string>
+							<string>startstopRecorder</string>
+							<string>statusText</string>
+							<string>view</string>
+							<string>waypointController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>AuraController</string>
+							<string>id</string>
+							<string>id</string>
+							<string>ChatController</string>
+							<string>CombatController</string>
+							<string>id</string>
+							<string>Controller</string>
+							<string>CorpseController</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSPanel</string>
+							<string>id</string>
+							<string>SRRecorderControl</string>
+							<string>InventoryController</string>
+							<string>id</string>
+							<string>NSPanel</string>
+							<string>id</string>
+							<string>NSTextField</string>
+							<string>id</string>
+							<string>NSTextField</string>
+							<string>id</string>
+							<string>id</string>
+							<string>MobController</string>
+							<string>SRRecorderControl</string>
+							<string>MovementController</string>
+							<string>NodeController</string>
+							<string>NSWindow</string>
+							<string>SRRecorderControl</string>
+							<string>PlayerDataController</string>
+							<string>PlayersController</string>
+							<string>ProcedureController</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSPanel</string>
+							<string>NSImageView</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>QuestController</string>
+							<string>id</string>
+							<string>NSTextField</string>
+							<string>ScanGridView</string>
+							<string>SRRecorderControl</string>
+							<string>id</string>
+							<string>id</string>
+							<string>SpellController</string>
+							<string>NSButton</string>
+							<string>SRRecorderControl</string>
+							<string>NSTextField</string>
+							<string>NSView</string>
+							<string>WaypointController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">BotController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ChatController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">controller</string>
+						<string key="NS.object.0">Controller</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ChatController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ChatLogController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeRelayPanel:</string>
+							<string>createChatAction:</string>
+							<string>openRelayPanel:</string>
+							<string>sendEmail:</string>
+							<string>something:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>chatActionsController</string>
+							<string>chatLogTable</string>
+							<string>controller</string>
+							<string>enableGrowlNotifications</string>
+							<string>relayPanel</string>
+							<string>ruleEditor</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSArrayController</string>
+							<string>NSTableView</string>
+							<string>Controller</string>
+							<string>NSButton</string>
+							<string>NSPanel</string>
+							<string>NSPredicateEditor</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ChatLogController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">CombatController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>chatController</string>
+							<string>controller</string>
+							<string>mobController</string>
+							<string>movementController</string>
+							<string>playerData</string>
+							<string>playersController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>BotController</string>
+							<string>ChatController</string>
+							<string>Controller</string>
+							<string>MobController</string>
+							<string>MovementController</string>
+							<string>PlayerDataController</string>
+							<string>PlayersController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">CombatController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">Controller</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>confirmAppRename:</string>
+							<string>launchWebsite:</string>
+							<string>renameShowHelp:</string>
+							<string>renameUseExisting:</string>
+							<string>showAbout:</string>
+							<string>showSettings:</string>
+							<string>testFront:</string>
+							<string>toggleGUIScripting:</string>
+							<string>toggleSecurePrefs:</string>
+							<string>toolbarItemSelected:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>aboutValidImage</string>
+							<string>aboutView</string>
+							<string>behaviorController</string>
+							<string>behavsToolbarItem</string>
+							<string>botController</string>
+							<string>botToolbarItem</string>
+							<string>chatLogController</string>
+							<string>chatLogToolbarItem</string>
+							<string>corpseController</string>
+							<string>currentStatusText</string>
+							<string>disableGUIScriptCheckbox</string>
+							<string>fishController</string>
+							<string>fishingToolbarItem</string>
+							<string>itemController</string>
+							<string>itemsToolbarItem</string>
+							<string>mainBackgroundBox</string>
+							<string>mainToolbar</string>
+							<string>mainWindow</string>
+							<string>matchExistingCheckbox</string>
+							<string>memoryAccessLight</string>
+							<string>memoryAccessValidText</string>
+							<string>memoryToolbarItem</string>
+							<string>memoryViewController</string>
+							<string>mobController</string>
+							<string>mobsToolbarItem</string>
+							<string>newIdentifierField</string>
+							<string>newNameField</string>
+							<string>newSignatureField</string>
+							<string>nodeController</string>
+							<string>nodesToolbarItem</string>
+							<string>playerDataController</string>
+							<string>playerToolbarItem</string>
+							<string>playersController</string>
+							<string>playersToolbarItem</string>
+							<string>prefsToolbarItem</string>
+							<string>routeController</string>
+							<string>routesToolbarItem</string>
+							<string>settingsView</string>
+							<string>spellController</string>
+							<string>spellsToolbarItem</string>
+							<string>versionInfoText</string>
+							<string>wowInstancePopUpButton</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSImageView</string>
+							<string>NSView</string>
+							<string>ProcedureController</string>
+							<string>NSToolbarItem</string>
+							<string>BotController</string>
+							<string>NSToolbarItem</string>
+							<string>ChatLogController</string>
+							<string>NSToolbarItem</string>
+							<string>CorpseController</string>
+							<string>id</string>
+							<string>NSButton</string>
+							<string>FishController</string>
+							<string>NSToolbarItem</string>
+							<string>InventoryController</string>
+							<string>NSToolbarItem</string>
+							<string>id</string>
+							<string>NSToolbar</string>
+							<string>id</string>
+							<string>NSButton</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSToolbarItem</string>
+							<string>MemoryViewController</string>
+							<string>MobController</string>
+							<string>NSToolbarItem</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NSTextField</string>
+							<string>NodeController</string>
+							<string>NSToolbarItem</string>
+							<string>PlayerDataController</string>
+							<string>NSToolbarItem</string>
+							<string>PlayersController</string>
+							<string>NSToolbarItem</string>
+							<string>NSToolbarItem</string>
+							<string>WaypointController</string>
+							<string>NSToolbarItem</string>
+							<string>NSView</string>
+							<string>SpellController</string>
+							<string>NSToolbarItem</string>
+							<string>NSTextField</string>
+							<string>NSPopUpButton</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="57362089">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">Controller.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">CorpseController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">controller</string>
+						<string key="NS.object.0">Controller</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">CorpseController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">FishController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>showBobberStructure:</string>
+							<string>startStopFishing:</string>
+							<string>tmp:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>applyLureCheckbox</string>
+							<string>botController</string>
+							<string>chatController</string>
+							<string>closeWoWTimer</string>
+							<string>controller</string>
+							<string>faceSchool</string>
+							<string>fishCaught</string>
+							<string>fishingRecorder</string>
+							<string>hideOtherBobbers</string>
+							<string>itemController</string>
+							<string>killWoWCheckbox</string>
+							<string>lootController</string>
+							<string>luresPopUpButton</string>
+							<string>memoryViewController</string>
+							<string>movementController</string>
+							<string>nodeController</string>
+							<string>playerController</string>
+							<string>recastIfMiss</string>
+							<string>showGrowlNotifications</string>
+							<string>spellController</string>
+							<string>startStopButton</string>
+							<string>statisticsTableView</string>
+							<string>status</string>
+							<string>useContainers</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
+							<string>BotController</string>
+							<string>ChatController</string>
+							<string>NSTextField</string>
+							<string>Controller</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
+							<string>SRRecorderControl</string>
+							<string>NSButton</string>
+							<string>InventoryController</string>
+							<string>NSButton</string>
+							<string>LootController</string>
+							<string>NSPopUpButton</string>
+							<string>MemoryViewController</string>
+							<string>MovementController</string>
+							<string>NodeController</string>
+							<string>PlayerDataController</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>SpellController</string>
+							<string>NSButton</string>
+							<string>NSTableView</string>
+							<string>NSTextField</string>
+							<string>NSButton</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">FishController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">InventoryController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller</string>
+							<string>itemTable</string>
+							<string>memoryViewController</string>
+							<string>playerData</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>Controller</string>
+							<string>NSTableView</string>
+							<string>MemoryViewController</string>
+							<string>PlayerDataController</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">InventoryController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">LootController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>chatController</string>
+							<string>controller</string>
+							<string>itemController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>ChatController</string>
+							<string>Controller</string>
+							<string>InventoryController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">LootController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">MemoryViewController</string>
+					<string key="superclassName">NSView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>clearTable:</string>
+							<string>clearValues:</string>
+							<string>saveValues:</string>
+							<string>setCustomAddress:</string>
+							<string>snapshotMemory:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller</string>
+							<string>memoryTable</string>
+							<string>memoryViewWindow</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>Controller</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">MemoryViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">MobController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>additionalStart:</string>
+							<string>additionalStop:</string>
+							<string>faceMob:</string>
+							<string>filterMobs:</string>
+							<string>resetMobList:</string>
+							<string>targetMob:</string>
+							<string>updateTracking:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>additionalList</string>
+							<string>auraController</string>
+							<string>botController</string>
+							<string>combatController</string>
+							<string>controller</string>
+							<string>memoryViewController</string>
+							<string>mobColorByLevel</string>
+							<string>mobTable</string>
+							<string>movementController</string>
+							<string>playerData</string>
+							<string>spellController</string>
+							<string>trackFriendlyMenuItem</string>
+							<string>trackHostileMenuItem</string>
+							<string>trackNeutralMenuItem</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSPopUpButton</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">MobController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">MovementController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">prefsChanged:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>chatController</string>
+							<string>combatController</string>
+							<string>controller</string>
+							<string>mobController</string>
+							<string>playerData</string>
+							<string>useSmoothTurning</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>PlayerDataController</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">MovementController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -1526,10 +2254,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Controller.h</string>
-					</object>
+					<reference key="sourceIdentifier" ref="57362089"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
@@ -1550,6 +2275,277 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">UKMainThreadProxy.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NodeController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>faceNode:</string>
+							<string>filterList:</string>
+							<string>filterNodes:</string>
+							<string>moveToStart:</string>
+							<string>moveToStop:</string>
+							<string>resetList:</string>
+							<string>targetNode:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>controller</string>
+							<string>memoryViewController</string>
+							<string>moveToList</string>
+							<string>movementController</string>
+							<string>nodeTable</string>
+							<string>playerController</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSPopUpButton</string>
+							<string>id</string>
+							<string>id</string>
+							<string>PlayerDataController</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">NodeController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">PlayerDataController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>setPlayerDirectionInMemory:</string>
+							<string>showAuraWindow:</string>
+							<string>showCooldownWindow:</string>
+							<string>showPlayerStructure:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>combatController</string>
+							<string>combatTable</string>
+							<string>controller</string>
+							<string>memoryViewController</string>
+							<string>powerNameText</string>
+							<string>spellController</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>NSTableView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSTextField</string>
+							<string>id</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">PlayerDataController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">PlayersController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>facePlayer:</string>
+							<string>resetPlayerList:</string>
+							<string>targetPlayer:</string>
+							<string>updateTracking:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller</string>
+							<string>memoryViewController</string>
+							<string>movementController</string>
+							<string>playerColorByLevel</string>
+							<string>playerData</string>
+							<string>playerTable</string>
+							<string>trackFriendly</string>
+							<string>trackHostile</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>Controller</string>
+							<string>MemoryViewController</string>
+							<string>MovementController</string>
+							<string>NSButton</string>
+							<string>PlayerDataController</string>
+							<string>NSTableView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">PlayersController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ProcedureController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addRule:</string>
+							<string>closeExportPanel:</string>
+							<string>closeRename:</string>
+							<string>createBehavior:</string>
+							<string>deleteRule:</string>
+							<string>duplicateBehavior:</string>
+							<string>exportBehavior:</string>
+							<string>exportBehaviors:</string>
+							<string>importBehavior:</string>
+							<string>loadBehavior:</string>
+							<string>openExportPanel:</string>
+							<string>removeBehavior:</string>
+							<string>renameBehavior:</string>
+							<string>setBehaviorEvent:</string>
+							<string>tableRowDoubleClicked:</string>
+							<string>updateOptions:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>actionMenu</string>
+							<string>exportPanel</string>
+							<string>itemController</string>
+							<string>procedureEventSegment</string>
+							<string>renamePanel</string>
+							<string>ruleEditor</string>
+							<string>ruleTable</string>
+							<string>spellController</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSMenu</string>
+							<string>NSPanel</string>
+							<string>id</string>
+							<string>id</string>
+							<string>NSPanel</string>
+							<string>id</string>
+							<string>NSTableView</string>
+							<string>id</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ProcedureController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">QuestController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller</string>
+							<string>playerDataController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>Controller</string>
+							<string>PlayerDataController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">QuestController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">RouteVisualizationView</string>
+					<string key="superclassName">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">RouteVisualizationView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ScanGridView</string>
+					<string key="superclassName">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ScanGridView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1574,6 +2570,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>botController</string>
 							<string>controller</string>
+							<string>cooldownPanel</string>
+							<string>cooldownPanelTable</string>
 							<string>playerController</string>
 							<string>spellDropDown</string>
 							<string>spellLoadingProgress</string>
@@ -1581,9 +2579,11 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+							<string>BotController</string>
+							<string>Controller</string>
+							<string>NSPanel</string>
+							<string>NSTableView</string>
+							<string>PlayerDataController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSView</string>
@@ -1594,10 +2594,142 @@
 						<string key="minorKey">SpellController.h</string>
 					</object>
 				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WaypointController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addWaypoint:</string>
+							<string>cancelWaypointAction:</string>
+							<string>changeWaypointAction:</string>
+							<string>closeAutomatorPanel:</string>
+							<string>closeExportPanel:</string>
+							<string>closeRename:</string>
+							<string>closeVisualize:</string>
+							<string>closeWaypointAction:</string>
+							<string>createRoute:</string>
+							<string>duplicateRoute:</string>
+							<string>editWaypointAction:</string>
+							<string>exportRoute:</string>
+							<string>importRoute:</string>
+							<string>loadRoute:</string>
+							<string>moveToWaypoint:</string>
+							<string>openAutomatorPanel:</string>
+							<string>openExportPanel:</string>
+							<string>removeRoute:</string>
+							<string>removeWaypoint:</string>
+							<string>renameRoute:</string>
+							<string>resetAllWaypoints:</string>
+							<string>setRouteType:</string>
+							<string>startStopAutomator:</string>
+							<string>stopMovement:</string>
+							<string>testWaypointSequence:</string>
+							<string>visualize:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>actionMenu</string>
+							<string>automatorIntervalValue</string>
+							<string>automatorPanel</string>
+							<string>automatorRecorder</string>
+							<string>automatorSpinner</string>
+							<string>automatorStartStopButton</string>
+							<string>automatorVizualizer</string>
+							<string>botController</string>
+							<string>combatController</string>
+							<string>controller</string>
+							<string>exportPanel</string>
+							<string>mobController</string>
+							<string>movementController</string>
+							<string>playerData</string>
+							<string>renamePanel</string>
+							<string>routeTypeSegment</string>
+							<string>shortcutRecorder</string>
+							<string>testingMenu</string>
+							<string>view</string>
+							<string>visualizePanel</string>
+							<string>visualizeView</string>
+							<string>waypointTable</string>
+							<string>wpActionDelayText</string>
+							<string>wpActionIDPopUp</string>
+							<string>wpActionPanel</string>
+							<string>wpActionTabs</string>
+							<string>wpActionTypeSegments</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSMenu</string>
+							<string>NSTextField</string>
+							<string>NSPanel</string>
+							<string>SRRecorderControl</string>
+							<string>NSProgressIndicator</string>
+							<string>NSButton</string>
+							<string>RouteVisualizationView</string>
+							<string>id</string>
+							<string>id</string>
+							<string>Controller</string>
+							<string>NSPanel</string>
+							<string>id</string>
+							<string>id</string>
+							<string>PlayerDataController</string>
+							<string>NSPanel</string>
+							<string>id</string>
+							<string>SRRecorderControl</string>
+							<string>NSMenu</string>
+							<string>NSView</string>
+							<string>NSPanel</string>
+							<string>RouteVisualizationView</string>
+							<string>id</string>
+							<string>NSTextField</string>
+							<string>NSPopUpButton</string>
+							<string>NSPanel</string>
+							<string>NSTabView</string>
+							<string>BetterSegmentedControl</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">WaypointController.h</string>
+					</object>
+				</object>
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
-		<string key="IBDocument.LastKnownRelativeProjectPath">WoWWaypoint.xcodeproj</string>
+		<string key="IBDocument.LastKnownRelativeProjectPath">Pocket Gnome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 	</data>
 </archive>

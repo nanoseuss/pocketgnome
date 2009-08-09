@@ -563,6 +563,7 @@ typedef enum {
         //[controller makeWoWFront];
         
         PGLog(@"Moving to node: %@", nodeToMove);
+		
         [movementController moveToObject: nodeToMove andNotify: NO];
         //Position *nodePosition = [nodeToMove position];
         //[movementController moveToWaypoint: [Waypoint waypointWithPosition: nodePosition]];

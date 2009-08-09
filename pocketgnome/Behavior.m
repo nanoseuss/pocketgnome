@@ -36,6 +36,7 @@
     self.name = name;
     self.procedures = [NSDictionary dictionaryWithObjectsAndKeys: 
                        [Procedure procedureWithName: name], PreCombatProcedure,
+					   [Procedure procedureWithName: name], HealingProcedure,
                        [Procedure procedureWithName: name], CombatProcedure,
                        [Procedure procedureWithName: name], PostCombatProcedure,
                        [Procedure procedureWithName: name], RegenProcedure,
@@ -60,6 +61,8 @@
         // make sure we have a procedure object for every type
         if( ![self procedureForKey: PreCombatProcedure])
             [self setProcedure: [Procedure procedureWithName: [self name]] forKey: PreCombatProcedure];
+        if( ![self procedureForKey: HealingProcedure])
+            [self setProcedure: [Procedure procedureWithName: [self name]] forKey: HealingProcedure];
         if( ![self procedureForKey: CombatProcedure])
             [self setProcedure: [Procedure procedureWithName: [self name]] forKey: CombatProcedure];
         if( ![self procedureForKey: PostCombatProcedure])
