@@ -250,6 +250,12 @@
         [self blacklistUnit: unit];
         return;
     }
+	/*
+	if ( [botController targetNotInLOSAttempts] > 5 ){
+        if(botController.isBotting) PGLog(@"[Combat] -XX- Unit %@ not in line of site.", unit);
+        [self blacklistUnit: unit];
+        return;
+	}*/
     
     float currentDistance = [[playerData position] distanceToPosition2D: [unit position]];
     if( ([self initialDistanceForUnit: unit] < currentDistance) && ( botController.theCombatProfile.attackRange < currentDistance) ) {
@@ -320,7 +326,7 @@
             //    usleep([controller refreshDelay]);
             //}
             
-            PGLog(@"[Combat] Targetting %@", unit);
+            //PGLog(@"[Combat] Targetting %@", unit);
             
             if([unit isNPC])    [mobController selectMob: (Mob*)unit];
             else                [playerData setPrimaryTarget: unitUID];

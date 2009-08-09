@@ -43,6 +43,7 @@ static SpellController *sharedSpells = nil;
         
         //_knownSpells = [[NSMutableArray array] retain];
         _playerSpells = [[NSMutableArray array] retain];
+		_playerCooldowns = [[NSMutableArray array] retain];
         _cooldowns = [[NSMutableDictionary dictionary] retain];
     
         
@@ -299,6 +300,7 @@ static SpellController *sharedSpells = nil;
 
 #pragma mark -
 
+/*
 - (void)didCastSpell: (Spell*)spell {
     [self didCastSpellWithID: [spell ID]];
 }
@@ -311,6 +313,7 @@ static SpellController *sharedSpells = nil;
         [_cooldowns setObject: [NSDate date] forKey: [spell ID]];
     }
 }
+
 
 - (BOOL)canCastSpellWithID: (NSNumber*)spellID {
     
@@ -328,7 +331,7 @@ static SpellController *sharedSpells = nil;
         }
     }
     return YES;
-}
+}*/
 
 #pragma mark -
 
@@ -406,5 +409,192 @@ static SpellController *sharedSpells = nil;
     [self synchronizeSpells];
     [self reloadPlayerSpells];
 }
+
+- (void)showCooldownPanel{
+	[cooldownPanel makeKeyAndOrderFront: self];
+}
+
+// Pull in latest CD info
+- (void)reloadCooldownInfo{
+	[_playerCooldowns removeAllObjects];
+	
+	// Lets loop through all available info!
+	UInt32 object = 0;
+	[[controller wowMemoryAccess] loadDataForObject:self atAddress:CD_OBJ_LIST_STATIC + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
+	while ((object != 0)  && ((object & 1) == 0)) {
+		UInt32 startTime = 0, cd = 0, gcd = 0, spellid = 0;
+		UInt32 test=0, test2=0, test3=0;
+		
+		// Load data
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_SPELLID Buffer:(Byte *)&spellid BufLength:sizeof(spellid)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_STARTTIME Buffer:(Byte *)&startTime BufLength:sizeof(startTime)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_COOLDOWN Buffer:(Byte *)&cd BufLength:sizeof(cd)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_GCD Buffer:(Byte *)&gcd BufLength:sizeof(gcd)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + 0x14 Buffer:(Byte *)&test BufLength:sizeof(test)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + 0x24 Buffer:(Byte *)&test2 BufLength:sizeof(test2)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + 0x0C Buffer:(Byte *)&test3 BufLength:sizeof(test3)];
+		
+		cd = [self cooldownLeftForSpellID:spellid];
+		
+		// Sanity check
+		if ( spellid > 100000 || spellid < 0 ){
+			break;
+		}
+		
+		// Save it!
+		[_playerCooldowns addObject: [NSDictionary dictionaryWithObjectsAndKeys:
+									  [NSNumber numberWithInt: object],						@"Address",
+									  [NSNumber numberWithInt: spellid],                    @"ID",
+									  [NSNumber numberWithInt: startTime],                  @"StartTime",
+									  [NSNumber numberWithInt: cd],                         @"Cooldown",
+									  [NSNumber numberWithInt: gcd],                        @"GCD",
+									  [NSNumber numberWithInt: test],						@"Unknown1",
+									  [NSNumber numberWithInt: test2],						@"Unknown2",
+									  [NSNumber numberWithInt: test3],						@"Unknown3",
+
+									  nil]];
+		
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_NEXT_ADDRESS Buffer:(Byte *)&object BufLength:sizeof(object)];
+	}
+	
+	[cooldownPanelTable reloadData];
+}
+#pragma mark -
+#pragma mark Auras Delesource
+
+
+- (int)numberOfRowsInTableView:(NSTableView *)aTableView {
+   return [_playerCooldowns count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+   if(rowIndex == -1 || rowIndex >= [_playerCooldowns count]) return nil;
+    
+	/*
+    Aura *aura = [[_playerAuras objectAtIndex: rowIndex] objectForKey: @"Aura"];
+    if([[aTableColumn identifier] isEqualToString: @"TimeRemaining"]) {
+        //NSDate *exp = [[_playerAuras objectAtIndex: rowIndex] objectForKey: @"Expiration"];
+        //NSCalendarDate *date = [NSCalendarDate calendarDate];
+        //date = [date dateByAddingYears: 0 months: 0 days: 0 hours: 0 minutes: 0 seconds: [exp timeIntervalSinceNow]];
+		
+        float secRemaining = [[[_playerAuras objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] floatValue];
+        if(secRemaining < 60.0f) {
+            return [NSString stringWithFormat: @"%.0f sec", secRemaining];
+        } else if(secRemaining < 3600.0f) {
+            return [NSString stringWithFormat: @"%.0f min", secRemaining/60.0f];
+        } else if(secRemaining < 86400.0f) {
+            return [NSString stringWithFormat: @"%.0f hour", secRemaining/3600.0f];
+        } else {
+            if([aura isPassive])
+                return @"Passive";
+            else if(![aura isActive])
+                return @"Innate";
+            return @"Never";
+        }
+    }*/
+	
+	if([[aTableColumn identifier] isEqualToString: @"Cooldown"]) {
+        float secRemaining = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] floatValue]/1000.0f;
+        if(secRemaining < 60.0f) {
+            return [NSString stringWithFormat: @"%.0f sec", secRemaining];
+        } else if(secRemaining < 3600.0f) {
+            return [NSString stringWithFormat: @"%.0f min", secRemaining/60.0f];
+        } else if(secRemaining < 86400.0f) {
+            return [NSString stringWithFormat: @"%.0f hour", secRemaining/3600.0f];
+		}
+	}
+	
+	if([[aTableColumn identifier] isEqualToString: @"TimeRemaining"]) {
+        float cd = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"Cooldown"] floatValue];
+		float currentTime = (float) [playerController currentTime];
+		float startTime = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"StartTime"] floatValue];
+		float secRemaining = ((startTime + cd)-currentTime)/1000.0f;
+		
+		if ( secRemaining < 0.0f ) secRemaining = 0.0f;
+		
+		if(secRemaining < 60.0f) {
+            return [NSString stringWithFormat: @"%.0f sec", secRemaining];
+        } else if(secRemaining < 3600.0f) {
+            return [NSString stringWithFormat: @"%.0f min", secRemaining/60.0f];
+        } else if(secRemaining < 86400.0f) {
+            return [NSString stringWithFormat: @"%.0f hour", secRemaining/3600.0f];
+		}
+	}
+		
+	if ([[aTableColumn identifier] isEqualToString:@"Address"]){
+		return [NSString stringWithFormat:@"0x%X", [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] intValue]]; 
+	}
+	
+	if ([[aTableColumn identifier] isEqualToString:@"SpellName"]){
+		return [[self spellForID:[NSNumber numberWithInt:[[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"ID"] intValue]]] name];
+	}
+    
+    return [[_playerCooldowns objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+}
+
+- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
+    return NO;
+}
+
+- (void)tableView:(NSTableView *)aTableView  sortDescriptorsDidChange:(NSArray *)oldDescriptors {
+    //[_playerAuras sortUsingDescriptors: [aurasPanelTable sortDescriptors]];
+    [cooldownPanelTable reloadData];
+}
+
+#pragma mark Cooldowns
+// Contribution by Monder - thank you!
+//0x1172FE0
+-(BOOL)isGCDActive {
+	UInt32 currentTime =[playerController currentTime];
+	UInt32 object = 0;
+	[[controller wowMemoryAccess] loadDataForObject:self atAddress:CD_OBJ_LIST_STATIC + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
+	while ((object != 0)  && ((object & 1) == 0)) {
+		UInt32 startTime = 0;
+		UInt32 gcd = 0;
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_STARTTIME Buffer:(Byte *)&startTime BufLength:sizeof(startTime)];
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_GCD Buffer:(Byte *)&gcd BufLength:sizeof(gcd)];
+
+		if ((startTime + gcd) > currentTime){
+			return YES;
+		}
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_NEXT_ADDRESS Buffer:(Byte *)&object BufLength:sizeof(object)];
+	}
+	
+	return NO;     
+}
+-(BOOL)isSpellOnCooldown:(UInt32)spell {
+	if( [self cooldownLeftForSpellID:spell] == 0)
+		return NO;
+	return YES;
+}
+-(UInt32)cooldownLeftForSpellID:(UInt32)spell {
+	UInt32 currentTime = [playerController currentTime];
+	UInt32 object = 0;
+	[[controller wowMemoryAccess] loadDataForObject:self atAddress:CD_OBJ_LIST_STATIC + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
+	while ((object != 0)  && ((object & 1) == 0)) {
+		UInt32 spellid = 0, startTime = 0, cd = 0, cd2 = 0;
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_SPELLID Buffer:(Byte *)&spellid BufLength:sizeof(spellid)];
+		if(spellid == spell) {
+			[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_STARTTIME Buffer:(Byte *)&startTime BufLength:sizeof(startTime)];
+			[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_COOLDOWN Buffer:(Byte *)&cd BufLength:sizeof(cd)];
+			[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_COOLDOWN2 Buffer:(Byte *)&cd2 BufLength:sizeof(cd2)];
+			
+			// Sometimes the CD is stored in the second location - NO clue why
+			if ( cd == 0 ){
+				cd = cd2;
+			}
+
+			if ((startTime + cd) > currentTime)
+				return startTime + cd - currentTime;
+			// We do NOT want to return here, we want to continue the loop, sometimes the same spell is listed twice! Once w/o the cooldown and once with!
+			//else
+			//	return 0;
+		}
+		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_NEXT_ADDRESS Buffer:(Byte *)&object BufLength:sizeof(object)];
+	}
+	
+	return 0;  
+}
+
 
 @end

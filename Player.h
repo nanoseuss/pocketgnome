@@ -39,7 +39,7 @@ enum ePlayerFields {
 	
 	PlayerField_QuestStart						= 0x1A30,	// Every 0x10 is another quest ID.. Keep going til you hit 0, that is the full quest list
 	
-	PlayerField_Haste							= 0x2AC8,
+	PlayerField_Haste							= 0x2B00,
 };
 
 enum ePlayer_VisibleItem_Fields {

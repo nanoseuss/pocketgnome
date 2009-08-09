@@ -24,6 +24,8 @@
 
 #import "RouteVisualizationView.h"
 
+#import "BetterTableView.h"
+
 #import "PTHeader.h"
 #import <Growl/GrowlApplicationBridge.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
@@ -398,6 +400,27 @@ enum AutomatorIntervalType {
 
 #pragma mark -
 #pragma mark Waypoint & Other Actions
+
+
+- (IBAction)closestWaypoint: (id)sender{
+
+	Waypoint *wp = nil;
+	Position *playerPosition = [playerData position];
+	float minDist = INFINITY, tempDist;
+	int closestWaypointRow = -1, i;
+	for ( i = 0; i < [[self currentRoute] waypointCount]; i++ ){
+		wp = [[self currentRoute] waypointAtIndex: i];
+		tempDist = [playerPosition distanceToPosition: [wp position]];
+		if( (tempDist < minDist) && (tempDist >= 0.0f)) {
+			minDist = tempDist;
+			closestWaypointRow = i;
+		}
+	}
+	
+	if ( closestWaypointRow > 0 ){
+		[waypointTable selectRow:closestWaypointRow byExtendingSelection:NO];
+	}
+}
 
 - (IBAction)visualize: (id)sender {
     if([[self currentRouteKey] isEqualToString: PrimaryRoute])

@@ -254,15 +254,16 @@
     }
     
     if(!self.unit && (distance < ([playerData speedMax]/2.0f))) {
-        //PGLog(@"[Move] Waypoint is too close. Moving to the next one.");
+        PGLog(@"[Move] Waypoint is too close. Moving to the next one.");
         [self moveToNextWaypoint];
         return;
     }
-    
+
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
     self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
     
+	
     if([useSmoothTurning state]) {
         if(!self.isMoving)  [self moveForwardStop];
         [self correctDirection: YES];
@@ -272,6 +273,14 @@
         [self correctDirection: YES];
         [self moveForwardStart];
     }
+	/*
+	if ( ![playerData isCTMActive] ){
+		[playerData setClickToMove:position];
+		PGLog(@"[Move] Moving to %@", position);
+	}
+	else{
+		PGLog(@"[Move] Already moving to %@!", position);
+	}*/
     
     _movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
 }
@@ -288,10 +297,11 @@
     //    return;
     //}
     
-    if(unit && [unit isValid] && [unit conformsToProtocol: @protocol(UnitPosition)]) {
+    if(unit && [unit isValid] && [unit conformsToProtocol: @protocol(UnitPosition)]) {		
         if( ![self.unit isEqualToObject: unit]) {
             PGLog(@"[Move] Moving to: %@", unit);
             Position *position = [unit position];
+			
             self.unit = unit;
             self.shouldNotify = notify;
             [self moveToPosition: position];
@@ -299,7 +309,7 @@
             [self resumeMovement];
         }
     } else {
-        // PGLog(@"Cannot move to invalid unit.");
+        PGLog(@"Cannot move to invalid unit.");
         self.unit = nil;
         self.shouldNotify = NO;
     }
@@ -414,7 +424,7 @@
 		NSNumber *n = [[self destination] action].value;
 		
 		// Lets interact w/the target!
-		[botController interactWith:[n unsignedIntValue]];
+		[botController interactWithMob:[n unsignedIntValue]];
 		
 		[self performSelector: @selector(realMoveToNextWaypoint)
 				   withObject: nil
@@ -473,7 +483,7 @@
 
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
-    
+	
     Position *playerPosition = [playerData position];
     Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
 
@@ -498,8 +508,8 @@
 
 // if we're near our target, move to the next
     float playerSpeed = [playerData speed];
-    if(distance2d < playerSpeed/2.0)  {
-		//if(distance2d <= 5.0)  {
+    //if(distance2d < playerSpeed/2.0)  {
+		if(distance2d <= 5.0)  {
         if(!self.unit) {
             if([botController isBotting]) {
                 if([botController shouldProceedFromWaypoint: [self destination]]) {
@@ -509,7 +519,7 @@
                 [self moveToNextWaypoint];
             }
         } else {
-            // PGLog(@"We're close to the unit. Stopping movement.");
+            PGLog(@"We're close to the unit. Stopping movement.");
             [self finishAlt];
         }
         return;
@@ -526,7 +536,7 @@
     
     // if we're not moving forward for some reason, start moving again
     if(!self.isPaused && (([playerData movementFlags] & 0x1) != 0x1)) {   // [self isPatrolling] && 
-        // PGLog(@"We are stopped for some reason... starting again.");
+        //PGLog(@"We are stopped for some reason... starting again.");
         [self moveForwardStop];
         [self moveToPosition: (self.unit ? [self.unit position] : [[self destination] position])];
         return;

@@ -86,6 +86,8 @@
         return RegenProcedure;
     if( [procedureEventSegment selectedTag] == 5 )
         return PatrollingProcedure;
+    if( [procedureEventSegment selectedTag] == 6 )
+        return HealingProcedure;
     return @"";
 }
 
@@ -287,6 +289,11 @@
             }
         }
         for(Rule *rule in [[behavior procedureForKey: PatrollingProcedure] rules]) {
+            if( [rule resultType] == ActionType_Macro ) {
+                return YES;
+            }
+        }
+        for(Rule *rule in [[behavior procedureForKey: HealingProcedure] rules]) {
             if( [rule resultType] == ActionType_Macro ) {
                 return YES;
             }

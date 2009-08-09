@@ -8,11 +8,11 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="263"/>
 			<integer value="227"/>
-			<integer value="537"/>
+			<integer value="263"/>
+			<integer value="1" id="9"/>
 			<integer value="318"/>
-			<integer value="132"/>
+			<integer value="537"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1665,6 +1665,19 @@
 						<reference key="NSOnImage" ref="956356758"/>
 						<reference key="NSMixedImage" ref="433008130"/>
 					</object>
+					<object class="NSMenuItem" id="256581412">
+						<reference key="NSMenu" ref="541121933"/>
+						<string key="NSTitle">Closest Waypoint</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSKeyEquivModMask">1048576</int>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<object class="NSCustomResource" key="NSImage">
+							<string key="NSClassName">NSImage</string>
+							<string key="NSResourceName">NSSmartBadgeTemplate</string>
+						</object>
+						<reference key="NSOnImage" ref="956356758"/>
+						<reference key="NSMixedImage" ref="433008130"/>
+					</object>
 					<object class="NSMenuItem" id="315108837">
 						<reference key="NSMenu" ref="541121933"/>
 						<string key="NSTitle">Test Whole Route</string>
@@ -1812,7 +1825,7 @@
 															</object>
 															<object class="NSMutableArray" key="dict.values">
 																<bool key="EncodedWithXMLCoder">YES</bool>
-																<integer value="1" id="9"/>
+																<reference ref="9"/>
 																<reference ref="9"/>
 																<integer value="1040" id="301687282"/>
 																<reference ref="9"/>
@@ -4214,6 +4227,64 @@
 					</object>
 					<int key="connectionID">603</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: validWaypointCount</string>
+						<reference key="source" ref="256581412"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector" id="449973655">
+							<reference key="NSSource" ref="256581412"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: validWaypointCount</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">validWaypointCount</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">607</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled2: playerData.playerIsValid</string>
+						<reference key="source" ref="256581412"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="256581412"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled2: playerData.playerIsValid</string>
+							<string key="NSBinding">enabled2</string>
+							<string key="NSKeyPath">playerData.playerIsValid</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSMutableArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<reference ref="7"/>
+									<reference ref="7"/>
+									<reference ref="7"/>
+									<reference ref="7"/>
+								</object>
+							</object>
+							<reference key="NSPreviousConnector" ref="449973655"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">609</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">closestWaypoint:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="256581412"/>
+					</object>
+					<int key="connectionID">610</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -4631,9 +4702,9 @@
 							<reference ref="1069413935"/>
 							<reference ref="1022332372"/>
 							<reference ref="230136325"/>
-							<reference ref="199917810"/>
 							<reference ref="919554175"/>
 							<reference ref="885956448"/>
+							<reference ref="199917810"/>
 						</object>
 						<reference key="parent" ref="1005"/>
 					</object>
@@ -4963,6 +5034,7 @@
 							<reference ref="667431496"/>
 							<reference ref="407769754"/>
 							<reference ref="414848340"/>
+							<reference ref="256581412"/>
 						</object>
 						<reference key="parent" ref="1002"/>
 						<string key="objectName">Testing Menu</string>
@@ -5787,6 +5859,11 @@
 						<reference key="object" ref="935976062"/>
 						<reference key="parent" ref="342018275"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">604</int>
+						<reference key="object" ref="256581412"/>
+						<reference key="parent" ref="541121933"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -5916,6 +5993,7 @@
 					<string>299.IBPluginDependency</string>
 					<string>3.IBPluginDependency</string>
 					<string>30.IBPluginDependency</string>
+					<string>300.IBEditorWindowLastContentRect</string>
 					<string>300.IBPluginDependency</string>
 					<string>300.editorWindowContentRectSynchronizationRect</string>
 					<string>301.IBPluginDependency</string>
@@ -6042,6 +6120,7 @@
 					<string>595.IBPluginDependency</string>
 					<string>6.IBAttributePlaceholdersKey</string>
 					<string>6.IBPluginDependency</string>
+					<string>604.IBPluginDependency</string>
 					<string>7.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
 					<string>9.IBPluginDependency</string>
@@ -6151,7 +6230,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{325, 832}, {190, 113}}</string>
+					<string>{{849, 820}, {190, 133}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{574, 532}, {190, 113}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6178,6 +6257,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{769, 390}, {178, 63}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{1106, 875}, {178, 63}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -6328,6 +6408,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -6350,7 +6431,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">603</int>
+			<int key="maxID">610</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6423,7 +6504,6 @@
 							<string>pvpBMSelectAction:</string>
 							<string>pvpStartStop:</string>
 							<string>pvpTestWarning:</string>
-							<string>pvpValidateBattlemaster:</string>
 							<string>startBot:</string>
 							<string>startStopBot:</string>
 							<string>stopBot:</string>
@@ -6432,7 +6512,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6470,9 +6549,9 @@
 							<string>herbalismSkillText</string>
 							<string>hotkeyHelpPanel</string>
 							<string>ignoreEliteCheckbox</string>
-							<string>interactWithRecorder</string>
 							<string>itemController</string>
 							<string>lootCheckbox</string>
+							<string>lootController</string>
 							<string>lootHotkeyHelpPanel</string>
 							<string>maxLevelPopup</string>
 							<string>maxLevelText</string>
@@ -6490,7 +6569,6 @@
 							<string>playersController</string>
 							<string>procedureController</string>
 							<string>pvpAutoJoinCheckbox</string>
-							<string>pvpAutoQueueCheckbox</string>
 							<string>pvpAutoReleaseCheckbox</string>
 							<string>pvpBMSelectPanel</string>
 							<string>pvpBannerImage</string>
@@ -6499,6 +6577,7 @@
 							<string>pvpStartStopButton</string>
 							<string>questController</string>
 							<string>routePopup</string>
+							<string>runningTimer</string>
 							<string>scanGrid</string>
 							<string>shortcutRecorder</string>
 							<string>skinningCheckbox</string>
@@ -6530,9 +6609,9 @@
 							<string>id</string>
 							<string>NSPanel</string>
 							<string>id</string>
-							<string>SRRecorderControl</string>
 							<string>InventoryController</string>
 							<string>id</string>
+							<string>LootController</string>
 							<string>NSPanel</string>
 							<string>id</string>
 							<string>NSTextField</string>
@@ -6551,7 +6630,6 @@
 							<string>ProcedureController</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>NSPanel</string>
 							<string>NSImageView</string>
 							<string>NSButton</string>
@@ -6559,6 +6637,7 @@
 							<string>NSButton</string>
 							<string>QuestController</string>
 							<string>id</string>
+							<string>NSTextField</string>
 							<string>ScanGridView</string>
 							<string>SRRecorderControl</string>
 							<string>id</string>
@@ -6617,6 +6696,7 @@
 							<string>chatActionsController</string>
 							<string>chatLogTable</string>
 							<string>controller</string>
+							<string>enableGrowlNotifications</string>
 							<string>relayPanel</string>
 							<string>ruleEditor</string>
 							<string>view</string>
@@ -6626,6 +6706,7 @@
 							<string>NSArrayController</string>
 							<string>NSTableView</string>
 							<string>Controller</string>
+							<string>NSButton</string>
 							<string>NSPanel</string>
 							<string>NSPredicateEditor</string>
 							<string>NSView</string>
@@ -6649,6 +6730,7 @@
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
+							<string>playersController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6658,6 +6740,7 @@
 							<string>MobController</string>
 							<string>MovementController</string>
 							<string>PlayerDataController</string>
+							<string>PlayersController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -6674,6 +6757,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>confirmAppRename:</string>
 							<string>launchWebsite:</string>
+							<string>pidSelected:</string>
 							<string>renameShowHelp:</string>
 							<string>renameUseExisting:</string>
 							<string>showAbout:</string>
@@ -6685,6 +6769,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6742,6 +6827,7 @@
 							<string>spellController</string>
 							<string>spellsToolbarItem</string>
 							<string>versionInfoText</string>
+							<string>wowInstancePopUpButton</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6786,6 +6872,7 @@
 							<string>SpellController</string>
 							<string>NSToolbarItem</string>
 							<string>NSTextField</string>
+							<string>NSPopUpButton</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="606872111">
@@ -6924,12 +7011,14 @@
 							<string>chatController</string>
 							<string>controller</string>
 							<string>itemController</string>
+							<string>playerDataController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>ChatController</string>
 							<string>Controller</string>
 							<string>InventoryController</string>
+							<string>PlayerDataController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -7180,10 +7269,12 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>setPlayerDirectionInMemory:</string>
 							<string>showAuraWindow:</string>
+							<string>showCooldownWindow:</string>
 							<string>showPlayerStructure:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -7195,6 +7286,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>botController</string>
 							<string>combatController</string>
+							<string>combatTable</string>
 							<string>controller</string>
 							<string>memoryViewController</string>
 							<string>powerNameText</string>
@@ -7205,6 +7297,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>id</string>
 							<string>id</string>
+							<string>NSTableView</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSTextField</string>
@@ -7404,6 +7497,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>botController</string>
 							<string>controller</string>
+							<string>cooldownPanel</string>
+							<string>cooldownPanelTable</string>
 							<string>playerController</string>
 							<string>spellDropDown</string>
 							<string>spellLoadingProgress</string>
@@ -7411,9 +7506,11 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+							<string>BotController</string>
+							<string>Controller</string>
+							<string>NSPanel</string>
+							<string>NSTableView</string>
+							<string>PlayerDataController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSView</string>
@@ -7439,6 +7536,7 @@
 							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closeWaypointAction:</string>
+							<string>closestWaypoint:</string>
 							<string>createRoute:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
@@ -7460,6 +7558,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

@@ -52,6 +52,10 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *itemsToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *playersToolbarItem, *mobsToolbarItem, *nodesToolbarItem, *routesToolbarItem, *behavsToolbarItem;
     IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *fishingToolbarItem;
+	
+	IBOutlet NSPopUpButton *wowInstancePopUpButton;
+	NSNumber *selectedPID;
+	int _lastAttachedPID;
     
     IBOutlet NSView *aboutView, *settingsView;
     IBOutlet NSImageView *aboutValidImage;
@@ -82,11 +86,13 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 + (Controller *)sharedController;
 
 @property BOOL isRegistered;
+@property (readwrite, retain) NSNumber *selectedPID;
 
 - (IBAction)showAbout: (id)sender;
 - (IBAction)showSettings: (id)sender;
 - (IBAction)launchWebsite:(id)sender;
 - (IBAction)toolbarItemSelected: (id)sender;
+- (IBAction)pidSelected: (id)sender;
 
 - (void)revertStatus;
 - (NSString*)currentStatus;

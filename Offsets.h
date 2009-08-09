@@ -164,7 +164,7 @@
 #define BAR10_OFFSET        0x1B0   // 10th hotbar (unknown)
 
 // 3.2.0 valid
-#define PLAYER_IN_BUILDING_STATIC       ((IS_X86) ? 0x13EBB64 : 0x0)		// 3.2.0 (also 0x159DE40)
+#define PLAYER_IN_BUILDING_STATIC       ((IS_X86) ? 0x1236080 : 0x0)		// 3.2.0 (also 0x159DE40)
 												 // 0x114A5FC : 0x0)		// 3.1.2
 												 // 0x111E81C : 0x0)        // 3.0.9
                                                  // 0x11F8F0C : 0x0)        // 3.0.9
@@ -251,6 +251,31 @@
 // 3.2.0 valid
 #define CLICK_TO_MOVE			((IS_X86) ? 0x12708FC : 0x0 )
 #define CLICK_TO_MOVE_ACTION	((IS_X86) ? 0x12709D4 : 0x0 )
+#define CTM_GUID				((IS_X86) ? 0x12709F0 : 0x0 )		// 64 bit duh
+
+// 3.2.0 valid - will probably never use the below?  Not sure but documenting to help find in future
+#define CTM_CLOSENESS			((IS_X86) ? 0x12709B4 : 0x0 )		// Closeness factor - set to stop if 0.5f or less
+#define CTM_PI2					((IS_X86) ? 0x12709C8 : 0x0 )		// This is pi*2 - not sure why heh
+#define CTM_DIRECTION			((IS_X86) ? 0x12709CC : 0x0 )		// Probably don't need this either
+#define CTM_UNKNOWN				((IS_X86) ? 0x1270964 : 0x0 )		// write 9.0f
+#define CTM_SCALE				((IS_X86) ? 0x1270968 : 0x0 )		// write 0.25f
+#define CTM_UNKNOWN2			((IS_X86) ? 0x12709D8 : 0x0 )		// write 14.0f
+/*
+ enum ActionType : uint
+ {
+ FaceTarget = 0x1,
+ Stop = 0x3,
+ WalkTo = 0x4,
+ InteractNpc = 0x5,
+ Loot = 0x6,
+ InteractObject = 0x7,
+ Unknown1 = 0x8,
+ Unknown2 = 0x9,
+ AttackPos = 0xA,
+ AttackGuid = 0xB,
+ WalkAndRotate = 0xC
+ } 
+*/
 
 // 3.2.0  valid
 #define LAST_RED_ERROR_MESSAGE  ((IS_X86) ? 0x1540BE0 : 0x0) // 3.2.0 valid

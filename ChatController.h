@@ -23,6 +23,7 @@
 
 - (void)jump;
 - (void)releaseBody;
+- (void)dismount;
 - (void)retrieveCorpse;
 
 - (void)sendKeySequence: (NSString*)keySequence;

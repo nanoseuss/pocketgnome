@@ -10,18 +10,25 @@
 #import "MemoryAccess.h"
 #import "Spell.h"
 
+@class Controller;
+@class BotController;
+@class PlayerDataController;
+
 @interface SpellController : NSObject {
-    IBOutlet id controller;
-    IBOutlet id botController;
-    IBOutlet id playerController;
+    IBOutlet Controller *controller;
+    IBOutlet BotController *botController;
+    IBOutlet PlayerDataController *playerController;
 
     IBOutlet id spellDropDown;
     IBOutlet id spellLoadingProgress;
     
     IBOutlet NSView *view;
-    
+	IBOutlet NSPanel *cooldownPanel;
+    IBOutlet NSTableView *cooldownPanelTable;
+	
     Spell *selectedSpell;
     NSMutableArray *_playerSpells;
+	NSMutableArray *_playerCooldowns;
     NSMutableDictionary *_spellBook, *_cooldowns;
     NSSize minSectionSize, maxSectionSize;
     
@@ -46,9 +53,10 @@
 - (Spell*)playerSpellForName: (NSString*)spellName;
 - (BOOL)addSpellAsRecognized: (Spell*)spell;
 
-- (void)didCastSpell: (Spell*)spell;
-- (void)didCastSpellWithID: (NSNumber*)spellID;
-- (BOOL)canCastSpellWithID: (NSNumber*)spellID;
+// For spell cooldowns (no longer needed as of 3.1.3 due to CD code)
+//- (void)didCastSpell: (Spell*)spell;
+//- (void)didCastSpellWithID: (NSNumber*)spellID;
+//- (BOOL)canCastSpellWithID: (NSNumber*)spellID;
 
 - (BOOL)isPlayerSpell: (Spell*)spell;
 - (NSArray*)playerSpells;
@@ -57,5 +65,12 @@
 - (IBAction)reloadMenu: (id)sender;
 - (IBAction)spellLoadAllData:(id)sender;
 
+- (void)showCooldownPanel;
+- (void)reloadCooldownInfo;
+
+// Cooldown info
+-(BOOL)isGCDActive;
+-(BOOL)isSpellOnCooldown:(UInt32)spell;
+-(UInt32)cooldownLeftForSpellID:(UInt32)spell;
 
 @end

@@ -46,7 +46,7 @@ typedef enum {
     playerValidState =      3,
 } memoryState;
 
-#define MainWindowMinWidth  640
+#define MainWindowMinWidth  740
 #define MainWindowMinHeight 200
 
 @interface Controller ()
@@ -60,6 +60,7 @@ typedef enum {
 - (void)scanObjectGraph;
 - (BOOL)locatePlayerStructure;
 - (void)loadView: (NSView*)newView withTitle: (NSString*)title;
+- (void)populateWowInstances;
 @end
 
 @implementation Controller
@@ -126,6 +127,9 @@ static Controller* sharedController = nil;
         _appFinishedLaunching = NO;
         _foundPlayer = NO;
         _scanIsRunning = NO;
+		
+		_lastAttachedPID = 0;		
+		selectedPID = [NSNumber numberWithInt:0];
         
         _ignoredDepthAddresses = [[NSMutableArray alloc] init];
         
@@ -236,9 +240,9 @@ static Controller* sharedController = nil;
     [self toggleGUIScripting: nil];
     
     // make us the front process
-    ProcessSerialNumber psn = { 0, kCurrentProcess };
-    SetFrontProcess( &psn );
-    [mainWindow makeKeyAndOrderFront: nil];
+    //ProcessSerialNumber psn = { 0, kCurrentProcess };
+    //SetFrontProcess( &psn );
+    //[mainWindow makeKeyAndOrderFront: nil];
     _appFinishedLaunching = YES;
     
     // validate game version
@@ -400,6 +404,10 @@ static Controller* sharedController = nil;
 - (void)scanObjectGraph {
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
     
+	// Lets update our process list too!
+	[self populateWowInstances];
+	//[_wowInstances addObject: [NSNumber numberWithInt:45522]];
+	
     // NSDate *start = date;
     // BOOL foundPlayer = [self locatePlayerStructure];
     BOOL playerIsValid = [playerDataController playerIsValid];
@@ -476,6 +484,8 @@ static Controller* sharedController = nil;
     pid_t wowPID = 0;
     ProcessSerialNumber wowPSN = [self getWoWProcessSerialNumber];
     OSStatus err = GetProcessPID(&wowPSN, &wowPID);
+	
+	//selectedPID
     
     if((err == noErr) && (wowPID > 0)) {
         
@@ -536,21 +546,21 @@ static Controller* sharedController = nil;
 								
                                 if(*checkVal == structMarker) {
                                     UInt32 structAddress = SourceAddress + x;
-                                    //PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
+                                    PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
                                     
                                     value = 0;
                                     if([memory loadDataForObject: self atAddress: (structAddress + 0x1C) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
-										//PGLog(@"Found object list head at 0x%X.", value);
+										PGLog(@"Found object list head at 0x%X.", value);
                                         
                                         // load the value at that address and make sure it is 0x18
                                         UInt32 value2 = 0;
                                         if([memory loadDataForObject: self atAddress: value Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == 0x18)) {
-                                            //PGLog(@"Object list validated.");
+                                            PGLog(@"Object list validated.");
                                             listAddress = [NSNumber numberWithUnsignedLong: value];
                                             break;
                                         }
 										
-										//PGLog(@"Value is 0x%X", value2);
+										PGLog(@"Value is 0x%X", value2);
                                     }
                                     // break; this break is unnecessary?
                                 }
@@ -941,6 +951,7 @@ static Controller* sharedController = nil;
 @synthesize currentState = _currentState;
 @synthesize isRegistered = _isRegistered;   // too many bindings rely on this property, keep it
 @synthesize matchExistingApp = _matchExistingApp;
+@synthesize selectedPID;
 
 - (void)setCurrentState: (int)state {
     if(_currentState == state) return;
@@ -1185,16 +1196,95 @@ static Controller* sharedController = nil;
 }
 
 - (ProcessSerialNumber)getWoWProcessSerialNumber {
+	ProcessSerialNumber pSN = {kNoProcess, kNoProcess};
+	pid_t wowPID = 0;
+    for(NSDictionary *processDict in [[NSWorkspace sharedWorkspace] launchedApplications]) {
+		if( [[processDict objectForKey: @"NSApplicationBundleIdentifier"] isEqualToString: @"com.blizzard.worldofwarcraft"] ) {
+			pSN.highLongOfPSN = [[processDict objectForKey: @"NSApplicationProcessSerialNumberHigh"] longValue];
+			pSN.lowLongOfPSN  = [[processDict objectForKey: @"NSApplicationProcessSerialNumberLow"] longValue];
+			
+			OSStatus err = GetProcessPID(&pSN, &wowPID);
+			_lastAttachedPID = wowPID;
+			if( err == noErr && wowPID > 0 && wowPID == [selectedPID intValue]) {
+				return pSN;
+			}
+		}
+	}
+
+	// This is ONLY the case when we load PG!
+	if ( wowPID != [selectedPID intValue] ){
+		selectedPID = [NSNumber numberWithInt:wowPID];
+		
+		// Now rebuild menu!
+		[self populateWowInstances];
+	}
+
+	return pSN;
+}
+
+- (IBAction)pidSelected: (id)sender{
+	// Only switch if the user chose a new one!
+	if ( [selectedPID intValue] != _lastAttachedPID ){
+		_wowMemoryAccess = nil;
+		[self wowMemoryAccess];
+	}
+}
+
+- (void)populateWowInstances{
+	NSMutableArray *PIDs = [[NSMutableArray array] retain];
 	
+	// Lets find all available processes!
 	ProcessSerialNumber pSN = {kNoProcess, kNoProcess};
     for(NSDictionary *processDict in [[NSWorkspace sharedWorkspace] launchedApplications]) {
 		if( [[processDict objectForKey: @"NSApplicationBundleIdentifier"] isEqualToString: @"com.blizzard.worldofwarcraft"] ) {
 			pSN.highLongOfPSN = [[processDict objectForKey: @"NSApplicationProcessSerialNumberHigh"] longValue];
 			pSN.lowLongOfPSN  = [[processDict objectForKey: @"NSApplicationProcessSerialNumberLow"] longValue];
-			return pSN;
+			
+			pid_t wowPID = 0;
+			OSStatus err = GetProcessPID(&pSN, &wowPID);
+			
+			if((err == noErr) && (wowPID > 0)) {
+				[PIDs addObject:[NSNumber numberWithInt:wowPID]];
+			}
 		}
 	}
-	return pSN;
+	
+	// Build our menu! I'm sure I could use bindings to do this another way, but I'm a n00b :(
+	NSMenu *wowInstanceMenu = [[[NSMenu alloc] initWithTitle: @"Instances"] autorelease];
+	NSMenuItem *wowInstanceItem;
+	int tagToSelect = 0;
+    
+	// WoW isn't open then :(
+	if ( [PIDs count] == 0 ){
+		wowInstanceItem = [[NSMenuItem alloc] initWithTitle: @"WoW is not open" action: nil keyEquivalent: @""];
+		[wowInstanceItem setTag: 0];
+		[wowInstanceItem setRepresentedObject: 0];
+		[wowInstanceItem setIndentationLevel: 0];
+		[wowInstanceMenu addItem: [wowInstanceItem autorelease]];
+	}
+	// We have some instances running!
+	else{
+		// Add all of them to the menu!
+		for ( NSNumber *pid in PIDs ){
+			wowInstanceItem = [[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", pid] action: nil keyEquivalent: @""];
+			[wowInstanceItem setTag: [pid intValue]];
+			[wowInstanceItem setRepresentedObject: pid];
+			[wowInstanceItem setIndentationLevel: 0];
+			[wowInstanceMenu addItem: [wowInstanceItem autorelease]];
+		}
+		
+		if ( [selectedPID intValue] != 0 ){
+			tagToSelect = [selectedPID intValue];
+		}
+		else{
+			tagToSelect = [[PIDs objectAtIndex:0] intValue];;
+		}
+	}
+
+    [wowInstancePopUpButton setMenu: wowInstanceMenu];
+    [wowInstancePopUpButton selectItemWithTag: tagToSelect];
+	
+	[PIDs release];
 }
 
 -(int)getWOWWindowID  {

@@ -24,6 +24,7 @@ typedef enum CastError {
 	ErrTargetOutRange2  = 11,
 	ErrSpellNot_Ready2  = 12,
 	ErrSpellNotReady = 13,
+	ErrInvalidTarget = 14,
 } CastError;
 
 #define INV_FULL			@"Inventory is Full"
@@ -38,3 +39,12 @@ typedef enum CastError {
 #define ATTACK_STUNNED	    @"Can't attack while stunned."
 #define TARGET_RNGE			@"Out of range."
 #define TARGET_RNGE2		@"You are too far away!"
+#define INVALID_TARGET		@"Invalid Target"
+
+
+//Must have a Fishing Pole equipped
+//Can't do that while silenced
+//Can't do that while stunned
+//Not enough mana
+//Can't do that while incapacitated
+//Not enough energy
