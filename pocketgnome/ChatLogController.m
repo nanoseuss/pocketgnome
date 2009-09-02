@@ -219,6 +219,11 @@
                                                        clickContext: nil];             
                         }
                     }
+					
+					// Fire off a notification - Whisper received!
+					if ( [entry isWhisperReceived] ){
+						[[NSNotificationCenter defaultCenter] postNotificationName: WhisperReceived object: entry];
+					}
                     
                     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                     if([defaults boolForKey: @"ChatLogRelayMessages"]) {

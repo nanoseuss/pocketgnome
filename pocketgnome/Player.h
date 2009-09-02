@@ -90,4 +90,6 @@ typedef enum eCharacterSlot {
 - (BOOL)isGM;
 
 - (GUID)itemGUIDinSlot: (CharacterSlot)slot;    // invalid for other players
+
+- (NSString*)name;
 @end

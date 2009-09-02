@@ -60,6 +60,7 @@
     
     IBOutlet id routeTypeSegment;
     RouteSet *_currentRouteSet;
+	Route *_currentRoute;
     PTHotKey *addWaypointGlobalHotkey;
 	PTHotKey *automatorGlobalHotkey;
     NSMutableArray *_routes;

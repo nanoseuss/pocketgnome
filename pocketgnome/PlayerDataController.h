@@ -15,6 +15,10 @@
 @class MemoryAccess;
 @class MobController;
 @class CombatController;
+@class Controller;
+@class BotController;
+@class SpellController;
+@class MemoryViewController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -27,14 +31,16 @@
 //#define PlayerLeavingCombatNotification     @"PlayerLeavingCombatNotification"
 
 @interface PlayerDataController : NSObject <UnitPosition> {
-    id controller;
-    id botController;
-    id spellController;
-    id combatController;
-    id memoryViewController;
+    IBOutlet Controller				*controller;
+    IBOutlet BotController			*botController;
+    IBOutlet SpellController		*spellController;
+    IBOutlet CombatController		*combatController;
+    IBOutlet MemoryViewController	*memoryViewController;
+	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
 	IBOutlet NSTableView *combatTable;
+	IBOutlet NSTableView *healingTable;
     // IBOutlet NSTextField *stanceText; // 3.0.8 removed
 
     NSNumber *_baselineAddress;
@@ -42,7 +48,8 @@
     BOOL _validState, _lastState;
 	
 	NSMutableArray *_combatDataList;
-    
+    NSMutableArray *_healingDataList;
+	
     Unit *_pet;
     unsigned _playerHealth, _playerMaxHealth;
     unsigned _playerMana, _playerMaxMana;
@@ -101,7 +108,7 @@
 - (float)directionFacing;
 - (void)setDirectionFacing: (float)direction;
 - (void)setMovementFlags:(UInt32)movementFlags;
-- (void)setClickToMove:(Position*)position;
+- (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;
 - (BOOL)isCTMActive;
 - (UInt32)movementFlags;
 - (UInt64)movementFlags64;

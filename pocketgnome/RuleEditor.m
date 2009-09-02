@@ -90,6 +90,7 @@
         [newRule setIsMatchAll: [conditionMatchingSegment isSelectedForSegment: 0]];
         [newRule setAction: [Action actionWithType: [conditionResultTypeSegment selectedTag] 
                                              value: [NSNumber numberWithUnsignedInt: [[resultActionDropdown selectedItem] tag]]]];
+		[newRule setTarget: [conditionTargetType selectedTag]];
         //[newRule setResultType: [conditionResultTypeSegment selectedTag]];
         //[newRule setActionID: [[resultActionDropdown selectedItem] tag]];
         
@@ -115,6 +116,7 @@
 	[conditionResultTypeSegment selectSegmentWithTag: [rule resultType]];
     [self setResultType: conditionResultTypeSegment];   // this also sets the menu
     
+	[conditionTargetType selectSegmentWithTag: [rule target]];
     
     if(rule) {
         for(Condition *condition in [rule conditions]) {

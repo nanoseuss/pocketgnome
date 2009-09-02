@@ -8,6 +8,7 @@
 
 #import "MemoryViewController.h"
 #import "Controller.h"
+#import "OffsetController.h"
 
 #import "WoWObject.h"
 
@@ -173,6 +174,10 @@
         NSString *saveLocation = [savePanel filename];
         [export writeToFile: saveLocation atomically: YES encoding: NSUTF8StringEncoding error: NULL];
     }
+}
+
+- (IBAction)dumpOffsets: (id)sender{
+	[offsetController dumpOffsets];	
 }
     
 #pragma mark -

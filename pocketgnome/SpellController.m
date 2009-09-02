@@ -6,6 +6,8 @@
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
 
+#import <ScreenSaver/ScreenSaver.h>
+
 #import "SpellController.h"
 #import "Controller.h"
 #import "Offsets.h"
@@ -19,6 +21,7 @@
 - (BOOL)isSpellListValid;
 - (void)buildSpellMenu;
 - (void)synchronizeSpells;
+- (NSArray*)mountsBySpeed: (int)speed;
 
 @end
 
@@ -168,9 +171,41 @@ static SpellController *sharedSpells = nil;
             }
         }
     }
+	
+	// scan the list of mounts!
+	NSMutableArray *playerMounts = [NSMutableArray array];
+	if( [playerController playerIsValid] ){
+		UInt32 mountAddress = 0;//MOUNT_LIST_POINTER;
+		
+		// grab the pointer to the list
+		if([memory loadDataForObject: self atAddress: MOUNT_LIST_POINTER Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
+			
+			for(i=0; ; i++) {
+				// load all known spells into a temp array
+				if([memory loadDataForObject: self atAddress: mountAddress + (i*0x4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value < 100000) {
+					Spell *spell = [self spellForID: [NSNumber numberWithUnsignedInt: value]];
+					if( !spell ) {
+						// create a new spell if necessary
+						spell = [Spell spellWithID: [NSNumber numberWithUnsignedInt: value]];
+						if ( !spell ){
+							PGLog(@"[Spell] ID %d not found!", value );
+							continue;
+						}
+						[self addSpellAsRecognized: spell];
+					}
+					[playerMounts addObject: spell];
+				} else {
+					break;
+				}
+			}
+			
+		}
+	}
     
     // update list of known spells
     [_playerSpells addObjectsFromArray: playerSpells];
+	if ( [playerMounts count] > 0 )
+		[_playerSpells addObjectsFromArray: playerMounts];
     [self buildSpellMenu];
 }
 
@@ -181,11 +216,18 @@ static SpellController *sharedSpells = nil;
     // load the player spells into arrays by spell school
     NSMutableDictionary *organizedSpells = [NSMutableDictionary dictionary];
     for(Spell *spell in _playerSpells) {
-        if([spell school]) {
+		
+		if ( [spell isMount] ){
+			if( ![organizedSpells objectForKey: @"Mount"] )
+                [organizedSpells setObject: [NSMutableArray array] forKey: @"Mount"];
+            [[organizedSpells objectForKey: @"Mount"] addObject: spell];
+		}
+        else if([spell school]) {
             if( ![organizedSpells objectForKey: [spell school]] )
                 [organizedSpells setObject: [NSMutableArray array] forKey: [spell school]];
             [[organizedSpells objectForKey: [spell school]] addObject: spell];
-        } else {
+        } 
+		else {
             if( ![organizedSpells objectForKey: @"Unknown"] )
                 [organizedSpells setObject: [NSMutableArray array] forKey: @"Unknown"];
             [[organizedSpells objectForKey: @"Unknown"] addObject: spell];
@@ -284,6 +326,60 @@ static SpellController *sharedSpells = nil;
     }
 	
 	return nil;	
+}
+
+// I really don't like how ugly this function is, if only it was elegant :(
+- (Spell*)mountSpell: (int)type andFast:(BOOL)isFast{
+	
+	NSMutableArray *mounts = [NSMutableArray array];
+	if ( type == MOUNT_GROUND ){
+		
+		// Add fast mounts!
+		if ( isFast ){
+			[mounts addObjectsFromArray:[self mountsBySpeed:100]];
+		}
+		
+		// We either have no fast mounts, or we didn't even want them!
+		if ( [mounts count] == 0 ){
+			[mounts addObjectsFromArray:[self mountsBySpeed:60]];	
+		}
+	}
+	else if ( type == MOUNT_AIR ){
+		if ( isFast ){
+			[mounts addObjectsFromArray:[self mountsBySpeed:310]];
+			
+			// For most we will be here
+			if ( [mounts count] == 0 ){
+				[mounts addObjectsFromArray:[self mountsBySpeed:280]];
+			}
+		}
+		
+		// We either have no fast mounts, or we didn't even want them!
+		if ( [mounts count] == 0 ){
+			[mounts addObjectsFromArray:[self mountsBySpeed:150]];	
+		}
+	}
+	
+	// Randomly select one from the array!
+	if ( [mounts count] > 0 ){
+		int randomMount = SSRandomIntBetween(0, [mounts count]-1);
+		
+		return [mounts objectAtIndex:randomMount];
+	}
+	
+	return nil;
+}
+
+- (NSArray*)mountsBySpeed: (int)speed{
+	NSMutableArray *mounts = [NSMutableArray array];
+	for(Spell *spell in _playerSpells) {
+		int s = [[spell speed] intValue];
+		if ( s == speed ){
+			[mounts addObject:spell];
+		}
+	}
+	
+	return mounts;	
 }
 
 - (BOOL)addSpellAsRecognized: (Spell*)spell {
@@ -459,6 +555,9 @@ static SpellController *sharedSpells = nil;
 	
 	[cooldownPanelTable reloadData];
 }
+
+
+
 #pragma mark -
 #pragma mark Auras Delesource
 
@@ -580,7 +679,8 @@ static SpellController *sharedSpells = nil;
 			[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_COOLDOWN2 Buffer:(Byte *)&cd2 BufLength:sizeof(cd2)];
 			
 			// Sometimes the CD is stored in the second location - NO clue why
-			if ( cd == 0 ){
+			//PGLog(@"[Spell] %d (%d:%d)", spell, cd, cd2);
+			if ( cd2 > cd ){
 				cd = cd2;
 			}
 

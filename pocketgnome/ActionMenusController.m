@@ -161,7 +161,7 @@ static ActionMenusController *sharedMenus = nil;
 
 - (NSMenu*)createInteractMenu {
     
-    // Generate the Macros menu
+    // Generate the Interact menu
     NSMenu *interactMenu = [[[NSMenu alloc] initWithTitle: @"Interact Menu"] autorelease];
     
     NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle: @"Interact with NPC" action: nil keyEquivalent: @""] autorelease];

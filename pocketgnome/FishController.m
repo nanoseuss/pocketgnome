@@ -63,6 +63,7 @@
 - (void)fishBegin;
 - (BOOL)applyLure;
 - (Node*)faceNearestSchool;
+- (void)fishingController;
 @end
 
 
@@ -78,6 +79,7 @@
 		_ignoreIsFishing = NO;
 		_bobber = nil;
 		_useContainer = 0;
+		//_blockActions = NO;
 		
 		// UI options
 		_optApplyLure = NO;
@@ -193,6 +195,7 @@
 	
 	// Fire off a thread to handle all fishing!
 	[NSThread detachNewThreadSelector: @selector(fishingController) toTarget: self withObject: nil];
+	//[self fishingController];
 }
 
 - (void)stopFishing{
@@ -204,9 +207,6 @@
 - (void)closeWoW{
 	if ( _isFishing ){
 		[self stopFishing];
-		
-		// Sleep a bit so threads can stop
-		usleep(3000000);
 		
 		[controller killWOW];
 	}
@@ -300,6 +300,10 @@
 			_applyLureAttempts = 0;
 			[status setStringValue: [NSString stringWithFormat:@"Applying Lure"]];
 			
+			//_blockActions = YES;
+			
+			//[self performSelector: @selector(resetBlock) withObject: nil afterDelay:3.5 ];
+			
 			// This will "pause" our main thread until this is complete!
 			usleep(3500000);
 		}
@@ -312,6 +316,10 @@
 	
 	return NO;
 }
+
+//- (void)resetBlock{
+	//_blockActions = NO;	
+//}
 
 - (Node*)faceNearestSchool{
 	NSArray *fishingSchools = [nodeController allFishingSchools];
@@ -331,7 +339,7 @@
 	
 	// Then we have a fishing pool w/in range!
 	if ( closestNode != nil ){
-		[movementController turnToward: [closestNode position]];
+		[movementController turnTowardObject: closestNode];
 		return closestNode;
 	}
 	
@@ -340,7 +348,38 @@
 
 
 // We just want to run this in it's own thread, basically it will just find our bobbers for us :-)
+// TO DO: THERE IS A CRASH IN HERE SOMEWHERE! No clue where... stack:
+/*
+ Thread 7 Crashed:
+ 0   libobjc.A.dylib               	0x90ceaef4 _objc_error + 116
+ 1   libobjc.A.dylib               	0x90ceaf2a __objc_error + 52
+ 2   libobjc.A.dylib               	0x90ce921c _freedHandler + 58
+ 3   com.savorydeviate.PocketGnome 	0x000642a2 -[FishController fishingController] + 888 (FishController.m:415)
+ 4   com.apple.Foundation          	0x93865964 -[NSThread main] + 45
+ 5   com.apple.Foundation          	0x93865914 __NSThread__main__ + 1499
+ 6   libSystem.B.dylib             	0x9910dfe1 _pthread_start + 345
+ 7   libSystem.B.dylib             	0x9910de66 thread_start + 34
+ 
+ Thread 7 Crashed:
+ 0   libobjc.A.dylib               	0x90ce1924 objc_msgSend + 36
+ 1   com.apple.Foundation          	0x93865964 -[NSThread main] + 45
+ 2   com.apple.Foundation          	0x93865914 __NSThread__main__ + 1499
+ 3   libSystem.B.dylib             	0x9910dfe1 _pthread_start + 345
+ 4   libSystem.B.dylib             	0x9910de66 thread_start + 34
+ */
 - (void)fishingController{
+	
+	if ( !_isFishing ){
+		return;
+	}
+	
+	// We don't want to do anything here :(  /cry  Check again shortly!
+	//if ( _blockActions ){
+	//	[self performSelector: @selector(fishingController) withObject: nil afterDelay:0.1];
+		
+	//	return;
+	//}
+	
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	UInt16 stat, bouncing;
 	int lootWindowOpenCount = 0;
@@ -352,34 +391,40 @@
 			// If this isn't 132, then the bobber is gone or just got activated!  (I believe this is the animation state, but not 100% sure)
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)] ){
 			
-				if ( [bobber owner] == _playerGUID && stat == STATUS_NORMAL ){
-					// Then we found a new bobber!
-					if ( _bobber != bobber ){
-						_bobber = bobber;
+				// Our player's bobber!
+				if ( [bobber owner] == _playerGUID ){
+
+					// Is our bobber normal yet?
+					if ( stat == STATUS_NORMAL ){
 						
-						//[memoryViewController setBaseAddress:[NSNumber numberWithInt:[_bobber baseAddress]]];
-						
-						// Should we check to see if it landed nearby?
-						if ( _nearbySchool && _optFaceSchool && _optRecast ){
-							float distance = [[bobber position] distanceToPosition: [_nearbySchool position]];
+						// Then we found a new bobber!
+						if ( _bobber != bobber ){
+							_bobber = bobber;
 							
-							// Reset this, otherwise we might try to read it when we don't want to! ( = crash)
-							_nearbySchool = nil;
+							//[memoryViewController setBaseAddress:[NSNumber numberWithInt:[_bobber baseAddress]]];
 							
-							// Fish again! Didn't land in the school!
-							if ( distance > 5.0f ){
-								_ignoreIsFishing = YES;
+							// Should we check to see if it landed nearby?
+							if ( _nearbySchool && _optFaceSchool && _optRecast ){
+								float distance = [[bobber position] distanceToPosition: [_nearbySchool position]];
 								
-								[self fishBegin];
+								// Reset this, otherwise we might try to read it when we don't want to! ( = crash)
+								_nearbySchool = nil;
+								
+								// Fish again! Didn't land in the school!
+								if ( distance > 5.0f ){
+									_ignoreIsFishing = YES;
+									
+									[self fishBegin];
+								}
 							}
 						}
 					}
-			}
-			}
-			// not ours - hide it?
-			else if ( _optHideOtherBobbers && _bobber != bobber ){
-				UInt8 value = 0;
-				[[controller wowMemoryAccess] saveDataForAddress: ([bobber baseAddress] + OFFSET_VISIBILITY) Buffer: (Byte *)&value BufLength: sizeof(value)];
+				}
+				// not ours - hide it?
+				else if ( _optHideOtherBobbers && _bobber != bobber ){
+					UInt8 value = 0;
+					[[controller wowMemoryAccess] saveDataForAddress: ([bobber baseAddress] + OFFSET_VISIBILITY) Buffer: (Byte *)&value BufLength: sizeof(value)];
+				}
 			}
 		}
 		
@@ -393,18 +438,10 @@
 				if ( bouncing && !clicked ){
 					[status setStringValue: [NSString stringWithFormat:@"Looting"]];
 					clicked = YES;
-					
-					// Save our target to mouseover!
-					UInt64 value = [_bobber GUID];
-					if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)] ){
-						
-						// wow needs time to process the change
-						usleep([controller refreshDelay]);
-						
-						// Use our hotkey!
-						if ( ![botController interactWithMouseOver] ){
-							[status setStringValue: [NSString stringWithFormat:@"Did you forget to bind your Interact with Mouseover?"]];
-						}
+
+					// "Click" our bobber!
+					if ( ![botController interactWithMouseoverGUID: [_bobber GUID]] ){
+						[status setStringValue: [NSString stringWithFormat:@"Did you forget to bind your Interact with Mouseover?"]];
 					}
 				}
 			}
@@ -437,6 +474,8 @@
 		// Sleep for 0.1 seconds
 		usleep(100000);
 	}
+	//[self performSelector: @selector(fishingController) withObject: nil afterDelay:0.1];
+
 	
 	[pool drain];
 }

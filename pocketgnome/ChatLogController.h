@@ -11,6 +11,8 @@
 @class Controller;
 @class ChatLogEntry;
 
+#define WhisperReceived		@"WhisperReceived"
+
 @interface ChatLogController : NSObject {
     IBOutlet Controller *controller;
     

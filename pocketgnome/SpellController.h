@@ -51,6 +51,7 @@
 - (Spell*)spellForID: (NSNumber*)spellID;
 - (Spell*)highestRankOfSpell: (Spell*)spell;
 - (Spell*)playerSpellForName: (NSString*)spellName;
+- (Spell*)mountSpell: (int)type andFast:(BOOL)isFast;
 - (BOOL)addSpellAsRecognized: (Spell*)spell;
 
 // For spell cooldowns (no longer needed as of 3.1.3 due to CD code)
@@ -67,6 +68,8 @@
 
 - (void)showCooldownPanel;
 - (void)reloadCooldownInfo;
+
+
 
 // Cooldown info
 -(BOOL)isGCDActive;

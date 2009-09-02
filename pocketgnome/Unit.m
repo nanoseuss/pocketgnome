@@ -793,6 +793,13 @@ enum SheathState
                 desc = @"Auras Valid Count";
                 break;
 				
+            case BaseField_Auras_OverflowPtr1:
+                desc = @"Start of Auras 2";
+                break;
+            case BaseField_Auras_OverflowValidCount:
+                desc = @"Auras Valid Count 2";
+                break;
+				
             case BaseField_Player_CurrentTime:
                 if([self isPlayer]) {
                     desc = @"Current Time";

@@ -419,6 +419,7 @@ enum AutomatorIntervalType {
 	
 	if ( closestWaypointRow > 0 ){
 		[waypointTable selectRow:closestWaypointRow byExtendingSelection:NO];
+		PGLog(@"[Waypoint] Closest waypoint is %0.2f yards away", minDist);
 	}
 }
 

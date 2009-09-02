@@ -433,7 +433,6 @@ typedef enum MovementFlag {
 } MovementFlag;
 
 @interface Unit : WoWObject <UnitPosition> {
-
 }
 
 + (id)unitWithAddress: (NSNumber*)address inMemory: (MemoryAccess*)memory;

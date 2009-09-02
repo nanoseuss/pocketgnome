@@ -57,6 +57,7 @@
                   includeFriendly: (BOOL)friendly
                    includeNeutral: (BOOL)neutral
                    includeHostile: (BOOL)hostile;
+- (NSArray*)friendlyPlayers;
 
 - (IBAction)facePlayer: (id)sender;
 - (IBAction)targetPlayer: (id)sender;

@@ -8,6 +8,7 @@
 
 #import "Player.h"
 #import "WoWObject.h"
+#import "Mob.h"
 
 enum PlayerFlags
 {
@@ -41,7 +42,7 @@ enum PlayerFlags
 }
 
 - (NSString*)description {
-    return [NSString stringWithFormat: @"<%@ [%d] [%d%%] (0x%X)>", [self className], [self level], [self currentHealth], [self lowGUID]];
+    return [NSString stringWithFormat: @"<%@ [%d] [%d%%] (0x%X)>", [self className], [self level], [self percentHealth], [self lowGUID]];
 }
 
 
@@ -71,6 +72,13 @@ enum PlayerFlags
 		return value;
     }
     return 0;
+}
+
+- (NSString*)name{
+	WoWObject *object = self;
+	Mob *mob = object;
+	
+	return [mob name];	
 }
 
 @end

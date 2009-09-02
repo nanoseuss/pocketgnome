@@ -3,7 +3,7 @@
 //  Pocket Gnome
 //
 //  Created by Josh on 6/7/09.
-//  Copyright 2009 __MyCompanyName__. All rights reserved.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
 //
 
 #import "LootController.h"
@@ -149,7 +149,7 @@
 	}
 }
 
-#define MAX_ITEMS_IN_LOOT_WINDOW			10
+#define MAX_ITEMS_IN_LOOT_WINDOW			10		// I don't actually know if this is correct, just an estimate
 - (BOOL)isLootWindowOpen{
 	UInt32 lootWindowOpen;
 	int itemsInWindow = 0, i=0;
@@ -175,11 +175,15 @@
 	while ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
 		if ( item > 0 ){
 			// Loot the item!
+			[chatController enter];             // open/close chat box
+            usleep(100000);
 			[chatController sendKeySequence: [NSString stringWithFormat: @"/script LootSlot(%d);%c", i+1, '\n']];
 			usleep(500000);
 		
 			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
+				[chatController enter];             // open/close chat box
+				usleep(100000);
 				[chatController sendKeySequence: [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", i+1, '\n']];
 				usleep(500000);
 			}

@@ -10,6 +10,8 @@
 #import "Controller.h"
 #import "MobController.h"
 #import "Mob.h"
+#import "PlayersController.h"
+#import "Offsets.h"
 
 @interface CombatProfileEditor ()
 @property (readwrite, retain) CombatProfile *currentCombatProfile;
@@ -17,6 +19,7 @@
 
 @interface CombatProfileEditor (Internal)
 - (void)saveCombatProfiles;
+- (void)populatePlayerList;
 @end
 
 @implementation CombatProfileEditor
@@ -58,9 +61,52 @@ static CombatProfileEditor *sharedEditor = nil;
         self.currentCombatProfile = [_combatProfiles objectAtIndex: 0];
         [ignoreTable reloadData];
     }
+	
+	// Populate the player list!
+	[self populatePlayerList];
 }
 
 @synthesize currentCombatProfile = _currentCombatProfile;
+
+
+- (IBAction)playerList: (id)sender{
+	[self populatePlayerList];
+}
+
+- (IBAction)tankSelected: (id)sender{
+	NSNumber *tankGUID = [_currentCombatProfile selectedTankGUID];
+	Unit *tank = [playersController playerWithGUID:[tankGUID unsignedLongLongValue]];
+	
+	PGLog(@"Selected Tank: %@", tank );	
+}
+
+- (void)populatePlayerList{
+	// Generate the menu
+    NSMenu *playerMenu = [[[NSMenu alloc] initWithTitle: @"Player List"] autorelease];
+    
+	NSMenuItem *item;
+
+	NSArray *friendlyPlayers = [playersController friendlyPlayers];
+	
+	if ( [friendlyPlayers count] > 0 ){
+		for(Player *player in friendlyPlayers) {
+			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", player] action: nil keyEquivalent: @""] autorelease];
+			[item setIndentationLevel: 1];
+			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:[player GUID]]];
+			[playerMenu addItem: item];
+		}
+	}
+	else{
+		item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"No Friendly Players Nearby"] action: nil keyEquivalent: @""] autorelease];
+		[item setTag: 0];
+		[item setIndentationLevel: 1];
+		[item setRepresentedObject: nil];
+		[playerMenu addItem: item];
+	}
+	
+	[playerList setMenu: playerMenu];
+    //[playerList selectItemWithTag: tagToSelect];
+}
 
 #pragma mark -
 
