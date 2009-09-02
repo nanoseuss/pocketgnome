@@ -85,13 +85,6 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
                                    
-                                   // route automator
-                                   // fishing
-                                   [NSNumber numberWithBool: NO],       @"FishingPlayAlertSound",
-                                   [NSNumber numberWithBool: YES],      @"FishingFlashScreen",
-                                   [NSNumber numberWithBool: YES],      @"FishingUseGrowl",
-                                   [NSNumber numberWithBool: YES],      @"FishingHideOtherBobbers",
-                                   
                                    nil];
     // NSLog(@"%d, %d", getuid(), geteuid());
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
@@ -240,9 +233,11 @@ static Controller* sharedController = nil;
     [self toggleGUIScripting: nil];
     
     // make us the front process
-    //ProcessSerialNumber psn = { 0, kCurrentProcess };
-    //SetFrontProcess( &psn );
-    //[mainWindow makeKeyAndOrderFront: nil];
+	if ( ![self isWoWFront] ){
+		ProcessSerialNumber psn = { 0, kCurrentProcess };
+		SetFrontProcess( &psn );
+		[mainWindow makeKeyAndOrderFront: nil];
+	}
     _appFinishedLaunching = YES;
     
     // validate game version
@@ -408,7 +403,7 @@ static Controller* sharedController = nil;
 	[self populateWowInstances];
 	//[_wowInstances addObject: [NSNumber numberWithInt:45522]];
 	
-    // NSDate *start = date;
+    //NSDate *start = [NSDate date];
     // BOOL foundPlayer = [self locatePlayerStructure];
     BOOL playerIsValid = [playerDataController playerIsValid];
     
@@ -429,7 +424,7 @@ static Controller* sharedController = nil;
         //PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
         
         //PGLog(@"Memory scan took %.4f sec for %d total objects.", [date timeIntervalSinceNow]*-1.0f, [_mobs count] + [_items count] + [_gameObjects count] + [_players count]);
-        //date = [NSDate date];
+        date = [NSDate date];
         
         [mobController addAddresses: _mobs];
         [itemController addAddresses: _items];
@@ -484,8 +479,6 @@ static Controller* sharedController = nil;
     pid_t wowPID = 0;
     ProcessSerialNumber wowPSN = [self getWoWProcessSerialNumber];
     OSStatus err = GetProcessPID(&wowPSN, &wowPID);
-	
-	//selectedPID
     
     if((err == noErr) && (wowPID > 0)) {
         
@@ -553,11 +546,16 @@ static Controller* sharedController = nil;
 										PGLog(@"Found object list head at 0x%X.", value);
                                         
                                         // load the value at that address and make sure it is 0x18
-                                        UInt32 value2 = 0;
+                                        UInt32 value2 = 0, firstObject = 0;
                                         if([memory loadDataForObject: self atAddress: value Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == 0x18)) {
-                                            PGLog(@"Object list validated.");
-                                            listAddress = [NSNumber numberWithUnsignedLong: value];
-                                            break;
+											PGLog(@"Object list found.");
+											
+											// Need to make sure the next value is > 0, otherwise this is an old list that is now blank! Added as of 3.2.0 - should fix the VERY unlikely chance the list isn't found
+                                            if([memory loadDataForObject: self atAddress: value+0x4 Buffer: (Byte*)&firstObject BufLength: sizeof(firstObject)] && (firstObject > 0)) {
+												PGLog(@"Object list validated.");
+												listAddress = [NSNumber numberWithUnsignedLong: value];
+												break;
+											}
                                         }
 										
 										PGLog(@"Value is 0x%X", value2);
@@ -596,14 +594,24 @@ static Controller* sharedController = nil;
 
 - (BOOL)checkForPlayerGUID: (UInt32)playerGUID atAddress: (UInt32)objAddr inMemory: (MemoryAccess*)memory {
     UInt32 objBaseVal = 0, objGUID = 0;
+	UInt32 objNextStruct = 0, objPrevStruct = 0;
     if([memory loadDataForObject: self atAddress: objAddr Buffer: (Byte*)&objBaseVal BufLength: sizeof(objBaseVal)] && objBaseVal) {
         // if we're here, we have the base address of a wow object
         // from here, we need to compare this object's GUID to our known player GUID
         // in wow objects, the lower 32 bits of a GUID are stored at offset 0x14
         if([memory loadDataForObject: self atAddress: (objAddr + OBJECT_GUID_LOW32) Buffer: (Byte*)&objGUID BufLength: sizeof(objGUID)] && objGUID) {
             
+			[memory loadDataForObject: self atAddress: objAddr + OBJECT_STRUCT3_POINTER Buffer: (Byte*)&objNextStruct BufLength: sizeof(objNextStruct)];
+			[memory loadDataForObject: self atAddress: objAddr + OBJECT_STRUCT4_POINTER Buffer: (Byte*)&objPrevStruct BufLength: sizeof(objPrevStruct)];
+			
             // PGLog(@"Checking object at 0x%X with GUID 0x%X.", objAddr, objGUID);
             if(objGUID == playerGUID) {
+				
+				if ( !objNextStruct || !objNextStruct ){
+					PGLog(@"[Controller] Next/Prev aren't valid!");
+					return NO;
+				}
+				
                 PGLog(@"BAM. Match found at 0x%X.", objAddr);
                 
                 // reset mobs, nodes, and inventory for the new player address
@@ -690,52 +698,6 @@ static Controller* sharedController = nil;
     _scanIsRunning = NO;
 }
 
-- (BOOL)locatePlayerStructure {
-
-    return NO;
-    
-    /* In WoW 3.0.2 and beyond, there is no longer a static pointer to the player structure.
-       The code below is no longer functional for versions 3+ of WoW.
-    */
-
-
-    BOOL foundPlayer = NO;
-    MemoryAccess *memory = [self wowMemoryAccess];
-    
-    // first, try and find the player structure using the static memory location
-    if(memory) {
-        uint32_t value = 0, value2 = 0;
-        if([memory loadDataForObject: self atAddress: PLAYER_STRUCT_PTR_STATIC Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
-            //PGLog(@"Loaded1: 0x%X", value);
-            if([memory loadDataForObject: self atAddress: (value + OBJECT_TYPE_ID) Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == TYPEID_PLAYER)) {
-                foundPlayer = YES;
-                
-                NSNumber *oldAddr = [playerDataController structureAddress];
-                NSNumber *newAddr = [NSNumber numberWithUnsignedInt: value];
-                
-                if( ![oldAddr isEqualToNumber: newAddr]) {
-                    
-                    // reset mobs, nodes, and inventory for the new player address
-                    [mobController resetAllMobs];
-                    [nodeController resetAllNodes];
-                    [itemController resetInventory];
-                    [playersController resetAllPlayers];
-                    
-                    // tell our player controller its new address
-                    [playerDataController setStructureAddress: newAddr];
-                    Player *player = [playerDataController player];
-                    PGLog(@"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
-                }
-            }
-        }
-        if(foundPlayer)  [self setCurrentState: playerValidState];
-        if(!foundPlayer) [self setCurrentState: memoryValidState];
-    }
-    
-    return foundPlayer;
-}
-
-
 - (void)playerHasRevived: (NSNotification*)notification {
     // rescan memory when the player revives
     [self scanObjectGraph];
@@ -783,7 +745,7 @@ static Controller* sharedController = nil;
 
 - (void)loadView: (NSView*)newView withTitle: (NSString*)title {
     if(!newView || (newView == [mainBackgroundBox contentView]) ) return;
-    
+	
     // set the view to blank
     NSView *tempView = [[NSView alloc] initWithFrame: [[mainWindow contentView] frame]];
     [mainBackgroundBox setContentView: tempView];

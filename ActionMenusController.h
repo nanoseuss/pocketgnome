@@ -9,7 +9,6 @@
 #import <Cocoa/Cocoa.h>
 
 @class Controller;
-@class BotController;
 @class SpellController;
 @class InventoryController;
 @class MobController;
@@ -26,7 +25,6 @@ typedef enum ActionMenuTypes {
 @interface ActionMenusController : NSObject {
 
     IBOutlet Controller *controller;
-    IBOutlet BotController *botController;
     IBOutlet SpellController *spellController;
     IBOutlet InventoryController *inventoryController;
     IBOutlet MobController *mobController;

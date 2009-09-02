@@ -57,5 +57,8 @@
 - (NSMenu*)usableInventoryItemsMenu;
 - (NSMenu*)prettyInventoryItemsMenu;
 
+// Total number of marks (from all BG)
+- (int)pvpMarks;
+
 //- (NSMutableArray*)itemsInBags;
 @end

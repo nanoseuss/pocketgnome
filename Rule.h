@@ -17,12 +17,20 @@
     ResultSpecial   = 4,
 } ResultType;*/
 
+typedef enum TargetType {
+	TargetNone = 0,
+	TargetSelf = 1,
+	TargetEnemy = 2,
+	TargetFriend = 3	
+} TargetType;
+
 @interface Rule : NSObject <NSCoding, NSCopying> {
     BOOL _matchAll;
     NSString *_name;
     NSMutableArray *_conditionsList;
     
     Action *_action;
+	int _target;
     
     //ResultType _resultType;
     //unsigned _actionID;
@@ -34,6 +42,7 @@
 //@property ResultType resultType;
 //@property unsigned actionID;
 @property (readwrite, retain) NSArray *conditions;
+@property (readwrite, assign) int target;
 
 // play nice methods
 @property (readonly) ActionType resultType;

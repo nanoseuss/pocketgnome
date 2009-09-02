@@ -26,6 +26,9 @@
         _rank = nil;
         _dispelType = nil;
         _school = nil;
+		_mount = nil;
+		_mechanic = nil;
+		_speed = nil;
         self.castTime = nil;
 
     }
@@ -60,7 +63,10 @@
         self.school = [decoder decodeObjectForKey: @"School"];
         self.dispelType = [decoder decodeObjectForKey: @"DispelType"];
         self.castTime = [decoder decodeObjectForKey: @"CastTime"];
-        
+		self.mount = [decoder decodeObjectForKey: @"Mount"];
+        self.mechanic = [decoder decodeObjectForKey: @"Mechanic"];
+		self.speed = [decoder decodeObjectForKey: @"Speed"];
+		
         if(self.name) {
             NSRange range = [self.name rangeOfString: @"html>"];
             if( ([self.name length] == 0) || (range.location != NSNotFound)) {
@@ -82,6 +88,9 @@
     [coder encodeObject: self.cooldown forKey: @"Cooldown"];
     [coder encodeObject: self.dispelType forKey: @"DispelType"];
     [coder encodeObject: self.castTime forKey: @"CastTime"];
+	[coder encodeObject: self.mount forKey: @"Mount"];
+	[coder encodeObject: self.mechanic forKey: @"Mechanic"];
+	[coder encodeObject: self.speed forKey: @"Speed"];
 }
 
 - (void)dealloc {
@@ -93,6 +102,9 @@
     self.dispelType = nil;
     self.school = nil;
     self.castTime = nil;
+	self.mount = nil;
+	self.mechanic = nil;
+	self.speed = nil;
 
     [_connection release];
     [_downloadData release];
@@ -222,6 +234,24 @@
     [temp release];
 }
 
+- (NSString*)mechanic {
+    NSString *temp = nil;
+    @synchronized (@"Mechanic") {
+        temp = [_mechanic retain];
+    }
+    return [temp autorelease];
+}
+
+- (void)setMechanic: (NSString*)mechanic {
+    id temp = nil;
+    [mechanic retain];
+    @synchronized (@"Mechanic") {
+        temp = _mechanic;
+        _mechanic = mechanic;
+    }
+    [temp release];
+}
+
 - (NSString*)dispelType {
     NSString *temp = nil;
     @synchronized (@"DispelType") {
@@ -254,6 +284,41 @@
     return name;
 }
 
+- (NSNumber*)mount {
+    NSNumber *temp = nil;
+    @synchronized (@"Mount") {
+        temp = [_mount retain];
+    }
+    return [temp autorelease];
+}
+
+- (void)setMount: (NSNumber*)mount {
+    id temp = nil;
+    [mount retain];
+    @synchronized (@"Mount") {
+        temp = _mount;
+        _mount = mount;
+    }
+    [temp release];
+}
+
+- (NSNumber*)speed {
+    NSNumber *temp = nil;
+    @synchronized (@"Speed") {
+        temp = [_speed retain];
+    }
+    return [temp autorelease];
+}
+
+- (void)setSpeed: (NSNumber*)speed {
+    id temp = nil;
+    [speed retain];
+    @synchronized (@"Speed") {
+        temp = _speed;
+        _speed = speed;
+    }
+    [temp release];
+}
 
 - (BOOL)isInstant {
     if(!self.castTime) return NO;
@@ -261,6 +326,18 @@
     if( [self.castTime isEqualToNumber: [NSNumber numberWithFloat: 0]] )
         return YES;
     return NO;
+}
+
+- (BOOL)isMount {
+	if ( [self.mechanic isEqualToString:@"Mounted"] ){
+		return YES;
+	}
+	
+	if ( [self.mount intValue] == MOUNT_AIR || [self.mount intValue] == MOUNT_GROUND) {
+		return YES;
+	}
+	
+	return NO;
 }
 
 #pragma mark -
@@ -272,12 +349,18 @@
 #define NAME_SEPARATOR      @"<title>"
 #define RANK_SEPARATOR      @"<b class=\"q0\">Rank "
 #define SCHOOL_SEPARATOR    @"School</th><td>"
+#define MECHANIC_SEPARATOR	@"Mechanic</th><td>"
 #define DISPEL_SEPARATOR    @"Dispel type</th><td style=\"border-bottom: 0\">"
 #define COST_SEPARATOR      @"Cost</th><td style=\"border-top: 0\">"
 #define RANGE_SEPARATOR     @"<th>Range</th><td>"
 #define CASTTIME_SEPARATOR  @"<th>Cast time</th><td>"
 #define COOLDOWN_SEPARATOR  @"<th>Cooldown</th><td>"
 #define GLOBAL_COOLDOWN_SEPARATOR   @"<div style=\"width: 65%; float: right\">Global cooldown: "
+#define MOUNT				@"Apply Aura: Mounted"
+#define MOUNT_FAST			@"Apply Aura: Mod Speed Mounted"
+#define MOUNT_AIR			@"Apply Aura: Mod Speed Mounted Flight"
+#define MOUNT_GROUND_SPEED	@"<td>Increases speed by "
+#define MOUNT_AIR_SPEED		@"<td>Increases flight speed by "
 
 - (void)reloadSpellData {
     
@@ -392,7 +475,30 @@
         } else {
             [scanner setScanLocation: scanSave]; // some spells dont have ranks
         }
-        
+		
+		// if it's a mount, see if we have a ground speed?
+        scanSave = [scanner scanLocation];
+        if([scanner scanUpToString: MOUNT_GROUND_SPEED intoString: nil] && [scanner scanString: MOUNT_GROUND_SPEED intoString: nil]) {
+            NSString *string  = nil;
+            if([scanner scanUpToString: @"%.</td>" intoString: &string] && string) {
+                self.speed = [NSNumber numberWithInt:[string intValue]];
+            } else{
+                self.speed = nil;
+			}
+        }
+		[scanner setScanLocation: scanSave];
+		
+		// check to see if we have an air speed?
+		// if it's a mount, see if we have a ground speed?
+        scanSave = [scanner scanLocation];
+        if([scanner scanUpToString: MOUNT_AIR_SPEED intoString: nil] && [scanner scanString: MOUNT_AIR_SPEED intoString: nil]) {
+            NSString *string  = nil;
+            if([scanner scanUpToString: @"%.</td>" intoString: &string] && string) {
+                self.speed = [NSNumber numberWithInt:[string intValue]];
+            }
+        }
+		[scanner setScanLocation: scanSave];
+		
         // get spell school
         scanSave = [scanner scanLocation];
         if([scanner scanUpToString: SCHOOL_SEPARATOR intoString: nil] && [scanner scanString: SCHOOL_SEPARATOR intoString: nil]) {
@@ -403,6 +509,18 @@
                 self.school = @"None";
         } else {
             [scanner setScanLocation: scanSave]; // some spells dont have ranks
+        }
+		
+		// get spell mechanic
+        scanSave = [scanner scanLocation];
+        if([scanner scanUpToString: MECHANIC_SEPARATOR intoString: nil] && [scanner scanString: MECHANIC_SEPARATOR intoString: nil]) {
+            NSString *string  = nil;
+            if([scanner scanUpToString: @"</td>" intoString: &string] && string) {
+                self.mechanic = string;
+            } else
+                self.mechanic = @"None";
+        } else {
+            [scanner setScanLocation: scanSave];
         }
         
         // get dispel type
@@ -495,6 +613,34 @@
             [scanner setScanLocation: scanSave]; // some spells dont have cooldowns
 			
 			// PGLog(@"Loaded: %@; Rank %@; %@ yards; %@ seconds; school: %@; dispel: %@", self.name, self.rank, self.range, self.cooldown, self.school, self.dispelType);
+        }
+		
+		
+		// get if this is a mount spell
+        scanSave = [scanner scanLocation];
+        if([scanner scanUpToString: MOUNT intoString: nil] && [scanner scanString: MOUNT intoString: NULL]) {
+			// Find out if this is an air mount
+			if([scanner scanUpToString: MOUNT_AIR intoString: nil] && [scanner scanString: MOUNT_AIR intoString: NULL]) {
+				self.mount = [NSNumber numberWithInt:2];	 
+			}
+			else{
+				self.mount = [NSNumber numberWithInt:1];
+			}
+        } else {
+			self.mount = [NSNumber numberWithInt:0];
+        }
+		[scanner setScanLocation: scanSave];
+		
+		if ( [self.mount intValue] > 0 ){
+			PGLog(@"mount: %@  %@ %@", [self ID], self.mount, self.mechanic);
+		}
+		
+		// get if this is a fast mount
+        scanSave = [scanner scanLocation];
+        if([scanner scanUpToString: MOUNT_FAST intoString: nil] && [scanner scanString: MOUNT_FAST intoString: NULL]) {
+        } else {
+            // PGLog(@"No cast time entry for %@", self);
+            [scanner setScanLocation: scanSave];
         }
     }
 	else{

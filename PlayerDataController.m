@@ -16,6 +16,7 @@
 #import "SpellController.h"
 #import "CombatController.h"
 #import "MemoryViewController.h"
+#import "BotController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -237,11 +238,18 @@ static PlayerDataController* sharedController = nil;
     //  our object type
     // then compare GUIDs and validate object type
     
-    UInt32 globalGUID = 0, selfGUID = 0, objType = 0;
+    UInt32 globalGUID = 0, selfGUID = 0, objType = 0, maxHealth = 0, infoAddress = 0;
     [memory loadDataForObject: self atAddress: PLAYER_GUID_STATIC Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
+	
+	// Get our max health! Sanity check.  For some reason as of 3.2.0 I'm running into issues detecting the player after they leave a BG
+	//	May be as I re-wrote the PvP shizit, not entirely sure
+	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&infoAddress BufLength: sizeof(infoAddress)];
+	[memory loadDataForObject: self atAddress: (infoAddress + UnitField_MaxHealth) Buffer: (Byte *)&maxHealth BufLength: sizeof(maxHealth)];
+	
     if(globalGUID && selfGUID && [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objType BufLength: sizeof(objType)] && (objType == TYPEID_PLAYER)) {
-        if(globalGUID == selfGUID) {
+        if(globalGUID == selfGUID && maxHealth > 0 && infoAddress > [self baselineAddress] ) {
+			
             if(!_lastState) {   // update binding
                 PGLog(@"[Player] Player is valid.");
                 [self loadState];
@@ -255,27 +263,6 @@ static PlayerDataController* sharedController = nil;
         [self resetState];
     }
     return NO;
-    
-    
-    /*
-    // the following is the validation function for pre-3.0
-    // it no longer works because Blizzard removed the global PLAYER_STRUCT_PTR_STATIC
-    
-    UInt32 value = 0, value2 = 0;
-    if([memory loadDataForObject: self atAddress: PLAYER_STRUCT_PTR_STATIC Buffer: (Byte*)&value BufLength: sizeof(value)] && (value == [self baselineAddress])) {
-        if([memory loadDataForObject: self atAddress: (value + OBJECT_TYPE_ID) Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == TYPEID_PLAYER)) {
-            if(!_lastState) {   // update binding
-                PGLog(@"[Player] Player is valid.");
-                [self loadState];
-            }
-            return YES;
-        }
-    }
-    if(_lastState) {
-        PGLog(@"[Player] Player is invalid.");
-        [self resetState];
-    }
-    return NO; */
 }
 
 - (void)resetState {
@@ -516,21 +503,38 @@ static PlayerDataController* sharedController = nil;
     [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Vertical) Buffer: (Byte *)&direction BufLength: sizeof(direction)];
 }
 
-- (void)setClickToMove:(Position*)position{
-	float pos[3] = {0.0f, 0.0f, 0.0f};
-	UInt32 move = 4;
-	pos[0] = [position xPosition];
-	pos[1] = [position yPosition];
-	pos[2] = [position zPosition];
+- (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid{
+	// Set our position!
+	if ( position != nil ){
+		float pos[3] = {0.0f, 0.0f, 0.0f};
+		pos[0] = [position xPosition];
+		pos[1] = [position yPosition];
+		pos[2] = [position zPosition];
 	
-    [[controller wowMemoryAccess] saveDataForAddress: CLICK_TO_MOVE Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
-	[[controller wowMemoryAccess] saveDataForAddress: CLICK_TO_MOVE_ACTION Buffer: (Byte *)&move BufLength: sizeof(move)];
+		[[controller wowMemoryAccess] saveDataForAddress: CTM_POS Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
+	}
+	
+	// Set the GUID of who to interact with!
+	if ( guid > 0 ){
+		[[controller wowMemoryAccess] saveDataForAddress: CTM_GUID Buffer: (Byte *)&guid BufLength: sizeof(guid)];
+	}
+	
+	// Set these other randoms!  These are set if the player actually clicks, but sometimes they won't when they login!  Then it won't work :(  /cry
+	float scale = 0.25f;
+	float unk = 9.0f;
+	float unk2 = 14.0f;		// should this be 7.0f?  If only i knew what this was!
+	[[controller wowMemoryAccess] saveDataForAddress: CTM_UNKNOWN Buffer: (Byte *)&unk BufLength: sizeof(unk)];
+	[[controller wowMemoryAccess] saveDataForAddress: CTM_SCALE Buffer: (Byte *)&scale BufLength: sizeof(scale)];
+	[[controller wowMemoryAccess] saveDataForAddress: CTM_UNKNOWN2 Buffer: (Byte *)&unk2 BufLength: sizeof(unk2)];
+	
+	// Lets start moving!
+	[[controller wowMemoryAccess] saveDataForAddress: CTM_ACTION Buffer: (Byte *)&type BufLength: sizeof(type)];
 }
 
 - (BOOL)isCTMActive{
 	UInt32 value = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: CLICK_TO_MOVE_ACTION Buffer: (Byte*)&value BufLength: sizeof(value)];
-    return (value == 4);
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: CTM_ACTION Buffer: (Byte*)&value BufLength: sizeof(value)];
+    return ((value == ctmWalkTo) || (value == ctmLoot) || (value == ctmInteractNpc) || (value == ctmInteractObject));
 }
 
 // 1 read
@@ -797,34 +801,6 @@ static PlayerDataController* sharedController = nil;
     return NO;
 }
 
-/*
-// Determine what the current player's GCD is w/respect to haste (obviously ignoring talents)
-- (int)GCD{
-	//newCastTime = (castTime/(1+(hasteRating/3279)))	
-	float baseGCD = 1.5f;
-	
-	if ([[self player] unitClass] == UnitClass_Rogue ){
-		baseGCD = 1.0f;
-	}
-	
-	// Don't bother with druids (we should just check on if they are in cat form)
-	if ([[self player] unitClass] == UnitClass_Druid ){
-		return 0;
-	}
-
-	// Only calculate if we're not level 80!
-	if ( [self level] != 80 ){
-		return (int)(baseGCD*1000.0f);
-	}
-	
-	int haste = [self haste];
-	if ( haste > 0 ){
-		return (int)(1000*(baseGCD/(1.0f+(haste/3279))));	
-	}
-	
-	return (int)(baseGCD*1000.0f);
-}*/
-
 - (int)haste {
     MemoryAccess *memory = [controller wowMemoryAccess];
     if(memory) {
@@ -834,7 +810,6 @@ static PlayerDataController* sharedController = nil;
     }
     return 0;
 }
-
 
 - (UInt32)spellCasting {
     MemoryAccess *memory = [controller wowMemoryAccess];
@@ -1140,7 +1115,12 @@ static PlayerDataController* sharedController = nil;
 		if( [[combatTable window] isVisible]) {
 			
 			NSArray *units = [combatController unitsAttackingMe];
-			for(Unit *unit in units) {
+			NSArray *attackQueue = [combatController attackQueue];
+			NSMutableArray *allUnits = [NSMutableArray array];
+			[allUnits addObjectsFromArray:units];
+			[allUnits addObjectsFromArray:attackQueue];
+			
+			for(Unit *unit in allUnits) {
 				
 				if( ![unit isValid] )
 					continue;
@@ -1175,6 +1155,30 @@ static PlayerDataController* sharedController = nil;
 			// Update our combat table!
 			[_combatDataList sortUsingDescriptors: [combatTable sortDescriptors]];
 			[combatTable reloadData];
+			
+			
+			// Update healing info!
+			NSArray *unitsToHeal = [botController availableUnitsToHeal];
+			for(Unit *unit in unitsToHeal) {
+				if( ![unit isValid] )
+					continue;
+				
+				float distance = [[self position] distanceToPosition: [unit position]];
+				[_healingDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+											 unit,                                                                @"Player",
+											 [NSString stringWithFormat: @"0x%X", [unit lowGUID]],                @"ID",
+											 [NSString stringWithFormat: @"%@%@", [unit isPet] ? @"[Pet] " : @"", [Unit stringForClass: [unit unitClass]]],                             @"Class",
+											 [Unit stringForRace: [unit race]],                                   @"Race",
+											 [Unit stringForGender: [unit gender]],                               @"Gender",
+											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
+											 [NSNumber numberWithUnsignedInt: [unit level]],                      @"Level",
+											 [NSNumber numberWithFloat: distance],                                @"Distance", 
+											 nil]];
+			}
+			
+			// Update our combat table!
+			[_healingDataList sortUsingDescriptors: [healingTable sortDescriptors]];
+			[healingTable reloadData];
 		}
 		
 		// Reload our CD info!
@@ -1204,6 +1208,7 @@ static PlayerDataController* sharedController = nil;
 			case 3277:	// Warsong Gulch
 			case 2597:	// Alterac Valley
 			case 3820:	// Eye of the Storm
+			case 4710:	// Isle of Conquest
 				return YES;
 			default:
 				return NO;
@@ -1217,55 +1222,61 @@ static PlayerDataController* sharedController = nil;
 #pragma mark TableView Delegate & Datasource
 
 - (void)tableView:(NSTableView *)aTableView sortDescriptorsDidChange:(NSArray *)oldDescriptors {
-    [combatTable reloadData];
+	[aTableView reloadData];
 }
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-	return [_combatDataList count];
+	if ( aTableView == combatTable ){
+		return [_combatDataList count];
+	}
+	
+	return [[botController availableUnitsToHeal] count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
-    if(rowIndex == -1 || rowIndex >= [_combatDataList count]) return nil;
+	if ( aTableView == combatTable ){
+		if(rowIndex == -1 || rowIndex >= [_combatDataList count]) return nil;
+		
+		if([[aTableColumn identifier] isEqualToString: @"Distance"])
+			return [NSString stringWithFormat: @"%.2f", [[[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
+		
+		if([[aTableColumn identifier] isEqualToString: @"Status"]) {
+			NSString *status = [[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Status"];
+			if([status isEqualToString: @"1"])  status = @"Combat";
+			if([status isEqualToString: @"2"])  status = @"Hostile";
+			if([status isEqualToString: @"3"])  status = @"Dead";
+			if([status isEqualToString: @"4"])  status = @"Neutral";
+			if([status isEqualToString: @"5"])  status = @"Friendly";
+			return [NSImage imageNamed: status];
+		}
+		
+		return [[_combatDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+	}
+	else if ( aTableView == healingTable ){
+		if(rowIndex == -1 || rowIndex >= [_healingDataList count]) return nil;
+		
+		if([[aTableColumn identifier] isEqualToString: @"Distance"])
+			return [NSString stringWithFormat: @"%.2f", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
+		
+		return [[_healingDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+	}
 	
-    if([[aTableColumn identifier] isEqualToString: @"Distance"])
-        return [NSString stringWithFormat: @"%.2f", [[[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-    
-    if([[aTableColumn identifier] isEqualToString: @"Status"]) {
-        NSString *status = [[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Status"];
-        if([status isEqualToString: @"1"])  status = @"Combat";
-        if([status isEqualToString: @"2"])  status = @"Hostile";
-        if([status isEqualToString: @"3"])  status = @"Dead";
-        if([status isEqualToString: @"4"])  status = @"Neutral";
-        if([status isEqualToString: @"5"])  status = @"Friendly";
-        return [NSImage imageNamed: status];
-    }
-    
-    return [[_combatDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+	return nil;
 }
 
-- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex
-{
-    if( aRowIndex == -1 || aRowIndex >= [_combatDataList count]) return;
-    
-    if ([[aTableColumn identifier] isEqualToString: @"Race"]) {
-        [(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"RaceIcon"]];
-    }
-    if ([[aTableColumn identifier] isEqualToString: @"Class"]) {
-        [(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"ClassIcon"]];
-    }
-    /*
-    // do text color
-    if( ![aCell respondsToSelector: @selector(setTextColor:)] )
-        return;
-    
-	Unit *unit = [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"];
-	PGLog(@"[Player] %qu %qu", [[self player] targetID], [unit GUID] );
-	if ( [[self player] targetID] == [unit GUID]){
-		PGLog(@"setting...");
+- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex{
+	
+	if ( aTableView == combatTable ){
+		if( aRowIndex == -1 || aRowIndex >= [_combatDataList count]) return;
 		
-		//[aCell setTextColor: [NSColor redColor]];
+		if ([[aTableColumn identifier] isEqualToString: @"Race"]) {
+			[(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"RaceIcon"]];
+		}
+		if ([[aTableColumn identifier] isEqualToString: @"Class"]) {
+			[(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"ClassIcon"]];
+		}
 	}
-	*/
+
 	return;
 }
 
@@ -1282,7 +1293,7 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (void)combatTableDoubleClick: (id)sender {
-    if( [sender clickedRow] == -1 || [sender clickedRow] >= [[combatController unitsAttackingMe] count] ) return;
+    //if( [sender clickedRow] == -1 || [sender clickedRow] >= [[combatController unitsAttackingMe] count] ) return;
 	
 	//PGLog(@"[Bot] Doublie clicked!");
     

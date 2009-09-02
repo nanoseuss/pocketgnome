@@ -39,7 +39,6 @@
 }
 
 @property BOOL combatEnabled;
-@property BOOL healingEnabled;
 @property (readonly, retain) Unit *attackUnit;
 
 // combat status
@@ -66,6 +65,9 @@
 
 // get all units we're in combat with!
 - (void)doCombatSearch;
+
+// Should only be called when a spell cast fails on a target!
+- (void)blacklistUnit: (Unit*)unit;
 
 ////// INPUTS //////
 // --> playerEnteringCombat

@@ -499,7 +499,7 @@ typedef enum {
     
     Node *node = [[_nodeDataList objectAtIndex: selectedRow] objectForKey: @"Node"];
     
-    [movementController turnToward: [node position]];
+    [movementController turnTowardObject: node];
 }
 
 - (IBAction)targetNode: (id)sender {

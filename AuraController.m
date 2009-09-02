@@ -93,6 +93,21 @@ typedef struct WoWAura {
     UInt32  expiration;
 } WoWAura;
 
+
+
+/*
+ read +0xDB4
+ if -1 then
+ table is at:
+ pointer(+0xC4C)
+ else
+ table is at +0xC34
+ 
+ 0xDB8 is valid count?
+ 
+ */
+
+
 - (NSArray*)aurasForUnit: (Unit*)unit idsOnly: (BOOL)IDs {
     // PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
     UInt32 validAuras = 0;
@@ -102,7 +117,52 @@ typedef struct WoWAura {
     
     // get the number of valid aura buckets
     [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_ValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
-    
+	
+	/*
+	SInt32 tableLocation = 0;
+	UInt32 tableAddress = 0;
+	[wowMemory readAddress: ([unit baseAddress] + 0xDB4) Buffer: (Byte*)&tableLocation BufLength: sizeof(tableLocation)];
+	
+	if ( tableLocation == -1 ){
+		tableAddress = [unit baseAddress] + 0xC4C;
+	}
+	else{
+		tableAddress = [unit baseAddress] + 0xC34;
+	}
+	
+	
+	
+	NSMutableArray *auras = [NSMutableArray array];
+	// Read the first aura!
+	WoWAura aura;
+	[wowMemory loadDataForObject: self atAddress: (tableAddress) + sizeof(aura) Buffer:(Byte*)&aura BufLength: sizeof(aura)];
+	if(IDs) [auras addObject: [NSNumber numberWithUnsignedInt: aura.entryID]];
+	else    [auras addObject: [Aura auraEntryID: aura.entryID 
+										   GUID: aura.guid
+										  bytes: aura.bytes 
+									   duration: aura.duration 
+									 expiration: aura.expiration]];
+	
+	// While we have valid spells!
+	UInt i = 1;
+	while ( aura.entryID != 0 ){
+		
+		[wowMemory loadDataForObject: self atAddress: (tableAddress) + i*sizeof(aura) Buffer:(Byte*)&aura BufLength: sizeof(aura)];
+		
+		
+		if(IDs) [auras addObject: [NSNumber numberWithUnsignedInt: aura.entryID]];
+		else    [auras addObject: [Aura auraEntryID: aura.entryID 
+											   GUID: aura.guid
+											  bytes: aura.bytes 
+										   duration: aura.duration 
+										 expiration: aura.expiration]];
+		
+		//PGLog(@"Found aura %d.", aura.entryID);
+		
+		i++;
+	}
+	*/
+	
     // we're overflowing. try the backup.
     if(validAuras == 0xFFFFFFFF) {
         [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_OverflowValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
@@ -110,10 +170,10 @@ typedef struct WoWAura {
     
     if(validAuras <= 0 || validAuras > 56) 
 	{
-		// PGLog(@"[Auras] Not a valid aura count :/");
+		//PGLog(@"[Auras] Not a valid aura count %d", validAuras);
 		return nil;
 	}
-    
+	
     UInt32 aurasAddress = [unit baseAddress] + BaseField_Auras_Start;
     if(validAuras > 16) {
         // aura overflow
@@ -121,7 +181,7 @@ typedef struct WoWAura {
         if([wowMemory loadDataForObject: self atAddress: ([unit baseAddress] + BaseField_Auras_OverflowPtr1) Buffer: (Byte*)&newAddr BufLength: sizeof(newAddr)] && newAddr) {
             aurasAddress = newAddr;
         } else {
-            // PGLog(@"[Auras] Error finding aura overflow pointer.");
+            PGLog(@"[Auras] Error finding aura overflow pointer.");
             return nil;
         }
     }
@@ -136,7 +196,7 @@ typedef struct WoWAura {
         if([wowMemory loadDataForObject: self atAddress: (aurasAddress) + i*sizeof(aura) Buffer:(Byte*)&aura BufLength: sizeof(aura)]) {
             aura.bytes = CFSwapInt32HostToLittle(aura.bytes);
 			
-			// PGLog(@"[auras] Bytes: %d", aura.bytes);
+			//PGLog(@"[auras] Bytes: %d", aura.bytes);
 			
             // skip empty buckets
             if(aura.entryID == 0) continue;
@@ -182,10 +242,9 @@ typedef struct WoWAura {
                                                duration: aura.duration 
                                              expiration: aura.expiration]];
             
-            // PGLog(@"Found aura %d.", aura.entryID);
+            //PGLog(@"Found aura %d.", aura.entryID);
         }
     }
-    // PGLog(@"%d: %d auras, %d valid.", currentTime, validAuras, [auras count]);
     
     return auras;
 }

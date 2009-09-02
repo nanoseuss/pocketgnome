@@ -19,6 +19,7 @@
 #import "ChatController.h"
 
 #import "WoWObject.h";
+#import "Offsets.h"
 
 #import "Route.h"
 #import "RouteSet.h"
@@ -49,10 +50,14 @@
 - (void)resetMovementTimer;
 - (void)moveToNextWaypoint;
 
+- (void)turnToward: (Position*)position;
+
 - (void)moveBackwardStart;
 - (void)moveBackwardStop;
 
 - (void)correctDirection: (BOOL)force;
+
+- (Waypoint*)closestWaypoint;
 @end
 
 @implementation MovementController
@@ -109,6 +114,11 @@
 
 @synthesize shouldNotify = _notifyForObjectMove;
 
+typedef enum MovementType {
+	MOVE_MOUSE = 0,
+	MOVE_KEYBOARD = 1,
+	MOVE_CTM = 2	
+} MovementType;
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
     if( [playerData playerIsValid] ) {
@@ -124,7 +134,13 @@
     if(!self.isPaused || (([playerData movementFlags] & 0x1) == 0x1)) {
         // stop movement if we haven't already
         PGLog(@"[Move] Pause movement.");
-        [self moveForwardStop];
+		
+		if ( [movementType selectedTag] == MOVE_CTM ){
+			[playerData setClickToMove:nil andType:ctmStop andGUID:0];
+		}
+		else{
+			[self moveForwardStop];
+		}
         
         self.isPaused = YES;
         usleep(100000);
@@ -134,10 +150,28 @@
 - (BOOL)shouldResume {
     
     if(self.isPaused || (([playerData movementFlags] & 0x1) == 0x0)) {
+		
         if(self.unit)
             PGLog(@"[Move] Resume unit movement: %@", self.unit);
-        else
-            PGLog(@"[Move] Resume waypoint movement: %@", self.destination);
+        else{
+			Position *playerPosition = [playerData position];
+			float distance = [playerPosition distanceToPosition:[self.destination position]];
+            PGLog(@"[Move] Resume waypoint movement: %@ Distance: %0.2f", self.destination, distance );
+			
+			// Umm I don't like this, search for a new waypoint?
+			if ( distance > 200.0f ){
+				
+				Waypoint *closestWaypoint = [self closestWaypoint];
+				float newDistance = [playerPosition distanceToPosition:[closestWaypoint position]];
+				
+				PGLog(@"Searching for closer wp! %@, %0.2f route: %@", closestWaypoint, newDistance, _route);
+				
+				if ( newDistance < distance ){
+					self.destination = closestWaypoint;
+					PGLog(@"[Move] Found a closer waypoint! Using %@, %0.2f away!", closestWaypoint, newDistance);
+				}
+			}
+		}
         
         self.isPaused = NO;
         return YES;
@@ -147,6 +181,7 @@
 
 - (void)resumeMovement {
     if([self shouldResume]) {
+		PGLog(@"resumeMovement");
         // if we were moving to a unit, go there
         // otherwise, resume to the next waypoint
         [self moveToPosition: (self.unit ? [self.unit position] : [[self destination] position])];
@@ -155,6 +190,7 @@
 
 - (void)resumeMovementToNearestWaypoint {
     if([self shouldResume]) {
+		PGLog(@"resumeMovementToNearestWaypoint");
         Position *playerPosition = [playerData position];
         Waypoint *waypoint = [[self patrolRoute] waypointClosestToPosition: playerPosition];
         
@@ -162,7 +198,7 @@
         int oldIndex = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
         
         if(newIndex > oldIndex && (newIndex < (oldIndex + 10))) {
-            // PGLog(@"[Move] Found new, closer waypoint.");
+            PGLog(@"[Move] Found new, closer waypoint.");
             [self moveToWaypoint: waypoint];
         } else {
             [self moveToWaypoint: [self destination]];
@@ -196,16 +232,7 @@
         self.shouldAttack = attack;
         
         // determine at which waypoint to start the patrol
-        Waypoint *startWaypoint = nil;
-        Position *playerPosition = [playerData position];
-        float minDist = INFINITY, tempDist;
-        for(Waypoint *waypoint in [route waypoints]) {
-            tempDist = [playerPosition distanceToPosition: [waypoint position]];
-            if( (tempDist < minDist) && (tempDist >= 0.0f)) {
-                minDist = tempDist;
-                startWaypoint = waypoint;
-            }
-        }
+        Waypoint *startWaypoint = [self closestWaypoint];
         
         // reset jump timer and head to the WP
         if(startWaypoint) {
@@ -222,6 +249,21 @@
         [self resetMovementState];
         return;
     }
+}
+
+- (Waypoint*)closestWaypoint{
+	Waypoint *startWaypoint = nil;
+	Position *playerPosition = [playerData position];
+	float minDist = INFINITY, tempDist;
+	for(Waypoint *waypoint in [[self patrolRoute] waypoints]) {
+		tempDist = [playerPosition distanceToPosition: [waypoint position]];
+		if( (tempDist < minDist) && (tempDist >= 0.0f)) {
+			minDist = tempDist;
+			startWaypoint = waypoint;
+		}
+	}
+	
+	return startWaypoint;
 }
 
 - (void)beginPatrolAndStopAtLastPoint {
@@ -252,37 +294,48 @@
         else            [self finishRoute];
         return;
     }
+	
     
     if(!self.unit && (distance < ([playerData speedMax]/2.0f))) {
         PGLog(@"[Move] Waypoint is too close. Moving to the next one.");
         [self moveToNextWaypoint];
         return;
     }
+	
+	PGLog(@"[Move] Moving to %@", position);
 
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
     self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
     
 	
-    if([useSmoothTurning state]) {
+	if ( [movementType selectedTag] == MOVE_MOUSE ){
+		[self moveForwardStop];
+		[self correctDirection: YES];
+		[self moveForwardStart];
+	}
+	else if ( [movementType selectedTag] == MOVE_KEYBOARD ){
         if(!self.isMoving)  [self moveForwardStop];
         [self correctDirection: YES];
         if(!self.isMoving)  [self moveForwardStart];
     } else {
-        [self moveForwardStop];
-        [self correctDirection: YES];
-        [self moveForwardStart];
+		[playerData setClickToMove:position andType:ctmWalkTo andGUID:0];
     }
-	/*
-	if ( ![playerData isCTMActive] ){
-		[playerData setClickToMove:position];
-		PGLog(@"[Move] Moving to %@", position);
-	}
-	else{
-		PGLog(@"[Move] Already moving to %@!", position);
-	}*/
-    
+	
     _movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
+	_movementTimer2 = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(checkPosition:) userInfo: nil repeats: YES];
+}
+
+- (void)checkPosition: (NSTimer*)timer {
+	Position *playerPosition = [playerData position];
+	
+	float distance = [playerPosition distanceToPosition:self.lastSavedPosition];
+	
+	PGLog(@"[Move] %0.2f < %0.2f", distance, [playerData speed]);
+	
+	if ( distance < [playerData speed] ){
+		PGLog(@"[Move] Are we stuck?");
+	}
 }
 
 - (void)moveToWaypoint: (Waypoint*)waypoint {
@@ -309,13 +362,25 @@
             [self resumeMovement];
         }
     } else {
-        PGLog(@"Cannot move to invalid unit.");
+        PGLog(@"Cannot move to invalid unit %@ (%d)", self.unit, notify);
         self.unit = nil;
         self.shouldNotify = NO;
+		
+		[self resumeMovement];
     }
 }
 
+- (void)resetUnit{
+	self.unit = nil;
+	self.shouldNotify = NO;
+}
+
 - (void)establishPosition {
+	if ( [movementType selectedTag] == MOVE_CTM ){
+		return;
+	}
+	
+	PGLog(@"[Move] establishPosition");
     [self moveForwardStart];
     usleep(100000);
     [self moveForwardStop];
@@ -323,6 +388,11 @@
 }
 
 - (void)backEstablishPosition {
+	if ( [movementType selectedTag] == MOVE_CTM ){
+		return;
+	}
+	
+	PGLog(@"[Move] backEstablishPosition");
     [self moveBackwardStart];
     usleep(100000);
     [self moveBackwardStop];
@@ -335,7 +405,7 @@
 - (void)finishAlt {
     id unit = self.unit;
     BOOL notify = self.shouldNotify;
-    [self moveForwardStop];
+    //[self moveForwardStop];
     [self resetMovementTimer];
     [self finishMovingToObject: unit];
     
@@ -379,7 +449,6 @@
                 PGLog(@"[Move] Patrol count expired. Ending patrol.");
                 [self finishRoute];
             } else {
-                // PGLog(@"moveToNextWaypoint");
                 [self moveToWaypoint: [waypoints objectAtIndex: index]];
             }
         } else {
@@ -483,6 +552,9 @@
 
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
+	if ( ![botController isBotting] ) return;
+	
+	//PGLog(@"checkCurrentPosition");
 	
     Position *playerPosition = [playerData position];
     Position *destPosition = (self.unit) ? [self.unit position] : [[self destination] position];
@@ -497,25 +569,30 @@
         else            [self finishRoute];
         return;
     }
+	
+	//PGLog(@"Distance: %0.2f %0.2f", distance, distance2d);
     
     // poll the bot controller
     if([botController isBotting]) {
         if( [self isPatrolling] && [botController evaluateSituation]) {
+			PGLog(@"[Move] Action taken, we don't need to check anything");
             // there was an action taken
             return;
         }
     }
 
-// if we're near our target, move to the next
+	// if we're near our target, move to the next
     float playerSpeed = [playerData speed];
     //if(distance2d < playerSpeed/2.0)  {
 		if(distance2d <= 5.0)  {
         if(!self.unit) {
             if([botController isBotting]) {
                 if([botController shouldProceedFromWaypoint: [self destination]]) {
+					PGLog(@"[Move] Moving to next waypoint 1");
                     [self moveToNextWaypoint];
                 }
             } else {
+				PGLog(@"[Move] Moving to next waypoint 2");
                 [self moveToNextWaypoint];
             }
         } else {
@@ -534,9 +611,10 @@
         }
     }
     
+	
     // if we're not moving forward for some reason, start moving again
-    if(!self.isPaused && (([playerData movementFlags] & 0x1) != 0x1)) {   // [self isPatrolling] && 
-        //PGLog(@"We are stopped for some reason... starting again.");
+    if( (([movementType selectedTag] == MOVE_CTM && ![playerData isCTMActive]) || [movementType selectedTag] != MOVE_CTM ) && !self.isPaused && (([playerData movementFlags] & 0x1) != 0x1)) {   // [self isPatrolling] && 
+        PGLog(@"We are stopped for some reason... starting again.");
         [self moveForwardStop];
         [self moveToPosition: (self.unit ? [self.unit position] : [[self destination] position])];
         return;
@@ -549,6 +627,7 @@
 - (void)resetMovementTimer {
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
     [_movementTimer invalidate]; _movementTimer = nil;
+	[_movementTimer2 invalidate]; _movementTimer2 = nil;
 }
 
 - (void)resetMovementState {
@@ -566,6 +645,7 @@
     self.lastSavedPosition = nil;
     self.movementExpiration = nil;
 }
+
 
 - (void)moveForwardStart {
     [self setIsMoving: YES];
@@ -588,6 +668,13 @@
 }
 
 - (void)moveForwardStop {
+	
+	// CTM only!
+	if ( [movementType selectedTag] == MOVE_CTM ){
+		[playerData setClickToMove:nil andType:ctmStop andGUID:0];
+		return;
+	}
+	
     [self setIsMoving: NO];
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
@@ -686,11 +773,30 @@
 
 #define OneDegree   0.0174532925
 
+- (void)turnTowardObject: (WoWObject*)unit{
+	
+	// Turn toward a unit!
+	if ( [movementType selectedTag] == MOVE_CTM ){
+		[playerData setClickToMove:[unit position] andType:ctmFaceTarget andGUID:[unit GUID]];
+		return;
+	}
+	// for all other movement types!
+	else{
+		[self turnToward: [unit position]];
+	}
+}
+
 - (void)turnToward: (Position*)position {
+	
+	if ( [movementType selectedTag] == MOVE_CTM ){
+		PGLog(@"[Move] In theory we should never be here!");
+		return;
+	}
+	
     BOOL printTurnInfo = NO;
     if( ![controller isWoWFront] || ((GetCurrentButtonState() & 0x2) != 0x2) ) {  // don't change position if the right mouse button is down
         Position *playerPosition = [playerData position];
-        if( [useSmoothTurning state] ) {
+        if( [movementType selectedTag] == MOVE_KEYBOARD ) {
             // check player facing vs. unit position
             float playerDirection, savedDirection;
             playerDirection = savedDirection = [playerData directionFacing];
@@ -803,7 +909,7 @@
                 if(printTurnInfo) PGLog(@"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
                 
             }
-        } else {
+        } else if ( [movementType selectedTag] == MOVE_MOUSE ){
             if(printTurnInfo) PGLog(@"Doing sharp turn to %.2f", [playerPosition angleTo: position]);
             [playerData faceToward: position];
             usleep([controller refreshDelay]);
@@ -847,8 +953,13 @@
         //    PGLog(@"Moved %.2f yards in %.2f seconds.", distanceMoved, timeSpan);
         
         // update the direction we're facing
-        Position *position = self.unit ? [self.unit position] : [self.destination position];
-        [self turnToward: position];
+		Position *position = self.unit ? [self.unit position] : [self.destination position];
+		if ( self.unit ){
+			[self turnTowardObject:self.unit];
+		}
+		else{
+			[self turnToward: position];
+		}
                 
         // find distance moved since last check
         Position *playerPosition = [playerData position];
@@ -867,6 +978,10 @@
             [self correctDirection: YES];
         }
     }
+}
+
+- (BOOL)useSmoothTurning{
+	return ([movementType selectedTag] == MOVE_KEYBOARD);
 }
 
 #pragma mark IB Actions

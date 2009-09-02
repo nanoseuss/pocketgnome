@@ -410,6 +410,26 @@ static InventoryController *sharedInventory = nil;
     return menu;
 }
 
+- (int)pvpMarks{
+	
+	int stacks = 0;
+	for ( Item *item in _itemList ){
+		
+		switch ( [item entryID] ){
+			case 20560:		// Alterac Valley Mark of Honor
+			case 20559:		// Arathi Basin Mark of Honor
+			case 29024:		// Eye of Storm Mark of Honor
+			case 47395:		// Isle of Conquest Mark of Honor
+			case 42425:		// Strand of the Ancients Mark of Honor
+			case 20558:		// Warsong Gulch Mark of Honor
+				stacks += [item count];
+				break;
+		}
+	}
+	
+	return stacks;	
+}
+
 /*
 - (NSMutableArray*)itemsInBags{
 	

@@ -67,6 +67,8 @@
 	BOOL _isFishing;
 	BOOL _ignoreIsFishing;
 	
+	//BOOL _blockActions;			// Used to block our fishing controller from taking action (lets say during applying lure!)
+	
 	int _applyLureAttempts;
 	int _totalFishLooted;
 	int _useContainer;

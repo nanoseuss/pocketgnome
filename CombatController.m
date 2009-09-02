@@ -63,6 +63,8 @@
         
         //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorOutOfRange object: nil];
     }
     return self;
 }
@@ -301,10 +303,10 @@
         if(botController.isBotting) PGLog(@"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
         
         // set player facing and establish position
-        BOOL useSmooth = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"MovementUseSmoothTurning"] boolValue];
+        BOOL useSmooth = [movementController useSmoothTurning];
         
         if(!isCasting) [movementController pauseMovement];
-        [movementController turnToward: [unit position]];
+        [movementController turnTowardObject: unit];
         if(!isCasting && !useSmooth) {
             [movementController backEstablishPosition];
         }
@@ -340,6 +342,43 @@
 }
 
 #pragma mark Blacklist
+
+- (void)invalidTarget: (NSNotification*)notification {
+	
+	// We should blacklist this guy?
+	if ( self.attackUnit ){
+		// Check the GUID of what we just attacked!
+		
+		UInt64 target = [playerData targetID];
+		
+		//PGLog(@"%qx:%qx", target, [self.attackUnit GUID]);
+		
+		if ( target == [self.attackUnit GUID] ){
+			//PGLog(@"[Combat] Target not valid, blacklisting %@", self.attackUnit);
+			
+			//[self blacklistUnit: self.attackUnit];
+			//[self finishUnit:self.attackUnit];
+		}
+	}
+}
+
+- (void)outOfRange: (NSNotification*)notification {
+	
+	// We should blacklist this guy?
+	if ( self.attackUnit ){
+		// Check the GUID of what we just attacked!
+		UInt64 target = [playerData targetID];
+		
+		//PGLog(@"%qx:%qx", target, [self.attackUnit GUID]);
+		
+		if ( target == [self.attackUnit GUID] ){
+			//PGLog(@"[Combat] Out of range, blacklisting %@", self.attackUnit);
+			
+			//[self blacklistUnit: self.attackUnit];
+			//[self finishUnit:self.attackUnit];
+		}
+	}
+}
 
 - (void)blacklistUnit: (Unit*)unit {
     [self refreshBlacklist];
@@ -491,7 +530,7 @@
     
         if(![playerData isCasting]) {
             [movementController pauseMovement];
-            [movementController turnToward: [unit position]];
+            [movementController turnTowardObject: unit];
             usleep( [controller refreshDelay] );
             
             // either move forward or backward
@@ -505,7 +544,7 @@
         [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: self.attackUnit];
         [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: unit];
         
-        PGLog(@"[Combat] Commence attack on %@.", unit);
+        PGLog(@"[Combat] Commence attack on %@. (0x%x:0x%x)", unit, [unit unitBytes1], [unit unitBytes2]);
         [self attackUnit: unit];
         
         // if we aren't in combat after X seconds, something is wrong
@@ -513,6 +552,7 @@
         [self performSelector: @selector(combatCheck:)
                    withObject: unit
                    afterDelay: delay];
+		
         // } else {
         //    PGLog(@"[Combat] Unit %@ moved out of range before attack could begin.", unit);
         //    [self blacklistUnit: unit];
@@ -603,10 +643,19 @@
             
             }
         }*/
-        
-        
-        return [_attackQueue objectAtIndex: 0];
-        
+		
+		Unit *attackUnit = [_attackQueue objectAtIndex: 0];
+		
+		/*for ( Unit *unit in _attackQueue ){
+			
+			if ( ![unit isPet] && [attackUnit isPet] ){
+				PGLog(@"[Combat] Switching from pet %@ to player %@", attackUnit, unit);
+				attackUnit = unit;
+				break;
+			}
+		}*/
+		
+		return attackUnit;
     }
     return nil;
 }
@@ -673,12 +722,8 @@
 	if ( [targetsWithinRange count] > 0 ){
 		for(Unit* unit in targetsWithinRange) {
 			GUID targetID = [unit targetID];
-			if(   self.inCombat                                                 // if we're in combat
-			   && ![playerData isFriendlyWithFaction: [unit factionTemplate]]	// don't display if friendly!
-			   && ((targetID > 0) || [unit isFleeing] )                         // if it has SOMETHING targeted or is fleeing
-			   && (   (targetID == [player GUID])								// if it has us targeted
-				   || ([player hasPet] && (targetID == [player petGUID])))      // ... or our pet
-			   ) {
+			
+			if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] && targetID == [player GUID] ){
 				
 				// Only add it if the unit isn't already in here!
 				if ( ![_unitsAttackingMe containsObject: unit] ){

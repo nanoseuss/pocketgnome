@@ -38,6 +38,8 @@
 		self.yardsBehindTarget = 10.0f;
 		self.healingRange = 40.0f;
 		self.mountEnabled = NO;
+		self.selectedTankGUID = nil;
+		self.healthThreshold = 95;
 
         self.attackRange = 20.0f;
         self.attackLevelMin = 2;
@@ -82,6 +84,8 @@
     copy.yardsBehindTarget = self.yardsBehindTarget;
 	copy.healingRange = self.healingRange;
 	copy.mountEnabled = self.mountEnabled;
+	copy.selectedTankGUID = self.selectedTankGUID;
+	copy.healthThreshold = self.healthThreshold;
 	
     copy.attackRange = self.attackRange;
     copy.attackLevelMin = self.attackLevelMin;
@@ -112,6 +116,8 @@
 		self.yardsBehindTarget = [[decoder decodeObjectForKey: @"YardsBehindTarget"] floatValue];
 		self.healingRange = [[decoder decodeObjectForKey: @"HealingRange"] floatValue];
 		self.mountEnabled = [[decoder decodeObjectForKey: @"MountEnabled"] boolValue];
+		self.selectedTankGUID = [decoder decodeObjectForKey: @"selectedTankGUID"];
+		self.healthThreshold = [[decoder decodeObjectForKey: @"HealthThreshold"] intValue];
 		
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
         self.attackLevelMin = [[decoder decodeObjectForKey: @"AttackLevelMin"] intValue];
@@ -138,6 +144,8 @@
     [coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTarget] forKey: @"YardsBehindTarget"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.healingRange] forKey: @"HealingRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.mountEnabled] forKey: @"MountEnabled"];
+	[coder encodeObject: self.selectedTankGUID forKey: @"selectedTankGUID"];
+	[coder encodeObject: [NSNumber numberWithInt: self.healthThreshold] forKey: @"HealthThreshold"];
 	
     [coder encodeObject: [NSNumber numberWithFloat: self.attackRange] forKey: @"AttackRange"];
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMin] forKey: @"AttackLevelMin"];
@@ -170,6 +178,8 @@
 @synthesize yardsBehindTarget;
 @synthesize healingRange;
 @synthesize mountEnabled;
+@synthesize selectedTankGUID;
+@synthesize healthThreshold;
 
 @synthesize attackRange;
 @synthesize attackLevelMin;

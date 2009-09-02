@@ -23,6 +23,7 @@
 
     IBOutlet id conditionMatchingSegment;
     IBOutlet id conditionResultTypeSegment;
+	IBOutlet id conditionTargetType;
     
     IBOutlet id spellRuleTableView;
     IBOutlet id spellRuleTypeDropdown;

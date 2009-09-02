@@ -306,7 +306,7 @@ static MobController* sharedController = nil;
     //[controller makeWoWFront];
     
     
-    [movementController turnToward: [mob position]];
+    [movementController turnTowardObject: mob];
             
     //if(angleBetween > 0)
     //    [playerDataController setPlayerDirection: angleOffset];

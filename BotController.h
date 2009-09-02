@@ -44,6 +44,11 @@
 
 @class ScanGridView;
 
+#define ErrorSpellNotReady			@"ErrorSpellNotReady"
+#define ErrorTargetNotInLOS			@"ErrorTargetNotInLOS"
+#define ErrorInvalidTarget			@"ErrorInvalidTarget"
+#define ErrorOutOfRange				@"ErrorOutOfRange"
+
 @interface BotController : NSObject {
     IBOutlet Controller             *controller;
     IBOutlet ChatController         *chatController;
@@ -77,7 +82,7 @@
     int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting;
-	BOOL _doCheckForBrokenWeapons;
+	BOOL _doCheckForBrokenWeapons, _doLogOutOnFullInv;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -90,6 +95,12 @@
     NSSize minSectionSize, maxSectionSize;
     NSDate *stopDate;
 	NSDate *_botStarted;
+	int _lastActionErrorCode;
+	UInt32 _lastActionTime;
+	
+	// healing shit
+	BOOL _shouldFollow;
+	Unit *_lastUnitAttemptedToHealed;
     
 	// improved loot shit
 	WoWObject *_unitToLoot;
@@ -104,7 +115,10 @@
     IBOutlet NSPanel *pvpBMSelectPanel;
     IBOutlet NSButton *pvpAutoReleaseCheckbox;
     IBOutlet NSImageView *pvpBannerImage;
-    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
+    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox, *pvpWaitForPreparationBuff;
+	BOOL _pvpIsInBG;
+	NSTimer *_pvpTimer;
+	int _pvpMarks;
     
     // -----------------
     // -----------------
@@ -120,15 +134,18 @@
     IBOutlet NSTextField *minLevelText, *maxLevelText;
     IBOutlet NSButton *anyLevelCheckbox;
     
-    IBOutlet id miningCheckbox;
-	IBOutlet id brokenWeaponsCheckbox;
-    IBOutlet id herbalismCheckbox;
+    IBOutlet NSButton *miningCheckbox;
+	IBOutlet NSButton *brokenWeaponsCheckbox;
+	IBOutlet NSButton *fullInventoryCheckbox;
+    IBOutlet NSButton *herbalismCheckbox;
     IBOutlet id miningSkillText;
     IBOutlet id herbalismSkillText;
-    IBOutlet id skinningCheckbox;
+    IBOutlet NSButton *skinningCheckbox;
     IBOutlet id skinningSkillText;
     IBOutlet id gatherDistText;
-    IBOutlet id lootCheckbox;
+    IBOutlet NSButton *lootCheckbox;
+	IBOutlet NSButton *mountCheckbox;
+	IBOutlet NSPopUpButton *mountType;
     
     IBOutlet id atkPlayersCheckbox;
     IBOutlet id atkNeutralNPCsCheckbox;
@@ -141,15 +158,12 @@
     IBOutlet SRRecorderControl *petAttackRecorder;
     IBOutlet SRRecorderControl *startstopRecorder;
 	IBOutlet SRRecorderControl *mouseOverRecorder;
-	IBOutlet SRRecorderControl *mountRecorder;
     PTHotKey *StartStopBotGlobalHotkey;
     
     IBOutlet NSTextField *statusText;
 	IBOutlet NSTextField *runningTimer;
     IBOutlet NSWindow *overlayWindow;
     IBOutlet ScanGridView *scanGrid;
-	
-	int _test;
 }
 
 @property (readonly) NSView *view;
@@ -184,7 +198,6 @@
 - (IBAction)testHotkey: (id)sender;
 
 - (void)updateRunningTimer;
-//- (void)performAction: (Action*)action;
 
 - (IBAction)editCombatProfiles: (id)sender;
 - (IBAction)updateStatus: (id)sender;
@@ -203,9 +216,8 @@
 - (int)errorValue: (NSString*)errorMessage;
 - (BOOL)interactWithMouseoverGUID: (UInt64) guid;
 - (void)interactWithMob:(UInt32)entryID;
+- (NSArray*)availableUnitsToHeal;
 
 - (void) updateRunningTimer;
-
-- (IBAction)testRandomStuff: (id)sender;
 
 @end

@@ -9,13 +9,19 @@
 #import <Cocoa/Cocoa.h>
 #import "CombatProfile.h"
 
-@interface CombatProfileEditor : NSObject {
-    IBOutlet NSPanel        *editorPanel;
-    IBOutlet NSPanel        *renamePanel;
-    IBOutlet NSTableView    *ignoreTable;
+@class PlayersController;
+@class Player;
 
-    NSMutableArray          *_combatProfiles;
-    CombatProfile           *_currentCombatProfile;
+@interface CombatProfileEditor : NSObject {
+    IBOutlet NSPanel			*editorPanel;
+    IBOutlet NSPanel			*renamePanel;
+    IBOutlet NSTableView		*ignoreTable;
+	IBOutlet NSPopUpButton		*playerList;
+	
+	IBOutlet PlayersController	*playersController;
+	
+    NSMutableArray				*_combatProfiles;
+    CombatProfile				*_currentCombatProfile;
 }
 
 + (CombatProfileEditor *)sharedEditor;
@@ -39,5 +45,9 @@
 - (IBAction)deleteIgnoreEntry: (id)sender;
 
 - (IBAction)closeEditor: (id)sender;
+
+- (IBAction)playerList: (id)sender;
+
+- (IBAction)tankSelected: (id)sender;
 
 @end

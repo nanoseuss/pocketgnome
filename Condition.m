@@ -103,7 +103,6 @@
 @synthesize unit = _unit;
 @synthesize quality = _quality;
 @synthesize comparator = _comparator;
-@synthesize variety = _variety;
 @synthesize state = _state;
 @synthesize type = _type;
 

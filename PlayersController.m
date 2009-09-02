@@ -271,6 +271,21 @@ static PlayersController *sharedPlayers = nil;
 
 #pragma mark -
 
+- (NSArray*)friendlyPlayers{
+	
+	NSMutableArray *friendlyUnits = [NSMutableArray array];
+	
+	for(Unit *unit in _playerList) {
+		int faction = [unit factionTemplate];
+		BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
+	
+		if ( isFriendly){
+			[friendlyUnits addObject: unit];
+		}	
+	}
+	
+	return friendlyUnits;
+}
 
 - (NSArray*)playersWithinDistance: (float)unitDistance
                        levelRange: (NSRange)range
@@ -282,7 +297,7 @@ static PlayersController *sharedPlayers = nil;
     NSMutableArray *unitsWithinRange = [NSMutableArray array];
     
     BOOL ignoreLevelOne = [playerData level] > 10 ? YES : NO;
-    
+	
     for(Unit *unit in _playerList) {
         
         float distance = [[(PlayerDataController*)playerData position] distanceToPosition: [unit position]];
@@ -297,7 +312,7 @@ static PlayersController *sharedPlayers = nil;
             int faction = [unit factionTemplate];
             BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
             BOOL isHostile = [playerData isHostileWithFaction: faction];
-            
+
             // only include:
             if(   [unit isValid]                                                // 1) valid units
                && ![unit isDead]                                                // 2) units that aren't dead
@@ -347,7 +362,7 @@ static PlayersController *sharedPlayers = nil;
     if(selectedRow >= [_playerDataList count]) return;
     Player *player = [[_playerDataList objectAtIndex: selectedRow] objectForKey: @"Player"];
     
-    [movementController turnToward: [player position]];
+    [movementController turnTowardObject: player];
 }
 
 - (IBAction)targetPlayer: (id)sender {

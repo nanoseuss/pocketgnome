@@ -19,6 +19,7 @@
         self.conditions = [NSArray array];
         self.name = nil;
         self.action = [Action action];
+		self.target = -1;
         //self.actionID = 0;
         //self.resultType = 0;
     }
@@ -32,6 +33,7 @@
         [self setName: [decoder decodeObjectForKey: @"Name"]];
         [self setIsMatchAll: [[decoder decodeObjectForKey: @"MatchAll"] boolValue]];
         [self setConditions: [decoder decodeObjectForKey: @"Conditions"]];
+		[self setTarget: [[decoder decodeObjectForKey: @"Target"] intValue]];
         
         // we have an old-style rule we must import
         if([decoder decodeObjectForKey: @"ResultType"] && [decoder decodeObjectForKey: @"ActionID"]) {
@@ -54,6 +56,7 @@
     [coder encodeObject: [NSNumber numberWithBool: [self isMatchAll]] forKey: @"MatchAll"];
     [coder encodeObject: [self conditions] forKey: @"Conditions"];
     [coder encodeObject: self.action forKey: @"Action"];
+	[coder encodeObject: [NSNumber numberWithInt:self.target] forKey: @"Target"];
     
     //[coder encodeObject: [NSNumber numberWithInt: [self resultType]] forKey: @"ResultType"];
     //[coder encodeObject: [NSNumber numberWithUnsignedInt: [self actionID]] forKey: @"ActionID"];
@@ -67,6 +70,7 @@
     copy.conditions = self.conditions;
     copy.isMatchAll = self.isMatchAll;
     copy.action = self.action;
+	copy.target = self.target;
     //copy.resultType = self.resultType;
     //copy.actionID = self.actionID;
             
@@ -95,6 +99,7 @@
 @synthesize isMatchAll = _matchAll;
 @synthesize conditions = _conditionsList;
 @synthesize action = _action;
+@synthesize target = _target;
 //@synthesize resultType = _resultType;
 //@synthesize actionID = _actionID;
 

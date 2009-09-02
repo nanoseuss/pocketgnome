@@ -10,6 +10,7 @@
 #import "IgnoreEntry.h"
 
 @class Unit;
+@class Player;
 
 @interface CombatProfile : NSObject <NSCoding, NSCopying> {
     NSString *_name;
@@ -21,6 +22,8 @@
 	// Healing
 	BOOL healingEnabled, autoFollowTarget, mountEnabled;
 	float yardsBehindTarget, healingRange;
+	int healthThreshold;
+	NSNumber *selectedTankGUID;
     
     float attackRange;
     int attackLevelMin, attackLevelMax;
@@ -40,6 +43,7 @@
 
 @property (readwrite, retain) NSArray *entries;
 @property (readwrite, copy) NSString *name;
+@property (readwrite, retain) NSNumber *selectedTankGUID;
 @property (readwrite, assign) BOOL combatEnabled;
 @property (readwrite, assign) BOOL onlyRespond;
 @property (readwrite, assign) BOOL attackNeutralNPCs;
@@ -55,6 +59,7 @@
 @property (readwrite, assign) float yardsBehindTarget;
 @property (readwrite, assign) float healingRange;
 @property (readwrite, assign) BOOL mountEnabled;
+@property (readwrite, assign) int healthThreshold;
 
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) int attackLevelMin;

@@ -31,7 +31,7 @@
     IBOutlet id combatController;
     IBOutlet PlayerDataController *playerData;
     
-    IBOutlet id useSmoothTurning;
+	IBOutlet NSPopUpButton *movementType;
 
     BOOL _shouldAttack;
     BOOL _shouldJump;
@@ -48,6 +48,9 @@
     Waypoint *_destination;
     Unit *_unit;
     Route *_route;
+	
+	// New error correction stuff
+	NSTimer *_movementTimer2;
 }
 
 @property BOOL isMoving;
@@ -55,6 +58,7 @@
 @property BOOL shouldJump;
 
 - (void)resetMovementState;     // reset ALL movement state, completely
+- (void)resetUnit;				// just sets the unit to nil
 
 - (void)pauseMovement;
 - (void)resumeMovement;
@@ -73,10 +77,12 @@
 - (void)moveToObject: (WoWObject*)unit andNotify: (BOOL)notifyBotController;
 - (void)moveToWaypoint: (Waypoint*)waypoint;
 
-- (void)turnToward: (Position*)position;
+- (void)turnTowardObject: (WoWObject*)unit;
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;
+
+- (BOOL)useSmoothTurning;
 
 - (IBAction)prefsChanged: (id)sender;
 @end

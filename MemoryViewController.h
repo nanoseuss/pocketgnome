@@ -10,9 +10,11 @@
 #import "MemoryAccess.h"
 
 @class Controller;
+@class OffsetController;
 
 @interface MemoryViewController : NSView {
     IBOutlet Controller *controller;
+	IBOutlet OffsetController *offsetController;
     IBOutlet id memoryTable;
     IBOutlet id memoryViewWindow;
     IBOutlet NSView *view;
@@ -45,6 +47,7 @@
 - (IBAction)snapshotMemory: (id)sender;
 - (IBAction)saveValues: (id)sender;
 - (IBAction)clearValues: (id)sender;
+- (IBAction)dumpOffsets: (id)sender;
 
 - (int)displayFormat;
 - (void)setDisplayFormat: (int)displayFormat;
