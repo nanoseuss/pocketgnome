@@ -61,6 +61,10 @@ typedef enum {
 - (NSNumber*)durability;
 - (NSNumber*)maxDurability;
 
+- (UInt32)flags;
+- (UInt32)infoFlags;
+- (UInt32)infoFlags2;
+
 // Enchantment info
 - (UInt32)hasPermEnchantment;
 - (UInt32)hasTempEnchantment;

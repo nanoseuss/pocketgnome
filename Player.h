@@ -81,7 +81,7 @@ typedef enum eCharacterSlot {
 //} UnitBloc;
 
 @interface Player : Unit {
-    
+    UInt32 _nameEntryID;
 }
 
 + (id)playerWithAddress: (NSNumber*)address inMemory: (MemoryAccess*)memory;
@@ -90,6 +90,4 @@ typedef enum eCharacterSlot {
 - (BOOL)isGM;
 
 - (GUID)itemGUIDinSlot: (CharacterSlot)slot;    // invalid for other players
-
-- (NSString*)name;
 @end

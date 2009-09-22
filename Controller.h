@@ -72,19 +72,28 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     NSString *_matchExistingApp;
     
     NSMutableArray *_items, *_mobs, *_players, *_gameObjects, *_dynamicObjects, *_corpses;
+	
+	NSMutableDictionary *_names;
+	NSMutableArray *_checkedAddresses;
+	
     MemoryAccess *_wowMemoryAccess;
     NSString *_savedStatus;
     BOOL _appFinishedLaunching;
     int _currentState;
     BOOL _isRegistered;
-    BOOL _foundPlayer, _scanIsRunning;
+    BOOL _foundPlayer/*, _scanIsRunning*/;
     NSMutableArray *_ignoredDepthAddresses;
+	
+	UInt32 _globalGUID;
+	UInt32 _currentObjectListPtr;
+	BOOL _invalidPlayerNotificationSent;
 
     NSDictionary *factionTemplate;
 }
 
 + (Controller *)sharedController;
 
+@property UInt32 currentObjectListPtr;
 @property BOOL isRegistered;
 @property (readwrite, retain) NSNumber *selectedPID;
 

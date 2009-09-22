@@ -3,7 +3,7 @@
 //  Pocket Gnome
 //
 //  Created by Josh on 9/1/09.
-//  Copyright 2009 __MyCompanyName__. All rights reserved.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
 //
 
 #import "OffsetController.h"
@@ -24,8 +24,9 @@
 
 @implementation OffsetController
 
-#define PLAYER_NAME_STATIC "\xba\x48\xfd\x53\x01\x0f\x45\xc2\x5d\xc3\x55\x89" //BA 48 FD 53  01 0F 45 C2 5D C3 55 89
-#define PLAYER_NAME_STATIC_MASK "x????xxxxxxx"
+//sub_26A988
+#define PLAYER_NAME_STATIC "\xBA\x48\xFD\x53\x01\x0F\x45\xC2\x5D\xC3"
+#define PLAYER_NAME_STATIC_MASK "x????xxxxx"
 
 
 - (void)dumpOffsets{
@@ -77,12 +78,8 @@
 							// This is where we want to find patterns!
                             
 							unsigned long player_name = [self findPatternWithByteMask:PLAYER_NAME_STATIC withStringMask:PLAYER_NAME_STATIC_MASK withData:ReturnedBuffer withLen:SourceSize];
-							unsigned long tmp = [self findPatternWithByteMask:"\xE8\x00\x00\x00\x00\x68\x91"  withStringMask:"x????xx" withData:ReturnedBuffer withLen:SourceSize];
-							unsigned long tmp2 = [self findPatternWithByteMask:"\x56\x57\x68\x00\x00\x00\x00\xB8\x05"  withStringMask:"xxx????xx" withData:ReturnedBuffer withLen:SourceSize];
-	
-							if ( player_name > 0 || tmp > 0 || tmp2 > 0 ){
-								PGLog(@"0x%x 0x%x 0x%x", player_name, tmp, tmp2);
-							}
+
+							PGLog(@"0x%x", player_name);
 						}
                     } NS_HANDLER {
                     } NS_ENDHANDLER

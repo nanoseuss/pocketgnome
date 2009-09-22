@@ -30,6 +30,7 @@
 
     NSMutableArray *_playerList;
     NSMutableArray *_playerDataList;
+	NSMutableDictionary *_playerNameList;
 
     int cachedPlayerLevel;
     NSTimer *_updateTimer;
@@ -51,6 +52,7 @@
 - (void)addAddresses: (NSArray*)addresses;
 //- (BOOL)addPlayer: (Player*)player;
 - (void)resetAllPlayers;
+- (void)addPlayerNames: (NSDictionary*)names;
 
 - (NSArray*)playersWithinDistance: (float)distance
                        levelRange: (NSRange)range

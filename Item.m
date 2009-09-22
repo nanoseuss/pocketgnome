@@ -449,6 +449,14 @@ enum ItemFlags
     return 0;
 }
 
+- (UInt32)infoFlags2 {
+    UInt32 value = 0;
+    if([_memory loadDataForObject: self atAddress: ([self baseAddress] + Item_InfoField2) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+        return CFSwapInt32HostToLittle(value);
+    }
+    return 0;
+}
+
 - (ItemType)itemType {
     return ([self infoFlags] & 0xFF);
 }

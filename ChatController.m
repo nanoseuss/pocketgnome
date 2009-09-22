@@ -54,18 +54,6 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     [self sendKeySequence: @" "];
 }
 
-- (void)releaseBody {
-    [self sendKeySequence: [NSString stringWithFormat: @"/script RepopMe();%c", '\n']];
-}
-
-- (void)dismount {
-    [self sendKeySequence: [NSString stringWithFormat: @"/dismount%c", '\n']];
-}
-
-- (void)retrieveCorpse {
-    [self sendKeySequence: [NSString stringWithFormat: @"/script RetrieveCorpse();%c", '\n']];
-}
-
 BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode) 
 {
     KeyboardLayoutRef keyboard;

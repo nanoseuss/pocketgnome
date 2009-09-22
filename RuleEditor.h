@@ -28,7 +28,7 @@
     IBOutlet id spellRuleTableView;
     IBOutlet id spellRuleTypeDropdown;
     
-    IBOutlet id resultActionDropdown;
+    IBOutlet NSPopUpButton *resultActionDropdown;
     IBOutlet id ruleNameText;
     IBOutlet id ruleEditorWindow;
     

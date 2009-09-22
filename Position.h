@@ -31,6 +31,7 @@
 - (float)dotProduct: (Position*)position;
 - (Position*)difference: (Position*)position;
 
+- (BOOL)isEqual:(id)other;
 @end
 
 @protocol UnitPosition

@@ -214,6 +214,19 @@ static MobController* sharedController = nil;
     return nil;
 }
 
+- (NSArray*)mobsWithEntryID: (int)entryID {
+
+	NSMutableArray *mobs = [NSMutableArray array];
+    for(Mob *mob in _mobList) {
+		
+		if( entryID == [mob entryID]) {
+			[mobs addObject: mob];
+		}
+	}
+	
+    return mobs;
+}
+
 - (Mob*)mobWithGUID: (GUID)guid {
     for(Mob *mob in _mobList) {
         if( guid == [mob GUID]) {
@@ -375,11 +388,7 @@ static MobController* sharedController = nil;
         
         // PGLog(@"Moving to mob: %@", mobToMove);
         
-        // !!!: remove this hack when 10.5.7 ships
-        //[controller makeWoWFront];
-        
         [movementController moveToObject: mobToMove andNotify: NO];
-        //[movementController moveToWaypoint: [Waypoint waypointWithPosition: mobPosition]];
     }
 }
 
@@ -389,6 +398,34 @@ static MobController* sharedController = nil;
 }
 
 #pragma mark -
+
+- (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position{
+	
+	NSMutableArray *withinRangeMobs = [NSMutableArray array];
+    for(Mob *mob in _mobList) {
+		
+		// Just return nearby mobs
+		if ( mobIDs == nil ){
+			float distance = [position distanceToPosition: [mob position]];
+			if((distance != INFINITY) && (distance <= mobDistance)) {
+				[withinRangeMobs addObject: mob];
+			}
+		}
+		else{
+			for ( NSNumber *entryID in mobIDs ){
+				if ( [mob entryID] == [entryID intValue] ){
+					float distance = [position distanceToPosition: [mob position]];
+					if((distance != INFINITY) && (distance <= mobDistance)) {
+						[withinRangeMobs addObject: mob];
+					}
+				}
+			}
+		}
+	}
+	
+	return withinRangeMobs;
+}
+
 
 - (NSArray*)mobsWithinDistance: (float)mobDistance
                     levelRange: (NSRange)range
@@ -438,7 +475,7 @@ static MobController* sharedController = nil;
     return withinRangeMobs;
 }
 
-- (Mob*)closesMobForInteraction:(UInt32)entryID {
+- (Mob*)closestMobForInteraction:(UInt32)entryID {
     
     Position *playerPosition = [(PlayerDataController*)playerData position];
     

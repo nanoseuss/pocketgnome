@@ -89,14 +89,18 @@
 
 - (Waypoint*)waypointClosestToPosition: (Position*)position {
     Waypoint *closestWP = nil;
-    float minDist = INFINITY, tempDist;
+    float minDist = INFINITY, tempDist = 0;
     for(Waypoint *waypoint in [self waypoints]) {
         tempDist = [position distanceToPosition: [waypoint position]];
+		//PGLog(@" %0.2f < %0.2f  %@", tempDist, minDist, waypoint);
         if( (tempDist < minDist) && (tempDist >= 0.0f)) {
             minDist = tempDist;
             closestWP = waypoint;
         }
     }
+
+	PGLog(@"[Move] Closest WP found at a distance of %0.2f  Vertical Distance: %0.2f Total waypoints searched: %d", minDist, [position verticalDistanceToPosition:[closestWP position]], [[self waypoints] count]);
+	
     return [[closestWP retain] autorelease];
 }
 

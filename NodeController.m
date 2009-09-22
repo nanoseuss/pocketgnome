@@ -221,6 +221,7 @@ typedef enum {
 #pragma mark Dataset Modification
 
 - (void)addAddresses: (NSArray*)addresses {
+	
     NSMutableDictionary *addressDict = [NSMutableDictionary dictionary];
     NSMutableArray *objectsToRemove = [NSMutableArray array];
     NSMutableArray *dataList = _nodeList;
@@ -258,6 +259,18 @@ typedef enum {
     [self didChangeValueForKey: @"nodeCount"];
 }
 
+- (BOOL)removeFinishedNode: (Node*)node{
+	if ( [_finishedNodes containsObject:node] ){
+		[_finishedNodes removeObject:node];
+		PGLog(@"[Node] Node %@ removed from blacklist", node);
+		return YES;
+	}
+	
+	PGLog(@"[Node] Node %@ not found in blacklist", node);
+	
+	return NO;	
+}
+
 /*- (BOOL)addNode: (Node*)newNode {
     if(newNode && ![self trackingNode: newNode] && [newNode isValid]) {
         
@@ -276,7 +289,7 @@ typedef enum {
     return [_nodeList count];
 }
 
-- (void)finishedNode: (Node*)node {
+- (void)finishedNode: (Node*)node{
     if(node && ![_finishedNodes containsObject: node]) {
         [_finishedNodes addObject: node];
     }
@@ -332,28 +345,24 @@ typedef enum {
 
 #pragma mark External Query
 
-- (NSArray*)allFishingSchools{
-	NSArray *nodeList = [[_nodeList copy] autorelease];
-	NSMutableArray *nodes = [NSMutableArray array];
-    
-    for(Node *node in nodeList) {
-		if ( [node nodeType] == GAMEOBJECT_TYPE_FISHINGHOLE ){
-			[nodes addObject: node];
-		}
-    }
-    
-    return nodes;
-}
 
-- (NSArray*)allFishingBobbers{
-
+- (NSArray*)nodesOfType:(UInt32)nodeType shouldLock:(BOOL)lock {
+	
 	// Make a copy or we will run into some "Collection <NSCFArray: 0x13a0e0> was mutated while being enumerated." errors and crash
 	//   Mainly b/c we access this from another thread
-	NSArray *nodeList = [[_nodeList copy] autorelease];
-	NSMutableArray *nodes = [NSMutableArray array];
+	NSArray *nodeList = nil;
+	if (lock ){
+		@synchronized(_nodeList){
+			nodeList = [[_nodeList copy] autorelease];
+		}
+	}
+	else{
+		nodeList = [[_nodeList copy] autorelease];
+	}
 	
+	NSMutableArray *nodes = [NSMutableArray array];
 	for(Node *node in nodeList) {
-		if ( [node nodeType] == GAMEOBJECT_TYPE_FISHING_BOBBER ){
+		if ( [node nodeType] == nodeType ){
 			[nodes addObject: node];
 		}
 	}
@@ -381,6 +390,33 @@ typedef enum {
     }
     
     return nodes;
+}
+- (NSArray*)nodesWithinDistance: (float)nodeDistance NodeIDs: (NSArray*)nodeIDs position:(Position*)position{
+	
+	NSMutableArray *nearbyNodes = [NSMutableArray array];
+    for(Node *node in _nodeList) {
+		
+		// Just return nearby nodes
+		if ( nodeIDs == nil ){
+			float distance = [position distanceToPosition: [node position]];
+			if((distance != INFINITY) && (distance <= nodeDistance)) {
+				[nearbyNodes addObject: node];
+			}
+		}
+		else{
+			for ( NSNumber *entryID in nodeIDs ){
+				if ( [node entryID] == [entryID intValue] ){
+					float distance = [position distanceToPosition: [node position]];
+					PGLog(@"Found %d == %d with distance of %0.2f", [node entryID], [entryID intValue], distance);
+					if((distance != INFINITY) && (distance <= nodeDistance)) {
+						[nearbyNodes addObject: node];
+					}
+				}
+			}
+		}
+	}
+	
+	return nearbyNodes;
 }
 
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type {
@@ -421,11 +457,28 @@ typedef enum {
     NSArray *nodeList = _nodeList;
     Position *playerPosition = [(PlayerDataController*)playerController position];
     for(Node* node in nodeList) {
-		if( [node isValid] && [node entryID]==entryID && [node isUseable] && ([playerPosition distanceToPosition: [node position]] <= 8) ) {
+		
+		if ( [node entryID]==entryID ){
+			PGLog(@"Node id found! %d", [node entryID]);
+			
+			PGLog(@"%d %d %d", [node isValid], [node isUseable], ([playerPosition distanceToPosition: [node position]] <= 10) );
+		}
+		
+		if( [node isValid] && [node entryID]==entryID && [node isUseable] && ([playerPosition distanceToPosition: [node position]] <= 10) ) {
             return node;
         }
     }
 	PGLog(@"[Node] No node for interaction");
+    return nil;
+}
+
+- (Node*)nodeWithEntryID:(UInt32)entryID{
+	for(Node* node in _nodeList) {
+		if ( [node entryID] == entryID ){
+			return node;
+		}
+    }
+	
     return nil;
 }
 

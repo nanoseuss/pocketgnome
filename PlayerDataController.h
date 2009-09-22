@@ -19,6 +19,7 @@
 @class BotController;
 @class SpellController;
 @class MemoryViewController;
+@class NodeController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -30,12 +31,15 @@
 //#define PlayerEnteringCombatNotification    @"PlayerEnteringCombatNotification"
 //#define PlayerLeavingCombatNotification     @"PlayerLeavingCombatNotification"
 
+#define ZoneStrandOfTheAncients		4384
+
 @interface PlayerDataController : NSObject <UnitPosition> {
     IBOutlet Controller				*controller;
     IBOutlet BotController			*botController;
     IBOutlet SpellController		*spellController;
     IBOutlet CombatController		*combatController;
     IBOutlet MemoryViewController	*memoryViewController;
+	IBOutlet NodeController			*nodeController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
@@ -108,8 +112,6 @@
 - (float)directionFacing;
 - (void)setDirectionFacing: (float)direction;
 - (void)setMovementFlags:(UInt32)movementFlags;
-- (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;
-- (BOOL)isCTMActive;
 - (UInt32)movementFlags;
 - (UInt64)movementFlags64;
 - (void)faceToward: (Position*)position;
@@ -136,11 +138,14 @@
 - (BOOL)isIndoors;
 - (BOOL)isOutdoors;
 
+- (BOOL)isOnGround;
 
 - (UInt32)spellCasting;
 - (float)castTime;
 - (float)castTimeRemaining;
 - (UInt32)currentTime;
+
+- (UInt32)factionTemplate;
 
 - (int)haste;
 //- (int)GCD;	// returned in milliseconds
@@ -152,7 +157,11 @@
 
 - (void)refreshPlayerData;
 
+- (UInt32)zone;
 - (BOOL)isInBG;
-
+- (BOOL)isOnBoatInStrand;
+- (BOOL)isOnLeftBoatInStrand;
+- (BOOL)isOnRightBoatInStrand;
+- (Position*)closestPositionToGate: (BOOL)leftBoat;
 
 @end

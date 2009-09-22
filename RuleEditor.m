@@ -83,13 +83,16 @@
     
     Rule *newRule = nil;
     if([conditions count]) {
+		
+		NSNumber *value = [NSNumber numberWithUnsignedInt: [[resultActionDropdown selectedItem] tag]];
+		
         newRule = [[Rule alloc] init];
         
         [newRule setName: [ruleNameText stringValue]];
         [newRule setConditions: conditions];
         [newRule setIsMatchAll: [conditionMatchingSegment isSelectedForSegment: 0]];
         [newRule setAction: [Action actionWithType: [conditionResultTypeSegment selectedTag] 
-                                             value: [NSNumber numberWithUnsignedInt: [[resultActionDropdown selectedItem] tag]]]];
+                                             value: value]];
 		[newRule setTarget: [conditionTargetType selectedTag]];
         //[newRule setResultType: [conditionResultTypeSegment selectedTag]];
         //[newRule setActionID: [[resultActionDropdown selectedItem] tag]];
@@ -115,7 +118,7 @@
 
 	[conditionResultTypeSegment selectSegmentWithTag: [rule resultType]];
     [self setResultType: conditionResultTypeSegment];   // this also sets the menu
-    
+
 	[conditionTargetType selectSegmentWithTag: [rule target]];
     
     if(rule) {
@@ -140,53 +143,6 @@
             
             [resultActionDropdown setMenu: noActionMenu];
             [resultActionDropdown selectItemWithTag: [rule actionID]];
-            
-            // create temp spell list
-            /*if([rule resultType] == ActionType_Spell) {
-                [_spellsMenu release];
-                _spellsMenu = [[NSMenu alloc] initWithTitle: @"Spells"];
-                NSMenuItem *item = nil;
-                Spell *spell = [spellController spellForID: [NSNumber numberWithInt: [rule actionID]]];
-                if(spell && [spell name]) {
-                    item = [[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@: %@", [spell ID], [spell name]] action: nil keyEquivalent: @""];
-                } else {
-                    item = [[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"Unknown Spell (%d)", [rule actionID]] action: nil keyEquivalent: @""];
-                }
-                [item setTag: [rule actionID]];
-                [_spellsMenu addItem: [item autorelease]];
-                
-                [resultActionDropdown setMenu: _spellsMenu];
-            }
-            
-            // create temp item list
-            if([rule resultType] == ActionType_Item) {
-                [_itemsMenu release];
-                _itemsMenu = [[NSMenu alloc] initWithTitle: @"Items"];
-                NSMenuItem *menuItem = nil;
-                Item *item = [inventoryController itemForID: [NSNumber numberWithInt: [rule actionID]]];
-                if(item && [item name]) {
-                    menuItem = [[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%d: %@", [item entryID], [item name]] action: nil keyEquivalent: @""];
-                } else {
-                    menuItem = [[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"Unknown Item (%d)", [rule actionID]] action: nil keyEquivalent: @""];
-                }
-                [menuItem setTag: [rule actionID]];
-                [_itemsMenu addItem: [menuItem autorelease]];
-                
-                [resultActionDropdown setMenu: _itemsMenu];
-            }
-            
-            // create temp macro list
-            if([rule resultType] == ActionType_Macro) {
-                [_macrosMenu release];
-                _macrosMenu = [[NSMenu alloc] initWithTitle: @"Macros"];
-                NSMenuItem *menuItem = [[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"Unknown Macro (%d)", [rule actionID]] action: nil keyEquivalent: @""];
-                [menuItem setTag: [rule actionID]];
-                [_macrosMenu addItem: [menuItem autorelease]];
-                
-                [resultActionDropdown setMenu: _macrosMenu];
-            }
-            
-            [resultActionDropdown selectItemWithTag: [rule actionID]];*/
         }
     }
     
@@ -292,7 +248,6 @@
 	if([sender selectedTag] == ActionType_Interact) {
         [resultActionDropdown setMenu: _interactMenu];        
     }
-    
     if( [[resultActionDropdown menu] itemWithTag: oldTag] ) {
         [resultActionDropdown selectItemWithTag: oldTag];
     }

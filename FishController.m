@@ -17,6 +17,7 @@
 #import "LootController.h"
 #import "SpellController.h"
 #import "MovementController.h"
+#import "ActionMenusController.h"
 
 #import "Offsets.h"
 #import "Errors.h"
@@ -31,6 +32,7 @@
 #import "PTHeader.h"
 
 #import <ShortcutRecorder/ShortcutRecorder.h>
+#import <ScreenSaver/ScreenSaver.h>
 
 #define USE_ITEM_MASK       0x80000000
 
@@ -64,6 +66,7 @@
 - (BOOL)applyLure;
 - (Node*)faceNearestSchool;
 - (void)fishingController;
+- (void)joinWG;
 @end
 
 
@@ -102,6 +105,10 @@
                                                  selector: @selector(playerIsInvalid:) 
                                                      name: PlayerIsInvalidNotification 
                                                    object: nil];
+        [[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(playerIsValid:) 
+                                                     name: PlayerIsValidNotification 
+                                                   object: nil];
 		
         [NSBundle loadNibNamed: @"Fishing" owner: self];
     }
@@ -131,6 +138,7 @@
 @synthesize view;
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
+@synthesize macroDropDown;
 
 - (NSString*)sectionTitle {
     return @"Fishing";
@@ -138,15 +146,35 @@
 
 // Called when player clicks start/stop fishing!
 - (IBAction)startStopFishing: (id)sender {	
-
-	if ( ![playerController playerIsValid] ){
-		[status setStringValue: [NSString stringWithFormat:@"Player not valid!"]];
-		return;
+	// Make sure our hotkeys are set!
+	if ( ([botController isHotKeyInvalid] & HotKeyPrimary) == HotKeyPrimary ){
+        PGLog(@"Primary hotkey is not valid.");
+        NSBeep();
+        NSRunAlertPanel(@"Invalid Primary HotKey", @"You must choose a valid primary hotkey on the Bot tab, or the bot will be unable to fish.", @"Okay", NULL, NULL);
+        return;
+    }
+	if ( ([botController isHotKeyInvalid] & HotKeyInteractMouseover) == HotKeyInteractMouseover ){
+        PGLog(@"MouseOver hotkey is not valid.");
+        NSBeep();
+        NSRunAlertPanel(@"Invalid Looting HotKey", @"You must choose a valid Interact with MouseOver hotkey on the Bot tab, or the bot will be unable to loot.", @"Okay", NULL, NULL);
+        return;
+	}
+	
+	// Can't start fishing if we're dead!
+	if ( [playerController isDead] ){
+		PGLog(@"You are dead.");
+        NSBeep();
+        NSRunAlertPanel(@"You are dead", @"Really? You can fish while dead? Weird.", @"Okay", NULL, NULL);
+        return;
 	}
 	
 	// This never changes, so lets store it so we aren't reading it during our main thread
 	_playerGUID = [[playerController player] GUID];
 	
+	// Reload spells, since they may have just trained fishing!
+	[spellController reloadPlayerSpells];
+	
+	// Get our fishing spell ID!
 	Spell *fishingSpell = [spellController playerSpellForName: @"Fishing"];
 	if ( fishingSpell ){
 		_fishingSpellID = [[fishingSpell ID] intValue];
@@ -196,6 +224,106 @@
 	// Fire off a thread to handle all fishing!
 	[NSThread detachNewThreadSelector: @selector(fishingController) toTarget: self withObject: nil];
 	//[self fishingController];
+	
+	// Fire off function to auto click WG?
+	[self joinWG];
+}
+
+- (void)joinWG{
+	
+	if ( !_isFishing ){
+		return;
+	}
+	
+	if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"FishingAutoJoinWG"] boolValue] ){
+		
+		
+		
+		
+		
+	}
+	
+	
+	// If we have this enabled!
+	if ( 1 == 0 ){
+		// The data structure CGPoint represents a point in a two-dimensional
+		// coordinate system.  Here, X and Y distance from upper left, in pixels.
+		//
+		CGPoint pt;
+		CGRect wowSize = [controller wowWindowRect];
+		
+		// Constants - ZOMG SO COMPLICATED TEH MATHSZ
+		float yUpperConst = .2238;
+		float yLowerConst = .238443;
+		float xLeftConst = .40456;
+		float xRightConst = .4936;
+		
+		float yPosToClick = wowSize.origin.y + ( ((wowSize.size.height * yUpperConst) + (wowSize.size.height * yLowerConst)) / 2 );
+		float xPosToClick = wowSize.origin.x + ( ((wowSize.size.width * xLeftConst) + (wowSize.size.width * xRightConst)) / 2 );
+		pt.y = yPosToClick;
+		pt.x = xPosToClick;
+		
+		
+		PGLog(@"Origin: {%0.2f, %0.2f} Dimensions: {%0.2f, %0.2f}", wowSize.origin.x, wowSize.origin.y, wowSize.size.width, wowSize.size.height);
+		
+		PGLog(@"Clicking {%0.2f, %0.2f}", xPosToClick, yPosToClick);
+		
+		if ( ![controller isWoWFront] ){
+			[controller makeWoWFront];
+			usleep(10000);
+		}
+		
+		
+		// This is where the magic happens.  See CGRemoteOperation.h for details.
+		//
+		// CGPostMouseEvent( CGPoint        mouseCursorPosition,
+		//                   boolean_t      updateMouseCursorPosition,
+		//                   CGButtonCount  buttonCount,
+		//                   boolean_t      mouseButtonDown, ... )
+		//
+		// So, we feed coordinates to CGPostMouseEvent, put the mouse there,
+		// then click and release.
+		//
+		
+		if( pt.x && pt.y && [controller isWoWFront] ){
+		
+			CGInhibitLocalEvents(YES);
+		
+			CGPostMouseEvent( pt, TRUE, 1, TRUE );
+		
+			// Click a few times just to be safe!
+			int i = 0;
+			for ( i = 0; i < 5; i++ ){
+			usleep(100000);
+					CGPostMouseEvent( pt, TRUE, 1, FALSE );
+			}
+		
+			CGInhibitLocalEvents(NO);
+		}
+
+		
+		/*    // right click on the loot point to skin
+		 BOOL weSkinned = NO;
+		 if(clickPt.x && clickPt.y && [controller isWoWFront]) {
+		 // move the mouse into position and click
+		 weSkinned = YES;
+		 CGInhibitLocalEvents(YES);
+		 CGPostMouseEvent(clickPt, FALSE, 2, FALSE, FALSE);
+		 PostMouseEvent(kCGEventMouseMoved, kCGMouseButtonLeft, clickPt, wowProcess);
+		 usleep(100000);	// wait
+		 PostMouseEvent(kCGEventRightMouseDown, kCGMouseButtonRight, clickPt, wowProcess);
+		 usleep(30000);
+		 PostMouseEvent(kCGEventRightMouseUp, kCGMouseButtonRight, clickPt, wowProcess);
+		 usleep(100000);	// wait
+		 CGInhibitLocalEvents(NO);
+		 }
+		 */
+		
+		
+	}
+	
+	float nextClick = SSRandomFloatBetween(60.0f, 120.0f);
+	[self performSelector:@selector(joinWG) withObject:nil afterDelay:nextClick];
 }
 
 - (void)stopFishing{
@@ -258,18 +386,9 @@
 			[status setStringValue: [NSString stringWithFormat:@"Empyting a container"]];
 		}
 		
-		// If casting fails for some reason lets try again in a second!
-		int castSuccess = [botController performAction: _fishingSpellID];
+		// Time to fish!
+		[botController performAction: _fishingSpellID];
 		[status setStringValue: [NSString stringWithFormat:@"Fishing"]];
-		if ( castSuccess != ErrNone ){
-			
-			// Check for "full inventory" and kill wow if we get here :/
-			if ( castSuccess == ErrInventoryFull ){
-				[status setStringValue: [NSString stringWithFormat:@"Closing WoW, Inventory is Full"]];
-				
-				[self closeWoW];
-			}
-		}
 	}
 }
 
@@ -322,7 +441,7 @@
 //}
 
 - (Node*)faceNearestSchool{
-	NSArray *fishingSchools = [nodeController allFishingSchools];
+	NSArray *fishingSchools = [nodeController nodesOfType:GAMEOBJECT_TYPE_FISHINGHOLE shouldLock:YES];
 	Position *playerPosition = [playerController position];
 	
 	float closestDistance = INFINITY;
@@ -385,11 +504,14 @@
 	int lootWindowOpenCount = 0;
 	BOOL clicked = NO;
 
+	MemoryAccess *memory = nil;
 	while ( _isFishing ){
+		memory = [controller wowMemoryAccess];
+		
 		// Find our bobber!
-		for ( Node *bobber in [nodeController allFishingBobbers] ){
+		for ( Node *bobber in [nodeController nodesOfType:GAMEOBJECT_TYPE_FISHING_BOBBER shouldLock:YES] ){
 			// If this isn't 132, then the bobber is gone or just got activated!  (I believe this is the animation state, but not 100% sure)
-			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)] ){
+			if ( [memory loadDataForObject: self atAddress: ([bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)] ){
 			
 				// Our player's bobber!
 				if ( [bobber owner] == _playerGUID ){
@@ -404,7 +526,7 @@
 							//[memoryViewController setBaseAddress:[NSNumber numberWithInt:[_bobber baseAddress]]];
 							
 							// Should we check to see if it landed nearby?
-							if ( _nearbySchool && _optFaceSchool && _optRecast ){
+							if ( _optFaceSchool && _optRecast && _nearbySchool ){
 								float distance = [[bobber position] distanceToPosition: [_nearbySchool position]];
 								
 								// Reset this, otherwise we might try to read it when we don't want to! ( = crash)
@@ -423,7 +545,7 @@
 				// not ours - hide it?
 				else if ( _optHideOtherBobbers && _bobber != bobber ){
 					UInt8 value = 0;
-					[[controller wowMemoryAccess] saveDataForAddress: ([bobber baseAddress] + OFFSET_VISIBILITY) Buffer: (Byte *)&value BufLength: sizeof(value)];
+					[memory saveDataForAddress: ([bobber baseAddress] + OFFSET_VISIBILITY) Buffer: (Byte *)&value BufLength: sizeof(value)];
 				}
 			}
 		}
@@ -431,8 +553,8 @@
 		// Check to see if we should take action on our bobber!
 		if ( _bobber ){
 			// Grab some values!
-			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([_bobber baseAddress] + OFFSET_MOVED) Buffer: (Byte *)&bouncing BufLength: sizeof(bouncing)] ){
-				[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([_bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)];
+			if ( [memory loadDataForObject: self atAddress: ([_bobber baseAddress] + OFFSET_MOVED) Buffer: (Byte *)&bouncing BufLength: sizeof(bouncing)] ){
+				[memory loadDataForObject: self atAddress: ([_bobber baseAddress] + OFFSET_STATUS) Buffer: (Byte *)&stat BufLength: sizeof(stat)];
 				
 				// Time to click!
 				if ( bouncing && !clicked ){
@@ -538,6 +660,16 @@
         [self stopFishing];
     }
 }
+
+- (void)playerIsValid: (NSNotification*)not {
+	
+	UInt32 actionID = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AutoJoinWGMacro"] intValue];
+	NSMenu *macroMenu = [[[ActionMenusController sharedMenus] menuType: MenuType_Macro actionID: actionID] retain];
+	[macroDropDown setMenu: macroMenu];
+	[macroDropDown selectItemWithTag:actionID];
+}
+
+
 
 #pragma mark ShortcutRecorder Delegate
 

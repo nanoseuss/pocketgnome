@@ -9,6 +9,7 @@
 #import "Player.h"
 #import "WoWObject.h"
 #import "Mob.h"
+#import "Offsets.h"
 
 enum PlayerFlags
 {
@@ -30,6 +31,9 @@ enum PlayerFlags
     PLAYER_UNK                  = 0x00040000,               // 2.0.8...
 };
 
+@interface Player ()
+@property (readwrite, retain) NSString *name;
+@end
 
 @interface Player (Internal)
 - (UInt32)playerFlags;
@@ -45,9 +49,10 @@ enum PlayerFlags
     return [NSString stringWithFormat: @"<%@ [%d] [%d%%] (0x%X)>", [self className], [self level], [self percentHealth], [self lowGUID]];
 }
 
-
+- (void) dealloc{
+    [super dealloc];
+}
 #pragma mark -
-
 
 - (UInt32)playerFlags {
     UInt32 value = 0;
@@ -72,13 +77,6 @@ enum PlayerFlags
 		return value;
     }
     return 0;
-}
-
-- (NSString*)name{
-	WoWObject *object = self;
-	Mob *mob = object;
-	
-	return [mob name];	
 }
 
 @end

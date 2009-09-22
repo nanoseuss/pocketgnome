@@ -22,6 +22,8 @@
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
+// How close do we need to be to a node before we dismount?
+#define NODE_DISTANCE_UNTIL_DISMOUNT	4.5f
 
 @interface MovementController : NSObject {
     IBOutlet id controller;
@@ -49,8 +51,19 @@
     Unit *_unit;
     Route *_route;
 	
+	
+	
 	// New error correction stuff
-	NSTimer *_movementTimer2;
+	int _movementChecks;							// This keeps track of the number of movement checks we have (every 0.1 second) to the same position (while attempting to moveToPosition)
+													//	if this number gets too high (it tracks the number of attempts to hit one position), we can be sure we're stuck!
+													//	for safe measure checkSpeedDistance checks the average speed and average distance traveled as well
+	float _totalMovementSpeed, _totalDistance;
+	Position *lastAttemptedPosition;				// Keeps track of the last position we tried to go to
+	Position *lastPlayerPosition;					// Stores the last known player position (used in checkSpeedDistance to determine the average distance traveled)
+	int _isStuck;									// Every time we're stuck this is incremented by 1
+	int _unstickAttempt;							// Tracks how many times we've tried to "unstick" ourselves from the same spot!
+	int _successfulMoves;							// How many times are we moving through our route correctly?
+	Waypoint * _lastTriedWaypoint;
 }
 
 @property BOOL isMoving;
@@ -78,6 +91,8 @@
 - (void)moveToWaypoint: (Waypoint*)waypoint;
 
 - (void)turnTowardObject: (WoWObject*)unit;
+
+- (void)followObject: (WoWObject*)unit;
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;
