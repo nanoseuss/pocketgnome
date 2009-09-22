@@ -35,12 +35,15 @@
 @class SpellController;
 @class MobController;
 @class ChatController;
+@class ChatLogController;
 @class Controller;
 @class WaypointController;
 @class ProcedureController;
 @class QuestController;
 @class CorpseController;
 @class LootController;
+@class FishController;
+@class MacroController;
 
 @class ScanGridView;
 
@@ -49,9 +52,16 @@
 #define ErrorInvalidTarget			@"ErrorInvalidTarget"
 #define ErrorOutOfRange				@"ErrorOutOfRange"
 
+// Hotkey set flags
+#define	HotKeyStartStop				0x1
+#define HotKeyInteractMouseover		0x2
+#define HotKeyPrimary				0x4
+#define HotKeyPetAttack				0x8
+
 @interface BotController : NSObject {
     IBOutlet Controller             *controller;
     IBOutlet ChatController         *chatController;
+	IBOutlet ChatLogController		*chatLogController;
     IBOutlet PlayerDataController   *playerController;
     IBOutlet MobController          *mobController;
     IBOutlet SpellController        *spellController;
@@ -62,6 +72,8 @@
     IBOutlet InventoryController    *itemController;
     IBOutlet PlayersController      *playersController;
 	IBOutlet LootController			*lootController;
+	IBOutlet FishController			*fishController;
+	IBOutlet MacroController		*macroController;
 
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
@@ -82,7 +94,6 @@
     int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting;
-	BOOL _doCheckForBrokenWeapons, _doLogOutOnFullInv;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -93,32 +104,41 @@
     NSMutableArray *_mobsToLoot;
     int _reviveAttempt, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
-    NSDate *stopDate;
-	NSDate *_botStarted;
+	NSDate *startDate;
 	int _lastActionErrorCode;
 	UInt32 _lastActionTime;
+	int _zoneBeforeHearth;
 	
 	// healing shit
 	BOOL _shouldFollow;
 	Unit *_lastUnitAttemptedToHealed;
-    
+	
 	// improved loot shit
+	WoWObject *_lastAttemptedUnitToLoot;
+	int _lootAttempt;
 	WoWObject *_unitToLoot;
-	UInt32 _lastAttemptedLoot;	// Store the time of our last try!
+	NSDate *lootStartTime;
+	NSDate *skinStartTime;
+	NSMutableArray *_unitsBlacklisted;			// This will track units we're trying to move to - but the move failed :(
 	
     // pvp shit
     BOOL _isPvPing;
-    BOOL _pvpAutoRelease;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
     int _pvpCheckCount;
     IBOutlet NSButton *pvpStartStopButton;
     IBOutlet NSPanel *pvpBMSelectPanel;
-    IBOutlet NSButton *pvpAutoReleaseCheckbox;
     IBOutlet NSImageView *pvpBannerImage;
     IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox, *pvpWaitForPreparationBuff;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
 	int _pvpMarks;
+	BOOL _attackingInStrand;
+	BOOL _strandDelay;
+	BOOL _strandMovementCounter;
+	int _strandTotalMovementChecks;
+	BOOL _strandMoveForwardStarted;
+	
+	NSTimer *_wgTimer;
     
     // -----------------
     // -----------------
@@ -134,9 +154,14 @@
     IBOutlet NSTextField *minLevelText, *maxLevelText;
     IBOutlet NSButton *anyLevelCheckbox;
     
+	// Log Out options
+	IBOutlet NSButton *logOutOnBrokenItemsCheckbox;
+	IBOutlet NSButton *logOutOnFullInventoryCheckbox;
+	IBOutlet NSButton *logOutOnTimerExpireCheckbox;
+	IBOutlet NSButton *logOutAfterStuckCheckbox;
+	IBOutlet NSButton *logOutUseHearthstoneCheckbox; 
+	
     IBOutlet NSButton *miningCheckbox;
-	IBOutlet NSButton *brokenWeaponsCheckbox;
-	IBOutlet NSButton *fullInventoryCheckbox;
     IBOutlet NSButton *herbalismCheckbox;
     IBOutlet id miningSkillText;
     IBOutlet id herbalismSkillText;
@@ -166,6 +191,7 @@
     IBOutlet ScanGridView *scanGrid;
 }
 
+@property (readonly) NSButton *logOutAfterStuckCheckbox;
 @property (readonly) NSView *view;
 @property (readonly) NSString *sectionTitle;
 @property NSSize minSectionSize;
@@ -176,6 +202,9 @@
 @property (readonly, retain) RouteSet *theRoute;
 @property (readonly, retain) Behavior *theBehavior;
 @property (readonly, retain) CombatProfile *theCombatProfile;
+@property (readonly, retain) NSDate *lootStartTime;
+@property (readonly, retain) NSDate *skinStartTime;
+
 
 - (void)testRule: (Rule*)rule;
 
@@ -191,6 +220,7 @@
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
+- (void)blacklistUnit: (WoWObject*)unit;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
@@ -210,14 +240,19 @@
 - (IBAction)pvpStartStop: (id)sender;
 - (IBAction)pvpBMSelectAction: (id)sender;
 - (IBAction)pvpTestWarning: (id)sender;
+- (IBAction)test: (id)sender;
 
 // Little more flexibility - casts spells! Uses items/macros!
 - (BOOL)performAction: (int32_t)actionID;
 - (int)errorValue: (NSString*)errorMessage;
 - (BOOL)interactWithMouseoverGUID: (UInt64) guid;
 - (void)interactWithMob:(UInt32)entryID;
+- (void)interactWithNode:(UInt32)entryID;
 - (NSArray*)availableUnitsToHeal;
+- (void)logOut;
 
 - (void) updateRunningTimer;
+
+- (UInt8)isHotKeyInvalid;
 
 @end

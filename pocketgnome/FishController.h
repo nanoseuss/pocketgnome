@@ -53,6 +53,8 @@
 	IBOutlet NSTextField			*status;
 	IBOutlet NSTextField			*closeWoWTimer;
 	IBOutlet NSTableView			*statisticsTableView;
+	IBOutlet NSPopUpButton			*macroDropDown;
+
 	PTHotKey *startStopBotGlobalHotkey;
 	
 	//Checkbox options
@@ -66,8 +68,6 @@
 	
 	BOOL _isFishing;
 	BOOL _ignoreIsFishing;
-	
-	//BOOL _blockActions;			// Used to block our fishing controller from taking action (lets say during applying lure!)
 	
 	int _applyLureAttempts;
 	int _totalFishLooted;
@@ -86,6 +86,7 @@
 // Controller interface
 @property (readonly) NSView *view;
 @property (readonly) NSString *sectionTitle;
+@property (readonly) NSPopUpButton *macroDropDown;
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 

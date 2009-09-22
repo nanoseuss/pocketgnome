@@ -31,6 +31,7 @@
     NSDateFormatter *_timestampFormat;
     NSSortDescriptor *_passNumberSortDescriptor;
     NSSortDescriptor *_relativeOrderSortDescriptor;
+	NSMutableDictionary *_whisperHistory;				// Tracks player name with # of whispers
 }
 
 // Controller interface
@@ -51,6 +52,8 @@
 
 - (BOOL)sendLogEntry: (ChatLogEntry*)logEntry toEmailAddress: (NSString*)emailAddress;
 - (BOOL)sendLogEntries: (NSArray*)logEntries toEmailAddress: (NSString*)emailAddress;
+
+- (void)clearWhisperHistory;
 
 @property (readonly, retain) NSMutableArray *chatActions;
 

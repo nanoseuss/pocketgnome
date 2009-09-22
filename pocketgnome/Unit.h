@@ -242,6 +242,19 @@ enum eUnitFields {
     
 };
 
+// Added from: http://www.mmowned.com/forums/wow-memory-editing/257771-wow-constant-data-enums-structs-etc.html
+typedef enum{
+	UnitField_None = 0,
+	UnitField_Lootable = 0x1,
+	UnitField_TrackUnit = 0x2,
+	UnitField_TaggedByOther = 0x4,
+	UnitField_TaggedByMe = 0x8,
+	UnitField_SpecialInfo = 0x10,
+	UnitField_Dead = 0x20,
+	UnitField_ReferAFriendLinked = 0x40,
+	UnitField_IsTappedByAllThreatList = 0x80,
+} UnitDynamicFlags;
+
 /*
 // Value masks for UNIT_FIELD_FLAGS (UnitField_StatusFlags)
 enum UnitFlags
@@ -278,6 +291,45 @@ enum UnitFlags
     UNIT_FLAG_UNKNOWN6       = 0x20000000,                  // used in Feing Death spell
     UNIT_FLAG_SHEATHE        = 0x40000000
 };
+ 
+ private enum UnitFlags : uint
+ {
+ None = 0,
+ Sitting = 0x1,
+ //SelectableNotAttackable_1 = 0x2,
+ Influenced = 0x4, // Stops movement packets
+ PlayerControlled = 0x8, // 2.4.2
+ Totem = 0x10,
+ Preparation = 0x20, // 3.0.3
+ PlusMob = 0x40, // 3.0.2
+ //SelectableNotAttackable_2 = 0x80,
+ NotAttackable = 0x100,
+ //Flag_0x200 = 0x200,
+ Looting = 0x400,
+ PetInCombat = 0x800, // 3.0.2
+ PvPFlagged = 0x1000,
+ Silenced = 0x2000, //3.0.3
+ //Flag_14_0x4000 = 0x4000,
+ //Flag_15_0x8000 = 0x8000,
+ //SelectableNotAttackable_3 = 0x10000,
+ Pacified = 0x20000, //3.0.3
+ Stunned = 0x40000,
+ CanPerformAction_Mask1 = 0x60000,
+ Combat = 0x80000, // 3.1.1
+ TaxiFlight = 0x100000, // 3.1.1
+ Disarmed = 0x200000, // 3.1.1
+ Confused = 0x400000, //  3.0.3
+ Fleeing = 0x800000,
+ Possessed = 0x1000000, // 3.1.1
+ NotSelectable = 0x2000000,
+ Skinnable = 0x4000000,
+ Mounted = 0x8000000,
+ //Flag_28_0x10000000 = 0x10000000,
+ Dazed = 0x20000000,
+ Sheathe = 0x40000000,
+ //Flag_31_0x80000000 = 0x80000000,
+ }
+ 
 */
    // polymorph sets bits 22 and 29
     

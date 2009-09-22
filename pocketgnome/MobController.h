@@ -64,8 +64,11 @@
 
 - (Mob*)playerTarget;
 - (Mob*)mobWithEntryID: (int)entryID;
+- (NSArray*)mobsWithEntryID: (int)entryID;
 - (Mob*)mobWithGUID: (GUID)guid;
 - (void)selectMob: (Mob*)mob;
+
+- (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position;
 
 - (NSArray*)mobsWithinDistance: (float)distance
                     levelRange: (NSRange)range
@@ -73,7 +76,7 @@
                includeFriendly: (BOOL)friendly
                 includeNeutral: (BOOL)neutral
                 includeHostile: (BOOL)hostile;
-- (Mob*)closesMobForInteraction:(UInt32)entryID;
+- (Mob*)closestMobForInteraction:(UInt32)entryID;
 
 - (IBAction)filterMobs: (id)sender;
 - (IBAction)updateTracking: (id)sender;

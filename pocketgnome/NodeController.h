@@ -57,14 +57,16 @@ typedef enum {
 - (unsigned)nodeCount;
 - (void)finishedNode: (Node*)node;
 - (void)resetAllNodes;
+- (BOOL)removeFinishedNode: (Node*)node;
 
-- (NSArray*)allFishingSchools;
-- (NSArray*)allFishingBobbers;
+- (NSArray*)nodesOfType:(UInt32)nodeType shouldLock:(BOOL)lock;
 - (NSArray*)allMiningNodes;
 - (NSArray*)allHerbalismNodes;
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type;
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level;
+- (NSArray*)nodesWithinDistance: (float)nodeDistance NodeIDs: (NSArray*)nodeIDs position:(Position*)position;
 - (Node*)closestNodeForInteraction:(UInt32)entryID;
+- (Node*)nodeWithEntryID:(UInt32)entryID;
 
 - (IBAction)filterNodes: (id)sender;
 - (IBAction)resetList: (id)sender;
@@ -74,4 +76,5 @@ typedef enum {
 
 - (IBAction)moveToStart: (id)sender;
 - (IBAction)moveToStop: (id)sender;
+
 @end

@@ -61,7 +61,13 @@
 											 // 0xB75420 : 0x0) // 3.0.9
                                              // 0xB78420 : 0x0) // 3.0.8
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
-                       
+
+// 3.2.0 valid
+#define	OBJECT_LIST_LL_PTR			((IS_X86) ? 0x1255A6C : 0x0) // 3.2.0
+
+// 3.2.0 valid
+#define PLAYER_NAMES_LL_PTR			((IS_X86) ? 0x151C2C4 : 0x0) // 3.2.0
+
 // 3.2.0 valid
 #define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xBFAE88 : 0x0) // 3.2.0
 											 // 0xAED328 : 0x0) // 3.1.2 & 3.1.3
@@ -253,26 +259,31 @@
 #define CTM_ACTION				((IS_X86) ? 0x12709D4 : 0x0 )
 #define CTM_GUID				((IS_X86) ? 0x12709F0 : 0x0 )		// 64 bit duh
 
+#define CTM_SCALE				((IS_X86) ? 0x12709E8 : 0x0 )		// Always 13.962634 I believe
+#define CTM_DISTANCE			((IS_X86) ? 0x12709E4 : 0x0 )							
+
 // 3.2.0 valid - will probably never use the below?  Not sure but documenting to help find in future
 #define CTM_CLOSENESS			((IS_X86) ? 0x12709B4 : 0x0 )		// Closeness factor - set to stop if 0.5f or less
 #define CTM_PI2					((IS_X86) ? 0x12709C8 : 0x0 )		// This is pi*2 - not sure why heh
-#define CTM_DIRECTION			((IS_X86) ? 0x12709CC : 0x0 )		// Probably don't need this either
+#define CTM_DIRECTION			((IS_X86) ? 0x12709CC : 0x0 )		// This is the direction we're facing 0 - 2*pi
 #define CTM_UNKNOWN				((IS_X86) ? 0x1270964 : 0x0 )		// write 9.0f
-#define CTM_SCALE				((IS_X86) ? 0x12709FC : 0x0 )		// write 0.25f
 #define CTM_UNKNOWN2			((IS_X86) ? 0x12709D8 : 0x0 )		// write 14.0f (or 7.0f?)
-#define CTM_CURRENT_TIME		((IS_X86) ? 0x12709F8 : 0x0 )		// hmmmm
+#define CTM_UNKNOWN3			((IS_X86) ? 0x12709FC : 0x0 )		// write 0.25f
+
 enum ctmActionType{
 	ctmFaceTarget = 0x1,
-	ctmStop = 0x3,
+	ctmFaceDestination = 0x2,	// untested
+	ctmStop = 0x3,				// Also set to this when you're following a target (/follow) - not 100% sure this is correct - potential cause of chasing a target randomly?
 	ctmWalkTo = 0x4,
 	ctmInteractNpc = 0x5,
 	ctmLoot = 0x6,
 	ctmInteractObject = 0x7,
-	ctmUnknown1 = 0x8,
-	ctmUnknown2 = 0x9,
+	ctmFaceOther = 0x8,			// untested
+	ctmSkin = 0x9,				// untested
 	ctmAttackPos = 0xA,
 	ctmAttackGuid = 0xB,
-	ctmWalkAndRotate = 0xC
+	ctmWalkAndRotate = 0xC,
+	ctmIdle = 0xD
 };
 
 // 3.2.0  valid

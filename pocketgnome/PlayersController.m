@@ -44,6 +44,7 @@ static PlayersController *sharedPlayers = nil;
         [[NSUserDefaults standardUserDefaults] registerDefaults: [NSDictionary dictionaryWithObject: @"0.5" forKey: @"PlayersControllerUpdateFrequency"]];
         _playerList = [[NSMutableArray array] retain];
         _playerDataList = [[NSMutableArray array] retain];
+		_playerNameList = [[NSMutableDictionary dictionary] retain];
 
         // wow memory access validity
         [[NSNotificationCenter defaultCenter] addObserver: self
@@ -183,6 +184,24 @@ static PlayersController *sharedPlayers = nil;
     
     [self didChangeValueForKey: @"playerCount"];
     [self updateTracking: nil];
+}
+
+- (void)addPlayerNames: (NSDictionary*)names{
+	
+	//[addressDict setObject: obj forKey: [NSNumber numberWithUnsignedLongLong: [obj baseAddress]]];
+	
+	// Loop through our existing dictionary, we ONLY want to add new values!
+	NSArray *keys = [names allKeys];
+	
+	for ( NSNumber *key in keys ){
+		// It's new! Add it!
+		if ( ![_playerNameList objectForKey: key] ){
+			NSString *name = [names objectForKey:key];
+			
+			//PGLog(@"Add name: %@ for GUID: 0x%qx", name, [key longLongValue]);
+			[_playerNameList  setObject: name forKey: key];
+		}
+	}
 }
 
 /*- (BOOL)addPlayer: (Player*)player {

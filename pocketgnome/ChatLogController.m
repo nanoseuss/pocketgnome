@@ -36,6 +36,7 @@
 
 - (void)kickOffScan;
 - (BOOL)chatLogContainsEntry: (ChatLogEntry*)entry;
+- (void)addWhisper: (ChatLogEntry *)entry;
 
 @end
 
@@ -223,6 +224,7 @@
 					// Fire off a notification - Whisper received!
 					if ( [entry isWhisperReceived] ){
 						[[NSNotificationCenter defaultCenter] postNotificationName: WhisperReceived object: entry];
+						[self addWhisper:entry];
 					}
                     
                     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -502,6 +504,40 @@
     } else {
         PGLog(@"Mail delivery is NOT configured.");
     }
+}
+
+
+- (void)clearWhisperHistory{
+	[_whisperHistory removeAllObjects];
+}
+
+// The key is our player's name!
+- (void)addWhisper: (ChatLogEntry *)entry{
+	
+	NSString *key = [entry playerName];
+	// Lets store that we got whispered!
+	NSNumber *numWhispers = nil;
+	if ( ![_whisperHistory objectForKey: key] ){
+		numWhispers = [NSNumber numberWithInt:1];
+		PGLog(@"doesn't exist.");
+	}
+	else{
+		numWhispers = [NSNumber numberWithInt:[[_whisperHistory objectForKey: key] intValue] + 1];
+		PGLog(@"exists..");
+	}
+	[_whisperHistory setObject: numWhispers forKey: key];
+	
+	PGLog(@"You've been whispered %@ times by %@", numWhispers, key);
+	
+	BOOL checkWhispers = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"alarmWhispered"] boolValue];
+
+	// Lets check to see if the numWhispers is too high!
+	if ( checkWhispers ){
+		if ( [numWhispers intValue] >= [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhisperedTimes"] intValue] ){
+			[[NSSound soundNamed: @"alarm"] play];
+			PGLog(@"[Chat] You have been whispered %@ times by %@. Last message: %@", numWhispers, [entry playerName], [entry text] );
+		}
+	}
 }
 
 #pragma mark -

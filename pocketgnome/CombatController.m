@@ -316,6 +316,13 @@
     
     // attack
     if([unit isDead] || [unit isEvading]) return;
+	
+	if ( [self isUnitBlacklisted:unit] ){
+		PGLog(@"[Combat] Unit %@ blacklisting, stopping attack", unit);
+		return;
+	}
+	
+	//PGLog(@"Attacking unit %@ with health %d", unit, [unit currentHealth]);
     if( !isCasting ) {
         
         // ensure unit is our target
@@ -328,7 +335,7 @@
             //    usleep([controller refreshDelay]);
             //}
             
-            //PGLog(@"[Combat] Targetting %@", unit);
+            PGLog(@"[Combat] Targetting %@", unit);
             
             if([unit isNPC])    [mobController selectMob: (Mob*)unit];
             else                [playerData setPrimaryTarget: unitUID];
@@ -354,7 +361,7 @@
 		//PGLog(@"%qx:%qx", target, [self.attackUnit GUID]);
 		
 		if ( target == [self.attackUnit GUID] ){
-			//PGLog(@"[Combat] Target not valid, blacklisting %@", self.attackUnit);
+			PGLog(@"[Combat] Target not valid, should I blacklist %@", self.attackUnit);
 			
 			//[self blacklistUnit: self.attackUnit];
 			//[self finishUnit:self.attackUnit];
@@ -646,14 +653,14 @@
 		
 		Unit *attackUnit = [_attackQueue objectAtIndex: 0];
 		
-		/*for ( Unit *unit in _attackQueue ){
+		for ( Unit *unit in _attackQueue ){
 			
 			if ( ![unit isPet] && [attackUnit isPet] ){
 				PGLog(@"[Combat] Switching from pet %@ to player %@", attackUnit, unit);
 				attackUnit = unit;
 				break;
 			}
-		}*/
+		}
 		
 		return attackUnit;
     }

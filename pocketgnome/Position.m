@@ -180,4 +180,16 @@
 	return diff;
 }
 
+- (BOOL)isEqual:(Position*)other {
+	
+	if ( other == self ){
+		return YES;
+	}
+	if ( self.xPosition == other.xPosition && self.yPosition == other.yPosition && self.zPosition == other.zPosition ){
+		return YES;
+	}
+	
+	return NO;
+}
+
 @end

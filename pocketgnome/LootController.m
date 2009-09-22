@@ -30,8 +30,6 @@
 		
 		// Fire off a thread to start monitoring our loot
 		[NSThread detachNewThreadSelector: @selector(findLootWindow) toTarget: self withObject: nil];
-		
-        //[NSBundle loadNibNamed: @"Loot" owner: self];
     }
     return self;
 }
@@ -40,7 +38,6 @@
 
 - (void)dealloc {
 	[_itemsLooted release];
-	
 	[super dealloc];
 }
 
@@ -87,24 +84,27 @@
 	UInt32 lootedItem = 0;
 	UInt32 quantity = 0;
 	
+	MemoryAccess *memory = nil;
 	while ( 1 ){
-		if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)]) {
+		memory = [controller wowMemoryAccess];
+		
+		if( memory && [memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)]) {
 			
 			// Then we have a NEW item
 			if ( lootedItem > 0 && _lastLootedItem == 0 && _lastLootedItem != lootedItem ){
 				_lastLootedItem = lootedItem;
 				
 				// Grab the quantity!
-				[[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
+				[memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
 				
 				// Add our item!
 				[self addItem:lootedItem Quantity:quantity];
 				
 				// Are there more to add?
 				int i = 1;
-				while ([[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)] && lootedItem > 0 ){
+				while ([memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)] && lootedItem > 0 ){
 					// Grab the quantity!
-					[[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
+					[memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
 					
 					// Add our item!
 					[self addItem:lootedItem Quantity:quantity];
@@ -153,7 +153,8 @@
 - (BOOL)isLootWindowOpen{
 	UInt32 lootWindowOpen;
 	int itemsInWindow = 0, i=0;
-	while( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootWindowOpen BufLength: sizeof(lootWindowOpen)] && i < MAX_ITEMS_IN_LOOT_WINDOW ){
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	while( [memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootWindowOpen BufLength: sizeof(lootWindowOpen)] && i < MAX_ITEMS_IN_LOOT_WINDOW ){
 		if ( lootWindowOpen > 0 ){
 			itemsInWindow++;
 		}
@@ -168,11 +169,13 @@
 	return NO;
 }
 
+// auto loot? PLAYER_AUTOLOOT{INT} = [Pbase + 0xD8] + 0x1010
 - (void)acceptLoot{
 	UInt32 item;
 	int i = 0;
 	
-	while ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	while ( [memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
 		if ( item > 0 ){
 			// Loot the item!
 			[chatController enter];             // open/close chat box

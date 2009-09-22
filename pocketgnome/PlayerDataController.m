@@ -17,6 +17,7 @@
 #import "CombatController.h"
 #import "MemoryViewController.h"
 #import "BotController.h"
+#import "NodeController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -25,6 +26,9 @@
 #import "ImageAndTextCell.h"
 
 #import <Growl/GrowlApplicationBridge.h>
+
+#define StrandGateOfTheBlueSapphire		190724
+#define StrandGateOfTheGreenEmerald		190722
 
 @interface PlayerDataController ()
 @property (readwrite, retain) Position *deathPosition;
@@ -37,8 +41,6 @@
 @interface PlayerDataController (Internal)
 - (void)resetState;
 - (void)loadState;
-
-- (UInt32)factionTemplate;
 
 - (void)setHorizontalDirectionFacing: (float)direction; // [0, 2pi]
 - (void)setVerticalDirectionFacing: (float)direction;   // [-pi/2, pi/2]
@@ -238,17 +240,27 @@ static PlayerDataController* sharedController = nil;
     //  our object type
     // then compare GUIDs and validate object type
     
-    UInt32 globalGUID = 0, selfGUID = 0, objType = 0, maxHealth = 0, infoAddress = 0;
+    UInt32 globalGUID = 0, selfGUID = 0, objType = 0, infoAddress = 0;
     [memory loadDataForObject: self atAddress: PLAYER_GUID_STATIC Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
 	
+	
+	// SANITY CHECKS!
 	// Get our max health! Sanity check.  For some reason as of 3.2.0 I'm running into issues detecting the player after they leave a BG
 	//	May be as I re-wrote the PvP shizit, not entirely sure
+	UInt32 maxHealth = 0;
 	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&infoAddress BufLength: sizeof(infoAddress)];
 	[memory loadDataForObject: self atAddress: (infoAddress + UnitField_MaxHealth) Buffer: (Byte *)&maxHealth BufLength: sizeof(maxHealth)];
 	
+	UInt32 nextStructPtr = 0, nextStructPtrCopy = 0, objStructure = 0;
+	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT4_POINTER) Buffer: (Byte *)&nextStructPtr BufLength: sizeof(nextStructPtr)];
+	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT4_POINTER_COPY) Buffer: (Byte *)&nextStructPtrCopy BufLength: sizeof(nextStructPtrCopy)];
+	[memory loadDataForObject: self atAddress: [self baselineAddress] Buffer: (Byte*)&objStructure BufLength: sizeof(objStructure)];
+	
+	// Object structur should always be 0xC16088
+	
     if(globalGUID && selfGUID && [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objType BufLength: sizeof(objType)] && (objType == TYPEID_PLAYER)) {
-        if(globalGUID == selfGUID && maxHealth > 0 && infoAddress > [self baselineAddress] ) {
+        if(globalGUID == selfGUID && maxHealth > 0 && maxHealth < 100000 && infoAddress > [self baselineAddress]/*&& nextStructPtr == nextStructPtrCopy*/ ) {
 			
             if(!_lastState) {   // update binding
                 PGLog(@"[Player] Player is valid.");
@@ -256,6 +268,10 @@ static PlayerDataController* sharedController = nil;
             }
             return YES;
         }
+		else{
+			PGLog(@"0x%X == 0x%X  0x%X == 0x%X  0x%X", nextStructPtr, nextStructPtrCopy, globalGUID, selfGUID, objStructure);
+			PGLog(@"[Player] Player not valid at 0x%X %d %d %d %d", [self baselineAddress], globalGUID == selfGUID,maxHealth > 0,maxHealth < 100000, infoAddress > [self baselineAddress] );
+		}
     }
     
     if(_lastState) {
@@ -277,8 +293,8 @@ static PlayerDataController* sharedController = nil;
     
     [self didChangeValueForKey: @"playerIsValid"];
     [self didChangeValueForKey: @"playerHeader"];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];
+	
+	//[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];		// moved this to in controller.m when we CANNOT find a player - doesn't belong here!
 }
 
 - (void)loadState {
@@ -487,6 +503,16 @@ static PlayerDataController* sharedController = nil;
     return ![self isIndoors];
 }
 
+- (BOOL)isOnGround {
+	
+	// Player is in the air!
+	if ( ( [self movementFlags] & 0x3000000) == 0x3000000 || ( [self movementFlags] & 0x1000) == 0x1000 ){
+		return NO;
+	}
+	
+	return YES;
+}
+
 // 1 write
 - (void)setHorizontalDirectionFacing: (float)direction {
     // player must be valid
@@ -501,40 +527,6 @@ static PlayerDataController* sharedController = nil;
 // 1 write
 - (void)setVerticalDirectionFacing: (float)direction {
     [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Vertical) Buffer: (Byte *)&direction BufLength: sizeof(direction)];
-}
-
-- (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid{
-	// Set our position!
-	if ( position != nil ){
-		float pos[3] = {0.0f, 0.0f, 0.0f};
-		pos[0] = [position xPosition];
-		pos[1] = [position yPosition];
-		pos[2] = [position zPosition];
-	
-		[[controller wowMemoryAccess] saveDataForAddress: CTM_POS Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
-	}
-	
-	// Set the GUID of who to interact with!
-	if ( guid > 0 ){
-		[[controller wowMemoryAccess] saveDataForAddress: CTM_GUID Buffer: (Byte *)&guid BufLength: sizeof(guid)];
-	}
-	
-	// Set these other randoms!  These are set if the player actually clicks, but sometimes they won't when they login!  Then it won't work :(  /cry
-	float scale = 0.25f;
-	float unk = 9.0f;
-	float unk2 = 14.0f;		// should this be 7.0f?  If only i knew what this was!
-	[[controller wowMemoryAccess] saveDataForAddress: CTM_UNKNOWN Buffer: (Byte *)&unk BufLength: sizeof(unk)];
-	[[controller wowMemoryAccess] saveDataForAddress: CTM_SCALE Buffer: (Byte *)&scale BufLength: sizeof(scale)];
-	[[controller wowMemoryAccess] saveDataForAddress: CTM_UNKNOWN2 Buffer: (Byte *)&unk2 BufLength: sizeof(unk2)];
-	
-	// Lets start moving!
-	[[controller wowMemoryAccess] saveDataForAddress: CTM_ACTION Buffer: (Byte *)&type BufLength: sizeof(type)];
-}
-
-- (BOOL)isCTMActive{
-	UInt32 value = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: CTM_ACTION Buffer: (Byte*)&value BufLength: sizeof(value)];
-    return ((value == ctmWalkTo) || (value == ctmLoot) || (value == ctmInteractNpc) || (value == ctmInteractObject));
 }
 
 // 1 read
@@ -691,7 +683,7 @@ static PlayerDataController* sharedController = nil;
     // bit 23 - running away
     // bit 25 - invisible/not selectable
     // bit 26 - skinnable
-    // bit 29 - feign death
+    // bit 29 - feign death 
 }
 
 - (BOOL)isInCombat {
@@ -1118,19 +1110,21 @@ static PlayerDataController* sharedController = nil;
 			NSArray *attackQueue = [combatController attackQueue];
 			NSMutableArray *allUnits = [NSMutableArray array];
 			[allUnits addObjectsFromArray:units];
-			[allUnits addObjectsFromArray:attackQueue];
+
+			// Only add new units!
+			for(Unit *unit in attackQueue){
+				if ( ![allUnits containsObject:unit] ){
+					[allUnits addObject:unit];
+				}
+			}
 			
 			for(Unit *unit in allUnits) {
-				
 				if( ![unit isValid] )
 					continue;
 				
 				float distance = [[self position] distanceToPosition: [unit position]];
-				
 				BOOL isHostile = [self isHostileWithFaction: [unit factionTemplate]];
 				BOOL isNeutral = (!isHostile && ![self isFriendlyWithFaction: [unit factionTemplate]]);
-				
-				
 				unsigned level = [unit level];
 				if(level > 100) level = 0;
 				
@@ -1179,10 +1173,10 @@ static PlayerDataController* sharedController = nil;
 			// Update our combat table!
 			[_healingDataList sortUsingDescriptors: [healingTable sortDescriptors]];
 			[healingTable reloadData];
+			
+			// Update our CD info!
+			[spellController reloadCooldownInfo];
 		}
-		
-		// Reload our CD info!
-		[spellController reloadCooldownInfo];
 		
 		// Update our bot timer!
 		[botController updateRunningTimer];
@@ -1199,21 +1193,115 @@ static PlayerDataController* sharedController = nil;
 	return nil;
 }
 
-- (BOOL)isInBG{
+- (UInt32)zone{
 	UInt32 zone = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: PLAYER_CURRENT_ZONE Buffer: (Byte *)&zone BufLength: sizeof(zone)] && zone) {
-		switch(zone){
-			case 4384:	// Strand of the Ancients
-			case 3358:	// Arathi Basin
-			case 3277:	// Warsong Gulch
-			case 2597:	// Alterac Valley
-			case 3820:	// Eye of the Storm
-			case 4710:	// Isle of Conquest
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: PLAYER_CURRENT_ZONE Buffer: (Byte *)&zone BufLength: sizeof(zone)];
+	return zone;
+}
+
+- (BOOL)isInBG{
+	switch([self zone]){
+		case 4384:	// Strand of the Ancients
+		case 3358:	// Arathi Basin
+		case 3277:	// Warsong Gulch
+		case 2597:	// Alterac Valley
+		case 3820:	// Eye of the Storm
+		case 4710:	// Isle of Conquest
+			return YES;
+		default:
+			return NO;
+	}
+	return NO;
+}
+
+- (BOOL)isOnBoatInStrand{
+	Position *playerPos = [self position];
+	
+	// Verify x
+	if ( playerPos.xPosition > -20.0f && playerPos.xPosition < 20.0f ){				// Really -16 < x < 16		when on the ramp:	6
+		if ( playerPos.yPosition > -15.0f && playerPos.yPosition < 15.0f ){			// Really -9 < y < 9							14
+			if ( playerPos.zPosition > -15.0f && playerPos.zPosition < 15.0f ){		// Really -10 < z < 10							5
 				return YES;
-			default:
-				return NO;
+			}
 		}
-    }
+	}
+	
+	return NO;
+}
+
+- (BOOL)isOnLeftBoatInStrand{
+	
+	//#define StrandGateOfTheBlueSapphire		190724
+	//#define StrandGateOfTheGreenEmerald		190722
+	
+	if ( [self isOnBoatInStrand] ){
+
+		// Note: There is a potential 1.5 second window where this gate could exist, but this function will return false!
+		Node *blueGate		= [nodeController nodeWithEntryID:StrandGateOfTheBlueSapphire];
+		Node *greenGate		= [nodeController nodeWithEntryID:StrandGateOfTheGreenEmerald];
+		
+		if ( blueGate != nil && greenGate != nil ){
+			Position *playerPosition = [self position];
+			float distanceToBlue = [playerPosition distanceToPosition:[blueGate position]];
+			float distanceToGreen = [playerPosition distanceToPosition:[greenGate position]];
+			
+			PGLog(@"Blue: %0.2f 2 Green: %0.2f", distanceToBlue, distanceToGreen);
+			
+			if ( distanceToGreen < distanceToBlue ){
+				return YES;				
+			}
+		}
+	}
+	
+	return NO;
+}
+
+- (Position*)closestPositionToGate: (BOOL)leftBoat{
+	Node *gate = nil;
+	Position *position = [Position positionWithX:5.988355f Y:13.60136f Z:5.059512f];
+	Position *position2 = [Position positionWithX:5.988355f Y:-13.60136f Z:5.059512f];
+	
+	// Checking against distance to green!
+	if ( leftBoat ){
+		gate = [nodeController nodeWithEntryID:StrandGateOfTheGreenEmerald];
+		PGLog(@"green gate");
+	}
+	else{
+		gate = [nodeController nodeWithEntryID:StrandGateOfTheBlueSapphire];
+		PGLog(@"blue gate");
+	}
+	
+	PGLog(@"Distance to gate: %0.2f < %0.2f", [position distanceToPosition:[gate position]], [position2 distanceToPosition:[gate position]]);
+	
+	if ( [position distanceToPosition:[gate position]] < [position2 distanceToPosition:[gate position]] ){
+		return position;
+	}
+
+	return position2;		
+}
+
+- (BOOL)isOnRightBoatInStrand{
+	
+	//#define StrandGateOfTheBlueSapphire		190724
+	//#define StrandGateOfTheGreenEmerald		190722
+	
+	if ( [self isOnBoatInStrand] ){
+		
+		// Note: There is a potential 1.5 second window where this gate could exist, but this function will return false!
+		Node *blueGate		= [nodeController nodeWithEntryID:StrandGateOfTheBlueSapphire];
+		Node *greenGate		= [nodeController nodeWithEntryID:StrandGateOfTheGreenEmerald];
+		
+		if ( blueGate != nil && greenGate != nil ){
+			Position *playerPosition = [self position];
+			float distanceToBlue = [playerPosition distanceToPosition:[blueGate position]];
+			float distanceToGreen = [playerPosition distanceToPosition:[greenGate position]];
+			
+			PGLog(@"Blue: %0.2f 1 Green: %0.2f", distanceToBlue, distanceToGreen);
+			if ( distanceToBlue < distanceToGreen ){
+				return YES;				
+			}
+		}
+	}
 	
 	return NO;
 }
@@ -1275,8 +1363,35 @@ static PlayerDataController* sharedController = nil;
 		if ([[aTableColumn identifier] isEqualToString: @"Class"]) {
 			[(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"ClassIcon"]];
 		}
+		
+		// do text color
+		if( ![aCell respondsToSelector: @selector(setTextColor:)] ){
+			PGLog(@"can't do color :(");
+			return;
+		}
+		
+		if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
+			[aCell setTextColor: [NSColor redColor]];
+			return;
+		}
+		
+		[aCell setTextColor: [NSColor darkGrayColor]];
 	}
-
+	else if ( aTableView == healingTable ){
+		// do text color
+		if( ![aCell respondsToSelector: @selector(setTextColor:)] ){
+			PGLog(@"can't do color :(");
+			return;
+		}
+		
+		if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
+			[aCell setTextColor: [NSColor greenColor]];
+			return;
+		}
+		
+		[aCell setTextColor: [NSColor darkGrayColor]];
+	}
+	
 	return;
 }
 

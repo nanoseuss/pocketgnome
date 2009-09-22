@@ -26,9 +26,11 @@ typedef enum CastError {
 	ErrSpellNotReady = 13,
 	ErrInvalidTarget = 14,
 	ErrTargetDead = 15,
+	ErrCantAttackMounted = 16,
+	ErrYouAreMounted = 17,
 } CastError;
 
-#define INV_FULL			@"Inventory is Full"
+#define INV_FULL			@"Inventory is full."
 #define TARGET_LOS			@"Target not in line of sight"
 #define SPELL_NOT_READY		@"Spell is not ready yet."
 #define CANT_MOVE			@"Can't do that while moving"
@@ -42,6 +44,8 @@ typedef enum CastError {
 #define TARGET_RNGE2		@"You are too far away!"
 #define INVALID_TARGET		@"Invalid target"
 #define TARGET_DEAD			@"Your target is dead"
+#define CANT_ATTACK_MOUNTED	@"Can't attack while mounted."
+#define YOU_ARE_MOUNTED		@"You are mounted."
 
 
 //Must have a Fishing Pole equipped

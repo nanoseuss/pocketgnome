@@ -169,7 +169,26 @@ static InventoryController *sharedInventory = nil;
     if(![memory isValid]) return;
     
     [self willChangeValueForKey: @"itemCount"];
+	
+	/*
+	[dataList removeAllObjects];
+	
+    // add all items
+    for(NSNumber *address in addresses) {
+		Item *item = [Item itemWithAddress: address inMemory: memory];
+		
+		// load item name
+		NSNumber *itemID = [NSNumber numberWithInt: [item entryID]];
+		if([_itemNameList objectForKey: itemID]) {
+			[item setName: [_itemNameList objectForKey: itemID]];
+		} else if(![item name]) {
+			[item loadName];
+		}
+		
+		[dataList addObject: item]; 
+	}*/
 
+	
     // enumerate current object addresses
     // determine which objects need to be removed
     for(WoWObject *obj in dataList) {
@@ -186,6 +205,7 @@ static InventoryController *sharedInventory = nil;
     }
     
     // add new objects if they don't currently exist
+	NSDate *now = [NSDate date];
     for(NSNumber *address in addresses) {
         if( ![addressDict objectForKey: address] ) {
             Item *item = [Item itemWithAddress: address inMemory: memory];
@@ -200,6 +220,9 @@ static InventoryController *sharedInventory = nil;
             
             [dataList addObject: item];            
         }
+		else {
+			[[addressDict objectForKey: address] setRefreshDate: now];
+		}
     }
     
     [self didChangeValueForKey: @"itemCount"];
@@ -241,6 +264,9 @@ static InventoryController *sharedInventory = nil;
                                    [item itemSubtypeString],                            @"Subtype",
                                    durString,                                           @"Durability",
                                    durPercent,                                          @"DurabilityPercent",
+								   [NSNumber numberWithLongLong:[item ownerUID]],		@"Owner",
+								   [NSNumber numberWithLongLong:[item containerUID]],	@"Contained",
+								   [NSNumber numberWithInt:[item flags]],				@"Flags",
                                    nil]];
     }
     [_itemDataList sortUsingDescriptors: [itemTable sortDescriptors]];
@@ -471,6 +497,12 @@ static InventoryController *sharedInventory = nil;
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
     if(rowIndex == -1) return nil;
+	
+	if ( [[aTableColumn identifier] isEqualToString:@"Contained"] 
+		|| [[aTableColumn identifier] isEqualToString:@"Owner"] 
+		|| [[aTableColumn identifier] isEqualToString:@"Flags"] ){
+		return [NSString stringWithFormat:@"0x%X", [[[_itemDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] longLongValue]];
+	}
 
     return [[_itemDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
     /*
