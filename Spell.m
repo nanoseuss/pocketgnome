@@ -642,6 +642,21 @@
             // PGLog(@"No cast time entry for %@", self);
             [scanner setScanLocation: scanSave];
         }
+		
+		// For druids (Swift or regular)
+		int spellID = [[self ID] intValue];
+		if ( spellID == 40120 || spellID == 33943 ){
+			self.mount = [NSNumber numberWithInt:2];
+			
+			// Swift Flight Form
+			if ( spellID == 40120 ){
+				self.speed = [NSNumber numberWithInt:280];
+			}
+			// Flight Form
+			else if ( spellID == 33943 ){
+				self.speed = [NSNumber numberWithInt:150];
+			}
+		}
     }
 	else{
 		PGLog(@"[Spell] Error grabbing data for Spell ID: %@", [self ID]);

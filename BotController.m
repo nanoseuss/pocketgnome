@@ -3861,25 +3861,25 @@ NSMutableDictionary *_diffDict = nil;
 
 	// Check start/stop hotkey
 	KeyCombo combo = [startstopRecorder keyCombo];
-	if ( combo.code == -1 || combo.flags == 0 ){
+	if ( combo.code == -1 ){
 		flags |= HotKeyStartStop;
 	}
 	
 	// Check Interact with
 	combo = [mouseOverRecorder keyCombo];
-	if ( combo.code == -1 || combo.flags == 0 ){
+	if ( combo.code == -1 ){
 		flags |= HotKeyInteractMouseover;
 	}
 	
 	// Check Bottom Left Action Bar
 	combo = [shortcutRecorder keyCombo];
-	if ( combo.code == -1 || combo.flags == 0 ){
+	if ( combo.code == -1 ){
 		flags |= HotKeyPrimary;
 	}
 	
 	// Check Pet attack
 	combo = [petAttackRecorder keyCombo];
-	if ( combo.code == -1 || combo.flags == 0 ){
+	if ( combo.code == -1 ){
 		flags |= HotKeyPetAttack;
 	}
 	
@@ -3887,7 +3887,8 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (IBAction)test: (id)sender{
-
+	
+	PGLog(@"0x%X", [self isHotKeyInvalid]);
 }
 
 @end
