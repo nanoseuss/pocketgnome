@@ -13,11 +13,13 @@
 @class Controller;
 @class BotController;
 @class PlayerDataController;
+@class OffsetController;
 
 @interface SpellController : NSObject {
-    IBOutlet Controller *controller;
-    IBOutlet BotController *botController;
-    IBOutlet PlayerDataController *playerController;
+    IBOutlet Controller				*controller;
+    IBOutlet BotController			*botController;
+    IBOutlet PlayerDataController	*playerController;
+	IBOutlet OffsetController		*offsetController;
 
     IBOutlet id spellDropDown;
     IBOutlet id spellLoadingProgress;

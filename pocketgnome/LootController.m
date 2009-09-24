@@ -12,6 +12,7 @@
 #import "InventoryController.h"
 #import "ChatController.h"
 #import "PlayerDataController.h"
+#import "OffsetController.h"
 
 #import "Item.h"
 #import "Offsets.h"
@@ -87,24 +88,24 @@
 	MemoryAccess *memory = nil;
 	while ( 1 ){
 		memory = [controller wowMemoryAccess];
-		
-		if( memory && [memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)]) {
+		unsigned long offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
+		if( memory && [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)]) {
 			
 			// Then we have a NEW item
 			if ( lootedItem > 0 && _lastLootedItem == 0 && _lastLootedItem != lootedItem ){
 				_lastLootedItem = lootedItem;
 				
 				// Grab the quantity!
-				[memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
+				[memory loadDataForObject: self atAddress: offset + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
 				
 				// Add our item!
 				[self addItem:lootedItem Quantity:quantity];
 				
 				// Are there more to add?
 				int i = 1;
-				while ([memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)] && lootedItem > 0 ){
+				while ([memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)] && lootedItem > 0 ){
 					// Grab the quantity!
-					[memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
+					[memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
 					
 					// Add our item!
 					[self addItem:lootedItem Quantity:quantity];
@@ -154,7 +155,7 @@
 	UInt32 lootWindowOpen;
 	int itemsInWindow = 0, i=0;
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	while( [memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootWindowOpen BufLength: sizeof(lootWindowOpen)] && i < MAX_ITEMS_IN_LOOT_WINDOW ){
+	while( [memory loadDataForObject: self atAddress: [offsetController offset:@"ITEM_IN_LOOT_WINDOW"] + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootWindowOpen BufLength: sizeof(lootWindowOpen)] && i < MAX_ITEMS_IN_LOOT_WINDOW ){
 		if ( lootWindowOpen > 0 ){
 			itemsInWindow++;
 		}
@@ -173,9 +174,9 @@
 - (void)acceptLoot{
 	UInt32 item;
 	int i = 0;
-	
+	unsigned long offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	while ( [memory loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
+	while ( [memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
 		if ( item > 0 ){
 			// Loot the item!
 			[chatController enter];             // open/close chat box
@@ -184,7 +185,7 @@
 			usleep(500000);
 		
 			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
-			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: ITEM_IN_LOOT_WINDOW + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
+			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
 				[chatController enter];             // open/close chat box
 				usleep(100000);
 				[chatController sendKeySequence: [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", i+1, '\n']];

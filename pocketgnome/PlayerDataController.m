@@ -18,6 +18,7 @@
 #import "MemoryViewController.h"
 #import "BotController.h"
 #import "NodeController.h"
+#import "OffsetController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -169,10 +170,11 @@ static PlayerDataController* sharedController = nil;
 
 
 - (NSString*)lastErrorMessage {
-    if( LAST_RED_ERROR_MESSAGE ) {
+	unsigned long offset = [offsetController offset:@"LAST_RED_ERROR_MESSAGE"];
+    if( offset ) {
         char str[100];
         str[99] = 0;
-        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: LAST_RED_ERROR_MESSAGE Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
+        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
             NSString *string = [NSString stringWithUTF8String: str];
             if([string length]) {
                 return string;
@@ -197,10 +199,11 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (NSString*)accountName {
-    if( ACCOUNT_NAME_STATIC ) {
+	unsigned long offset = [offsetController offset:@"ACCOUNT_NAME_STATIC"];
+    if( offset ) {
         char str[33];
         str[32] = 0;
-        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ACCOUNT_NAME_STATIC Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
+        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
             NSString *string = [NSString stringWithUTF8String: str];
             if([string length]) {
                 return string;
@@ -211,10 +214,11 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (NSString*)serverName {
-    if( SERVER_NAME_STATIC ) {
+	unsigned long offset = [offsetController offset:@"SERVER_NAME_STATIC"];
+    if( offset ) {
         char str[33];
         str[32] = 0;
-        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: SERVER_NAME_STATIC Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
+        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
             NSString *string = [NSString stringWithUTF8String: str];
             if([string length]) {
                 return string;
@@ -241,7 +245,7 @@ static PlayerDataController* sharedController = nil;
     // then compare GUIDs and validate object type
     
     UInt32 globalGUID = 0, selfGUID = 0, objType = 0, infoAddress = 0;
-    [memory loadDataForObject: self atAddress: PLAYER_GUID_STATIC Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
+    [memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
 	
 	
@@ -476,7 +480,7 @@ static PlayerDataController* sharedController = nil;
 
 - (UInt32)comboPoints {
     UInt32 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (COMBO_POINTS_STATIC) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"COMBO_POINTS_STATIC"]) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
         return value;
     }
     return 0;
@@ -493,7 +497,7 @@ static PlayerDataController* sharedController = nil;
 
 - (BOOL)isIndoors {
     UInt32 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (PLAYER_IN_BUILDING_STATIC) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"PLAYER_IN_BUILDING_STATIC"]) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
         return (value == 1);
     }
     return NO;
@@ -602,8 +606,8 @@ static PlayerDataController* sharedController = nil;
     if(memory && [self playerIsValid]) {
         BOOL ret1, ret3;
         // save this value to the target table
-        ret1 = [memory saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_CURRENT) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
-        //ret2 = [[self wowMemory] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
+        ret1 = [memory saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_CURRENT) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
+        //ret2 = [[self wowMemory] saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
         
         // and to the player table
         ret3 = [memory saveDataForAddress: ([self infoAddress] + UnitField_Target) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
@@ -619,7 +623,7 @@ static PlayerDataController* sharedController = nil;
 - (BOOL)setMouseoverTarget: (UInt64)targetID {
     if([self playerIsValid]) {
         // save this value to the target table
-        if([[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)])
+        if([[controller wowMemoryAccess] saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)])
             return YES;
         else
             return NO;
@@ -637,7 +641,7 @@ static PlayerDataController* sharedController = nil;
 
 - (UInt64)interactGUID {
     UInt64 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (TARGET_TABLE_STATIC + TARGET_INTERACT) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_INTERACT) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
         return value;
     }
     return 0;
@@ -645,7 +649,7 @@ static PlayerDataController* sharedController = nil;
 
 - (UInt64)focusGUID {
     UInt64 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (TARGET_TABLE_STATIC + TARGET_FOCUS) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_FOCUS) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
         return value;
     }
     return 0;
@@ -653,13 +657,13 @@ static PlayerDataController* sharedController = nil;
 
 - (UInt64)mouseoverID {
     UInt64 value = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)];
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&value BufLength: sizeof(value)];
     return value;
 }
 
 - (UInt64)comboPointUID {
     UInt64 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: (COMBO_POINTS_TABLE_STATIC + COMBO_POINT_TARGET_UID) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"COMBO_POINTS_STATIC"] + COMBO_POINT_TARGET_UID) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
         return value;
     }
     return 0;
@@ -1188,14 +1192,14 @@ static PlayerDataController* sharedController = nil;
 	 MemoryAccess *memory = [controller wowMemoryAccess];
 	
 	float pos[3] = {-1.0f, -1.0f, -1.0f };
-	if([memory loadDataForObject: self atAddress: CORPSE_STATIC_X Buffer: (Byte *)&pos BufLength: sizeof(float)*3])
+	if([memory loadDataForObject: self atAddress: [offsetController offset:@"CORPSE_STATIC"] Buffer: (Byte *)&pos BufLength: sizeof(float)*3])
 		return [Position positionWithX: pos[0] Y: pos[1] Z: pos[2]];
 	return nil;
 }
 
 - (UInt32)zone{
 	UInt32 zone = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: PLAYER_CURRENT_ZONE Buffer: (Byte *)&zone BufLength: sizeof(zone)];
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_CURRENT_ZONE"] Buffer: (Byte *)&zone BufLength: sizeof(zone)];
 	return zone;
 }
 

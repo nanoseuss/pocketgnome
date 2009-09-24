@@ -12,7 +12,6 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2378"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2478,7 +2477,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="754616829">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4378,7 +4377,7 @@
 							<object class="NSTabViewItem" id="162552892">
 								<string key="NSIdentifier">Alarms</string>
 								<object class="NSView" key="NSView" id="63361735">
-									<nil key="NSNextResponder"/>
+									<reference key="NSNextResponder" ref="895177953"/>
 									<int key="NSvFlags">256</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4437,7 +4436,7 @@
 															<reference key="NSSuperview" ref="436535805"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSButtonCell" key="NSCell" id="346856762">
-																<int key="NSCellFlags">67239424</int>
+																<int key="NSCellFlags">604110336</int>
 																<int key="NSCellFlags2">0</int>
 																<string key="NSContents">After being followed for</string>
 																<reference key="NSSupport" ref="699098009"/>
@@ -4459,7 +4458,7 @@
 															<reference key="NSSuperview" ref="436535805"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="NSTextFieldCell" key="NSCell" id="247280117">
-																<int key="NSCellFlags">-1804468671</int>
+																<int key="NSCellFlags">-1267597759</int>
 																<int key="NSCellFlags2">-2009070592</int>
 																<string key="NSContents"/>
 																<reference key="NSSupport" ref="699098009"/>
@@ -4909,6 +4908,7 @@
 										</object>
 									</object>
 									<string key="NSFrame">{{10, 33}, {694, 351}}</string>
+									<reference key="NSSuperview" ref="895177953"/>
 								</object>
 								<string key="NSLabel">Alarms</string>
 								<reference key="NSColor" ref="1031085640"/>
@@ -4917,7 +4917,7 @@
 							<object class="NSTabViewItem" id="852260578">
 								<string key="NSIdentifier">Set up macros for all the /script commands!</string>
 								<object class="NSView" key="NSView" id="572329361">
-									<reference key="NSNextResponder" ref="895177953"/>
+									<nil key="NSNextResponder"/>
 									<int key="NSvFlags">256</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5989,26 +5989,24 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 										</object>
 									</object>
 									<string key="NSFrame">{{10, 33}, {694, 351}}</string>
-									<reference key="NSSuperview" ref="895177953"/>
 								</object>
 								<string key="NSLabel">Macros</string>
 								<reference key="NSColor" ref="1031085640"/>
 								<reference key="NSTabView" ref="895177953"/>
 							</object>
 						</object>
-						<reference key="NSSelectedTabViewItem" ref="852260578"/>
+						<reference key="NSSelectedTabViewItem" ref="162552892"/>
 						<reference key="NSFont" ref="699098009"/>
 						<int key="NSTvFlags">0</int>
 						<bool key="NSAllowTruncatedLabels">YES</bool>
 						<bool key="NSDrawsBackground">YES</bool>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="572329361"/>
+							<reference ref="63361735"/>
 						</object>
 					</object>
 				</object>
 				<string key="NSFrameSize">{740, 413}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
@@ -10982,6 +10980,54 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 						<reference key="destination" ref="414838705"/>
 					</object>
 					<int key="connectionID">3862</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">3863</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="1002180867"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">3864</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="94147614"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">3865</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="191514424"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">3866</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="145982638"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">3867</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">3868</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -16432,7 +16478,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">3862</int>
+			<int key="maxID">3868</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -16623,6 +16669,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>mouseOverRecorder</string>
 							<string>movementController</string>
 							<string>nodeController</string>
+							<string>offsetController</string>
 							<string>overlayWindow</string>
 							<string>petAttackRecorder</string>
 							<string>playerController</string>
@@ -16691,6 +16738,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>SRRecorderControl</string>
 							<string>MovementController</string>
 							<string>NodeController</string>
+							<string>OffsetController</string>
 							<string>NSWindow</string>
 							<string>SRRecorderControl</string>
 							<string>PlayerDataController</string>
@@ -16947,6 +16995,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>newSignatureField</string>
 							<string>nodeController</string>
 							<string>nodesToolbarItem</string>
+							<string>offsetController</string>
 							<string>playerDataController</string>
 							<string>playerToolbarItem</string>
 							<string>playersController</string>
@@ -16992,6 +17041,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>NSTextField</string>
 							<string>NodeController</string>
 							<string>NSToolbarItem</string>
+							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 							<string>NSToolbarItem</string>
 							<string>PlayersController</string>
@@ -17144,6 +17194,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>chatController</string>
 							<string>controller</string>
 							<string>itemController</string>
+							<string>offsetController</string>
 							<string>playerDataController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -17151,6 +17202,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>ChatController</string>
 							<string>Controller</string>
 							<string>InventoryController</string>
+							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 						</object>
 					</object>
@@ -17343,6 +17395,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>controller</string>
 							<string>mobController</string>
 							<string>movementType</string>
+							<string>offsetController</string>
 							<string>playerData</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -17353,6 +17406,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSPopUpButton</string>
+							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 						</object>
 					</object>
@@ -17504,6 +17558,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>healingTable</string>
 							<string>memoryViewController</string>
 							<string>nodeController</string>
+							<string>offsetController</string>
 							<string>powerNameText</string>
 							<string>spellController</string>
 							<string>view</string>
@@ -17517,6 +17572,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>NSTableView</string>
 							<string>MemoryViewController</string>
 							<string>NodeController</string>
+							<string>OffsetController</string>
 							<string>NSTextField</string>
 							<string>SpellController</string>
 							<string>NSView</string>
@@ -17778,6 +17834,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>controller</string>
 							<string>cooldownPanel</string>
 							<string>cooldownPanelTable</string>
+							<string>offsetController</string>
 							<string>playerController</string>
 							<string>spellDropDown</string>
 							<string>spellLoadingProgress</string>
@@ -17789,6 +17846,7 @@ YXRpY1BvcHVwMSwgMSkgZW5kCg</string>
 							<string>Controller</string>
 							<string>NSPanel</string>
 							<string>NSTableView</string>
+							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 							<string>id</string>
 							<string>id</string>
