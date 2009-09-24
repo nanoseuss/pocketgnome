@@ -19,6 +19,7 @@
 @class Waypoint;
 @class Position;
 @class PlayerDataController;
+@class OffsetController;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
@@ -31,7 +32,8 @@
     IBOutlet id botController;
     IBOutlet id chatController;
     IBOutlet id combatController;
-    IBOutlet PlayerDataController *playerData;
+    IBOutlet PlayerDataController	*playerData;
+	IBOutlet OffsetController		*offsetController;
     
 	IBOutlet NSPopUpButton *movementType;
 

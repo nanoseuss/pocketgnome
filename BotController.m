@@ -27,6 +27,7 @@
 #import "ChatLogController.h"
 #import "FishController.h"
 #import "MacroController.h"
+#import "OffsetController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -1172,7 +1173,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
-							PGLog(@"[Bot] Spell didn't cast on target %@, blacklisting and moving on!", target);
+							//PGLog(@"[Bot] Spell didn't cast on target %@, blacklisting and moving on!", target);
 							//[combatController blacklistUnit:target];
 							//[self finishCurrentProcedure: state];
 							//return;
@@ -2861,7 +2862,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 NSMutableDictionary *_diffDict = nil;
 - (IBAction)testHotkey: (id)sender {
     //int value = 28734;
-    //[[controller wowMemoryAccess] saveDataForAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&value BufLength: sizeof(value)];
+    //[[controller wowMemoryAccess] saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&value BufLength: sizeof(value)];
     //PGLog(@"Set Mana Tap.");
     
     KeyCombo hotkey = [shortcutRecorder keyCombo];
@@ -3633,8 +3634,8 @@ NSMutableDictionary *_diffDict = nil;
 	UInt32 cooldown = [controller refreshDelay]*2;
 	
 	// replace the first entry on the hotbar
-	[memory loadDataForObject: self atAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
-	[memory saveDataForAddress: (HOTBAR_BASE_STATIC + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
+	[memory loadDataForObject: self atAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
 	
 	// wow needs time to process the spell change
 	usleep(cooldown);
@@ -3649,7 +3650,7 @@ NSMutableDictionary *_diffDict = nil;
 	usleep(cooldown);
 	
 	// then save our old action back
-	[memory saveDataForAddress: (HOTBAR_BASE_STATIC+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"]+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	
 	// We don't want to check lastAttemptedActionID if it's not a spell!
 	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ){
@@ -3789,7 +3790,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // This will set the GUID of the mouseover + trigger interact with mouseover!
 - (BOOL)interactWithMouseoverGUID: (UInt64) guid{
-	if ( [[controller wowMemoryAccess] saveDataForAddress: (TARGET_TABLE_STATIC + TARGET_MOUSEOVER) Buffer: (Byte *)&guid BufLength: sizeof(guid)] ){
+	if ( [[controller wowMemoryAccess] saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&guid BufLength: sizeof(guid)] ){
 		
 		// wow needs time to process the change
 		usleep([controller refreshDelay]);

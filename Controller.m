@@ -20,6 +20,7 @@
 #import "PlayersController.h"
 #import "CorpseController.h"
 #import "FishController.h"
+#import "OffsetController.h"
 
 #import "CGSPrivate.h"
 
@@ -543,7 +544,7 @@ static Controller* sharedController = nil;
 - (UInt32)findObjectList: (MemoryAccess*)memory {
     if(memory){
 		UInt32 objectListPtr = 0, objectListAddr = 0;
-		if([memory loadDataForObject: self atAddress: OBJECT_LIST_LL_PTR Buffer: (Byte*)&objectListPtr BufLength: sizeof(objectListPtr)] && objectListPtr) {
+		if([memory loadDataForObject: self atAddress: [offsetController offset:@"OBJECT_LIST_LL_PTR"] Buffer: (Byte*)&objectListPtr BufLength: sizeof(objectListPtr)] && objectListPtr) {
 			if([memory loadDataForObject: self atAddress: objectListPtr + 0x1C Buffer: (Byte*)&objectListAddr BufLength: sizeof(objectListAddr)] && objectListAddr) {
 				return objectListAddr;
 			}
@@ -567,7 +568,7 @@ static Controller* sharedController = nil;
     MemoryAccess *memory = [self wowMemoryAccess];
 	
 	// Grab our global GUID
-	[memory loadDataForObject: self atAddress: PLAYER_GUID_STATIC Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
 	
 	// Lets just see if our object list ptr has changed!
 	if ( memory ){
@@ -576,7 +577,7 @@ static Controller* sharedController = nil;
 			PGLog(@"OBJECT LIST POINTER CHANGED O NOES 0x%X  0x%x!", self.currentObjectListPtr, objectListPtr);
 			objListPtrChanged = YES;
 		}
-		
+
 		// Open up the door to send a notification!
 		if ( objectListPtr > 0x0 ){
 			_invalidPlayerNotificationSent = NO;
@@ -584,7 +585,7 @@ static Controller* sharedController = nil;
 		
 		// If our object list ptr is 0x0 then we're not actually in the game yet :/
 		if ( objectListPtr == 0x0 ){
-			PGLog(@"ARE WE LOADING SCREEN?!?");
+			//PGLog(@"ARE WE LOADING SCREEN?!?");
 			
 			if ( !_invalidPlayerNotificationSent ){
 				PGLog(@"INVALID NOTIFICATION SENT");
@@ -652,7 +653,7 @@ static Controller* sharedController = nil;
         // if wow is open, find the object list
         // this can be a time consuming process, so we need another thread.
         if(memory) {
-            PGLog(@"Memory is valid. Searching for new object list ptr...");
+            //PGLog(@"Memory is valid. Searching for new object list ptr...");
             _foundPlayer = NO;
             //_scanIsRunning = YES;
             //[NSThread detachNewThreadSelector: @selector(findObjectList:) toTarget: self withObject: memory];
@@ -841,7 +842,7 @@ static Controller* sharedController = nil;
     if(memory && address && ([address unsignedIntValue] != 0)) {
         NSDate *date = [NSDate date];
         UInt32 playerGUID = 0;  // we only load the lower 32 bits, since the upper 32 are 0 for players
-        if([memory loadDataForObject: self atAddress: PLAYER_GUID_STATIC Buffer: (Byte*)&playerGUID BufLength: sizeof(playerGUID)] && playerGUID) {
+        if([memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&playerGUID BufLength: sizeof(playerGUID)] && playerGUID) {
             //PGLog(@"Got player GUID: 0x%X", playerGUID);
             
             int count = 0;
@@ -1497,7 +1498,7 @@ static Controller* sharedController = nil;
 
 - (BOOL)isWoWChatBoxOpen {
     unsigned value = 0;
-    [[self wowMemoryAccess] loadDataForObject: self atAddress: CHAT_BOX_OPEN_STATIC Buffer: (Byte *)&value BufLength: sizeof(value)];
+    [[self wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"CHAT_BOX_OPEN_STATIC"] Buffer: (Byte *)&value BufLength: sizeof(value)];
     return value;
 }
 

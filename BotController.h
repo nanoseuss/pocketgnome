@@ -44,6 +44,7 @@
 @class LootController;
 @class FishController;
 @class MacroController;
+@class OffsetController;
 
 @class ScanGridView;
 
@@ -74,6 +75,7 @@
 	IBOutlet LootController			*lootController;
 	IBOutlet FishController			*fishController;
 	IBOutlet MacroController		*macroController;
+	IBOutlet OffsetController		*offsetController;
 
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;

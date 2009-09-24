@@ -11,12 +11,14 @@
  
 #import "ObjectConstants.h"
 
-#define VALID_WOW_VERSION   @"3.2.0"
+#define VALID_WOW_VERSION   @"3.2.2"
 #define PLAYER_LEVEL_CAP    80
 
 // not valid for PPC!
 // 3.2.0 valid
-#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x153FD48 : 0x0)		// 3.2.0
+
+#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x1553D28 : 0x0)		// 3.2.2
+											 // 0x153FD48 : 0x0)		// 3.2.0
 											 // 0x139FEC8 : 0x0)		// 3.1.2
 											 // 0x1374088 : 0x0)        // 3.1.1
 											 // 0x1374028 : 0x0)        // 3.1.0
@@ -26,9 +28,12 @@
                                              // 0x149E668 : 0x0)        // 3.0.2
                                              // 0xEB1C88 : 0xECAD68)    // 2.4.3
 
+// 3.2.2 valid
+#define MOUNT_LIST_POINTER		((IS_X86) ?		0x15A84D8 : 0x0)	// 3.2.2 valid
+//  0x1594538 : 0x0)	// 3.2.0 valid
 
 
-#define SERVER_NAME_STATIC          ((IS_X86) ? 0x1540426 : 0x0)		// 3.2.0
+//#define SERVER_NAME_STATIC          ((IS_X86) ? 0x1540426 : 0x0)		// 3.2.0
 											 // 0x13A05A6 : 0x0)		// 3.1.2
 											 // 0x1374766 : 0x0)        // 3.1.1
 											 // 0x1374706 : 0x0)        // 3.1.0
@@ -41,7 +46,7 @@
 
 
 
-#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0xC34180 : 0x0)			// 3.2.0
+//#define ACCOUNT_NAME_STATIC         ((IS_X86) ? 0xC34180 : 0x0)			// 3.2.0
 											 // 0x13A0020 : 0x0)		// 3.1.2 & 3.1.3
 											 // 0x13741E0 : 0x0)        // 3.1.1
 											 // 0x1374180 : 0x0)        // 3.1.0
@@ -55,7 +60,7 @@
                                              // 0xEB0C80 : 0xEC8EE0  // 2.4.2
 
 // 3.2.0 valid	
-#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xB9BEE0 : 0x0) // 3.2.0
+//#define PLAYER_GUID_STATIC          ((IS_X86) ? 0xB9BEE0 : 0x0) // 3.2.0
 											 // 0xAC9440 : 0x0)	// 3.1.2 & 3.1.3
 											 // 0xAA3400 : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB75420 : 0x0) // 3.0.9
@@ -63,21 +68,10 @@
                                              // 0xB70980 : 0x0) // 3.0.2(0xB6C960)
 
 // 3.2.0 valid
-#define	OBJECT_LIST_LL_PTR			((IS_X86) ? 0x1255A6C : 0x0) // 3.2.0
+//#define	OBJECT_LIST_LL_PTR			((IS_X86) ? 0x1255A6C : 0x0) // 3.2.0
 
 // 3.2.0 valid
-#define PLAYER_NAMES_LL_PTR			((IS_X86) ? 0x151C2C4 : 0x0) // 3.2.0
-
-// 3.2.0 valid
-#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xBFAE88 : 0x0) // 3.2.0
-											 // 0xAED328 : 0x0) // 3.1.2 & 3.1.3
-											 // 0xAC6F08 : 0x0) // 3.1.0 & 3.1.1
-											 // 0xB9BBE8 : 0x0) // 3.0.9
-                                             // 0xB9EBE8 : 0x0) // 3.0.8
-                                             // 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
-
-// 3.2.0 valid
-#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB9D8AC : 0x0) // 3.2.0
+//#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB9D8AC : 0x0) // 3.2.0
 											 // 0xACB12C : 0x0) // 3.1.2
 											 // 0xAA508C : 0x0) // 3.1.0 & 3.1.1
 											 // 0xB76FD0 : 0x0) // 3.0.9
@@ -87,7 +81,6 @@
                                              // 0x9AF048 : 0x9D7C6D) // 2.4.3
                                              // 0x9B1008 : 0x9D8C55) // 2.4.2
                                              // 0x9A8008 : 0x9CDC5D) // 2.4.1
-#define COMBO_POINTS_TABLE_STATIC   ((IS_X86) ? 0xB9D8AC : 0x0) // same as above on Intel
 #define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86
 #define COMBO_POINT_TARGET_UID      0x4   // 64 bit
 // in 3.0.x, the current time appears globally +0xC after COMBO_POINTS_STATIC
@@ -96,7 +89,7 @@
 // but i don't know what it does yet
 
 // 3.2.0 valid
-#define TARGET_TABLE_STATIC ((IS_X86) ? 0xB9D990 : 0x0) // 3.2.0
+//#define TARGET_TABLE_STATIC ((IS_X86) ? 0xB9D990 : 0x0) // 3.2.0
 									 // 0xACB210 : 0x0) // 3.1.2
 									 // 0xAA5170 : 0x0) // 3.1.0 & 3.1.1
 									 // 0xB77090 : 0x0) // 3.0.9
@@ -120,7 +113,7 @@
 // }
 
 // 3.2.0 valid
-#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x15955A0 : 0x0) // 3.2.0
+//#define KNOWN_SPELLS_STATIC             ((IS_X86) ? 0x15955A0 : 0x0) // 3.2.0
 												 // 0x144BE80 : 0x0) // 3.1.2
 												 // 0x1421040 : 0x0) // 3.1.1
 												 // 0x141FFE0 : 0x0) // 3.1.0
@@ -147,7 +140,7 @@
 
 // 3.2.0 valid
 // static main hotbar ( uint32[12], spell ID)
-#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x1588500 : 0x0) // 3.2.0
+//#define HOTBAR_BASE_STATIC  ((IS_X86) ? 0x1588500 : 0x0) // 3.2.0
 									 // 0x143EE40 : 0x0) // 3.1.2 & 3.1.3
 									 // 0x1413000 : 0x0) // 3.1.1
 									 // 0x1412FA0 : 0x0) // 3.1.0
@@ -170,7 +163,7 @@
 #define BAR10_OFFSET        0x1B0   // 10th hotbar (unknown)
 
 // 3.2.0 valid
-#define PLAYER_IN_BUILDING_STATIC       ((IS_X86) ? 0x1236080 : 0x0)		// 3.2.0 (also 0x159DE40)
+//#define PLAYER_IN_BUILDING_STATIC       ((IS_X86) ? 0x1236080 : 0x0)		// 3.2.0 (also 0x159DE40)
 												 // 0x114A5FC : 0x0)		// 3.1.2
 												 // 0x111E81C : 0x0)        // 3.0.9
                                                  // 0x11F8F0C : 0x0)        // 3.0.9
@@ -184,15 +177,13 @@
 // if the spell did not cast, it contains the ID of the most recently failed spell
 // only works for spells that play an error sound. not sure what makes this distinction.
 //
-#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x125EA54 : 0x0) // 3.2.0
+//#define LAST_SPELL_THAT_DIDNT_CAST_STATIC   ((IS_X86) ? 0x125EA54 : 0x0) // 3.2.0
 													 // 0x11730F0 : 0x0) // 3.1.2
 													 // 0x11472B0 : 0x0) // 3.1.0
 													 // 0x122BB98 : 0x0) // 3.0.9
                                                      // 0x122EBB8 : 0x0) // 3.0.8
                                                      // 0x1227C98 : 0x0) // 3.0.3
                                                      // 0x1223B38 : 0x0) // 3.0.2
-
-#define LAST_SPELL_CAST						((IS_X86) ? 0x1513890 : 0x0) // 3.1.3
 
 // 3.1.2 valid 
 #define REFRESH_DELAY           ((IS_X86) ? 0x1517A88 : 0x0) // 3.1.2
@@ -205,7 +196,7 @@
 
 // 3.2.0 valid
 /* 1 if it's open, 0 if it's not */
-#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xC22B20 : 0x0) // 3.2.0
+//#define CHAT_BOX_OPEN_STATIC    ((IS_X86) ? 0xC22B20 : 0x0) // 3.2.0
 										 // 0xB49DA0 : 0x0) // 3.1.2
 										 // 0xB1DFC0 : 0x0) // 3.1.1
 										 // 0xB1DF60 : 0x0) // 3.1.0
@@ -220,19 +211,20 @@
                                          // 0x9D79E0 2.3.3 PPC
 
 // 3.2.0 valid
+//?
 #define CHATLOG_START			((IS_X86) ? 0x14C3EB8 : 0x0) // 3.2.0
 										 // 0x13A0E3C : 0x0) // 3.1.2
 										 // 0x1374FB0 : 0x0) // 3.1.1
 
 // 3.2.0 valid - ONLY valid if the player has released
-#define CORPSE_STATIC_X			((IS_X86) ? 0x1540B80 : 0x0)				// 0x13EB860 (for minimap)
-#define CORPSE_STATIC_Y			((IS_X86) ? 0x1540B84 : 0x0)				// 0x13EB864 (for minimap)
-#define CORPSE_STATIC_Z			((IS_X86) ? 0x1540B88 : 0x0)
+//#define CORPSE_STATIC_X			((IS_X86) ? 0x1540B80 : 0x0)				// 0x13EB860 (for minimap)
+//#define CORPSE_STATIC_Y			((IS_X86) ? 0x1540B84 : 0x0)				// 0x13EB864 (for minimap)
+//#define CORPSE_STATIC_Z			((IS_X86) ? 0x1540B88 : 0x0)
 
 // 3.2.0 valid
 // This will ONLY appear while the window is open!
 // Similar version is at 0x125CDE0 - this will REMAIN set if the loot window is closed w/o looting, only difference
-#define ITEM_IN_LOOT_WINDOW	   ((IS_X86) ? 0x157e0e4 : 0x0 )	
+//#define ITEM_IN_LOOT_WINDOW	   ((IS_X86) ? 0x157e0e4 : 0x0 )	
 
 // {
 #define LOOT_QUANTITY			0x8
@@ -241,11 +233,11 @@
 // }
 
 // 3.2.0 valid
-#define PLAYER_CURRENT_ZONE		((IS_X86) ?	0xB980F8 : 0x0 )	// 3.2.0 valid
+//#define PLAYER_CURRENT_ZONE		((IS_X86) ?	0xB980F8 : 0x0 )	// 3.2.0 valid
 												// 0xACA618 : 0x0 )	// 3.1.3 valid  //Also 0xACB1CC  Current zone the player is in (ID)
 
 // 3.2.0 valid
-#define CD_OBJ_LIST_STATIC		((IS_X86) ? 0x125E940 : 0x0 )	// 3.2.0 valid
+//#define CD_OBJ_LIST_STATIC		((IS_X86) ? 0x125E940 : 0x0 )	// 3.2.0 valid
 										 // 0x1172FE0 : 0x0 )	// 3.1.3 valid
 	#define CD_NEXT_ADDRESS	0x4
 	#define CD_SPELLID		0x8
@@ -255,20 +247,22 @@
 	#define CD_GCD			0x2C	// Also 0x2C
 
 // 3.2.0 valid
-#define CTM_POS					((IS_X86) ? 0x12708FC : 0x0 )
-#define CTM_ACTION				((IS_X86) ? 0x12709D4 : 0x0 )
-#define CTM_GUID				((IS_X86) ? 0x12709F0 : 0x0 )		// 64 bit duh
+//#define CTM_POS					((IS_X86) ? 0x12708FC : 0x0 )
+//#define CTM_ACTION				((IS_X86) ? 0x12709D4 : 0x0 )
+//#define CTM_GUID				((IS_X86) ? 0x12709F0 : 0x0 )		// 64 bit duh
 
-#define CTM_SCALE				((IS_X86) ? 0x12709E8 : 0x0 )		// Always 13.962634 I believe
-#define CTM_DISTANCE			((IS_X86) ? 0x12709E4 : 0x0 )							
+//#define CTM_SCALE				((IS_X86) ? 0x12709E8 : 0x0 )		// Always 13.962634 I believe
+//#define CTM_DISTANCE			((IS_X86) ? 0x12709E4 : 0x0 )							
 
 // 3.2.0 valid - will probably never use the below?  Not sure but documenting to help find in future
+/*
 #define CTM_CLOSENESS			((IS_X86) ? 0x12709B4 : 0x0 )		// Closeness factor - set to stop if 0.5f or less
 #define CTM_PI2					((IS_X86) ? 0x12709C8 : 0x0 )		// This is pi*2 - not sure why heh
 #define CTM_DIRECTION			((IS_X86) ? 0x12709CC : 0x0 )		// This is the direction we're facing 0 - 2*pi
 #define CTM_UNKNOWN				((IS_X86) ? 0x1270964 : 0x0 )		// write 9.0f
 #define CTM_UNKNOWN2			((IS_X86) ? 0x12709D8 : 0x0 )		// write 14.0f (or 7.0f?)
 #define CTM_UNKNOWN3			((IS_X86) ? 0x12709FC : 0x0 )		// write 0.25f
+*/
 
 enum ctmActionType{
 	ctmFaceTarget = 0x1,
@@ -287,14 +281,23 @@ enum ctmActionType{
 };
 
 // 3.2.0  valid
-#define LAST_RED_ERROR_MESSAGE  ((IS_X86) ? 0x1540BE0 : 0x0) // 3.2.0 valid
-											// 0x013FA620 : 0x0) // Red text error in wow interface
-
-// 3.2.0 valid
-#define MOUNT_LIST_POINTER		((IS_X86) ? 0x1594538 : 0x0) // Points to a list of the player's mounts!
-
+//#define LAST_RED_ERROR_MESSAGE  ((IS_X86) ? 0x1540BE0 : 0x0) // 3.2.0 valid
+											// 0x013FA620 : 0x0) // Red text error in wow interfac
 
 // **************************** NOT USED/DATED ******************************************* //
+
+#define LAST_SPELL_CAST						((IS_X86) ? 0x1513890 : 0x0) // 3.1.3
+
+// 3.2.0 valid
+#define PLAYER_NAMES_LL_PTR			((IS_X86) ? 0x151C2C4 : 0x0) // 3.2.0
+
+// 3.2.0 valid
+#define OBJECT_LIST_PTR_STRUCT_ID   ((IS_X86) ? 0xBFAE88 : 0x0) // 3.2.0
+// 0xAED328 : 0x0) // 3.1.2 & 3.1.3
+// 0xAC6F08 : 0x0) // 3.1.0 & 3.1.1
+// 0xB9BBE8 : 0x0) // 3.0.9
+// 0xB9EBE8 : 0x0) // 3.0.8
+// 0xB96C08 : 0x0) // 3.0.3 (0xB92BC8)
 
 // 3.1.2 valid
 #define CAMERA_PTR				((IS_X86) ? 0x139FE44 : 0x0)

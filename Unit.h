@@ -130,14 +130,14 @@ enum eUnitBaseFields {
     
     // BaseField_CurrentStance          = 0xB40, // this seems to have dissapeared in 3.0.8
     
-    BaseField_Auras_ValidCount          = 0xDB4,
-    BaseField_Auras_Start               = 0xC34,
+    BaseField_Auras_ValidCount          = 0xDC0,
+    BaseField_Auras_Start               = 0xC40,
     
     // I'm not entirely sure what the story is behind these pointers
     // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
     // the Aura fields in the player struct is abandoned and moves elsewhere
-    BaseField_Auras_OverflowValidCount  = 0xC38,
-    BaseField_Auras_OverflowPtr1        = 0xC3C,    // 3.0.8-9: i could not verify overflow 2, 3, 4
+    BaseField_Auras_OverflowValidCount  = 0xC44,
+    BaseField_Auras_OverflowPtr1        = 0xC48,    // 3.0.8-9: i could not verify overflow 2, 3, 4
     // BaseField_Auras_OverflowPtr2        = 0xEA4, // but since they aren't actually used, I don't think it matters.
     // BaseField_Auras_OverflowPtr3        = 0xF3C,
     // BaseField_Auras_OverflowPtr4        = 0xF94,

@@ -20,6 +20,7 @@
 @class SpellController;
 @class MemoryViewController;
 @class NodeController;
+@class OffsetController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -40,6 +41,7 @@
     IBOutlet CombatController		*combatController;
     IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet NodeController			*nodeController;
+	IBOutlet OffsetController		*offsetController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;

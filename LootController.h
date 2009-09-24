@@ -15,12 +15,14 @@
 @class InventoryController;
 @class ChatController;
 @class PlayerDataController;
+@class OffsetController;
 
 @interface LootController : NSObject {
     IBOutlet Controller             *controller;
 	IBOutlet InventoryController	*itemController;
 	IBOutlet ChatController			*chatController;
 	IBOutlet PlayerDataController	*playerDataController;
+	IBOutlet OffsetController		*offsetController;
 	
 	NSMutableDictionary	*_itemsLooted;
 	

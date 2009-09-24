@@ -17,6 +17,7 @@
 #import "BotController.h"
 #import "CombatController.h"
 #import "ChatController.h"
+#import "OffsetController.h"
 
 #import "WoWObject.h";
 #import "Offsets.h"
@@ -1254,17 +1255,17 @@ typedef enum MovementType {
 		pos[0] = [position xPosition];
 		pos[1] = [position yPosition];
 		pos[2] = [position zPosition];
-		[memory saveDataForAddress: CTM_POS Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
+		[memory saveDataForAddress: [offsetController offset:@"CTM_POS"] Buffer: (Byte *)&pos BufLength: sizeof(float)*3];
 	}
 	
 	// Set the GUID of who to interact with!
 	if ( guid > 0 ){
-		[memory saveDataForAddress: CTM_GUID Buffer: (Byte *)&guid BufLength: sizeof(guid)];
+		[memory saveDataForAddress: [offsetController offset:@"CTM_GUID"] Buffer: (Byte *)&guid BufLength: sizeof(guid)];
 	}
 	
 	// Set our scale!
 	float scale = 13.962634f;
-	[memory saveDataForAddress: CTM_SCALE Buffer: (Byte *)&scale BufLength: sizeof(scale)];
+	[memory saveDataForAddress: [offsetController offset:@"CTM_SCALE"] Buffer: (Byte *)&scale BufLength: sizeof(scale)];
 	
 	// Set our distance to the target until we stop moving
 	float distance = 0.5f;	// Default for just move to position
@@ -1277,25 +1278,23 @@ typedef enum MovementType {
 	else if ( type == ctmInteractObject ){
 		distance = 4.5f;
 	}
-	[memory saveDataForAddress: CTM_DISTANCE Buffer: (Byte *)&distance BufLength: sizeof(distance)];
+	[memory saveDataForAddress: [offsetController offset:@"CTM_DISTANCE"] Buffer: (Byte *)&distance BufLength: sizeof(distance)];
 	
 	/*
 	// Set these other randoms!  These are set if the player actually clicks, but sometimes they won't when they login!  Then it won't work :(  /cry
-	float scale = 0.25f;
 	float unk = 9.0f;
 	float unk2 = 14.0f;		// should this be 7.0f?  If only i knew what this was!
 	[memory saveDataForAddress: CTM_UNKNOWN Buffer: (Byte *)&unk BufLength: sizeof(unk)];
-	[memory saveDataForAddress: CTM_SCALE Buffer: (Byte *)&scale BufLength: sizeof(scale)];
 	[memory saveDataForAddress: CTM_UNKNOWN2 Buffer: (Byte *)&unk2 BufLength: sizeof(unk2)];
 	 */
 	
 	// Lets start moving!
-	[memory saveDataForAddress: CTM_ACTION Buffer: (Byte *)&type BufLength: sizeof(type)];
+	[memory saveDataForAddress: [offsetController offset:@"CTM_ACTION"] Buffer: (Byte *)&type BufLength: sizeof(type)];
 }
 
 - (BOOL)isCTMActive{
 	UInt32 value = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: CTM_ACTION Buffer: (Byte*)&value BufLength: sizeof(value)];
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"CTM_ACTION"] Buffer: (Byte*)&value BufLength: sizeof(value)];
     return ((value == ctmWalkTo) || (value == ctmLoot) || (value == ctmInteractNpc) || (value == ctmInteractObject));
 }
 

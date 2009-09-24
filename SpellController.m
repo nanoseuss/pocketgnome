@@ -13,6 +13,7 @@
 #import "Offsets.h"
 #import "Spell.h"
 #import "PlayerDataController.h"
+#import "OffsetController.h"
 
 #pragma mark Note: LastSpellCast/Timer Disabled
 #pragma mark -
@@ -124,7 +125,7 @@ static SpellController *sharedSpells = nil;
     // blood elves: 'Arcane Affinity' (28877)
     // for everyone: 'Alchemy' (2259, 3101, 3464, 11611, 28596)
     uint32_t value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: KNOWN_SPELLS_STATIC Buffer: (Byte *)&value BufLength: sizeof(value)] && value) {
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"KNOWN_SPELLS_STATIC"] Buffer: (Byte *)&value BufLength: sizeof(value)] && value) {
         return ( (value > 0) && (value < 100000) );
         /*
         return (value == 6603 ||    // "Attack"
@@ -159,7 +160,7 @@ static SpellController *sharedSpells = nil;
     if( [playerController playerIsValid] && [self isSpellListValid] ) {
         for(i=0; ; i++) {
             // load all known spells into a temp array
-            if([memory loadDataForObject: self atAddress: KNOWN_SPELLS_STATIC + (i*4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value) {
+            if([memory loadDataForObject: self atAddress: [offsetController offset:@"KNOWN_SPELLS_STATIC"] + (i*4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value) {
                 Spell *spell = [self spellForID: [NSNumber numberWithUnsignedInt: value]];
                 if( !spell ) {
                     // create a new spell if necessary
@@ -451,7 +452,7 @@ static SpellController *sharedSpells = nil;
 
 - (UInt32)lastAttemptedActionID {
     UInt32 value = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: LAST_SPELL_THAT_DIDNT_CAST_STATIC Buffer: (Byte*)&value BufLength: sizeof(value)];
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"] Buffer: (Byte*)&value BufLength: sizeof(value)];
     return value;
     
     // the following static variables we're both removed in WoW 3.0.2 :(
@@ -524,7 +525,7 @@ static SpellController *sharedSpells = nil;
 	
 	// Lets loop through all available info!
 	UInt32 object = 0, totalScans = 0;
-	[[controller wowMemoryAccess] loadDataForObject:self atAddress:CD_OBJ_LIST_STATIC + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
+	[[controller wowMemoryAccess] loadDataForObject:self atAddress:[offsetController offset:@"CD_OBJ_LIST_STATIC"] + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
 	while ((object != 0)  && ((object & 1) == 0) && totalScans < 30 ) {
 		UInt32 startTime = 0, cd = 0, gcd = 0, spellid = 0;
 		UInt32 test=0, test2=0, test3=0;
@@ -663,7 +664,7 @@ static SpellController *sharedSpells = nil;
 -(BOOL)isGCDActive {
 	UInt32 currentTime =[playerController currentTime];
 	UInt32 object = 0;
-	[[controller wowMemoryAccess] loadDataForObject:self atAddress:CD_OBJ_LIST_STATIC + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
+	[[controller wowMemoryAccess] loadDataForObject:self atAddress:[offsetController offset:@"CD_OBJ_LIST_STATIC"] + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
 	while ((object != 0)  && ((object & 1) == 0)) {
 		UInt32 startTime = 0;
 		UInt32 gcd = 0;
@@ -693,7 +694,7 @@ static SpellController *sharedSpells = nil;
 	int totalScans = 0;
 	UInt32 currentTime = [playerController currentTime];
 	UInt32 object = 0, tehCD=0;
-	[memory loadDataForObject:self atAddress:CD_OBJ_LIST_STATIC + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
+	[memory loadDataForObject:self atAddress:[offsetController offset:@"CD_OBJ_LIST_STATIC"] + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
 	while ((object != 0)  && ((object & 1) == 0) && totalScans < 30 ) {
 		UInt32 spellid = 0, startTime = 0, cd = 0, cd2 = 0;
 		[memory loadDataForObject:self atAddress:object + CD_SPELLID Buffer:(Byte *)&spellid BufLength:sizeof(spellid)];
