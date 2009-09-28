@@ -95,7 +95,7 @@
     int _currentHotkeyModifier, _currentPetAttackHotkeyModifier;
     int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
-    BOOL _doMining, _doHerbalism, _doSkinning, _doLooting;
+    BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -165,6 +165,7 @@
 	
     IBOutlet NSButton *miningCheckbox;
     IBOutlet NSButton *herbalismCheckbox;
+	IBOutlet NSButton *netherwingEggCheckbox;
     IBOutlet id miningSkillText;
     IBOutlet id herbalismSkillText;
     IBOutlet NSButton *skinningCheckbox;
@@ -174,13 +175,9 @@
 	IBOutlet NSButton *mountCheckbox;
 	IBOutlet NSPopUpButton *mountType;
     
-    IBOutlet id atkPlayersCheckbox;
-    IBOutlet id atkNeutralNPCsCheckbox;
-    IBOutlet id atkHostileNPCsCheckbox;
-    IBOutlet id ignoreEliteCheckbox;
-    
     IBOutlet NSPanel *hotkeyHelpPanel;
     IBOutlet NSPanel *lootHotkeyHelpPanel;
+	IBOutlet NSPanel *gatheringLootingPanel;
     IBOutlet SRRecorderControl *shortcutRecorder;
     IBOutlet SRRecorderControl *petAttackRecorder;
     IBOutlet SRRecorderControl *startstopRecorder;
@@ -237,6 +234,8 @@
 - (IBAction)closeHotkeyHelp: (id)sender;
 - (IBAction)lootHotkeyHelp: (id)sender;
 - (IBAction)closeLootHotkeyHelp: (id)sender;
+- (IBAction)gatheringLootingOptions: (id)sender;
+- (IBAction)gatheringLootingSelectAction: (id)sender;
 
 // PvP shit
 - (IBAction)pvpStartStop: (id)sender;

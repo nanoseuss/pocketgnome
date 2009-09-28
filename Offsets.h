@@ -14,10 +14,22 @@
 #define VALID_WOW_VERSION   @"3.2.2"
 #define PLAYER_LEVEL_CAP    80
 
+
+
+#define BATTLEGROUND_INFO		((IS_X86) ?		0x155FE60 : 0x0)	// 3.2.2a valid
+#define	BG_STATUS		0x10
+#define BG_INFO_NEXT	0x34
+
+
+
+
+
+
 // not valid for PPC!
 // 3.2.0 valid
 
-#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x1553D28 : 0x0)		// 3.2.2
+//#define PLAYER_NAME_STATIC          ((IS_X86) ? 0x1554D48 : 0x0)		// 3.2.2a
+											 // 0x1553D28 : 0x0)		// 3.2.2
 											 // 0x153FD48 : 0x0)		// 3.2.0
 											 // 0x139FEC8 : 0x0)		// 3.1.2
 											 // 0x1374088 : 0x0)        // 3.1.1
@@ -29,8 +41,10 @@
                                              // 0xEB1C88 : 0xECAD68)    // 2.4.3
 
 // 3.2.2 valid
-#define MOUNT_LIST_POINTER		((IS_X86) ?		0x15A84D8 : 0x0)	// 3.2.2 valid
+//#define MOUNT_LIST_POINTER		((IS_X86) ?		0x15A94F8 : 0x0)	// 3.2.2a valid
+//  0x15A84D8 : 0x0)	// 3.2.2 valid
 //  0x1594538 : 0x0)	// 3.2.0 valid
+
 
 
 //#define SERVER_NAME_STATIC          ((IS_X86) ? 0x1540426 : 0x0)		// 3.2.0

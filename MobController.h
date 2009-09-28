@@ -68,7 +68,10 @@
 - (Mob*)mobWithGUID: (GUID)guid;
 - (void)selectMob: (Mob*)mob;
 
-- (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position;
+- (NSArray*)mobsWithinDistance: (float)mobDistance 
+						MobIDs: (NSArray*)mobIDs 
+					  position:(Position*)position 
+					 aliveOnly:(BOOL)aliveOnly;
 
 - (NSArray*)mobsWithinDistance: (float)distance
                     levelRange: (NSRange)range

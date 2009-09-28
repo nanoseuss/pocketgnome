@@ -177,14 +177,14 @@ static SpellController *sharedSpells = nil;
 	// scan the list of mounts!
 	NSMutableArray *playerMounts = [NSMutableArray array];
 	if( [playerController playerIsValid] ){
-		UInt32 mountAddress = 0;//MOUNT_LIST_POINTER;
+		UInt32 mountAddress = 0;
 		
 		// grab the pointer to the list
-		if([memory loadDataForObject: self atAddress: MOUNT_LIST_POINTER Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
+		if([memory loadDataForObject: self atAddress: [offsetController offset:@"MOUNT_LIST_POINTER"] Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
 			
 			for(i=0; ; i++) {
 				// load all known spells into a temp array
-				if([memory loadDataForObject: self atAddress: mountAddress + (i*0x4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value < 100000) {
+				if([memory loadDataForObject: self atAddress: mountAddress + (i*0x4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value < 100000 && value > 0) {
 					Spell *spell = [self spellForID: [NSNumber numberWithUnsignedInt: value]];
 					if( !spell ) {
 						// create a new spell if necessary

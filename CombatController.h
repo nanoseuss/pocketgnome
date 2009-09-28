@@ -16,6 +16,7 @@
 @class MovementController;
 @class PlayerDataController;
 @class PlayersController;
+@class Position;
 
 @interface CombatController : NSObject {
     IBOutlet Controller *controller;
@@ -36,6 +37,7 @@
     NSMutableArray *_blacklist;
 	NSMutableArray *_unitsAttackingMe;
     NSMutableDictionary *_initialDistances;
+	NSMutableDictionary *_combatDictionaryWithWeights;
 }
 
 @property BOOL combatEnabled;
@@ -65,6 +67,10 @@
 
 // get all units we're in combat with!
 - (void)doCombatSearch;
+
+// new combat search
+- (Unit*)findBestUnitToAttack;
+- (UInt32)unitWeight: (Unit*)unit PlayerPosition:(Position*)playerPosition;
 
 // Should only be called when a spell cast fails on a target!
 - (void)blacklistUnit: (Unit*)unit;

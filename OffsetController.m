@@ -82,6 +82,9 @@
 #define MOUNT_LIST_POINTER						"\x55\x89\xE5\x53\x83\xEC\x14\xBB\xD4\x84\x5A\x01"
 #define MOUNT_LIST_POINTER_MASK					"xxxxxxxx????"
 
+#define	BATTLEGROUND_STATUS						"\x8B\x0D\xB0\x05\x27\x01\x89\x81\x94\x2D\x00\x00\x8B\x15\xB0\x05\x27\x01\x89\x86\x08\x00\x00\x00"
+#define	BATTLEGROUND_STATUS_MASK				"xx????xxxxxxxx????xxxxxx"
+
 @interface OffsetController (Internal)
 
 //- (unsigned int) findPatternWithByteMask: (unsigned char*)byteMask withStringMask:(unsigned char*)stringMask;
@@ -95,7 +98,7 @@
 - (void)findAllOffsets: (Byte*)data Len:(unsigned long)len StartAddress:(unsigned long)startAddress;
 
 BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const char* szMask);
-unsigned long dwFindPattern( unsigned char *bMask,char * szMask, Byte* dw_Address, unsigned long dw_Len, unsigned long startAddressOffset, long minOffset );
+unsigned long dwFindPattern( unsigned char *bMask,char * szMask, Byte* dw_Address, unsigned long dw_Len, unsigned long startAddressOffset, long minOffset, int count );
 
 /*
 BOOL bDataCompare(const Byte* pData, const Byte* bMask, const char* szMask);
@@ -201,97 +204,101 @@ uint32_t dwFindPattern(Byte * dwAddress,uint32_t dwLen,Byte *bMask,char * szMask
 	
 	
 	
-	unsigned long offset = dwFindPattern( (Byte*)PLAYER_GUID_STATIC, PLAYER_GUID_STATIC_MASK, data, len, startAddress, 0x0 );
+	unsigned long offset = dwFindPattern( (Byte*)PLAYER_GUID_STATIC, PLAYER_GUID_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"PLAYER_GUID_STATIC"];
 	PGLog(@"PLAYER_GUID_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)OBJECT_LIST_LL_PTR, OBJECT_LIST_LL_PTR_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)OBJECT_LIST_LL_PTR, OBJECT_LIST_LL_PTR_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"OBJECT_LIST_LL_PTR"];
 	PGLog(@"OBJECT_LIST_LL_PTR: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)SERVER_NAME_STATIC, SERVER_NAME_STATIC_MASK, data, len, startAddress, 0x0 ) + 0x6;
+	offset = dwFindPattern( (Byte*)SERVER_NAME_STATIC, SERVER_NAME_STATIC_MASK, data, len, startAddress, 0x0, 1 ) + 0x6;
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"SERVER_NAME_STATIC"];
 	PGLog(@"SERVER_NAME_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)ACCOUNT_NAME_STATIC, ACCOUNT_NAME_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)ACCOUNT_NAME_STATIC, ACCOUNT_NAME_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"ACCOUNT_NAME_STATIC"];
 	PGLog(@"ACCOUNT_NAME_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)PLAYER_NAME_STATIC, PLAYER_NAME_STATIC_MASK, data, len, startAddress, 0x1500000 );
+	offset = dwFindPattern( (Byte*)PLAYER_NAME_STATIC, PLAYER_NAME_STATIC_MASK, data, len, startAddress, 0x1500000, 4 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"PLAYER_NAME_STATIC"];
 	PGLog(@"PLAYER_NAME_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)COMBO_POINTS_STATIC, COMBO_POINTS_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)COMBO_POINTS_STATIC, COMBO_POINTS_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"COMBO_POINTS_STATIC"];
 	PGLog(@"COMBO_POINTS_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)TARGET_TABLE_STATIC, TARGET_TABLE_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)TARGET_TABLE_STATIC, TARGET_TABLE_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"TARGET_TABLE_STATIC"];
 	PGLog(@"TARGET_TABLE_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)KNOWN_SPELLS_STATIC, KNOWN_SPELLS_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)KNOWN_SPELLS_STATIC, KNOWN_SPELLS_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"KNOWN_SPELLS_STATIC"];
 	PGLog(@"KNOWN_SPELLS_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)HOTBAR_BASE_STATIC, HOTBAR_BASE_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)HOTBAR_BASE_STATIC, HOTBAR_BASE_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"HOTBAR_BASE_STATIC"];
 	PGLog(@"HOTBAR_BASE_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)PLAYER_IN_BUILDING_STATIC, PLAYER_IN_BUILDING_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)PLAYER_IN_BUILDING_STATIC, PLAYER_IN_BUILDING_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"PLAYER_IN_BUILDING_STATIC"];
 	PGLog(@"PLAYER_IN_BUILDING_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)LAST_SPELL_THAT_DIDNT_CAST_STATIC, LAST_SPELL_THAT_DIDNT_CAST_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)LAST_SPELL_THAT_DIDNT_CAST_STATIC, LAST_SPELL_THAT_DIDNT_CAST_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
 	PGLog(@"LAST_SPELL_THAT_DIDNT_CAST_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CHAT_BOX_OPEN_STATIC, CHAT_BOX_OPEN_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CHAT_BOX_OPEN_STATIC, CHAT_BOX_OPEN_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CHAT_BOX_OPEN_STATIC"];
 	PGLog(@"CHAT_BOX_OPEN_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CORPSE_STATIC, CORPSE_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CORPSE_STATIC, CORPSE_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CORPSE_STATIC"];
 	PGLog(@"CORPSE_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)ITEM_IN_LOOT_WINDOW, ITEM_IN_LOOT_WINDOW_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)ITEM_IN_LOOT_WINDOW, ITEM_IN_LOOT_WINDOW_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"ITEM_IN_LOOT_WINDOW"];
 	PGLog(@"ITEM_IN_LOOT_WINDOW: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)PLAYER_CURRENT_ZONE, PLAYER_CURRENT_ZONE_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)PLAYER_CURRENT_ZONE, PLAYER_CURRENT_ZONE_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"PLAYER_CURRENT_ZONE"];
 	PGLog(@"PLAYER_CURRENT_ZONE: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CD_OBJ_LIST_STATIC, CD_OBJ_LIST_STATIC_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CD_OBJ_LIST_STATIC, CD_OBJ_LIST_STATIC_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CD_OBJ_LIST_STATIC"];
 	PGLog(@"CD_OBJ_LIST_STATIC: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CTM_POS, CTM_POS_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CTM_POS, CTM_POS_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CTM_POS"];
 	PGLog(@"CTM_POS: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CTM_ACTION, CTM_ACTION_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CTM_ACTION, CTM_ACTION_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CTM_ACTION"];
 	PGLog(@"CTM_ACTION: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CTM_GUID, CTM_GUID_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CTM_GUID, CTM_GUID_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CTM_GUID"];
 	PGLog(@"CTM_GUID: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CTM_SCALE, CTM_SCALE_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CTM_SCALE, CTM_SCALE_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CTM_SCALE"];
 	PGLog(@"CTM_SCALE: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)CTM_DISTANCE, CTM_DISTANCE_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)CTM_DISTANCE, CTM_DISTANCE_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"CTM_DISTANCE"];
 	PGLog(@"CTM_DISTANCE: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)LAST_RED_ERROR_MESSAGE, LAST_RED_ERROR_MESSAGE_MASK, data, len, startAddress, 0x0 );
+	offset = dwFindPattern( (Byte*)LAST_RED_ERROR_MESSAGE, LAST_RED_ERROR_MESSAGE_MASK, data, len, startAddress, 0x0, 1 );
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"LAST_RED_ERROR_MESSAGE"];
 	PGLog(@"LAST_RED_ERROR_MESSAGE: 0x%X", offset);
 	
-	offset = dwFindPattern( (Byte*)MOUNT_LIST_POINTER, MOUNT_LIST_POINTER_MASK, data, len, startAddress, 0x15A0000 ) + 0x4;
+	offset = dwFindPattern( (Byte*)MOUNT_LIST_POINTER, MOUNT_LIST_POINTER_MASK, data, len, startAddress, 0x0, 75 ) + 0x4;
 	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"MOUNT_LIST_POINTER"];
 	PGLog(@"MOUNT_LIST_POINTER: 0x%X", offset);
+	
+	offset = dwFindPattern( (Byte*)BATTLEGROUND_STATUS, BATTLEGROUND_STATUS_MASK, data, len, startAddress, 0x0, 1 );
+	[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:@"BATTLEGROUND_STATUS"];
+	PGLog(@"BATTLEGROUND_STATUS: 0x%X", offset);
 }
 
 BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const char* szMask){
@@ -303,11 +310,14 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	return true;
 }
 
-unsigned long dwFindPattern( unsigned char *bMask,char * szMask, Byte*dw_Address, unsigned long dw_Len, unsigned long startAddressOffset, long minOffset ){
+unsigned long dwFindPattern( unsigned char *bMask,char * szMask, Byte*dw_Address, unsigned long dw_Len, unsigned long startAddressOffset, long minOffset, int count ){
 	unsigned long i;
+	int foundCount = 0;
 	for(i=0; i < dw_Len; i++){
 	
 		if( bDataCompare( (unsigned char*)( dw_Address+i ),bMask,szMask) ){
+			
+			foundCount++;
 
 			const unsigned char* pData = (unsigned char*)( dw_Address+i );
 			char *mask = szMask;
@@ -328,11 +338,15 @@ unsigned long dwFindPattern( unsigned char *bMask,char * szMask, Byte*dw_Address
 				offset ^= (long)*pData & 0xFF;   
 			}
 			
-			if ( offset >= minOffset ){
+			if ( offset == 0x15A94F8 ){
+				PGLog(@"HERE: %d", foundCount);
+			}
+			
+			if ( offset >= minOffset && count == foundCount ){
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring...", offset, minOffset, i);
+				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}

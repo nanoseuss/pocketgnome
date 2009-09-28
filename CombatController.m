@@ -60,6 +60,7 @@
         _blacklist = [[NSMutableArray array] retain];
 		_unitsAttackingMe = [[NSMutableArray array] retain];
         _initialDistances = [[NSMutableDictionary dictionary] retain];
+		_combatDictionaryWithWeights = [[NSMutableDictionary dictionary] retain];;
         
         //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
@@ -713,35 +714,197 @@
     return NO;
 }
 
-// We're going to use this for our Player panel, for now
-- (void)doCombatSearch{
-
-	// get list of all targets
-    NSMutableArray *targetsWithinRange = [NSMutableArray array];
+int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, void *context) {
     
-	// add all mobs + players
-	[targetsWithinRange addObjectsFromArray: [mobController allMobs]];
-	[targetsWithinRange addObjectsFromArray: [playersController allPlayers]];
-	[targetsWithinRange addObjectsFromArray: _combatUnits];
+    //PlayerDataController *playerData = (PlayerDataController*)context; [playerData position];
+    Position *position = (Position*)context; 
 	
-	// Now that we have all of our mobs/players sorted by range, lets see who is attacking us :-)
-	Player *player = [playerData player];
-	if ( [targetsWithinRange count] > 0 ){
-		for(Unit* unit in targetsWithinRange) {
-			GUID targetID = [unit targetID];
-			
-			if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] && targetID == [player GUID] ){
-				
-				// Only add it if the unit isn't already in here!
-				if ( ![_unitsAttackingMe containsObject: unit] ){
-					[_unitsAttackingMe addObject: unit];
-				}
+    float d1 = [position distanceToPosition: [unit1 position]];
+    float d2 = [position distanceToPosition: [unit2 position]];
+    if (d1 < d2)
+        return NSOrderedAscending;
+    else if (d1 > d2)
+        return NSOrderedDescending;
+    else
+        return NSOrderedSame;
+}
+
+- (UInt32)unitWeight: (Unit*)unit PlayerPosition:(Position*)playerPosition{
+	float attackRange = botController.theCombatProfile.attackRange;
+	float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
+	
+	// begin weight calculation
+	int weight = 0;
+	
+	// player or pet?
+	if ([unit isPlayer])
+		weight += 100;
+	else if ([unit isPet])
+		weight += 25;
+	
+	// current target
+	if ( [playerData targetID] == [unit GUID] )
+		weight += 25;
+	
+	// health left
+	weight += (100-[unit percentHealth]);
+	
+	// distance to target
+	if ( attackRange > 0 )
+		weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
+	
+	return weight;	
+}
+
+// assumptions: combat is enabled
+// this will find the best unit we are CURRENTLY in combat with
+- (Unit*)findBestUnitToAttack{
+	
+	// is player in combat?
+	if ( ![playerData isInCombat] )
+		return nil;
+	
+	// grab all units we're in combat with
+	NSMutableArray *units = [NSMutableArray array];
+	[units addObjectsFromArray:_unitsAttackingMe];
+	
+	// sort units by position
+	Position *playerPosition = [playerData position];
+	[units sortUsingFunction: DistanceFromPositionCmp context: playerPosition];
+	
+	PGLog(@"Total valid units: %d", [units count]);
+	
+	// so, in a perfect world
+	// -) players before pets
+	// -) low health targets before high health targets
+	// -) closer before farther
+	// everything needs to be in combatProfile range
+	
+	// assign 'weights' to each target based on current conditions/settings
+	// highest weight unit is our best target
+	
+	// current target? +25
+	// player? +100 pet? +25
+	// hostile? +100, neutral? +100
+	// health: +(100-percentHealth)
+	// distance: 100*(attackRange - distance)/attackRange
+	
+	if ( [units count] ){
+		float distanceToTarget = 0.0f;
+		float attackRange = botController.theCombatProfile.attackRange;
+		
+		
+		for ( Unit *unit in units ){
+			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
+														 
+			// only check targets that are close enough!
+			if ( distanceToTarget > attackRange ){
+				[_combatDictionaryWithWeights removeObjectForKey:[NSNumber numberWithLongLong:[unit GUID]]];
+				continue;
 			}
-			// Remove the unit if it's in the array!
-			else if ( [_unitsAttackingMe containsObject: unit] ){
-				[_unitsAttackingMe removeObject:unit];
+			
+			PGLog(@"[Combat] Valid target found %0.2f yards away", distanceToTarget);
+			
+			// begin weight calculation
+			int weight = [self unitWeight:unit PlayerPosition:playerPosition];
+			
+			PGLog(@"[Combat] Weight: %d for %@", weight, unit);
+			
+			[_combatDictionaryWithWeights setObject: [NSNumber numberWithInt:weight] forKey: [NSNumber numberWithLongLong:[unit GUID]]];
+		}
+		
+		// grab the unit with the highest weight!
+		int highestWeight = 0;
+		NSNumber *bestGUID = nil;
+		for (NSNumber* guid in _combatDictionaryWithWeights) {
+			NSNumber *weight = [_combatDictionaryWithWeights objectForKey:guid];
+			if ( [weight intValue] > highestWeight ){
+				highestWeight = [weight intValue];
+				bestGUID = guid;
+			}
+		}
+	
+		PGLog(@"[Combat] Best unit to attack is %@ with a weight of %d", bestGUID, highestWeight);
+		
+		// return the unit
+		UInt64 guid = [bestGUID longLongValue];
+		for ( Unit *unit in units ){
+			if ( guid == [unit GUID] ){
+				return unit;
 			}
 		}
 	}
+	
+	// no targets found
+	return nil;	
 }
+
+// find all units we are in combat with
+- (void)doCombatSearch{
+	
+	// add all mobs + players
+	NSArray *mobs = [mobController allMobs];
+	NSArray *players = [playersController allPlayers];
+	
+	UInt64 playerGUID = [[playerData player] GUID];
+	UInt64 unitTarget = 0;
+	BOOL playerHasPet = [[playerData player] hasPet];
+	
+	for ( Mob *mob in mobs ){
+		unitTarget = [mob targetID];
+		if (
+			![mob isDead]	&&		// 1 - living units only
+			[mob isInCombat] &&		// 2 - in Combat
+			[mob isSelectable] &&	// 3 - can select this target
+			[mob isAttackable] &&	// 4 - attackable
+			//[mob isTapped] &&		// 5 - tapped - in theory someone could tap a target while you're casting, and you get agg - so still kill (removed as a unit @ 100% could attack us and not be tapped)
+			[mob isValid] &&		// 6 - valid mob
+			(	(unitTarget == playerGUID ||										// 7 - targetting us
+				(playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
+				[mob isFleeing])													// or fleeing
+			){
+			
+			PGLog(@"[Combat] In combat with mob %@", mob);
+			// add mob!
+			if ( ![_unitsAttackingMe containsObject: (Unit*)mob] ){
+				[_unitsAttackingMe addObject: (Unit*)mob];
+			}
+		}
+		// remove unit
+		else if ([_unitsAttackingMe containsObject: (Unit*)mob]){
+			[_unitsAttackingMe removeObject:(Unit*)mob];
+
+		}
+	}
+	
+	for ( Player *player in players ){
+		unitTarget = [player targetID];
+		if (
+			![player isDead] &&										// 1 - living units only
+			[player currentHealth] != 1 &&							// 2 - this should be a ghost check, being lazy for now
+			[player isInCombat] &&									// 3 - in Combat
+			[player isSelectable] &&								// 4 - can select this target
+			([player isAttackable] || [player isFeignDeath] ) &&	// 5 - attackable or feigned
+			[player isValid] &&										// 6 - valid
+			(	(unitTarget == playerGUID ||										// 7 - targetting us
+				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
+			 [player isFleeing])													// or fleeing
+			){
+			
+			PGLog(@"[Combat] In combat with player %@", player);
+			// add player
+			if ( ![_unitsAttackingMe containsObject: (Unit*)player] ){
+				[_unitsAttackingMe addObject: (Unit*)player];
+			}
+		}
+		// remove unit
+		else if ([_unitsAttackingMe containsObject: (Unit*)player]){
+			[_unitsAttackingMe removeObject:(Unit*)player];
+			
+		}
+	}
+	
+	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+}
+
 @end

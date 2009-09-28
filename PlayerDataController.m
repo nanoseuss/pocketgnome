@@ -143,12 +143,13 @@ static PlayerDataController* sharedController = nil;
 
 - (NSString*)playerHeader {
     if( [self playerIsValid]  ) {
+		unsigned long offset = [offsetController offset:@"PLAYER_NAME_STATIC"];
         // get the player name if we can
         NSString *playerName = nil;
-        if( PLAYER_NAME_STATIC ) {
+        if( offset ) {
             char name[13];
             name[12] = 0;
-            if([[controller wowMemoryAccess] loadDataForObject: self atAddress: PLAYER_NAME_STATIC Buffer: (Byte *)&name BufLength: sizeof(name)-1]) {
+            if([[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&name BufLength: sizeof(name)-1]) {
                 NSString *newName = [NSString stringWithUTF8String: name];
                 if([newName length]) {
                     playerName = newName;
@@ -185,10 +186,11 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (NSString*)playerName {
-    if( PLAYER_NAME_STATIC ) {
+	unsigned long offset = [offsetController offset:@"PLAYER_NAME_STATIC"];
+    if( offset ) {
         char str[13];
         str[12] = 0;
-        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: PLAYER_NAME_STATIC Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
+        if([[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&str BufLength: sizeof(str)-1]) {
             NSString *string = [NSString stringWithUTF8String: str];
             if([string length]) {
                 return string;
@@ -1127,26 +1129,19 @@ static PlayerDataController* sharedController = nil;
 					continue;
 				
 				float distance = [[self position] distanceToPosition: [unit position]];
-				BOOL isHostile = [self isHostileWithFaction: [unit factionTemplate]];
-				BOOL isNeutral = (!isHostile && ![self isFriendlyWithFaction: [unit factionTemplate]]);
 				unsigned level = [unit level];
 				if(level > 100) level = 0;
+				int weight = [combatController unitWeight: unit PlayerPosition:[self position]];
 				
 				[_combatDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 											 unit,                                                                @"Player",
 											 [NSString stringWithFormat: @"0x%X", [unit lowGUID]],                @"ID",
 											 [NSString stringWithFormat: @"%@%@", [unit isPet] ? @"[Pet] " : @"", [Unit stringForClass: [unit unitClass]]],                             @"Class",
 											 [Unit stringForRace: [unit race]],                                   @"Race",
-											 [Unit stringForGender: [unit gender]],                               @"Gender",
 											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
 											 [NSNumber numberWithUnsignedInt: level],                             @"Level",
 											 [NSNumber numberWithFloat: distance],                                @"Distance", 
-											 (isNeutral ? @"4" : (isHostile ? @"2" : @"5")),                      @"Status",
-											 [unit iconForRace: [unit race] gender: [unit gender]],               @"RaceIcon",
-											 [NSImage imageNamed: [Unit stringForGender: [unit gender]]],         @"GenderIcon",
-											 [unit iconForClass: [unit unitClass]],                               @"ClassIcon",
-											 [unit isLootable],													  @"Lootable",
-											 [unit isSkinnable],												  @"Skinnable",
+											 [NSNumber numberWithInt:weight],									  @"Weight",
 											 nil]];
 			}
 			
@@ -1201,6 +1196,16 @@ static PlayerDataController* sharedController = nil;
 	UInt32 zone = 0;
     [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_CURRENT_ZONE"] Buffer: (Byte *)&zone BufLength: sizeof(zone)];
 	return zone;
+}
+
+- (int)battlegroundStatus{
+	UInt32 status = 0;
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: BATTLEGROUND_INFO + BG_STATUS Buffer: (Byte *)&status BufLength: sizeof(status)];
+	
+	if ( status < BGNone || status > BGActive )
+		return -1;
+	
+	return status;	
 }
 
 - (BOOL)isInBG{
@@ -1420,4 +1425,69 @@ static PlayerDataController* sharedController = nil;
     //[controller showMemoryView];
 }
 
+/*
+ [StructLayout(LayoutKind.Sequential)]
+ public struct ClickToMoveInfoStruct
+ {
+ public float Unknown1F;
+ public float TurnScale;
+ public float Unknown2F;
+ 
+ /// <summary>
+ /// This can be left alone. There is no need to write to it!!
+ /// </summary>
+ public float InteractionDistance;
+ 
+ public float Unknown3F;
+ public float Unknown4F;
+ public uint Unknown5U;
+ 
+ /// <summary>
+ /// As per the ClickToMoveAction enum members.
+ /// </summary>
+ public uint ActionType;
+ 
+ public ulong InteractGuid;
+ 
+ /// <summary>
+ /// Check == 2 (This might be some sort of flag?)
+ /// Always 2 when using some form of CTM action. 0 otherwise.
+ /// </summary>
+ public uint IsClickToMoving;
+ 
+ [MarshalAs(UnmanagedType.ByValArray, SizeConst = 21)]
+ public uint[] Unknown6U;
+ 
+ /// <summary>
+ /// This will change in memory as WoW figures out where exactly we're going to stop. (Also the actual end location)
+ /// </summary>
+ public Point Dest;
+ 
+ /// <summary>
+ /// This is wherever we actually 'clicked' in game.
+ /// </summary>
+ public Point Click;
+ 
+ /// <summary>
+ /// Returns the fully qualified type name of this instance.
+ /// </summary>
+ /// <returns>
+ /// A <see cref="T:System.String"/> containing a fully qualified type name.
+ /// </returns>
+ /// <filterpriority>2</filterpriority>
+ public override string ToString()
+ {
+ string tmp = "";
+ for (int i = 0; i < Unknown6U.Length; i++)
+ {
+ tmp += "Unknown6U_" + i + ": " + Unknown6U[i].ToString("X") + ", ";
+ }
+ return
+ string.Format(
+ "TurnScale: {0}, InteractionDistance: {1}, ActionType: {2}, InteractGuid: {3}, IsClickToMoving: {4}, ClickX: {5}, ClickY: {6}, ClickZ: {7}, DestX: {8}, DestY: {9}, DestZ: {10}, Unk4f: {12}, UNK: {11}",
+ TurnScale, InteractionDistance, (ClickToMoveType) ActionType, InteractGuid.ToString("X"),
+ IsClickToMoving == 2, Click.X, Click.Y, Click.Z, Dest.X, Dest.Y, Dest.Z, tmp, Unknown4F);
+ }
+ }
+*/ 
 @end
