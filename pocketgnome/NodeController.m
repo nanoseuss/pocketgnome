@@ -419,6 +419,23 @@ typedef enum {
 	return nearbyNodes;
 }
 
+- (NSArray*)nodesWithinDistance: (float)nodeDistance EntryID: (int)entryID position:(Position*)position{
+	
+	PGLog(@"Searching for %d", entryID);
+	NSMutableArray *nearbyNodes = [NSMutableArray array];
+    for(Node *node in _nodeList) {
+		if ( [node entryID] == entryID ){
+			float distance = [position distanceToPosition: [node position]];
+			PGLog(@"Found %d == %d with distance of %0.2f", [node entryID], entryID, distance);
+			if((distance != INFINITY) && (distance <= nodeDistance)) {
+				[nearbyNodes addObject: node];
+			}
+		}
+	}
+	
+	return nearbyNodes;
+}
+
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type {
     NSMutableArray *finalList = [NSMutableArray array];
     Position *playerPosition = [(PlayerDataController*)playerController position];

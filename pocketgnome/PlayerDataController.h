@@ -34,6 +34,11 @@
 
 #define ZoneStrandOfTheAncients		4384
 
+#define BGNone			0
+#define BGQueued		1
+#define BGWaiting		2
+#define BGActive		3
+
 @interface PlayerDataController : NSObject <UnitPosition> {
     IBOutlet Controller				*controller;
     IBOutlet BotController			*botController;
@@ -159,6 +164,7 @@
 
 - (void)refreshPlayerData;
 
+- (int)battlegroundStatus;
 - (UInt32)zone;
 - (BOOL)isInBG;
 - (BOOL)isOnBoatInStrand;

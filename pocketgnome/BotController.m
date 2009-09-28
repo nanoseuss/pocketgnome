@@ -123,7 +123,7 @@
 - (void)skinMob: (Mob*)mob;
 - (void)skinOrFinish;
 - (BOOL)unitValidToHeal: (Unit*)unit;
-- (BOOL)playerWithinRange: (float)distance;
+- (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile;
 - (void)lootNode: (WoWObject*) unit;
 
 -(BOOL)mountNow;
@@ -217,7 +217,7 @@
 	
 		
         [NSBundle loadNibNamed: @"Bot" owner: self];
-    }
+    } 
     return self;
 }
 
@@ -1832,8 +1832,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
 		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
 			[macroController dismount];
-			
-			// Wait for fall time!
 			[self lootNode: unit];
 		}
 		else{
@@ -2460,9 +2458,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // check for mining and herbalism
     if(![movementController moveToObject]) {
         NSMutableArray *nodes = [NSMutableArray array];
-        if(_doMining)       [nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: MiningNode maxLevel: _miningLevel]];
-        if(_doHerbalism)    [nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: HerbalismNode maxLevel: _herbLevel]];
-        
+        if(_doMining)			[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: MiningNode maxLevel: _miningLevel]];
+        if(_doHerbalism)		[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: HerbalismNode maxLevel: _herbLevel]];
+		if(_doNetherwingEgg)	[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance EntryID: 185915 position:[playerController position]]];
+		
         [nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
         
         if([nodes count]) {
@@ -2485,44 +2484,69 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// We have a valid node!
             if([nodeToLoot isValid] && (nodeDist != INFINITY)) {
 				
-				// Checked for blighted corpse (they burn in shalazar) w/in 10 yards
-				//NSArray *mobsToIgnore = [NSArray arrayWithObjects:[NSNumber numberWithInt:28113],[NSNumber numberWithInt:28641],[NSNumber numberWithInt:28101], nil];
+				// node is valid unless our mob/player checks say otherwise
+				BOOL nodeValidToLoot = YES;
 				
-				if ( [[mobController mobsWithinDistance: 20.0f MobIDs:nil position:[nodeToLoot position]] count] == 0 ){
-					// Check for nearby hostiles?
-					if ( ![self playerWithinRange:200.0f] ){
-						[controller setCurrentStatus: @"Bot: Moving to node"];
-						
-						[movementController pauseMovement];
-						PGLog(@"Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
-						if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
-							
-							if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
-								PGLog(@"[Loot] Unable to loot %@, blacklisting for 30 seconds", self.lastAttemptedUnitToLoot);
-								[nodeController finishedNode: nodeToLoot];
-								[nodeController performSelector:@selector(removeFinishedNode:) withObject:nodeToLoot afterDelay:30.0f];
-							}
-							else{
-								[self reachedUnit: nodeToLoot];
-							}
-						}
-						// Should we be mounted before we move to the node?
-						else if ( [self mountNow] ){
-							[self performSelector: _cmd withObject: nil afterDelay: 1.8f];	
-							return YES;
-						}
-						// Safe to move to the node!
-						else{
-							[movementController moveToObject: nodeToLoot andNotify: YES];
-						}
-						return YES;
-					}
-					else{
-						PGLog(@"[Bot] Player near node, ignoring %@", nodeToLoot);
+				// mob check
+				float mobRange = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"GatherNodesMobNearRange"] floatValue];
+				BOOL doMobCheck = ([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"GatherNodesMobNear"] boolValue] && mobRange > 0.0f);
+				
+				// friendly player check
+				float friendlyPlayerRange = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"GatherNodesFriendlyPlayerNearRange"] floatValue];
+				BOOL doFriendlyPlayerCheck = ([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"GatherNodesFriendlyPlayerNear"] boolValue] && friendlyPlayerRange > 0.0f);
+				
+				// hostile player check
+				float hostilePlayerRange = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"GatherNodesHostilePlayerNearRange"] floatValue];
+				BOOL doHostilePlayerCheck = ([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"GatherNodesHostilePlayerNear"] boolValue] && hostilePlayerRange > 0.0f);
+				
+				if ( doMobCheck ){
+					NSArray *mobs = [mobController mobsWithinDistance: mobRange MobIDs:nil position:[nodeToLoot position] aliveOnly:YES];
+					if ( [mobs count] ){
+						nodeValidToLoot = NO;
+						PGLog(@"[Bot] There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], nodeToLoot);
 					}
 				}
-				else{
-					PGLog(@"[Bot] Scary mob near node, ignoring %@", nodeToLoot);
+				if ( doFriendlyPlayerCheck ){
+					if ( [self playerWithinRangeOfUnit: friendlyPlayerRange Unit:(Unit*)nodeToLoot includeFriendly:YES includeHostile:NO] ){
+						nodeValidToLoot = NO;
+						PGLog(@"[Bot] Friendly player(s) near node, ignoring %@", nodeToLoot);
+					}
+				}
+				if ( doHostilePlayerCheck ){
+					if ( [self playerWithinRangeOfUnit: hostilePlayerRange Unit:(Unit*)nodeToLoot includeFriendly:NO includeHostile:YES] ){
+						nodeValidToLoot = NO;
+						PGLog(@"[Bot] Hostile player(s) near node, ignoring %@", nodeToLoot);
+					}
+				}
+				
+				// did we pass all mob/player checks
+				if ( nodeValidToLoot ){
+					[controller setCurrentStatus: @"Bot: Moving to node"];
+					
+					[movementController pauseMovement];
+					PGLog(@"Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
+					if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
+						
+						if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
+							PGLog(@"[Loot] Unable to loot %@, blacklisting for 30 seconds", self.lastAttemptedUnitToLoot);
+							[nodeController finishedNode: nodeToLoot];
+							[nodeController performSelector:@selector(removeFinishedNode:) withObject:nodeToLoot afterDelay:30.0f];
+						}
+						else{
+							[self reachedUnit: nodeToLoot];
+							return YES;
+						}
+					}
+					// Should we be mounted before we move to the node?
+					else if ( [self mountNow] ){
+						[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
+						return YES;
+					}
+					// Safe to move to the node!
+					else{
+						[movementController moveToObject: nodeToLoot andNotify: YES];
+					}
+					return YES;
 				}
             }
         }
@@ -2530,7 +2554,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Should we be mounted?
 	if ( [self mountNow] ){
-		[self performSelector: _cmd withObject: nil afterDelay: 1.8f];	
+		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 		return YES;
 	}
     
@@ -2565,18 +2589,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
-- (BOOL)playerWithinRange: (float)distance{
+- (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile {
 	
-	Position *playerPosition = [[playerController player] position];
+	Position *position = [unit position];
 	
-	// extract valid targets from all targets
-	for(Unit *unit in [playersController allPlayers]) {
-		//if ( [playerController isHostileWithFaction: [unit factionTemplate]] ){
-			float range = [playerPosition distanceToPosition: [unit position]];
-			if(range <= distance) {
-				return YES;
-			}
-		//}
+	// loop through all players
+	for(Unit *player in [playersController allPlayers]) {
+		
+		BOOL isHostile = [playerController isHostileWithFaction: [player factionTemplate]];
+		// range check
+		float range = [position distanceToPosition: [player position]];
+		
+		if (
+				range <= distance &&						// 1 - in range
+				(!friendly || (friendly && !isHostile)) &&	// 2 - friendly
+				(!hostile || (hostile && isHostile))		// 3 - hostile
+			){
+			return YES;
+		}
 	}
 			
 	return NO;
@@ -2721,12 +2751,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         // also check that the route has any waypoints
         // and that the behavior has any procedures
-        _doMining = [miningCheckbox state];
-        _miningLevel = [miningSkillText intValue];
-        _doHerbalism = [herbalismCheckbox state];
-        _herbLevel = [herbalismSkillText intValue];
-        _doSkinning = [skinningCheckbox state];
-        _skinLevel = [skinningSkillText intValue];
+        _doMining			= [miningCheckbox state];
+		_doNetherwingEgg	= [netherwingEggCheckbox state];
+        _miningLevel		= [miningSkillText intValue];
+        _doHerbalism		= [herbalismCheckbox state];
+        _herbLevel			= [herbalismSkillText intValue];
+        _doSkinning			= [skinningCheckbox state];
+        _skinLevel			= [skinningSkillText intValue];
         
         int canSkinUpToLevel = 0;
         if(_skinLevel <= 100) {
@@ -2929,6 +2960,32 @@ NSMutableDictionary *_diffDict = nil;
 - (IBAction)closeLootHotkeyHelp: (id)sender {
     [NSApp endSheet: lootHotkeyHelpPanel returnCode: 1];
     [lootHotkeyHelpPanel orderOut: nil];
+}
+
+- (IBAction)gatheringLootingOptions: (id)sender{
+	[NSApp beginSheet: gatheringLootingPanel
+	   modalForWindow: [self.view window]
+		modalDelegate: self
+	   didEndSelector: @selector(gatheringLootingDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
+}
+
+- (IBAction)gatheringLootingSelectAction: (id)sender {
+    [NSApp endSheet: gatheringLootingPanel returnCode: [sender tag]];
+}
+
+- (void)gatheringLootingDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
+    [gatheringLootingPanel orderOut: nil];
+	
+    /*if(returnCode == NSCancelButton) {
+		self.isPvPing = NO;
+        return;
+    }
+    
+    if(returnCode == NSOKButton) {
+		self.isPvPing = YES;
+        [self pvpStart];
+    }*/
 }
 
 #pragma mark Notifications
@@ -3404,6 +3461,11 @@ NSMutableDictionary *_diffDict = nil;
 		return;
 	}
 	
+	if ( [playerController battlegroundStatus] == BGQueued ){
+		PGLog(@"[PvP] Already queued, no need to try again!");
+		return;
+	}
+	
 	// check for deserter
     if( [auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
 		[controller setCurrentStatus: @"PvP: Waiting for deserter to fade..."];
@@ -3416,16 +3478,15 @@ NSMutableDictionary *_diffDict = nil;
 			}
         }
 		
-		// Make sure pvpCheck isn't going - it shuldn't be
+		// make sure pvpCheck isn't going - it shouldn't be
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
 		
-		float nextCheck = SSRandomFloatBetween(15.0f, 45.0f);
-		[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextCheck];
+		float nextQueueAttempt = SSRandomFloatBetween(15.0f, 45.0f);
+		[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextQueueAttempt];
         return;
     }
 	
 	PGLog(@"[PvP] Queueing...");
-	[controller setCurrentStatus: @"PvP: Queueing..."];
 	
 	// Open PvP screen
 	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
@@ -3433,48 +3494,30 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// Lets queue!
 	[macroController joinBattlefield];
-	
-	// Print out estimated time!
-	/*struct timeval tv;
-	if (!gettimeofday(&tv, (struct timezone *)0)){
-		uint32_t timeSinceStartUp =  (uint32_t)((tv.tv_sec & 0x003FFFFF) * 1000L + tv.tv_usec / 1000L);
-
-		struct timeval time;
-		gettimeofday(&time, NULL);
-		uint32_t millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
-		
-		PGLog(@"Time since startup: %u   Current time: %u", timeSinceStartUp, millis);
-		PGLog(@"Start searching for %u", timeSinceStartUp - millis );
-	}*/
-	
-        
+	        
 	if(![controller isWoWChatBoxOpen]) [chatController jump];  // jump to clear AFK
 	self.pvpCheckCount = 0;
 	[controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
-	[self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 15.0];
+	[self pvpCheck];
 	
-	// To account for sometimes the queue failing, lets try to join after minute to two minutes just in case?
+	// To account for sometimes the queue failing, lets try to join after minute or two just in case?
 	float nextCheck = SSRandomFloatBetween(60.0f, 120.0f);
 	[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextCheck];
-	
-	
 }
 
+// this will join our battleground for us!
 - (void)pvpCheck {
 	if(![playerController playerIsValid])   return;
 	
     if(self.isPvPing) {
 		if ( [playerController isInBG] ){
-			[controller setCurrentStatus: @"PvP: Waiting to start Battleground..."];
-			
-			PGLog(@"[PvP] Why are we trying to join if we're already in the BG? hmmm");
 			return;
 		}
 		
         [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
         
-		// Will jump once every 1-3 minutes
-        if(self.pvpCheckCount++ >= 4) {
+		// Will jump once every minute
+        if(self.pvpCheckCount++ >= 60) {
             self.pvpCheckCount = 0;
             if(![controller isWoWChatBoxOpen]) {
 				[chatController jump];
@@ -3487,24 +3530,12 @@ NSMutableDictionary *_diffDict = nil;
 		}
 
 		// Lets join the BG!
-		[macroController acceptBattlefield];
+		PGLog(@"[Bot] BG Status = %d", [playerController battlegroundStatus] );
+		if ( [playerController battlegroundStatus] == BGWaiting ){
+			[macroController acceptBattlefield];
+		}
 		
-		// Print out estimated time!
-		/*struct timeval tv;
-		if (!gettimeofday(&tv, (struct timezone *)0)){
-			uint32_t timeSinceStartUp =  (uint32_t)((tv.tv_sec & 0x003FFFFF) * 1000L + tv.tv_usec / 1000L);
-			
-			struct timeval time;
-			gettimeofday(&time, NULL);
-			uint32_t millis = (time.tv_sec * 1000) + (time.tv_usec / 1000);
-			
-			PGLog(@"Time since startup: %u   Current time: %u", timeSinceStartUp, millis);
-			PGLog(@"Start searching for %u", timeSinceStartUp - millis );
-		}*/
-        
-		// Sick of every 15, lets make it a little random
-		float nextCheck = SSRandomFloatBetween(15.0f, 45.0f);
-        [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: nextCheck];
+        [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 1.0f];
     }
 }
 
@@ -3887,8 +3918,10 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (IBAction)test: (id)sender{
-	
-	PGLog(@"0x%X", [self isHotKeyInvalid]);
+	if ( self.theCombatProfile == nil )
+		self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+	PGLog(@"Attack range: %0.2f", self.theCombatProfile.attackRange);
+	PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);
 }
 
 @end

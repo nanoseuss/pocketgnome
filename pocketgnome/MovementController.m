@@ -400,7 +400,7 @@ typedef enum MovementType {
 - (void)checkSpeedDistance: (Position*)position {
 	
 	// Then we should stop checking :(
-	if ( ![self.lastAttemptedPosition isEqual:position] ){
+	if ( ![self.lastAttemptedPosition isEqual:position] || ![botController isBotting]){
 		return;
 	}
 	

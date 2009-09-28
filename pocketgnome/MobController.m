@@ -399,7 +399,7 @@ static MobController* sharedController = nil;
 
 #pragma mark -
 
-- (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position{
+- (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position aliveOnly:(BOOL)aliveOnly{
 	
 	NSMutableArray *withinRangeMobs = [NSMutableArray array];
     for(Mob *mob in _mobList) {
@@ -408,7 +408,11 @@ static MobController* sharedController = nil;
 		if ( mobIDs == nil ){
 			float distance = [position distanceToPosition: [mob position]];
 			if((distance != INFINITY) && (distance <= mobDistance)) {
-				[withinRangeMobs addObject: mob];
+				
+				// Living check?
+				if ( !aliveOnly || (aliveOnly && ![mob isDead]) ){
+					[withinRangeMobs addObject: mob];
+				}
 			}
 		}
 		else{
@@ -416,7 +420,11 @@ static MobController* sharedController = nil;
 				if ( [mob entryID] == [entryID intValue] ){
 					float distance = [position distanceToPosition: [mob position]];
 					if((distance != INFINITY) && (distance <= mobDistance)) {
-						[withinRangeMobs addObject: mob];
+						
+						// Living check?
+						if ( !aliveOnly || (aliveOnly && ![mob isDead]) ){
+							[withinRangeMobs addObject: mob];
+						}
 					}
 				}
 			}

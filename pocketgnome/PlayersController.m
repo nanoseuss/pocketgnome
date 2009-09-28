@@ -331,7 +331,7 @@ static PlayersController *sharedPlayers = nil;
             int faction = [unit factionTemplate];
             BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
             BOOL isHostile = [playerData isHostileWithFaction: faction];
-
+			
             // only include:
             if(   [unit isValid]                                                // 1) valid units
                && ![unit isDead]                                                // 2) units that aren't dead
