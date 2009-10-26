@@ -13,11 +13,12 @@
 @interface OffsetController : NSObject {
 
 	NSMutableDictionary *offsets;
+	NSDictionary *_offsetDictionary;
 	
 	IBOutlet Controller *controller;
+	
+	BOOL _offsetsLoaded;
 }
-
-- (void)dumpOffsets;
 
 - (unsigned long) offset: (NSString*)key;
 

@@ -30,7 +30,6 @@
 	
     Spell *selectedSpell;
     NSMutableArray *_playerSpells;
-	NSMutableArray *_spellTableAddresses;
 	NSMutableArray *_playerCooldowns;
     NSMutableDictionary *_spellBook, *_cooldowns;
     NSSize minSectionSize, maxSectionSize;

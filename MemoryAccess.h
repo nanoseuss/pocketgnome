@@ -10,6 +10,10 @@
     
     int readsProcessed;
     float throughput;
+	
+	// statistics info
+	int _totalReadsProcessed;
+	int _totalWritesProcessed;
     
     NSMutableDictionary *loaderDict;
 }
@@ -17,16 +21,10 @@
 - (id)initWithPID:(pid_t)PID;
 - (BOOL)isValid;
 
-- (BOOL)performToolVersionCheck;
-- (BOOL)verifyAuthorization;
-
 @property float throughput;
 - (void)resetLoadCount;
 - (void)printLoadCount;
 - (int)loadCount;
-
-- (BOOL)loadDataFromAddress: (UInt32)address intoBuffer: (Byte*)buffer ofLength: (vm_size_t)size;
-- (BOOL)saveDataToAddress: (UInt32)address fromBuffer: (Byte*)buffer ofLength: (vm_size_t)size;
 
 // save record to application addresses
 - (BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;

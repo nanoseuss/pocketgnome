@@ -45,6 +45,7 @@
 @class FishController;
 @class MacroController;
 @class OffsetController;
+@class MemoryViewController;
 
 @class ScanGridView;
 
@@ -52,6 +53,7 @@
 #define ErrorTargetNotInLOS			@"ErrorTargetNotInLOS"
 #define ErrorInvalidTarget			@"ErrorInvalidTarget"
 #define ErrorOutOfRange				@"ErrorOutOfRange"
+#define ErrorTargetNotInFront		@"ErrorTargetNotInFront"
 
 // Hotkey set flags
 #define	HotKeyStartStop				0x1
@@ -76,12 +78,11 @@
 	IBOutlet FishController			*fishController;
 	IBOutlet MacroController		*macroController;
 	IBOutlet OffsetController		*offsetController;
-
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
+	IBOutlet MemoryViewController	*memoryViewController;
 
 	IBOutlet QuestController		*questController;
-	
 	IBOutlet CorpseController		*corpseController;
 	
     IBOutlet NSView *view;
@@ -95,7 +96,7 @@
     int _currentHotkeyModifier, _currentPetAttackHotkeyModifier;
     int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
-    BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg;
+    BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg, _doFishing;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -122,6 +123,25 @@
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;
 	NSMutableArray *_unitsBlacklisted;			// This will track units we're trying to move to - but the move failed :(
+	
+	// fishing shit
+	float _fishingGatherDistance;
+	BOOL _fishingApplyLure;
+	BOOL _fishingOnlySchools;
+	BOOL _fishingRecast;
+	BOOL _fishingUseContainers;
+	int _fishingLureSpellID;
+	
+	// new node detection shit
+	BOOL _nodeIgnoreFriendly;
+	BOOL _nodeIgnoreHostile;
+	BOOL _nodeIgnoreMob;
+	float _nodeIgnoreFriendlyDistance;
+	float _nodeIgnoreHostileDistance;
+	float _nodeIgnoreMobDistance;
+	
+	// new flying shit
+	int _jumpAttempt;
 	
     // pvp shit
     BOOL _isPvPing;
@@ -174,6 +194,21 @@
     IBOutlet NSButton *lootCheckbox;
 	IBOutlet NSButton *mountCheckbox;
 	IBOutlet NSPopUpButton *mountType;
+	
+	IBOutlet NSTextField *fishingGatherDistanceText;
+	IBOutlet NSButton *fishingCheckbox;
+	IBOutlet NSButton *fishingApplyLureCheckbox;
+	IBOutlet NSButton *fishingOnlySchoolsCheckbox;
+	IBOutlet NSButton *fishingRecastCheckbox;
+	IBOutlet NSButton *fishingUseContainersCheckbox;
+	IBOutlet NSButton *fishingLurePopUpButton;
+	
+	IBOutlet NSTextField *nodeIgnoreHostileDistanceText;
+	IBOutlet NSTextField *nodeIgnoreFriendlyDistanceText;
+	IBOutlet NSTextField *nodeIgnoreMobDistanceText;
+	IBOutlet NSButton *nodeIgnoreHostileCheckbox;
+	IBOutlet NSButton *nodeIgnoreFriendlyCheckbox;
+	IBOutlet NSButton *nodeIgnoreMobCheckbox;
     
     IBOutlet NSPanel *hotkeyHelpPanel;
     IBOutlet NSPanel *lootHotkeyHelpPanel;
@@ -242,6 +277,8 @@
 - (IBAction)pvpBMSelectAction: (id)sender;
 - (IBAction)pvpTestWarning: (id)sender;
 - (IBAction)test: (id)sender;
+- (IBAction)login: (id)sender;
+- (IBAction)doTheRelicEmanation: (id)sender;
 
 // Little more flexibility - casts spells! Uses items/macros!
 - (BOOL)performAction: (int32_t)actionID;

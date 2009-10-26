@@ -19,7 +19,7 @@
 #import "ChatController.h"
 #import "OffsetController.h"
 
-#import "WoWObject.h";
+#import "WoWObject.h"
 #import "Offsets.h"
 
 #import "Route.h"
@@ -68,8 +68,6 @@
 - (Waypoint*)closestWaypoint;
 - (void)checkSpeedDistance: (Position*)timer;
 
-// CTM
-- (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;
 - (BOOL)isCTMActive;
 
 - (void)moveUpStart;
@@ -138,8 +136,14 @@
 @synthesize waypointDoneCount = _waypointDoneCount;
 @synthesize stopAtEnd = _stopAtEnd;
 @synthesize lastInteraction = _lastInteraction;
+@synthesize averageSpeed = _averageSpeed;
+@synthesize averageDistance = _averageDistance;
 
 @synthesize shouldNotify = _notifyForObjectMove;
+
+- (int)movementType{
+	return [movementType selectedTag];
+}
 
 typedef enum MovementType {
 	MOVE_MOUSE = 0,
@@ -148,14 +152,13 @@ typedef enum MovementType {
 } MovementType;
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
-    if( [playerData playerIsValid] ) {
+    if( [playerData playerIsValid:self] ) {
         [self resetMovementState];
     }
 }
 
 - (void)pauseMovement {
     
-	PGLog(@"pauseMovement");
     // stop timers
     [self resetMovementTimer];
 	[self resetSpeedDistanceCheck];
@@ -164,12 +167,7 @@ typedef enum MovementType {
         // stop movement if we haven't already
         PGLog(@"[Move] Pause movement.");
 		
-		if ( [movementType selectedTag] == MOVE_CTM ){
-			[self setClickToMove:nil andType:ctmStop andGUID:0];
-		}
-		else{
-			[self moveForwardStop];
-		}
+		[self moveForwardStop];
         
         self.isPaused = YES;
         usleep(100000);
@@ -350,9 +348,6 @@ typedef enum MovementType {
         return;
     }
 	
-
-	
-	
 	// BEGIN - new stuck check
 	NSString *checkPosition = @"";
 	
@@ -374,7 +369,7 @@ typedef enum MovementType {
 	
 	// END - new stuck check
 	
-	PGLog(@"[Move] Moving to %@ %@", position, checkPosition);
+	//PGLog(@"[Move] Moving to %@ %@", position, checkPosition);
 
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
@@ -409,28 +404,34 @@ typedef enum MovementType {
 	
 	// Speed check (doesn't always work - i.e. auto running against a wall)
 	_totalMovementSpeed += [playerData speed];
-	float averageSpeed = _totalMovementSpeed/(float)_movementChecks;
+	self.averageSpeed = _totalMovementSpeed/(float)_movementChecks;
 
 	// Distance check (to account for running against a wall!)
 	_totalDistance += [playerPosition distanceToPosition: self.lastPlayerPosition];
-	float averageDistance = _totalDistance/(float)_movementChecks;
+	self.averageDistance = _totalDistance/(float)_movementChecks;
 	self.lastPlayerPosition = playerPosition;
 	
 	// Take a sample of our speed over a second or longer
-	if ( _movementChecks > 15 && averageSpeed <= 1.0f ){
-		PGLog(@"[Move] We're stuck! Found by speed check! %0.2f", averageSpeed);
+	if ( _movementChecks > 15 && self.averageSpeed <= 1.0f ){
+		PGLog(@"[Move] We're stuck! Found by speed check! %0.2f", self.averageSpeed);
 		_isStuck++;
 	}
 	
 	// Check the distance moved!
-	if ( _movementChecks > 15 && averageDistance < 0.75f ){
-		PGLog(@"[Move] We're stuck! Found by distance check! %0.2f", averageDistance);
+	if ( _movementChecks > 15 && self.averageDistance < 0.25f ){
+		PGLog(@"[Move] We're stuck! Found by distance check! %0.2f", self.averageDistance);
+		_isStuck++;
+	}
+	
+	// check to see if we're flying off into space?
+	if ( [self.lastAttemptedPosition distanceToPosition:playerPosition] > 125.0f ){
+		PGLog(@"[Move] We're a little too far away from %@ for my liking!", self.lastAttemptedPosition );
 		_isStuck++;
 	}
 	
 	// Crap we're stuck, we need to do something now :(
 	if ( _isStuck > STUCK_THRESHOLD ){
-		PGLog(@"[Move] Stuck, attempting to unstick!");
+		PGLog(@"[Move] Stuck after %d checks, attempting to unstick!", _movementChecks);
 		[controller setCurrentStatus: @"Bot: Stuck, attempting to un-stick ourselves"];
 		[self unstick];
 		return;
@@ -557,9 +558,9 @@ typedef enum MovementType {
 
 - (void)establishPosition {
 	PGLog(@"[Move] establishPosition");
-	if ( [movementType selectedTag] == MOVE_CTM ){
+	/*if ( [movementType selectedTag] == MOVE_CTM ){
 		return;
-	}
+	}*/
 	
     [self moveForwardStart];
     usleep(100000);
@@ -569,9 +570,9 @@ typedef enum MovementType {
 
 - (void)backEstablishPosition {
 	PGLog(@"[Move] backEstablishPosition");
-	if ( [movementType selectedTag] == MOVE_CTM ){
+	/*if ( [movementType selectedTag] == MOVE_CTM ){
 		return;
-	}
+	}*/
 	
     [self moveBackwardStart];
     usleep(100000);
@@ -664,8 +665,10 @@ typedef enum MovementType {
         [self realMoveToNextWaypoint];
 		return;
 		
-	// Time for a delay!
-	} else if( [[self destination] action].type == ActionType_Delay ) {
+	
+	}
+	// delay
+	else if( [[self destination] action].type == ActionType_Delay ) {
         PGLog(@"[Move] Performing %.2f second delay at waypoint %d.", [[self destination] action].delay, [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
         [self pauseMovement];
         [self performSelector: @selector(realMoveToNextWaypoint)
@@ -673,8 +676,9 @@ typedef enum MovementType {
                    afterDelay: [[[self destination] action] delay]];
         return;
 		
-	// Lets interact w/something!
-	} else if( [[self destination] action].type == ActionType_Interact ) {
+	}
+	// interaction
+	else if( [[self destination] action].type == ActionType_Interact ) {
 
 		// Stop moving
 		[self pauseMovement];
@@ -693,9 +697,27 @@ typedef enum MovementType {
 				   afterDelay: 2.0];
 
   		return;
+    }
+	else if ( [[self destination] action].type == ActionType_Jump ) {
+		// send escape to close chat box if it's open!
+		if ( [controller isWoWChatBoxOpen] ){
+			PGLog(@"[Macro] Sending escape!");
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
+			usleep(100000);
+		}
 		
-		// Otherwise we want to use an item/macro/spell
-    } else  {
+		[chatController jump];
+		PGLog(@"[Move] Jumping at waypoint %d", [[[self patrolRoute] waypoints] indexOfObject: [self destination]]);
+		
+		[self performSelector: @selector(realMoveToNextWaypoint)
+				   withObject: nil
+				   afterDelay: 0.1f];
+		
+		return;
+	}
+	
+	// use an item/macro/spell
+	else{
 		
 		// Stop moving
 		[self pauseMovement];
@@ -911,13 +933,6 @@ typedef enum MovementType {
 	
 	[self setIsMoving: NO];
 	
-	// CTM only!
-	/*if ( [movementType selectedTag] == MOVE_CTM ){
-		[self setClickToMove:nil andType:ctmStop andGUID:0];
-		return;
-	}*/
-	
-    
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
     // post another key down
@@ -1017,7 +1032,9 @@ typedef enum MovementType {
 
 - (void)turnTowardObject: (WoWObject*)unit{
 	
-	// Turn toward a unit!
+	[self turnToward: [unit position]];
+	
+	/*// Turn toward a unit!
 	if ( [movementType selectedTag] == MOVE_CTM ){
 		[self setClickToMove:nil andType:ctmFaceTarget andGUID:[unit GUID]];
 		return;
@@ -1025,7 +1042,7 @@ typedef enum MovementType {
 	// for all other movement types!
 	else{
 		[self turnToward: [unit position]];
-	}
+	}*/
 }
 
 - (void)turnToward: (Position*)position {
@@ -1228,7 +1245,7 @@ typedef enum MovementType {
 }
 
 - (BOOL)useSmoothTurning{
-	return ([movementType selectedTag] == MOVE_KEYBOARD);
+	return ([movementType selectedTag] == MOVE_KEYBOARD || [movementType selectedTag] == MOVE_CTM);
 }
 
 

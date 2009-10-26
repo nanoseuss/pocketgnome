@@ -5,6 +5,7 @@
 //  Created by Jon Drummond on 12/15/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
+// NEW
 
 #import "Controller.h"
 #import "NoAccessApplication.h"
@@ -64,10 +65,10 @@ typedef enum {
 - (void)populateWowInstances;
 - (void)foundObjectListAddress: (NSNumber*)address;
 
-- (void)exploreNameStruct2: (uint32_t)structAddress inMemory: (MemoryAccess*)memory;
-- (void)exploreNameStruct: (MemoryAccess*)memory;
-
-- (BOOL)checkForPlayerGUID: (UInt32)playerGUID atAddress: (UInt32)objAddr inMemory: (MemoryAccess*)memory;
+// new structure scanning
+- (BOOL)isValidAddress: (UInt32)address;
+- (UInt32)getNextObjectAddress:(MemoryAccess*)memory;
+- (void)sortObjects: (MemoryAccess*)memory;
 @end
 
 @implementation Controller
@@ -118,37 +119,28 @@ static Controller* sharedController = nil;
         _items = [[NSMutableArray array] retain];
         _mobs = [[NSMutableArray array] retain];
         _players = [[NSMutableArray array] retain];
-        // _bags = [[NSMutableArray array] retain];
         _corpses = [[NSMutableArray array] retain];
         _gameObjects = [[NSMutableArray array] retain];
         _dynamicObjects = [[NSMutableArray array] retain];
-		_names = [[NSMutableDictionary dictionary] retain];
-		
-		_checkedAddresses = [[NSMutableArray array] retain];
 
         _wowMemoryAccess = nil;
         _appFinishedLaunching = NO;
-        _foundPlayer = NO;
-        //_scanIsRunning = NO;
 		_invalidPlayerNotificationSent = NO;
 		
 		_lastAttachedPID = 0;
 		selectedPID = [NSNumber numberWithInt:0];
-		
-		
 		_globalGUID = 0;
-		_currentObjectListPtr = 0;
-        
-        _ignoredDepthAddresses = [[NSMutableArray alloc] init];
+		
+		// new search
+		_objectAddresses = [[NSMutableArray array] retain];		// stores the start address for all objects
+		_currentAddress = 0;
+		_totalObjects = 0;
+		_currentObjectManager = 0;
         
         [SecureUserDefaults secureUserDefaults];
         
         // load in our faction dictionary
         factionTemplate = [[NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"FactionTemplate" ofType: @"plist"]] retain];
-
-        // notifications
-        [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasRevived:) name: PlayerHasRevivedNotification object: nil];
-        [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerIsInvalid:) name: PlayerIsInvalidNotification object: nil];
     }
     
     return self;
@@ -314,321 +306,212 @@ static Controller* sharedController = nil;
 #pragma mark -
 #pragma mark WoW Structure Scanning
 
-- (void)exploreNameStruct: (MemoryAccess*)memory {
+// Special thanks to EmilyStrange @ http://www.mmowned.com/forums/wow-memory-editing/261575-c-memory-enumerator-walking-objects.html
+- (void)scanObjectList:(MemoryAccess*)memory{
 	
-	[_checkedAddresses removeAllObjects];
-	// pointer to the list
-	UInt32 listAddress = 0;
-	UInt32 playerNameStart = 0, totalNames = 0;
-	UInt32 ptr1=0, ptr2=0;
-	if([memory loadDataForObject: self atAddress: PLAYER_NAMES_LL_PTR Buffer: (Byte *)&listAddress BufLength: sizeof(listAddress)]){
+	// clear crap from our last scan
+	[_objectAddresses removeAllObjects];
+	_currentAddress = 0;
+	
+	// find all object addresses
+	UInt32 objectAddress = 0;
+	while ( (objectAddress = [self getNextObjectAddress:memory]) && [self isValidAddress:objectAddress] ){
+		_currentAddress = objectAddress;
 		
-		while([memory loadDataForObject: self atAddress: listAddress Buffer: (Byte *)&playerNameStart BufLength: sizeof(playerNameStart)] && playerNameStart == 0x4){
-			totalNames+=2;
-			
-			// Address 1
-			if([memory loadDataForObject: self atAddress: listAddress+0x4 Buffer: (Byte *)&ptr1 BufLength: sizeof(ptr1)]){
-				ptr1 -= 0x4;
-				
-				if ( ptr1 - listAddress == 0x0 || ptr1 - listAddress == 0x4 ){
-					//PGLog(@"Pointer 1 Difference: 0X%X", ptr1 - listAddress);
-				}
-				else{
-					[self exploreNameStruct2:ptr1 inMemory:memory];
-				}
-			}
-
-			// Address 2
-			if([memory loadDataForObject: self atAddress: listAddress+0x8 Buffer: (Byte *)&ptr2 BufLength: sizeof(ptr2)]){
-				if ( ptr2 - (listAddress) != 0x5 ){
-					[self exploreNameStruct2:ptr2 inMemory:memory];
-				}
-				else{
-					//PGLog(@"Pointer 2 Difference: 0x%X", ptr2 - (listAddress));
-				}
-			}
-			
-			// Move to the next set of addresses
-			listAddress += 0xC;
-		}
-		
+		// save the object addresses
+		[_objectAddresses addObject:[NSNumber numberWithInt:objectAddress]];
 	}
 	
-	PGLog(@"%d player names found %d", totalNames, [_names count]);
+	// we have the addresses now, lets add them to our respective controllers
+	[self sortObjects:memory];
+	_totalObjects = [_objectAddresses count];
 }
 
-- (void)exploreNameStruct2: (uint32_t)structAddress inMemory: (MemoryAccess*)memory {
+- (BOOL)isValidAddress: (UInt32)address{
+	if ( address == 0x0 )
+		return NO;
 	
-	// If the address isn't even, ignore it
-	if ( ! ((structAddress %2) == 0) ){
-		return;
-	}
+	if ( (address & 1) != 0 )
+		return NO;
 	
-	// Sometimes the next ptr will actually direct us back to the list, not sure why, but lets ignore those!
-	uint32_t value = 0;
-	if ( [memory loadDataForObject: self atAddress: structAddress Buffer: (Byte *)&value BufLength: sizeof(value)] && value == 0x4 ){
-		return;
-	}
+	if ( address == _currentAddress )
+		return NO;
 	
-	// Don't need to check an address we already scanned!
-	NSNumber *address = [NSNumber numberWithInt: structAddress];
-	if ( [_checkedAddresses containsObject: address] ){
-		return;
-	}
-	[_checkedAddresses addObject: address];
-	
-	
-	uint32_t structAddr=0;
-	uint64_t guid=0;
-    uint32_t nextStructPtrAddr = structAddress + 0x4;
-	// guid is at 0x10
-	// name is at 0x18
-	
-	
-	if([memory loadDataForObject: self atAddress: structAddress Buffer: (Byte*)&value BufLength: sizeof(value)] && ( value > 0 ) && (value < 0xFFFFFF)){
-		// LOW GUID is actually stored at 0x0
-		if([memory loadDataForObject: self atAddress: structAddress+0x14 Buffer: (Byte*)&guid BufLength: sizeof(guid)] && guid){
-		
-			NSNumber *key = [NSNumber numberWithLongLong:guid];
-			// Then we want to save this one!
-			if ( ![_names objectForKey: key] ){
-				char name[97];
-				name[96] = 0;  // make sure it's null terminated, just incase
-				if([memory loadDataForObject: self atAddress: structAddress+0x1C Buffer: (Byte *)&name BufLength: sizeof(name)-1]){
-					NSString *newName = [NSString stringWithUTF8String: name];
-					if([newName length]) {
-						[_names  setObject: newName forKey: key];
-						//PGLog(@"0x%x GUID: 0x%qx Name: %@ ADDED", structAddress, guid, newName);
-					}
-				}
-			}
-			else{
-				char name[97];
-				name[96] = 0;  // make sure it's null terminated, just incase
-				if([memory loadDataForObject: self atAddress: structAddress+0x1C Buffer: (Byte *)&name BufLength: sizeof(name)-1]){
-					NSString *newName = [NSString stringWithUTF8String: name];
-					if([newName length]) {
-						//[_names  setObject: newName forKey: key];
-						//PGLog(@"0x%x GUID: 0x%qx Name: %@", structAddress, guid, newName);
-					}
-				}
-			}
-		}
-		
-		/*if([memory loadDataForObject: self atAddress: othrStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-			[self exploreNameStruct2: structAddr inMemory: memory];
-		}
-		
-		if([memory loadDataForObject: self atAddress: jumpStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-			[self exploreNameStruct2: structAddr inMemory: memory];
-		}*/
-		
-		/*if([memory loadDataForObject: self atAddress: prevStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-			[self exploreNameStruct2: structAddr inMemory: memory];
-		}*/
-		if([memory loadDataForObject: self atAddress: nextStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-			[self exploreNameStruct2: structAddr inMemory: memory];
-		}
-
-		//PGLog(@"0x%x", structAddr - 0xC);
-	}
+	return YES;
 }
 
-- (void)exploreStruct: (uint32_t)structAddress inMemory: (MemoryAccess*)memory {
-    uint32_t structAddr=0, value = 0;
-    uint32_t othrStructPtrAddr = structAddress + 0x18;
-    uint32_t jumpStructPtrAddr = structAddress + 0x1C;
-    uint32_t prevStructPtrAddr = structAddress + 0x30;
-    uint32_t nextStructPtrAddr = structAddress + 0x34;
-    
-    //PGLog(@"Loading 0x%X...", structAddress);
-    if([memory loadDataForObject: self atAddress: structAddress Buffer: (Byte*)&value BufLength: sizeof(value)] && (value > 0) && (value < 0xFFFFFF))
-    {
-        int objectType = TYPEID_UNKNOWN;
-        NSNumber *addr = [NSNumber numberWithUnsignedInt: structAddress];
-        if([memory loadDataForObject: self atAddress: (structAddress + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)])
-        {
-            if(objectType == TYPEID_ITEM) {
-                if( ![_items containsObject: addr]) {
-                    [_items addObject: addr];
-                } else { return; }
-            }
-            
-            if(objectType == TYPEID_CONTAINER) {
-                if( ![_items containsObject: addr]) {
-                    [_items addObject: addr];
-                } else { return; }
-            }
-            
-            if(objectType == TYPEID_UNIT) {
-                if( ![_mobs containsObject: addr]) {
-                    [_mobs addObject: addr];
-                } else { return; }
-            }
-            
-            if(objectType == TYPEID_PLAYER) {
-				
-				// Read player GUID
-				UInt32 guid = 0;
-				[memory loadDataForObject: self atAddress: (structAddress + OBJECT_GUID_LOW32) Buffer: (Byte*)&guid BufLength: sizeof(guid)];
-				if ( guid == _globalGUID ){
-					//PGLog(@"Player found in the object list! yay! 0x%X  0x%X",structAddress, [playerDataController baselineAddress] );	
-					if ( structAddress != [playerDataController baselineAddress] ){
-						
-						PGLog(@"[Controller] Player base address 0x%X changed to 0x%X, verifying change...",structAddress, [playerDataController baselineAddress]);
-						
-						if([self checkForPlayerGUID: guid atAddress: structAddress inMemory: memory]) {
 
-							[_ignoredDepthAddresses removeAllObjects];
-							[self setCurrentState: playerValidState];
-							PGLog(@"[Controller] Player found in object list, setting base address to 0x%X", structAddress);
-						}
-					}			
-				}
-
-                if( ![_players containsObject: addr]) {
-                    [_players addObject: addr];
-                } else { return; }
-            }
-            
-            if(objectType == TYPEID_GAMEOBJECT) {
-                if( ![_gameObjects containsObject: addr]) {
-                    [_gameObjects addObject: addr];
-                } else { return; }
-            }
-            
-            if(objectType == TYPEID_DYNAMICOBJECT) {
-                if( ![_dynamicObjects containsObject: addr]) {
-                    [_dynamicObjects addObject: addr];
-                } else { return; }
-            }
-            
-            if(objectType == TYPEID_CORPSE) {
-                if( ![_corpses containsObject: addr]) {
-                    [_corpses addObject: addr];
-					//PGLog(@"Adding corpse: %@", addr);
-                } else { return; }
-            }
-            
-            
-            //PGLog(@"--> Found: %@ (Value: 0x%X)", structType, value);
-            //if( [structType isEqualToString: @"Unknown Object"] && ((value & GENERIC_UNIT_IDENTIFIER) == GENERIC_UNIT_IDENTIFIER) && (value < 0xFFFFFF)) 
-            //    PGLog(@"Unknown object at 0x%X of type %u (0x%X).", structAddress, value, value);
-            
-            if( (objectType <= TYPEID_UNKNOWN) || (objectType >= TYPEID_MAX)) {
-                // PGLog(@"--> Unknown = bailing");
-                return;
-            }
-            
-            if([memory loadDataForObject: self atAddress: othrStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-                [self exploreStruct: structAddr - 0x18 inMemory: memory];
-            }
-            
-            if([memory loadDataForObject: self atAddress: jumpStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-                [self exploreStruct: structAddr inMemory: memory];
-            }
-            
-            if([memory loadDataForObject: self atAddress: prevStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-                [self exploreStruct: structAddr - 0x30 inMemory: memory];
-            }
-            
-            if([memory loadDataForObject: self atAddress: nextStructPtrAddr Buffer: (Byte*)&structAddr BufLength: sizeof(structAddr)] && structAddr) {
-                [self exploreStruct: structAddr inMemory: memory];
-            }
-        }
-    }
-}
-
-// New method - uses a static
-// thanks to flukes1 @ http://www.mmowned.com/forums/wow-memory-editing/256647-mac-3-2-finding-object-list-reading-object-names.html
-- (UInt32)findObjectList: (MemoryAccess*)memory {
-    if(memory){
-		UInt32 objectListPtr = 0, objectListAddr = 0;
-		if([memory loadDataForObject: self atAddress: [offsetController offset:@"OBJECT_LIST_LL_PTR"] Buffer: (Byte*)&objectListPtr BufLength: sizeof(objectListPtr)] && objectListPtr) {
-			if([memory loadDataForObject: self atAddress: objectListPtr + 0x1C Buffer: (Byte*)&objectListAddr BufLength: sizeof(objectListAddr)] && objectListAddr) {
-				return objectListAddr;
+- (UInt32)getNextObjectAddress:(MemoryAccess*)memory{
+	if ( _currentAddress == 0 ){
+		UInt32 objectManager = 0;
+		if([memory loadDataForObject: self atAddress: [offsetController offset:@"OBJECT_LIST_LL_PTR"] Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager) {
+			_validObjectListManager = YES;
+			UInt32 firstObjectPtr = 0;
+			if([memory loadDataForObject: self atAddress: objectManager + 0xAC Buffer: (Byte*)&firstObjectPtr BufLength: sizeof(firstObjectPtr)] && firstObjectPtr) {
+				return firstObjectPtr;
 			}
 		}
 	}
+	
+	UInt32 nextObjectAddress = 0;
+	if([memory loadDataForObject: self atAddress: _currentAddress + 0x34 Buffer: (Byte*)&nextObjectAddress BufLength: sizeof(nextObjectAddress)] && nextObjectAddress) {
+		return nextObjectAddress;
+	}
+	
 	return 0;
 }
 
-// Added force in 3.2.0 so they we HAVE to find the new player ptr! Sometimes data is invalid yet the GUID is there, so we hold onto the old one :(  /cry
-- (void)scanObjectGraph {
-    [NSObject cancelPreviousPerformRequestsWithTarget: self];
-    
-	// Lets update our process list too!
-	[self populateWowInstances];
-	//[_wowInstances addObject: [NSNumber numberWithInt:45522]];
+- (void)sortObjects: (MemoryAccess*)memory{
 	
-    //NSDate *start = [NSDate date];
-    // BOOL foundPlayer = [self locatePlayerStructure];
-    BOOL playerIsValid = [playerDataController playerIsValid];
-    BOOL objListPtrChanged = NO;
-    MemoryAccess *memory = [self wowMemoryAccess];
-	
-	// Grab our global GUID
-	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
-	
-	// Lets just see if our object list ptr has changed!
-	if ( memory ){
-		UInt32 objectListPtr = [self findObjectList:memory];
-		if ( self.currentObjectListPtr > 0 && self.currentObjectListPtr != objectListPtr ){
-			PGLog(@"OBJECT LIST POINTER CHANGED O NOES 0x%X  0x%x!", self.currentObjectListPtr, objectListPtr);
-			objListPtrChanged = YES;
-		}
-
-		// Open up the door to send a notification!
-		if ( objectListPtr > 0x0 ){
-			_invalidPlayerNotificationSent = NO;
-		}
+	UInt32 objectAddress = 0;
+	for ( NSNumber *objAddress in _objectAddresses ){
+		objectAddress = [objAddress intValue];
 		
-		// If our object list ptr is 0x0 then we're not actually in the game yet :/
-		if ( objectListPtr == 0x0 ){
-			//PGLog(@"ARE WE LOADING SCREEN?!?");
+		int objectType = TYPEID_UNKNOWN;
+		if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)] ) {
 			
-			if ( !_invalidPlayerNotificationSent ){
-				PGLog(@"INVALID NOTIFICATION SENT");
-				_invalidPlayerNotificationSent = YES;
-				[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];	
+			// item
+			if ( objectType == TYPEID_ITEM || objectType == TYPEID_CONTAINER ) {
+				[_items addObject: objAddress];
+				continue;
+			}
+			
+			// mob
+			if ( objectType == TYPEID_UNIT ) {
+				[_mobs addObject: objAddress];
+				continue;
+			}
+			
+			// player
+			if ( objectType == TYPEID_PLAYER ) {
+				
+				// read player GUID
+				UInt32 guid = 0;
+				if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_GUID_LOW32) Buffer: (Byte*)&guid BufLength: sizeof(guid)] && guid == _globalGUID ){
+					if ( objectAddress != [playerData baselineAddress] ){
+						
+						PGLog(@"[Controller] Player base address 0x%X changed to 0x%X, verifying change...", [playerData baselineAddress], objectAddress);
+						
+						// reset mobs, nodes, and inventory for the new player address
+						[mobController resetAllMobs];
+						[nodeController resetAllNodes];
+						[itemController resetInventory];
+						[playersController resetAllPlayers];
+						
+						// tell our player controller its new address
+						[playerData setStructureAddress: objAddress];
+						Player *player = [playerData player];
+						PGLog(@"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
+						
+						[self setCurrentState: playerValidState];
+					}			
+				}
+				
+				[_players addObject: objAddress];
+				continue;
+			}
+			
+			if(objectType == TYPEID_GAMEOBJECT) {
+				[_gameObjects addObject: objAddress];
+				continue;
+			}
+			
+			if(objectType == TYPEID_DYNAMICOBJECT) {
+				[_dynamicObjects addObject: objAddress];
+				continue;
+			}
+			
+			if(objectType == TYPEID_CORPSE) {
+				[_corpses addObject: objAddress];
+				continue;
 			}
 		}
 	}
+}
+
+
+// [[OBJECT_MANAGER] + 0xC] ==[[OBJECT_MANAGER] + 0xAC] = First object in object list
+// [[OBJECT_MANAGER] + 0x1C] = Object list (not in order)
+- (UInt32)objectManager:(MemoryAccess*)memory{
+	UInt32 objectManager = 0;
+	if([memory loadDataForObject: self atAddress: [offsetController offset:@"OBJECT_LIST_LL_PTR"] Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager) {
+		return objectManager;
+	}
 	
-    if(playerIsValid && memory && !objListPtrChanged) {
-        
+	return 0;	
+}
+
+// this gets our objects
+- (void)scanObjectGraph {
+	
+    [NSObject cancelPreviousPerformRequestsWithTarget: self];
+    
+	// populate wow process list
+	[self populateWowInstances];
+	
+	// grab memory
+    MemoryAccess *memory = [self wowMemoryAccess];
+	
+	// grab our global GUID
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
+	
+	// object manager
+	if ( memory ){
+		
+		UInt32 objectManager = [self objectManager:memory];
+		// we have a valid object list
+		if ( objectManager > 0x0 ){
+			
+			// our object manager has changed (wonder if this happens often?)
+			if ( _currentObjectManager > 0x0 && _currentObjectManager != objectManager ){
+				
+				PGLog(@"OBJECT MANAGER HAS CHANGED 0x%X != 0x%X", _currentObjectManager, objectManager);
+				_validObjectListManager = NO;
+			}
+			
+			_currentObjectManager = objectManager;
+			_invalidPlayerNotificationSent = NO;
+		}
+		// no valid list, player not logged in or loading screen
+		else if ( objectManager == 0x0 || _globalGUID == 0x0 ){
+			if ( !_invalidPlayerNotificationSent ){
+				_invalidPlayerNotificationSent = YES;
+				[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];
+				PGLog(@"Invalid notification sent...");
+			}
+			
+			// memory is valid, but no player :(
+			[self setCurrentState: memoryValidState];
+		}
+	}
+	
+	// we only need memory to try our scan!
+    if ( memory ) {
         [_items removeAllObjects];
         [_mobs removeAllObjects];
         [_players removeAllObjects];
         [_gameObjects removeAllObjects];
         [_dynamicObjects removeAllObjects];
         [_corpses removeAllObjects];
-		[_names removeAllObjects];
         
-        NSDate *date = [NSDate date];
-        [memory resetLoadCount];
-        [self exploreStruct: [[playerDataController structureAddress] unsignedIntValue] inMemory: memory];
-		//PGLog(@"New player scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
-
-		/*date = [NSDate date];
+        //NSDate *date = [NSDate date];
 		[memory resetLoadCount];
-		[self exploreNameStruct: memory];
-		PGLog(@"New name scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);*/
-
-                
+		[self scanObjectList:memory];
+		//PGLog(@"[Controller] Found %d objects in game with %d memory operations", _totalObjects, [memory loadCount]);
+		//PGLog(@"New name scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
+		
         //PGLog(@"Memory scan took %.4f sec for %d total objects.", [date timeIntervalSinceNow]*-1.0f, [_mobs count] + [_items count] + [_gameObjects count] + [_players count]);
-        date = [NSDate date];
+        //date = [NSDate date];
         
         [mobController addAddresses: _mobs];
         [itemController addAddresses: _items];
         [nodeController addAddresses: _gameObjects];
         [playersController addAddresses: _players];
 		[corpseController addAddresses: _corpses];
-		[playersController addPlayerNames: _names]; 
-        
+		
         //PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
-        date = [NSDate date];
-
+        //date = [NSDate date];
+		
         // clean-up; we don't need this crap sitting around
         [_items removeAllObjects];
         [_mobs removeAllObjects];
@@ -636,287 +519,21 @@ static Controller* sharedController = nil;
         [_gameObjects removeAllObjects];
         [_dynamicObjects removeAllObjects];
         [_corpses removeAllObjects];
-		[_names removeAllObjects];
+		
+		// is our player invalid?
+		if ( ![playerData playerIsValid:self] ){
+			[self setCurrentState: memoryValidState];
+		}
+		else{
+			[self setCurrentState: playerValidState];
+		}
         
         //PGLog(@"Total scan took %.4f sec", [start timeIntervalSinceNow]*-1.0f);
         //PGLog(@"-----------------");
-        
-        // run this every 1.5 seconds if the player is valid
-        [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 1.5];
-        return;
-    } else {
-		PGLog(@"Object list invalid. Invalid player?(%d) Invalid memory?(%d) Object list ptr change?(%d)", !(playerIsValid), !(memory), objListPtrChanged);
-
-        // if we are here, something about the current state is invalid.
-        // we probably need to scan for the current player or find object list
-        
-        // if wow is open, find the object list
-        // this can be a time consuming process, so we need another thread.
-        if(memory) {
-            //PGLog(@"Memory is valid. Searching for new object list ptr...");
-            _foundPlayer = NO;
-            //_scanIsRunning = YES;
-            //[NSThread detachNewThreadSelector: @selector(findObjectList:) toTarget: self withObject: memory];
-			UInt32 objectListPtr = [self findObjectList:memory];
-			if ( objectListPtr ){
-				PGLog(@"Object list head found at 0x%X", objectListPtr);
-				[self foundObjectListAddress:[NSNumber numberWithInt:objectListPtr]];	
-				self.currentObjectListPtr = objectListPtr;
-			}
-        }
     }
     
-    // run this every second if the player is not valid
+    // run this every second
     [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 1.0];
-}
-
-/* This method scans memory for the start of the object list.
-   It can be can be slow, and should be executed in another thread. */
-/*
-- (void)findObjectList: (MemoryAccess*)memory {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    
-    NSDate *date = [NSDate date];
-    NSNumber *listAddress = nil;
-	
-    // get the WoW PID
-    pid_t wowPID = 0;
-    ProcessSerialNumber wowPSN = [self getWoWProcessSerialNumber];
-    OSStatus err = GetProcessPID(&wowPSN, &wowPID);
-    
-    if((err == noErr) && (wowPID > 0)) {
-        
-        // now we need a Task for this PID
-        mach_port_t MySlaveTask;
-        kern_return_t KernelResult = task_for_pid(current_task(), wowPID, &MySlaveTask);
-        if(KernelResult == KERN_SUCCESS) {
-			//PGLog(@"We have a task!");
-            // Cool! we have a task...
-            // Now we need to start grabbing blocks of memory from our slave task and copying it into our memory space for analysis
-            vm_address_t SourceAddress = 0;
-            vm_size_t SourceSize = 0;
-            vm_region_basic_info_data_t SourceInfo;
-            mach_msg_type_number_t SourceInfoSize = VM_REGION_BASIC_INFO_COUNT;
-            mach_port_t ObjectName = MACH_PORT_NULL;
-            
-            UInt32 structMarker = OBJECT_LIST_PTR_STRUCT_ID, value = 0;
-            int MemSize = sizeof(structMarker);
-            
-            int x;
-            vm_size_t ReturnedBufferContentSize;
-            Byte *ReturnedBuffer = nil;
-            
-            while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
-                // If we get here then we have a block of memory and we know how big it is... let's copy writable blocks and see what we've got!
-				//PGLog(@"we have a block of memory!");
-
-                // ensure we have access to this block
-                if ((SourceInfo.protection & VM_PROT_WRITE) && (SourceInfo.protection & VM_PROT_READ)) {
-                    NS_DURING {
-                        ReturnedBuffer = malloc(SourceSize);
-                        ReturnedBufferContentSize = SourceSize;
-                        if ( (KERN_SUCCESS == vm_read_overwrite(MySlaveTask,SourceAddress,SourceSize,(vm_address_t)ReturnedBuffer,&ReturnedBufferContentSize)) &&
-                            (ReturnedBufferContentSize > 0) )
-                        {
-                            // the last address we check must be far enough from the end of the buffer to check all the bytes of our sought value
-                            
-                            if((ReturnedBufferContentSize % MemSize) != 0) {
-                                // int oldSize = ReturnedBufferContentSize;
-                                ReturnedBufferContentSize -= (ReturnedBufferContentSize % MemSize);
-                                // PGLog(@"Modifying region size from %d to %d", oldSize, ReturnedBufferContentSize);
-                            }
-                            //ReturnedBufferContentSize -= MemSize - 1;
-                            
-                            // Note: We can assume memory alignment because... well, it's always aligned.
-                            for (x=0; x<ReturnedBufferContentSize; x+=4) // x++
-                            {
-                                UInt32 *checkVal = (UInt32*)&ReturnedBuffer[x];
-                                // compare the bytes (lowest order first for speed gains)
-                                //isMatchingValue = FALSE;
-                                //if(*checkVal == structMarker) {
-                                //    isMatchingValue = TRUE;
-                                //}
-                                
-                                //for (y=MemSize-1 ; isMatchingValue && (y>-1) ; y--) {
-                                //    isMatchingValue = (Byte*)value[y] == ReturnedBuffer[x + y];
-                                //}
-								
-                                if(*checkVal == structMarker) {
-                                    UInt32 structAddress = SourceAddress + x;
-                                    PGLog(@"Found marker 0x%X at 0x%X.", *checkVal, structAddress);
-                                    
-                                    value = 0;
-                                    if([memory loadDataForObject: self atAddress: (structAddress + 0x1C) Buffer: (Byte*)&value BufLength: sizeof(value)] && value) {
-										PGLog(@"Found object list head at 0x%X.", value);
-                                        
-                                        // load the value at that address and make sure it is 0x18
-                                        UInt32 value2 = 0, firstObject = 0;
-                                        if([memory loadDataForObject: self atAddress: value Buffer: (Byte*)&value2 BufLength: sizeof(value2)] && (value2 == 0x18)) {
-											PGLog(@"Object list found.");
-											
-											// Need to make sure the next value is > 0, otherwise this is an old list that is now blank! Added as of 3.2.0 - should fix the VERY unlikely chance the list isn't found
-                                            if([memory loadDataForObject: self atAddress: value+0x4 Buffer: (Byte*)&firstObject BufLength: sizeof(firstObject)] && (firstObject > 0)) {
-												PGLog(@"Object list validated.");
-												listAddress = [NSNumber numberWithUnsignedLong: value];
-												break;
-											}
-                                        }
-										
-										PGLog(@"Value is 0x%X", value2);
-                                    }
-                                    // break; this break is unnecessary?
-                                }
-                            }
-                        }
-                    } NS_HANDLER {
-                    } NS_ENDHANDLER
-                    
-                    if (ReturnedBuffer != nil)
-                    {
-                        free(ReturnedBuffer);
-                        ReturnedBuffer = nil;
-                    }
-                }
-                
-                // reset some values to search some more
-                SourceAddress += SourceSize;
-                if(listAddress) break;
-            }
-            //[pBar setHidden:true];
-        }
-    }
-    
-    if(listAddress) PGLog(@":: Structure scan took %.4f seconds.", 0.0f-[date timeIntervalSinceNow]);
-    
-    // tell the main thread we are done
-	[self performSelectorOnMainThread: @selector(foundObjectListAddress:)
-						   withObject: listAddress
-                        waitUntilDone: NO];
-    
-    [pool release];
-}*/
-
-- (BOOL)checkForPlayerGUID: (UInt32)playerGUID atAddress: (UInt32)objAddr inMemory: (MemoryAccess*)memory {
-    UInt32 objBaseVal = 0, objGUID = 0;
-	UInt32 objNextStruct = 0, objPrevStruct = 0;
-    if([memory loadDataForObject: self atAddress: objAddr Buffer: (Byte*)&objBaseVal BufLength: sizeof(objBaseVal)] && objBaseVal) {
-        // if we're here, we have the base address of a wow object
-        // from here, we need to compare this object's GUID to our known player GUID
-        // in wow objects, the lower 32 bits of a GUID are stored at offset 0x14
-        if([memory loadDataForObject: self atAddress: (objAddr + OBJECT_GUID_LOW32) Buffer: (Byte*)&objGUID BufLength: sizeof(objGUID)] && objGUID) {
-            
-			[memory loadDataForObject: self atAddress: objAddr + OBJECT_STRUCT3_POINTER Buffer: (Byte*)&objNextStruct BufLength: sizeof(objNextStruct)];
-			[memory loadDataForObject: self atAddress: objAddr + OBJECT_STRUCT4_POINTER Buffer: (Byte*)&objPrevStruct BufLength: sizeof(objPrevStruct)];
-			
-            // PGLog(@"Checking object at 0x%X with GUID 0x%X.", objAddr, objGUID);
-            if(objGUID == playerGUID) {
-				
-				if ( !objNextStruct || !objNextStruct ){
-					PGLog(@"[Controller] Next/Prev aren't valid!");
-					return NO;
-				}
-				
-                PGLog(@"BAM. Match found at 0x%X.", objAddr);
-                
-                // reset mobs, nodes, and inventory for the new player address
-                [mobController resetAllMobs];
-                [nodeController resetAllNodes];
-                [itemController resetInventory];
-                [playersController resetAllPlayers];
-                
-                // tell our player controller its new address
-                [playerDataController setStructureAddress: [NSNumber numberWithUnsignedInt: objAddr]];
-                Player *player = [playerDataController player];
-                PGLog(@"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
-                return YES;
-            }
-        }
-    }
-    return NO;
-}
-
-- (void)foundObjectListAddress: (NSNumber*)address {
-    PGLog(@"foundObjectListAddress: 0x%X", [address unsignedIntValue]);
-    MemoryAccess *memory = [self wowMemoryAccess];
-    _foundPlayer = NO;
-    if(memory && address && ([address unsignedIntValue] != 0)) {
-        NSDate *date = [NSDate date];
-        UInt32 playerGUID = 0;  // we only load the lower 32 bits, since the upper 32 are 0 for players
-        if([memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&playerGUID BufLength: sizeof(playerGUID)] && playerGUID) {
-            //PGLog(@"Got player GUID: 0x%X", playerGUID);
-            
-            int count = 0;
-            UInt32 startAddr = [address unsignedIntValue], value = 0, savedAddr = 0;
-            for(; [memory loadDataForObject: self atAddress: startAddr Buffer: (Byte*)&value BufLength: sizeof(value)] && (value == 0x18); startAddr+=0xC) {
-                
-                // first, load both possible pointers from the bucket
-                UInt32 objAddr = 0, objAddr2 = 0;
-                [memory loadDataForObject: self atAddress: (startAddr + 0x4) Buffer: (Byte*)&objAddr BufLength: sizeof(objAddr)];
-                [memory loadDataForObject: self atAddress: (startAddr + 0x8) Buffer: (Byte*)&objAddr2 BufLength: sizeof(objAddr2)];
-                
-                // the first pointer points to an object +0x18, so we have to remove that 0x18 if it is valid
-                if(objAddr && (objAddr != (startAddr + 0x4))) {
-                    objAddr -= 0x18;
-                    count++;
-                    if([self checkForPlayerGUID: playerGUID atAddress: objAddr inMemory: memory]) {
-                        _foundPlayer = YES;
-                        break;
-                    }
-                    if(savedAddr == 0 && ![_ignoredDepthAddresses containsObject: [NSNumber numberWithUnsignedInt: objAddr]]) {
-                        savedAddr = objAddr;
-                    }
-                }
-                
-                // the second pointer goes right to an object, if its valid
-                if(objAddr2 && (objAddr != objAddr2) && (objAddr2 != (startAddr + 0x5))) {
-                    count++;
-                    if([self checkForPlayerGUID: playerGUID atAddress: objAddr2 inMemory: memory]) {
-                        _foundPlayer = YES;
-                        break;
-                    }
-                }
-            }
-            
-            if(!_foundPlayer) { 
-                PGLog(@"Player not found after %d searches; trying depth scan from 0x%X.", count, savedAddr);
-                [self exploreStruct: savedAddr inMemory: memory];
-                
-                if([self checkForPlayerGUID: playerGUID atAddress: [playerDataController baselineAddress] inMemory: memory]) {
-                    _foundPlayer = YES;
-                } else {
-                    [_ignoredDepthAddresses addObject: [NSNumber numberWithUnsignedInt: savedAddr]];
-                }
-                
-            }
-            
-        }
-        if(_foundPlayer) {
-            [_ignoredDepthAddresses removeAllObjects];
-            [self setCurrentState: playerValidState];
-        }
-		
-		// only fire invalid player if we get here!
-        if(!_foundPlayer) {
-			
-			[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];
-			
-			[self setCurrentState: memoryValidState];
-		}
-        
-        PGLog(@":: Object list scan took %.2f seconds.", 0.0f-[date timeIntervalSinceNow]);
-    }
-    
-    //_scanIsRunning = NO;
-}
-
-- (void)playerHasRevived: (NSNotification*)notification {
-    // rescan memory when the player revives
-    //[self scanObjectGraph];
-}
-
-- (void)playerIsInvalid: (NSNotification*)notification {
-    // rescan memory when the player goes invalid
-    //[self scanObjectGraph];
 }
 
 #pragma mark -
@@ -998,10 +615,10 @@ static Controller* sharedController = nil;
         maxSize = [botController maxSectionSize];
     }
     if( [sender tag] == 2) {
-        newView = [playerDataController view];
-        addToTitle = [playerDataController sectionTitle];
-        minSize = [playerDataController minSectionSize];
-        maxSize = [playerDataController maxSectionSize];
+        newView = [playerData view];
+        addToTitle = [playerData sectionTitle];
+        minSize = [playerData minSectionSize];
+        maxSize = [playerData maxSectionSize];
     }
     if( [sender tag] == 3) {
         newView = [spellController view];
@@ -1121,11 +738,19 @@ static Controller* sharedController = nil;
     _savedStatus = currentText;
 }
 
+- (BOOL)isObjectManagerValid{
+	return _validObjectListManager;
+}
+
+- (NSArray*)allObjectAddresses{
+	return [[_objectAddresses copy] autorelease];
+}
+
 @synthesize currentState = _currentState;
 @synthesize isRegistered = _isRegistered;   // too many bindings rely on this property, keep it
 @synthesize matchExistingApp = _matchExistingApp;
 @synthesize selectedPID;
-@synthesize currentObjectListPtr = _currentObjectListPtr;
+@synthesize globalGUID = _globalGUID;
 
 - (void)setCurrentState: (int)state {
     if(_currentState == state) return;
@@ -1293,7 +918,7 @@ static Controller* sharedController = nil;
         fullPath = [fullPath stringByDeletingLastPathComponent];
         fullPath = [fullPath stringByAppendingPathComponent: @"WTF"];
         fullPath = [fullPath stringByAppendingPathComponent: @"Account"];
-        fullPath = [fullPath stringByAppendingPathComponent: [playerDataController accountName]];
+        fullPath = [fullPath stringByAppendingPathComponent: [playerData accountName]];
         
         BOOL isDir;
         if ([[NSFileManager defaultManager] fileExistsAtPath: fullPath isDirectory: &isDir] && isDir) {
@@ -1310,8 +935,8 @@ static Controller* sharedController = nil;
         // create the path
         NSString *path = [self wtfAccountPath];
         if([path length]) {
-            path = [path stringByAppendingPathComponent: [playerDataController serverName]];
-            path = [path stringByAppendingPathComponent: [playerDataController playerName]];
+            path = [path stringByAppendingPathComponent: [playerData serverName]];
+            path = [path stringByAppendingPathComponent: [playerData playerName]];
         }
         
         // see if it exists

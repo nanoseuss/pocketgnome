@@ -148,7 +148,7 @@ typedef enum {
 
 - (void)reloadNodeData: (id)sender {
     if( ![[nodeTable window] isVisible] ) return;
-    if(![playerController playerIsValid]) return;
+    if(![playerController playerIsValid:self]) return;
     
     [_nodeDataList removeAllObjects];
     
@@ -487,6 +487,22 @@ typedef enum {
     }
 	PGLog(@"[Node] No node for interaction");
     return nil;
+}
+
+- (Node*)closestNode:(UInt32)entryID {
+    NSArray *nodeList = _nodeList;
+    Position *playerPosition = [(PlayerDataController*)playerController position];
+	Node *closestNode = nil;
+	float closestDistance = INFINITY;
+	float distance = 0.0f;
+    for(Node* node in nodeList) {
+		distance = [playerPosition distanceToPosition: [node position]];
+		if( [node isValid] && [node entryID]==entryID && (distance <= closestDistance) ) {
+            closestDistance = distance;
+			closestNode = node;			
+        }
+    }
+    return closestNode;
 }
 
 - (Node*)nodeWithEntryID:(UInt32)entryID{

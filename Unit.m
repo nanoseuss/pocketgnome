@@ -121,6 +121,12 @@ enum NPCFlags
     if([_memory loadDataForObject: self atAddress: ([self infoAddress] + UnitField_MountDisplayID) Buffer: (Byte*)&value BufLength: sizeof(value)] && (value > 0) && (value != 0xDDDDDDDD)) {
         return YES;
     }
+	
+	// check movement flags (mainly for the druid flight form since the mount display fails)
+    if([_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_MovementFlags) Buffer: (Byte*)&value BufLength: sizeof(value)] && (value > 0) && (value & MovementFlags_AirMounted)) {
+		return YES;
+    }
+	
     return NO;
 }
 

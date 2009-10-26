@@ -148,7 +148,7 @@
     return [NSNumber numberWithFloat: 1.0f/([controller refreshDelayReal]/1000000.0f)];
 }
 - (BOOL)playerIsValid {
-    return [playerController playerIsValid];
+    return [playerController playerIsValid:self];
 }
 
 - (NSString*)playerName {

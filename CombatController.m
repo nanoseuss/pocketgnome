@@ -13,11 +13,14 @@
 #import "BotController.h"
 #import "MobController.h"
 #import "ChatController.h"
+#import "PlayersController.h"
+#import "MacroController.h"
+
 #import "Unit.h"
 #import "Mob.h"
 #import "Player.h"
 #import "CombatProfile.h"
-#import "PlayersController.h"
+#import "Offsets.h"
 
 @interface CombatController ()
 @property BOOL inCombat;
@@ -55,6 +58,7 @@
         _combatEnabled = NO;
         _technicallyOOC = YES;
         _attemptingCombat = NO;
+		_lastWasBackEstablish = NO;
         _combatUnits = [[NSMutableArray array] retain];
         _attackQueue = [[NSMutableArray array] retain];
         _blacklist = [[NSMutableArray array] retain];
@@ -66,6 +70,8 @@
         //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorOutOfRange object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(errorTargetNotInFront:) name: ErrorTargetNotInFront object: nil];
+		
     }
     return self;
 }
@@ -278,8 +284,13 @@
                afterDelay: 5.0f];
 }
 
-- (void)attackUnit: (Unit*)unit {
+- (void)attackTheUnit: (Unit*)unit {
     if(![unit isValid] || [unit isDead]) return;
+	
+	// shouldn't be mounted when attacking!
+	if ( [[playerData player] isMounted] ){
+		[macroController dismount];
+	}
     
     if(self.attackUnit != unit)
         self.attackUnit = unit;
@@ -346,7 +357,7 @@
     
     // tell/remind bot controller to attack
     [botController attackUnit: unit];
-    [self performSelector: @selector(attackUnit:) withObject: unit afterDelay: 0.25];
+    [self performSelector: @selector(attackTheUnit:) withObject: unit afterDelay: 0.25];
 }
 
 #pragma mark Blacklist
@@ -384,6 +395,35 @@
 			
 			//[self blacklistUnit: self.attackUnit];
 			//[self finishUnit:self.attackUnit];
+		}
+	}
+}
+
+// target isn't in front of us (we probably did a memory write to face the target + didn't do an establish position)
+- (void)errorTargetNotInFront: (NSNotification*)notification {
+	
+	PGLog(@"errorTargetNotInFront");
+	
+	// We should blacklist this guy?
+	if ( self.attackUnit ){
+		PGLog(@"[Combat] Attacking unit with CTM");
+		//[movementController setClickToMove:[self.attackUnit position] andType:ctmAttackGuid andGUID:[self.attackUnit GUID]];
+		
+		// we don't want to KEEP moving backward - lets switch it up a bit!
+		if ( _lastWasBackEstablish ){
+			[movementController establishPosition];
+			_lastWasBackEstablish = NO;
+		}
+		else{
+			[movementController backEstablishPosition];
+			_lastWasBackEstablish = YES;
+		}
+		
+		// Check the GUID of what we just attacked!
+		UInt64 target = [playerData targetID];
+		
+		if ( target == [self.attackUnit GUID] ){
+			PGLog(@"[Combat] Target %@ isn't in front of us, re-establishing position", self.attackUnit);
 		}
 	}
 }
@@ -553,7 +593,7 @@
         [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: unit];
         
         PGLog(@"[Combat] Commence attack on %@. (0x%x:0x%x)", unit, [unit unitBytes1], [unit unitBytes2]);
-        [self attackUnit: unit];
+        [self attackTheUnit: unit];
         
         // if we aren't in combat after X seconds, something is wrong
         float delay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
@@ -582,7 +622,7 @@
     [[unit retain] autorelease];
     
     // unregister callbacks to this controller
-    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(attackUnit:) object: unit];
+    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(attackTheUnit:) object: unit];
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(combatCheck:) object: unit];
     [_initialDistances removeObjectForKey: [NSNumber numberWithUnsignedLongLong: [unit GUID]]];
     
@@ -654,14 +694,14 @@
 		
 		Unit *attackUnit = [_attackQueue objectAtIndex: 0];
 		
-		for ( Unit *unit in _attackQueue ){
+		/*for ( Unit *unit in _attackQueue ){
 			
 			if ( ![unit isPet] && [attackUnit isPet] ){
 				PGLog(@"[Combat] Switching from pet %@ to player %@", attackUnit, unit);
 				attackUnit = unit;
 				break;
 			}
-		}
+		}*/
 		
 		return attackUnit;
     }
@@ -864,7 +904,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 				[mob isFleeing])													// or fleeing
 			){
 			
-			PGLog(@"[Combat] In combat with mob %@", mob);
+			//PGLog(@"[Combat] In combat with mob %@", mob);
 			// add mob!
 			if ( ![_unitsAttackingMe containsObject: (Unit*)mob] ){
 				[_unitsAttackingMe addObject: (Unit*)mob];
@@ -891,7 +931,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			 [player isFleeing])													// or fleeing
 			){
 			
-			PGLog(@"[Combat] In combat with player %@", player);
+			//PGLog(@"[Combat] In combat with player %@", player);
 			// add player
 			if ( ![_unitsAttackingMe containsObject: (Unit*)player] ){
 				[_unitsAttackingMe addObject: (Unit*)player];
@@ -904,7 +944,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 		}
 	}
 	
-	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	//PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
 }
 
 @end

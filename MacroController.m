@@ -15,8 +15,11 @@
 #import "PlayerDataController.h"
 #import "AuraController.h"
 #import "ChatController.h"
+#import "OffsetController.h"
 
 #import "Player.h"
+#import "MemoryAccess.h"
+#import "Macro.h"
 
 @implementation MacroController
 
@@ -28,6 +31,7 @@
 		_playerName = nil;
 		_accountName = nil;
 		_serverName = nil;
+		_playerMacros = nil;
 		
 		 // Notifications
 		 [[NSNotificationCenter defaultCenter] addObserver: self
@@ -44,6 +48,8 @@
 	[_serverName release];
     [super dealloc];
 }
+
+@synthesize playerMacros = _playerMacros;
 
 #pragma mark Notifications
 
@@ -165,6 +171,64 @@
 		
 		[self takeAction: macroDismount Sequence:@"/dismount"];
 	}
+}
+
+// this function will pull player macros from memory!
+- (void)reloadMacros{
+	
+	// technically the first release does nothing
+	[_playerMacros release]; _playerMacros = nil;
+	
+	// this is where we will store everything
+	NSMutableArray *macros = [NSMutableArray array];
+	
+	// + 0x10 from this ptr is a ptr to the macro object list (but we don't need this)
+	UInt32 offset = [offsetController offset:@"MACRO_LIST_PTR"];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	UInt32 objectPtr = 0, macroID = 0;
+	[memory loadDataForObject:self atAddress:offset Buffer:(Byte *)&objectPtr BufLength:sizeof(objectPtr)];
+	
+	// while we have a valid ptr!
+	while ( ( objectPtr & 0x1 ) == 0 ){
+		
+		//	0x0==0x18 macro ID
+		//	0x10 next ptr
+		//	0x20 macro name
+		//	0x60 macro icon
+		//	0x160 macro text
+		// how to determine if it's an account macro: (macroID & 0x1000000) == 0x1000000
+		
+		// initialize variables
+		char macroName[17], macroText[256];
+		macroName[16] = 0;
+		macroText[255] = 0;
+		NSString *newMacroName = nil;
+		NSString *newMacroText = nil;
+		
+		// get the macro name
+		if ( [memory loadDataForObject: self atAddress: objectPtr+0x20 Buffer: (Byte *)&macroName BufLength: sizeof(macroName)-1] ) {
+			newMacroName = [NSString stringWithUTF8String: macroName];
+		}
+		
+		// get the macro text
+		if ( [memory loadDataForObject: self atAddress: objectPtr+0x160 Buffer: (Byte *)&macroText BufLength: sizeof(macroText)-1] ) {
+			newMacroText = [NSString stringWithUTF8String: macroText];
+		}
+		
+		// get the macro ID
+		[memory loadDataForObject:self atAddress:objectPtr Buffer:(Byte *)&macroID BufLength:sizeof(macroID)];
+		
+		// add it to our list	
+		Macro *macro = [Macro macroWithName:newMacroName number:[NSNumber numberWithInt:macroID] body:newMacroText isCharacter:((macroID & 0x1000000) != 0x1000000)];
+		[macros addObject:macro];
+
+		// get the next object ptr
+		[memory loadDataForObject:self atAddress:objectPtr+0x10 Buffer:(Byte *)&objectPtr BufLength:sizeof(objectPtr)];
+	}
+
+	_playerMacros = [macros retain];
 }
 
 @end

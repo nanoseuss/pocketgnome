@@ -66,6 +66,7 @@ typedef enum {
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level;
 - (NSArray*)nodesWithinDistance: (float)nodeDistance NodeIDs: (NSArray*)nodeIDs position:(Position*)position;
 - (NSArray*)nodesWithinDistance: (float)nodeDistance EntryID: (int)entryID position:(Position*)position;
+- (Node*)closestNode:(UInt32)entryID;
 - (Node*)closestNodeForInteraction:(UInt32)entryID;
 - (Node*)nodeWithEntryID:(UInt32)entryID;
 

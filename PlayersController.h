@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 @class Player;
+@class Unit;
 
 @class Controller;
 @class PlayerDataController;
@@ -59,6 +60,7 @@
                   includeFriendly: (BOOL)friendly
                    includeNeutral: (BOOL)neutral
                    includeHostile: (BOOL)hostile;
+- (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile;
 - (NSArray*)friendlyPlayers;
 
 - (IBAction)facePlayer: (id)sender;

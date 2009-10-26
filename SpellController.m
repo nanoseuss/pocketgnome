@@ -18,6 +18,30 @@
 #pragma mark Note: LastSpellCast/Timer Disabled
 #pragma mark -
 
+/*
+ #define CD_NEXT_ADDRESS	0x4
+ #define CD_SPELLID		0x8
+ #define CD_COOLDOWN		0x14
+ #define CD_COOLDOWN2	0x20
+ #define CD_ENABLED		0x24
+ #define CD_STARTTIME	0x1C	// Also 0x10
+ #define CD_GCD			0x2C	// Also 0x2C
+ */
+typedef struct WoWCooldown {
+	UInt32 unk;					// 0x0
+	UInt32 nextObjectAddress;	// 0x4
+	UInt32 spellID;				// 0x8
+	UInt32 unk3;				// 0xC (always 0 when the spell is a player spell)
+	UInt32 startTime;			// 0x10 (start time of the spell, stored in milliseconds)
+	long cooldown;				// 0x14
+	UInt32 unk4;				// 0x18
+	UInt32 startNotUsed;		// 0x1C	(the same as 0x10 always I believe?)
+	long cooldown2;				// 0x20
+	UInt32 enabled;				// 0x24 (0 if spell is enabled, 1 if it's not)
+	UInt32 unk5;				// 0x28
+	UInt32 gcd;					// 0x2C
+} WoWCooldown;
+
 @interface SpellController (Internal)
 - (BOOL)isSpellListValid;
 - (void)buildSpellMenu;
@@ -48,7 +72,6 @@ static SpellController *sharedSpells = nil;
         //_knownSpells = [[NSMutableArray array] retain];
         _playerSpells = [[NSMutableArray array] retain];
 		_playerCooldowns = [[NSMutableArray array] retain];
-		_spellTableAddresses = [[NSMutableArray array] retain];
         _cooldowns = [[NSMutableDictionary dictionary] retain];
     
         
@@ -120,24 +143,9 @@ static SpellController *sharedSpells = nil;
 #pragma mark Internal
 
 - (BOOL)isSpellListValid {
-    // check to see if our very first spell is 'Attack' (6603)
-    // or for gnomes, 'Arcane Resistance' (20592)
-    // blood elves: 'Arcane Affinity' (28877)
-    // for everyone: 'Alchemy' (2259, 3101, 3464, 11611, 28596)
     uint32_t value = 0;
     if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"KNOWN_SPELLS_STATIC"] Buffer: (Byte *)&value BufLength: sizeof(value)] && value) {
         return ( (value > 0) && (value < 100000) );
-        /*
-        return (value == 6603 ||    // "Attack"
-                value == 20592 ||   // "Arcane Resistance" (Gnomes)
-                value == 28877 ||   // "Arcane Affinity" (Blood Elves)
-                value == 2259 ||    // "Alchemy" (1)
-                value == 3101 ||    // "Alchemy" (2)
-                value == 3464 ||    // "Alchemy" (3)
-                value == 11611 ||   // "Alchemy" (4)
-                value == 28596 ||   // "Alchemy" (5)
-                value == 674);      // "Ambidextrie" (French for Dual Wield)
-        */
     }
     return NO;
 }
@@ -157,7 +165,7 @@ static SpellController *sharedSpells = nil;
 
     // scan the list of known spells
     NSMutableArray *playerSpells = [NSMutableArray array];
-    if( [playerController playerIsValid] && [self isSpellListValid] ) {
+    if( [playerController playerIsValid:self] && [self isSpellListValid] ) {
         for(i=0; ; i++) {
             // load all known spells into a temp array
             if([memory loadDataForObject: self atAddress: [offsetController offset:@"KNOWN_SPELLS_STATIC"] + (i*4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value) {
@@ -176,7 +184,7 @@ static SpellController *sharedSpells = nil;
 	
 	// scan the list of mounts!
 	NSMutableArray *playerMounts = [NSMutableArray array];
-	if( [playerController playerIsValid] ){
+	if( [playerController playerIsValid:self] ){
 		UInt32 mountAddress = 0;
 		
 		// grab the pointer to the list
@@ -398,41 +406,6 @@ static SpellController *sharedSpells = nil;
 
 #pragma mark -
 
-/*
-- (void)didCastSpell: (Spell*)spell {
-    [self didCastSpellWithID: [spell ID]];
-}
-
-- (void)didCastSpellWithID: (NSNumber*)spellID {
-    Spell *spell = [self spellForID: spellID];
-    if(spell && ([[spell cooldown] floatValue] > 0)) {
-        // save the spell and the time in our cooldown dict
-        PGLog(@"Starting %@ sec cooldown for %@.", [spell cooldown], spell);
-        [_cooldowns setObject: [NSDate date] forKey: [spell ID]];
-    }
-}
-
-
-- (BOOL)canCastSpellWithID: (NSNumber*)spellID {
-    
-    Spell *spell = [self spellForID: spellID];
-    NSDate *castTime = [_cooldowns objectForKey: [spell ID]];
-    if(spell && castTime && ([[spell cooldown] floatValue] > 0)) {
-        NSDate *currentTime = [NSDate date];
-        if( [currentTime timeIntervalSinceDate: castTime] > [[spell cooldown] floatValue]) {
-            [_cooldowns removeObjectForKey: [spell ID]];
-            //PGLog(@"Cooldown for %@ has expired %.2f > %.2f.", spell, [currentTime timeIntervalSinceDate: castTime], [[spell cooldown] floatValue]);
-            return YES;
-        } else {
-            //PGLog(@"Cooldown NOT expired for %@ %.2f < %.2f.", spell, [currentTime timeIntervalSinceDate: castTime], [[spell cooldown] floatValue]);
-            return NO;
-        }
-    }
-    return YES;
-}*/
-
-#pragma mark -
-
 - (BOOL)isPlayerSpell: (Spell*)aSpell {
     for(Spell *spell in [self playerSpells]) {
         if([spell isEqualToSpell: aSpell])
@@ -454,19 +427,6 @@ static SpellController *sharedSpells = nil;
     UInt32 value = 0;
     [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"] Buffer: (Byte*)&value BufLength: sizeof(value)];
     return value;
-    
-    // the following static variables we're both removed in WoW 3.0.2 :(
-    //[[controller wowMemoryAccess] loadDataForObject: self atAddress: LAST_SPELL_ATTEMPTED_CAST_STATIC Buffer: (Byte*)&value BufLength: sizeof(value)];
-    //[[controller wowMemoryAccess] loadDataForObject: self atAddress: LAST_SPELL_ACTUALLY_CAST_STATIC Buffer: (Byte*)&value2 BufLength: sizeof(value2)];
-    //if(value == value2)     return value;   // they are the same
-    //if(value && !value2)    return value;   // value2 is 0, value is good (no target, out of range)
-    //if(!value && value2)    return value2;  // value is 0, value 2 is good
-    //if(value && value2) {
-    //    ;// PGLog(@"LastAttemptedActionID discrepancy: %d vs. %d", value, value2);
-    //}
-    //if(value != 6788)   // Weakened Soul
-    //    return value;
-    //return value2;
 }
 
 #pragma mark -
@@ -514,61 +474,50 @@ static SpellController *sharedSpells = nil;
 
 // Pull in latest CD info
 - (void)reloadCooldownInfo{
-	[_playerCooldowns removeAllObjects];
-	
 	// Why are we updating the table if we can't see it??
 	if ( ![[cooldownPanelTable window] isVisible] ){
 		return;
 	}
 	
-	[_spellTableAddresses removeAllObjects];
+	[_playerCooldowns removeAllObjects];
 	
-	// Lets loop through all available info!
-	UInt32 object = 0, totalScans = 0;
-	[[controller wowMemoryAccess] loadDataForObject:self atAddress:[offsetController offset:@"CD_OBJ_LIST_STATIC"] + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
-	while ((object != 0)  && ((object & 1) == 0) && totalScans < 30 ) {
-		UInt32 startTime = 0, cd = 0, gcd = 0, spellid = 0;
-		UInt32 test=0, test2=0, test3=0;
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	UInt32 objectListPtr = 0, lastObjectPtr=0, row=0;
+	UInt32 offset = [offsetController offset:@"CD_LIST_STATIC"];
+	[memory loadDataForObject:self atAddress:offset + 0x4 Buffer:(Byte *)&lastObjectPtr BufLength:sizeof(lastObjectPtr)];
+	[memory loadDataForObject:self atAddress:offset + 0x8 Buffer:(Byte *)&objectListPtr BufLength:sizeof(objectListPtr)];
+	BOOL reachedEnd = NO;
+	
+	WoWCooldown cd;
+	while ((objectListPtr != 0)  && ((objectListPtr & 1) == 0) ) {
+		row++;
+		[memory loadDataForObject: self atAddress: (objectListPtr) Buffer:(Byte*)&cd BufLength: sizeof(cd)];
 		
-		// Load data
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_SPELLID Buffer:(Byte *)&spellid BufLength:sizeof(spellid)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_STARTTIME Buffer:(Byte *)&startTime BufLength:sizeof(startTime)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_COOLDOWN Buffer:(Byte *)&cd BufLength:sizeof(cd)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_GCD Buffer:(Byte *)&gcd BufLength:sizeof(gcd)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + 0x14 Buffer:(Byte *)&test BufLength:sizeof(test)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + 0x24 Buffer:(Byte *)&test2 BufLength:sizeof(test2)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + 0x0C Buffer:(Byte *)&test3 BufLength:sizeof(test3)];
+		long realCD = cd.cooldown;
+		if (  cd.cooldown2 > cd.cooldown )
+			realCD =  cd.cooldown2;
 		
-		cd = [self cooldownLeftForSpellID:spellid];
-		
-		// Sanity check
-		if ( spellid > 100000 || spellid <= 0 ){
-			break;
-		}
+		long realStartTime = cd.startTime;
+		if ( cd.startNotUsed > cd.startTime )
+			realStartTime = cd.startNotUsed;
 		
 		// Save it!
 		[_playerCooldowns addObject: [NSDictionary dictionaryWithObjectsAndKeys:
-									  [NSString stringWithFormat:@"0x%X", object],			@"Address",
-									  [NSNumber numberWithInt: spellid],                    @"ID",
-									  [NSNumber numberWithInt: startTime],                  @"StartTime",
-									  [NSNumber numberWithInt: cd],                         @"Cooldown",
-									  [NSNumber numberWithInt: gcd],                        @"GCD",
-									  [NSNumber numberWithInt: test],						@"Unknown1",
-									  [NSNumber numberWithInt: test2],						@"Unknown2",
-									  [NSNumber numberWithInt: test3],						@"Unknown3",
-
+									  [NSNumber numberWithInt: row],							@"ID",
+									  [NSNumber numberWithInt: cd.spellID],						@"SpellID",
+									  [NSNumber numberWithInt: realStartTime],					@"StartTime",
+									  [NSNumber numberWithInt: realCD],                         @"Cooldown",
+									  [NSNumber numberWithInt: cd.gcd],							@"GCD",
 									  nil]];
-		
-		NSNumber *address = [NSNumber numberWithInt:object];
-		if ( [_spellTableAddresses containsObject:address] ){
-			PGLog(@"ALREADY SCANNED! 0x%X  %d", address, spellid);
+
+		if ( reachedEnd )
 			break;
-		}
 		
-		[_spellTableAddresses addObject:address];
-		
-		totalScans++;
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_NEXT_ADDRESS Buffer:(Byte *)&object BufLength:sizeof(object)];
+		objectListPtr = cd.nextObjectAddress;
+
+		if ( objectListPtr == lastObjectPtr )
+			reachedEnd = YES;
 	}
 	
 	[cooldownPanelTable reloadData];
@@ -586,30 +535,7 @@ static SpellController *sharedSpells = nil;
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
    if(rowIndex == -1 || rowIndex >= [_playerCooldowns count]) return nil;
-    
-	/*
-    Aura *aura = [[_playerAuras objectAtIndex: rowIndex] objectForKey: @"Aura"];
-    if([[aTableColumn identifier] isEqualToString: @"TimeRemaining"]) {
-        //NSDate *exp = [[_playerAuras objectAtIndex: rowIndex] objectForKey: @"Expiration"];
-        //NSCalendarDate *date = [NSCalendarDate calendarDate];
-        //date = [date dateByAddingYears: 0 months: 0 days: 0 hours: 0 minutes: 0 seconds: [exp timeIntervalSinceNow]];
-		
-        float secRemaining = [[[_playerAuras objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] floatValue];
-        if(secRemaining < 60.0f) {
-            return [NSString stringWithFormat: @"%.0f sec", secRemaining];
-        } else if(secRemaining < 3600.0f) {
-            return [NSString stringWithFormat: @"%.0f min", secRemaining/60.0f];
-        } else if(secRemaining < 86400.0f) {
-            return [NSString stringWithFormat: @"%.0f hour", secRemaining/3600.0f];
-        } else {
-            if([aura isPassive])
-                return @"Passive";
-            else if(![aura isActive])
-                return @"Innate";
-            return @"Never";
-        }
-    }*/
-	
+    	
 	if([[aTableColumn identifier] isEqualToString: @"Cooldown"]) {
         float secRemaining = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] floatValue]/1000.0f;
         if(secRemaining < 60.0f) {
@@ -627,7 +553,7 @@ static SpellController *sharedSpells = nil;
 		float startTime = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"StartTime"] floatValue];
 		float secRemaining = ((startTime + cd)-currentTime)/1000.0f;
 		
-		if ( secRemaining < 0.0f ) secRemaining = 0.0f;
+		//if ( secRemaining < 0.0f ) secRemaining = 0.0f;
 		
 		if(secRemaining < 60.0f) {
             return [NSString stringWithFormat: @"%.0f sec", secRemaining];
@@ -643,7 +569,15 @@ static SpellController *sharedSpells = nil;
 	}
 	
 	if ([[aTableColumn identifier] isEqualToString:@"SpellName"]){
-		return [[self spellForID:[NSNumber numberWithInt:[[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"ID"] intValue]]] name];
+		int spellID = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"SpellID"] intValue];
+		Spell *spell = [self spellForID:[NSNumber numberWithInt:spellID]];
+		// need to add it!
+		if ( !spell ){
+			spell = [Spell spellWithID: [NSNumber numberWithUnsignedInt: spellID]];
+			[spell reloadSpellData];
+			[self addSpellAsRecognized: spell];
+		}
+		return [spell name];
 	}
     
     return [[_playerCooldowns objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
@@ -660,21 +594,38 @@ static SpellController *sharedSpells = nil;
 
 #pragma mark Cooldowns
 // Contribution by Monder - thank you!
-//0x1172FE0
--(BOOL)isGCDActive {
-	UInt32 currentTime =[playerController currentTime];
-	UInt32 object = 0;
-	[[controller wowMemoryAccess] loadDataForObject:self atAddress:[offsetController offset:@"CD_OBJ_LIST_STATIC"] + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
-	while ((object != 0)  && ((object & 1) == 0)) {
-		UInt32 startTime = 0;
-		UInt32 gcd = 0;
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_STARTTIME Buffer:(Byte *)&startTime BufLength:sizeof(startTime)];
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_GCD Buffer:(Byte *)&gcd BufLength:sizeof(gcd)];
 
-		if ((startTime + gcd) > currentTime){
+-(BOOL)isGCDActive {
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 currentTime = [playerController currentTime];
+	UInt32 objectListPtr = 0, lastObjectPtr=0;
+	UInt32 offset = [offsetController offset:@"CD_LIST_STATIC"];
+	BOOL reachedEnd = NO;
+	WoWCooldown cd;
+	
+	// load start/end object ptrs
+	[memory loadDataForObject:self atAddress:offset + 0x4 Buffer:(Byte *)&lastObjectPtr BufLength:sizeof(lastObjectPtr)];
+	[memory loadDataForObject:self atAddress:offset + 0x8 Buffer:(Byte *)&objectListPtr BufLength:sizeof(objectListPtr)];
+
+	while ((objectListPtr != 0)  && ((objectListPtr & 1) == 0) ) {
+		[memory loadDataForObject: self atAddress: (objectListPtr) Buffer:(Byte*)&cd BufLength: sizeof(cd)];
+		
+		long realStartTime = cd.startTime;
+		if ( cd.startNotUsed > cd.startTime )
+			realStartTime = cd.startNotUsed;
+			
+		// is gcd active?
+		if ( realStartTime + cd.gcd > currentTime ){
 			return YES;
 		}
-		[[controller wowMemoryAccess] loadDataForObject:self atAddress:object + CD_NEXT_ADDRESS Buffer:(Byte *)&object BufLength:sizeof(object)];
+		
+		if ( reachedEnd )
+			break;
+		
+		objectListPtr = cd.nextObjectAddress;
+		
+		if ( objectListPtr == lastObjectPtr )
+			reachedEnd = YES;
 	}
 	
 	return NO;     
@@ -684,47 +635,49 @@ static SpellController *sharedSpells = nil;
 		return NO;
 	return YES;
 }
+
+// this could be more elegant (i.e. storing cooldown info and only updating it every 0.25 seconds or when a performAction on a spell is done)
 -(UInt32)cooldownLeftForSpellID:(UInt32)spell {
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	// This function may be using too much memory, lets see!
-	NSDate *start = [NSDate date];
-	[memory resetLoadCount];
 	
-	int totalScans = 0;
 	UInt32 currentTime = [playerController currentTime];
-	UInt32 object = 0, tehCD=0;
-	[memory loadDataForObject:self atAddress:[offsetController offset:@"CD_OBJ_LIST_STATIC"] + 0x8 Buffer:(Byte *)&object BufLength:sizeof(object)];
-	while ((object != 0)  && ((object & 1) == 0) && totalScans < 30 ) {
-		UInt32 spellid = 0, startTime = 0, cd = 0, cd2 = 0;
-		[memory loadDataForObject:self atAddress:object + CD_SPELLID Buffer:(Byte *)&spellid BufLength:sizeof(spellid)];
-		totalScans++;
-		if(spellid == spell) {
-			[memory loadDataForObject:self atAddress:object + CD_STARTTIME Buffer:(Byte *)&startTime BufLength:sizeof(startTime)];
-			[memory loadDataForObject:self atAddress:object + CD_COOLDOWN Buffer:(Byte *)&cd BufLength:sizeof(cd)];
-			[memory loadDataForObject:self atAddress:object + CD_COOLDOWN2 Buffer:(Byte *)&cd2 BufLength:sizeof(cd2)];
+	UInt32 objectListPtr = 0, lastObjectPtr=0;
+	UInt32 offset = [offsetController offset:@"CD_LIST_STATIC"];
+	[memory loadDataForObject:self atAddress:offset + 0x4 Buffer:(Byte *)&lastObjectPtr BufLength:sizeof(lastObjectPtr)];
+	[memory loadDataForObject:self atAddress:offset + 0x8 Buffer:(Byte *)&objectListPtr BufLength:sizeof(objectListPtr)];
+	BOOL reachedEnd = NO;
+	
+	WoWCooldown cd;
+	while ((objectListPtr != 0)  && ((objectListPtr & 1) == 0) ) {
+		[memory loadDataForObject: self atAddress: (objectListPtr) Buffer:(Byte*)&cd BufLength: sizeof(cd)];
+		
+		if ( cd.spellID == spell ){
 			
-			// Sometimes the CD is stored in the second location - NO clue why
-			//PGLog(@"[Spell] %d (%d:%d)", spell, cd, cd2);
-			if ( cd2 > cd ){
-				cd = cd2;
-			}
-
-			if ((startTime + cd) > currentTime){
-				tehCD =  startTime + cd - currentTime;
-				break;
-			}
-			// We do NOT want to return here, we want to continue the loop, sometimes the same spell is listed twice! Once w/o the cooldown and once with!
-			//else
-			//	return 0;
+			long realCD = cd.cooldown;
+			if (  cd.cooldown2 > cd.cooldown )
+				realCD =  cd.cooldown2;
+			
+			long realStartTime = cd.startTime;
+			if ( cd.startNotUsed > cd.startTime )
+				realStartTime = cd.startNotUsed;
+			
+			// are we on cooldown?
+			if ( realStartTime + realCD > currentTime )
+				return realStartTime + realCD - currentTime;
 		}
-
-		[memory loadDataForObject:self atAddress:object + CD_NEXT_ADDRESS Buffer:(Byte *)&object BufLength:sizeof(object)];
+		
+		if ( reachedEnd )
+			break;
+		
+		objectListPtr = cd.nextObjectAddress;
+		
+		if ( objectListPtr == lastObjectPtr )
+			reachedEnd = YES;
 	}
 	
-	PGLog(@"Spell(%d) cooldown scan %.2f seconds and %d memory operations. Total scans: %d", spell, [start timeIntervalSinceNow]*-1.0, [memory loadCount], totalScans);
-	
-	return tehCD;  
+	// if we get here we made it through the list, the spell isn't on cooldown!
+	return 0;
 }
 
 

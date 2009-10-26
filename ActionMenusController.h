@@ -13,6 +13,7 @@
 @class InventoryController;
 @class MobController;
 @class NodeController;
+@class MacroController;
 
 typedef enum ActionMenuTypes {
     MenuType_Spell      = 1,
@@ -24,11 +25,12 @@ typedef enum ActionMenuTypes {
 
 @interface ActionMenusController : NSObject {
 
-    IBOutlet Controller *controller;
-    IBOutlet SpellController *spellController;
-    IBOutlet InventoryController *inventoryController;
-    IBOutlet MobController *mobController;
-    IBOutlet NodeController *nodeController;
+    IBOutlet Controller				*controller;
+    IBOutlet SpellController		*spellController;
+    IBOutlet InventoryController	*inventoryController;
+    IBOutlet MobController			*mobController;
+    IBOutlet NodeController			*nodeController;
+	IBOutlet MacroController		*macroController;
 }
 
 + (ActionMenusController *)sharedMenus;

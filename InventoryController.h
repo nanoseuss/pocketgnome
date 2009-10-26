@@ -21,10 +21,16 @@
 
     IBOutlet NSView *view;
     IBOutlet NSTableView *itemTable;
+	
+	int _updateDurabilityCounter;
 
     NSMutableArray *_itemList, *_itemDataList;
+	NSArray *_itemsPlayerIsWearing, *_itemsInBags;
     NSMutableDictionary *_itemNameList;
     NSSize minSectionSize, maxSectionSize;
+	
+	NSTimer *_updateTimer;
+	float updateFrequency;
 }
 
 + (InventoryController *)sharedInventory;
@@ -33,6 +39,7 @@
 @property (readonly) NSString *sectionTitle;
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
+@property float updateFrequency;
 
 // general
 - (void)addAddresses: (NSArray*)addresses;
@@ -50,12 +57,16 @@
 
 - (float)averageItemDurability;
 - (float)collectiveDurability;
+- (float)averageWearableDurability;
+- (float)collectiveWearableDurability;
 
 // list
 - (NSArray*)inventoryItems;
 - (NSMenu*)inventoryItemsMenu;
 - (NSMenu*)usableInventoryItemsMenu;
 - (NSMenu*)prettyInventoryItemsMenu;
+- (NSArray*)itemsPlayerIsWearing;
+- (NSArray*)itemsInBags;
 
 // Total number of marks (from all BG)
 - (int)pvpMarks;

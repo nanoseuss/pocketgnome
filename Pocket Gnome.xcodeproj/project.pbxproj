@@ -7,13 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		030604B71088140000C57D77 /* ShortcutRecorder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
+		030604F31088162100C57D77 /* OffsetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 030604F21088162100C57D77 /* OffsetController.m */; };
+		0306057C10881CAE00C57D77 /* MacroController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0306057B10881CAE00C57D77 /* MacroController.m */; };
 		030C2E4D0FDC09B300E80F7E /* LootController.m in Sources */ = {isa = PBXBuildFile; fileRef = 030C2E4C0FDC09B300E80F7E /* LootController.m */; };
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
+		03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
+		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
 		7D0C43F80DF20B0D005F3940 /* TransparentWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43F70DF20B0D005F3940 /* TransparentWindow.m */; };
@@ -201,20 +206,12 @@
 		7DBC34550DB57665000C9BCF /* SRRemoveShortcutPressed.tif in Resources */ = {isa = PBXBuildFile; fileRef = 7DBC34510DB57665000C9BCF /* SRRemoveShortcutPressed.tif */; };
 		7DBC34560DB57665000C9BCF /* SRRemoveShortcutRollover.tif in Resources */ = {isa = PBXBuildFile; fileRef = 7DBC34520DB57665000C9BCF /* SRRemoveShortcutRollover.tif */; };
 		7DBC34570DB57665000C9BCF /* SRSnapback.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 7DBC34530DB57665000C9BCF /* SRSnapback.tiff */; };
-		7DBC34EC0DB57A2C000C9BCF /* ShortcutRecorder.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DBC34EB0DB57A2C000C9BCF /* ShortcutRecorder.framework */; };
-		7DBC34F80DB57A31000C9BCF /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DBC34EB0DB57A2C000C9BCF /* ShortcutRecorder.framework */; };
 		7DBDA6770E0DAE5D0021E180 /* NoAccessApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DBDA6760E0DAE5D0021E180 /* NoAccessApplication.m */; };
 		7DBEC7DB0E4512D800994A7A /* GrabWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DBEC7DA0E4512D800994A7A /* GrabWindow.m */; };
 		7DBF31C60E94679500A592BD /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DBF31C50E94679500A592BD /* Growl.framework */; };
 		7DBF31CE0E94679900A592BD /* Growl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7DBF31C50E94679500A592BD /* Growl.framework */; };
-		7DC3FF0B0D57C6FD00BEB58B /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DAA07F60D5579ED00A6D06A /* CoreFoundation.framework */; };
-		7DC3FF0C0D57C70200BEB58B /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DAAE7620D148995003F1E3C /* Security.framework */; };
-		7DC3FF180D57C76D00BEB58B /* BetterAuthorizationSampleLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC3FF170D57C75100BEB58B /* BetterAuthorizationSampleLib.c */; };
 		7DC3FF190D57C76D00BEB58B /* BetterAuthorizationSampleLib.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC3FF170D57C75100BEB58B /* BetterAuthorizationSampleLib.c */; };
-		7DC3FF1A0D57C77100BEB58B /* BetterAuthorizationSampleLibInstallTool.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC3FF150D57C75100BEB58B /* BetterAuthorizationSampleLibInstallTool.c */; };
-		7DC3FF290D57C7CB00BEB58B /* MemoryAccessTool.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC3FF260D57C79400BEB58B /* MemoryAccessTool.c */; };
 		7DC3FF2A0D57C7CE00BEB58B /* ToolCommon.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC3FF280D57C79400BEB58B /* ToolCommon.c */; };
-		7DC3FF2B0D57C7CF00BEB58B /* ToolCommon.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC3FF280D57C79400BEB58B /* ToolCommon.c */; };
 		7DC419EF0DEDFD0300F3B083 /* ActiveQuestIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DC419E40DEDFD0300F3B083 /* ActiveQuestIcon.png */; };
 		7DC419F00DEDFD0300F3B083 /* AvailableQuestIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DC419E50DEDFD0300F3B083 /* AvailableQuestIcon.png */; };
 		7DC419F10DEDFD0300F3B083 /* BankerGossipIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DC419E60DEDFD0300F3B083 /* BankerGossipIcon.png */; };
@@ -304,14 +301,19 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */,
 				7DBF31CE0E94679900A592BD /* Growl.framework in CopyFiles */,
-				7DBC34F80DB57A31000C9BCF /* ShortcutRecorder.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		030604B61088140000C57D77 /* ShortcutRecorder.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShortcutRecorder.framework; sourceTree = "<group>"; };
+		030604F11088162100C57D77 /* OffsetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OffsetController.h; sourceTree = "<group>"; };
+		030604F21088162100C57D77 /* OffsetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OffsetController.m; sourceTree = "<group>"; };
+		0306057A10881CAE00C57D77 /* MacroController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacroController.h; sourceTree = "<group>"; };
+		0306057B10881CAE00C57D77 /* MacroController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MacroController.m; sourceTree = "<group>"; };
 		030C2E4B0FDC09B300E80F7E /* LootController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LootController.h; sourceTree = "<group>"; };
 		030C2E4C0FDC09B300E80F7E /* LootController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LootController.m; sourceTree = "<group>"; };
 		032B8C030FDEE37900807DD0 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
@@ -326,6 +328,7 @@
 		03CEF7850FCCD93100B47336 /* Corpse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Corpse.m; sourceTree = "<group>"; };
 		03CEF7860FCCD93100B47336 /* CorpseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorpseController.h; sourceTree = "<group>"; };
 		03CEF7870FCCD93100B47336 /* CorpseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CorpseController.m; sourceTree = "<group>"; };
+		03D65A581090EC0D00537E9C /* OffsetSignatures.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OffsetSignatures.plist; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -592,14 +595,11 @@
 		7DBC34510DB57665000C9BCF /* SRRemoveShortcutPressed.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = SRRemoveShortcutPressed.tif; sourceTree = "<group>"; };
 		7DBC34520DB57665000C9BCF /* SRRemoveShortcutRollover.tif */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = SRRemoveShortcutRollover.tif; sourceTree = "<group>"; };
 		7DBC34530DB57665000C9BCF /* SRSnapback.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = SRSnapback.tiff; sourceTree = "<group>"; };
-		7DBC34EB0DB57A2C000C9BCF /* ShortcutRecorder.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ShortcutRecorder.framework; sourceTree = "<group>"; };
 		7DBDA6750E0DAE5D0021E180 /* NoAccessApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoAccessApplication.h; sourceTree = "<group>"; };
 		7DBDA6760E0DAE5D0021E180 /* NoAccessApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoAccessApplication.m; sourceTree = "<group>"; };
 		7DBEC7D90E4512D800994A7A /* GrabWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrabWindow.h; sourceTree = "<group>"; };
 		7DBEC7DA0E4512D800994A7A /* GrabWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GrabWindow.m; sourceTree = "<group>"; };
 		7DBF31C50E94679500A592BD /* Growl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Growl.framework; sourceTree = "<group>"; };
-		7DC3FEF20D57C65700BEB58B /* MemoryAccessTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MemoryAccessTool; sourceTree = BUILT_PRODUCTS_DIR; };
-		7DC3FEFB0D57C6B900BEB58B /* InstallTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = InstallTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DC3FF150D57C75100BEB58B /* BetterAuthorizationSampleLibInstallTool.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BetterAuthorizationSampleLibInstallTool.c; sourceTree = "<group>"; };
 		7DC3FF160D57C75100BEB58B /* BetterAuthorizationSampleLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BetterAuthorizationSampleLib.h; sourceTree = "<group>"; };
 		7DC3FF170D57C75100BEB58B /* BetterAuthorizationSampleLib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = BetterAuthorizationSampleLib.c; sourceTree = "<group>"; };
@@ -691,22 +691,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		7DC3FEF00D57C65700BEB58B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7DC3FF0C0D57C70200BEB58B /* Security.framework in Frameworks */,
-				7DC3FF0B0D57C6FD00BEB58B /* CoreFoundation.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7DC3FEF90D57C6B900BEB58B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8D11072E0486CEB800E47090 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -714,11 +698,11 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				7DAAE7630D148995003F1E3C /* Security.framework in Frameworks */,
 				7DB260D50DB30922007DB867 /* libz.1.2.3.dylib in Frameworks */,
-				7DBC34EC0DB57A2C000C9BCF /* ShortcutRecorder.framework in Frameworks */,
 				7D2167F40DC4581700D5A815 /* Carbon.framework in Frameworks */,
 				7DBF31C60E94679500A592BD /* Growl.framework in Frameworks */,
 				7D1B39C50F897721005CA0CD /* Message.framework in Frameworks */,
 				7D1B3A220F89860D005CA0CD /* ScriptingBridge.framework in Frameworks */,
+				030604B71088140000C57D77 /* ShortcutRecorder.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -766,6 +750,10 @@
 				03CEF7870FCCD93100B47336 /* CorpseController.m */,
 				030C2E4B0FDC09B300E80F7E /* LootController.h */,
 				030C2E4C0FDC09B300E80F7E /* LootController.m */,
+				030604F11088162100C57D77 /* OffsetController.h */,
+				030604F21088162100C57D77 /* OffsetController.m */,
+				0306057A10881CAE00C57D77 /* MacroController.h */,
+				0306057B10881CAE00C57D77 /* MacroController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -790,9 +778,9 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				030604B61088140000C57D77 /* ShortcutRecorder.framework */,
 				7DBF31C50E94679500A592BD /* Growl.framework */,
 				7DB260D40DB30922007DB867 /* libz.1.2.3.dylib */,
-				7DBC34EB0DB57A2C000C9BCF /* ShortcutRecorder.framework */,
 			);
 			name = "Other Frameworks";
 			sourceTree = "<group>";
@@ -801,8 +789,6 @@
 			isa = PBXGroup;
 			children = (
 				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
-				7DC3FEF20D57C65700BEB58B /* MemoryAccessTool */,
-				7DC3FEFB0D57C6B900BEB58B /* InstallTool */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -823,7 +809,6 @@
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
-			comments = "combat movment";
 			name = WoWWaypoint;
 			sourceTree = "<group>";
 		};
@@ -890,13 +875,14 @@
 				7DCB5A3F0D540647001678BC /* Memory.xib */,
 				7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */,
 				7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */,
+				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
 				7DC8B60F0D419C3200B25B45 /* Growl Registration Ticket.growlRegDict */,
 				7D3C91EA0E47C8C700EDF3B3 /* Gathering.plist */,
 				7D165A950D45761B00BDF5CA /* CGKeyCodeMap.plist */,
 				7DB0ABC80EABED7F00B81BC1 /* FactionTemplate.plist */,
 				8D1107310486CEB800E47090 /* Info.plist */,
+				03D65A581090EC0D00537E9C /* OffsetSignatures.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
-				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
 				7D54DCB80E08449F00E1B463 /* Condition NIBs */,
 			);
 			name = Resources;
@@ -1376,38 +1362,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7DC3FEF10D57C65700BEB58B /* MemoryAccessTool */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7DC3FEF60D57C67F00BEB58B /* Build configuration list for PBXNativeTarget "MemoryAccessTool" */;
-			buildPhases = (
-				7DC3FEEF0D57C65700BEB58B /* Sources */,
-				7DC3FEF00D57C65700BEB58B /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = MemoryAccessTool;
-			productName = MemoryAccessTool;
-			productReference = 7DC3FEF20D57C65700BEB58B /* MemoryAccessTool */;
-			productType = "com.apple.product-type.tool";
-		};
-		7DC3FEFA0D57C6B900BEB58B /* InstallTool */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 7DC3FF0A0D57C6F100BEB58B /* Build configuration list for PBXNativeTarget "InstallTool" */;
-			buildPhases = (
-				7DC3FEF80D57C6B900BEB58B /* Sources */,
-				7DC3FEF90D57C6B900BEB58B /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = InstallTool;
-			productName = InstallTool;
-			productReference = 7DC3FEFB0D57C6B900BEB58B /* InstallTool */;
-			productType = "com.apple.product-type.tool";
-		};
 		8D1107260486CEB800E47090 /* Pocket Gnome */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Pocket Gnome" */;
@@ -1448,8 +1402,6 @@
 			projectRoot = "";
 			targets = (
 				8D1107260486CEB800E47090 /* Pocket Gnome */,
-				7DC3FEF10D57C65700BEB58B /* MemoryAccessTool */,
-				7DC3FEFA0D57C6B900BEB58B /* InstallTool */,
 			);
 		};
 /* End PBXProject section */
@@ -1625,30 +1577,13 @@
 				7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */,
 				7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */,
 				03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */,
+				03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		7DC3FEEF0D57C65700BEB58B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7DC3FF180D57C76D00BEB58B /* BetterAuthorizationSampleLib.c in Sources */,
-				7DC3FF290D57C7CB00BEB58B /* MemoryAccessTool.c in Sources */,
-				7DC3FF2B0D57C7CF00BEB58B /* ToolCommon.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		7DC3FEF80D57C6B900BEB58B /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7DC3FF1A0D57C77100BEB58B /* BetterAuthorizationSampleLibInstallTool.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		8D11072C0486CEB800E47090 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1745,6 +1680,8 @@
 				03CEF7880FCCD93100B47336 /* Corpse.m in Sources */,
 				03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */,
 				030C2E4D0FDC09B300E80F7E /* LootController.m in Sources */,
+				030604F31088162100C57D77 /* OffsetController.m in Sources */,
+				0306057C10881CAE00C57D77 /* MacroController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1771,73 +1708,11 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		7DC3FEF40D57C65800BEB58B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = MemoryAccessTool;
-				ZERO_LINK = YES;
-			};
-			name = Debug;
-		};
-		7DC3FEF50D57C65800BEB58B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEPLOYMENT_POSTPROCESSING = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = MemoryAccessTool;
-				SKIP_INSTALL = NO;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
-		7DC3FEFD0D57C6B900BEB58B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = InstallTool;
-				ZERO_LINK = YES;
-			};
-			name = Debug;
-		};
-		7DC3FEFE0D57C6B900BEB58B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G5;
-				GCC_PREPROCESSOR_DEFINITIONS = NDEBUG;
-				INSTALL_PATH = /usr/local/bin;
-				PREBINDING = NO;
-				PRODUCT_NAME = InstallTool;
-				ZERO_LINK = NO;
-			};
-			name = Release;
-		};
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1857,6 +1732,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = ggteabag;
+				VALID_ARCHS = "ppc i386";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = YES;
 			};
@@ -1865,6 +1741,8 @@
 		C01FCF4C08A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1884,6 +1762,7 @@
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = "Pocket Gnome";
+				VALID_ARCHS = "ppc i386";
 				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 			};
@@ -1893,8 +1772,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALTERNATE_GROUP = "$(INSTALL_GROUP)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "PGLOGGING=1";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
@@ -1912,8 +1794,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALTERNATE_GROUP = "$(INSTALL_GROUP)";
-				ARCHS = i386;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
@@ -1935,24 +1819,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		7DC3FEF60D57C67F00BEB58B /* Build configuration list for PBXNativeTarget "MemoryAccessTool" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7DC3FEF40D57C65800BEB58B /* Debug */,
-				7DC3FEF50D57C65800BEB58B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		7DC3FF0A0D57C6F100BEB58B /* Build configuration list for PBXNativeTarget "InstallTool" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				7DC3FEFD0D57C6B900BEB58B /* Debug */,
-				7DC3FEFE0D57C6B900BEB58B /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Pocket Gnome" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

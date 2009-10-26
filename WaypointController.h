@@ -48,6 +48,8 @@
     IBOutlet NSPopUpButton *wpActionIDPopUp;
     Waypoint *_editWaypoint;
     
+	IBOutlet NSButton *isFlyingRouteButton;
+	
     // waypoint recording
     IBOutlet NSButton *automatorStartStopButton;
     IBOutlet NSPanel *automatorPanel;
@@ -97,6 +99,8 @@
 - (IBAction)duplicateRoute: (id)sender;
 - (IBAction)openExportPanel: (id)sender;
 - (IBAction)closeExportPanel: (id)sender;
+
+- (IBAction)optionSelected: (id)sender;
 
 // importing/exporting
 - (void)importRouteAtPath: (NSString*)path;

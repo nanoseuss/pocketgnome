@@ -13,6 +13,7 @@
 #import "InventoryController.h"
 #import "MobController.h"
 #import "NodeController.h"
+#import "MacroController.h"
 
 #import "Macro.h"
 #import "Spell.h"
@@ -43,73 +44,26 @@ static ActionMenusController *sharedMenus = nil;
 
 #pragma mark -
 
-- (NSArray*)scanMacrosFrom: (NSString*)macroFilePath {
-    
-    NSString *macroString = [NSString stringWithContentsOfFile: macroFilePath];
-    NSScanner *scanner = [NSScanner scannerWithString: macroString];
-    NSMutableArray *macroList = [NSMutableArray array];
-    
-    
-    while(![scanner isAtEnd]) {
-        if(![scanner scanString: @"MACRO" intoString: nil]) {
-            // PGLog(@"Could not scan 'MACRO'. Done.");
-            break;
-        }
-        int macroNum;
-        if(![scanner scanInt: &macroNum]) {
-            // PGLog(@"Could not scan int. Done.");
-            break;
-        }
-        NSString *macroName;
-        [scanner scanString: @" \"" intoString: nil];
-        if(![scanner scanUpToString: @"\" " intoString: &macroName]) {
-            // PGLog(@"Could not scan name. Done.");
-            break;
-        }
-        macroName = [macroName stringByReplacingOccurrencesOfString: @"\"" withString: @""];
-        
-        // PGLog(@"Got macro \"%@\" (%d)", macroName, macroNum);
-        
-        if(![scanner scanUpToString: @"\n" intoString: nil]) {
-            // PGLog(@"Couldnt find end of line.");
-            break;
-        }
-        
-        NSString *macroBody;
-        if(![scanner scanUpToString: @"\r\nEND\r\n" intoString: &macroBody]) {
-            // PGLog(@"Couldnt find END of macro.");
-            break;
-        }
-        [scanner scanString: @"END" intoString: nil];
-        
-        // PGLog(@"Got macro body \"%@\"", macroBody);
-        
-        /*NSDictionary *macroDict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   macroName,                           @"Name",
-                                   [NSNumber numberWithInt: macroNum],  @"Number",
-                                   macroBody,                           @"Body", nil];*/
-        [macroList addObject: [Macro macroWithName: macroName number: [NSNumber numberWithInt: macroNum] body: macroBody isCharacter: NO]];
-    }
-
-    return macroList;
-}
-
 - (NSMenu*)createMacroMenu {
     
-    // parse out macros for current player
-    NSString *acctMacroPath = [[controller wtfAccountPath] stringByAppendingPathComponent: @"macros-cache.txt"];
-    NSString *charMacroPath = [[controller wtfCharacterPath] stringByAppendingPathComponent: @"macros-cache.txt"];
-    
-    NSArray *globalList = nil, *localList = nil;
-    
-    if([[NSFileManager defaultManager] fileExistsAtPath: acctMacroPath])
-        globalList = [self scanMacrosFrom: acctMacroPath];
-    if([[NSFileManager defaultManager] fileExistsAtPath: charMacroPath]) {
-        localList = [self scanMacrosFrom: charMacroPath];
-        for(Macro *macro in localList) {
-            [macro setIsCharacter: YES];
-        }
-    }
+	// reload our macro list (just in case)
+	[macroController reloadMacros];
+	
+	// get the player/account macros
+	NSArray *macros = [macroController playerMacros];
+	
+
+	
+	NSMutableArray *accountMacros = [NSMutableArray array];
+	NSMutableArray *characterMacros = [NSMutableArray array];
+	
+	// "sort" our macros to account/character
+	for ( Macro *macro in macros ){
+		if ( [macro isCharacter] )
+			[characterMacros addObject:macro];
+		else 
+			[accountMacros addObject:macro];
+	}
     
     // Generate the Macros menu
     NSMenu *macroMenu = [[[NSMenu alloc] initWithTitle: @"Macro Menu"] autorelease];
@@ -119,8 +73,8 @@ static ActionMenusController *sharedMenus = nil;
                                                                attributes: [NSDictionary dictionaryWithObjectsAndKeys: [NSFont boldSystemFontOfSize: 0], NSFontAttributeName, nil]] autorelease]];
     [macroMenu addItem: item];
     
-    if(globalList && [globalList count]) {
-        for(Macro *macro in globalList) {
+    if(accountMacros && [accountMacros count]) {
+        for(Macro *macro in accountMacros) {
             item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@ (%@)", macro.name, macro.number] action: nil keyEquivalent: @""] autorelease];
             [item setTag: [macro.number intValue]];
             [item setIndentationLevel: 1];
@@ -139,8 +93,8 @@ static ActionMenusController *sharedMenus = nil;
                                                                attributes: [NSDictionary dictionaryWithObjectsAndKeys: [NSFont boldSystemFontOfSize: 0], NSFontAttributeName, nil]] autorelease]];
     [macroMenu addItem: item];
     
-    if(localList && [localList count]) {
-        for(Macro *macro in localList) {
+    if(characterMacros && [characterMacros count]) {
+        for(Macro *macro in characterMacros) {
             item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@ (%@)", macro.name, macro.number] action: nil keyEquivalent: @""] autorelease];
             [item setTag: [macro.number intValue]];
             [item setIndentationLevel: 1];

@@ -112,7 +112,7 @@ typedef struct WoWAura {
     // PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
     UInt32 validAuras = 0;
     MemoryAccess *wowMemory = [controller wowMemoryAccess];
-    if(!unit || !wowMemory || ![playerController playerIsValid])
+    if(!unit || !wowMemory || ![playerController playerIsValid:self])
         return nil;
     
     // get the number of valid aura buckets
@@ -383,7 +383,7 @@ typedef struct WoWAura {
 
 /*
 - (BOOL)playerHasBuff: (unsigned)spellID {
-    if(!spellID || ![playerController playerIsValid]) return NO;
+    if(!spellID || ![playerController playerIsValid:self]) return NO;
     
     unsigned auras[PLAYER_BUFF_SLOTS];
     if([self loadAurasFrom: ([playerController infoAddress] + PLAYER_BUFFS_OFFSET) intoArray: (Byte*)&auras ofSize: PLAYER_BUFF_SLOTS]) {
@@ -400,7 +400,7 @@ typedef struct WoWAura {
 }
     
 - (BOOL)playerHasDebuff: (unsigned)spellID {
-    if(!spellID || ![playerController playerIsValid]) return NO;
+    if(!spellID || ![playerController playerIsValid:self]) return NO;
     
     unsigned auras[PLAYER_DEBUFF_SLOTS];
     if([self loadAurasFrom: ([playerController infoAddress] + PLAYER_DEBUFFS_OFFSET) intoArray: (Byte*)&auras ofSize: PLAYER_DEBUFF_SLOTS]) {
@@ -417,7 +417,7 @@ typedef struct WoWAura {
 }
 
 - (BOOL)playerHasBuffNamed: (NSString*)spellName {
-    if(!spellName || ![spellName length] || ![playerController playerIsValid]) return NO;
+    if(!spellName || ![spellName length] || ![playerController playerIsValid:self]) return NO;
     
     unsigned auras[PLAYER_BUFF_SLOTS];
     if([self loadAurasFrom: ([playerController infoAddress] + PLAYER_BUFFS_OFFSET) intoArray: (Byte*)&auras ofSize: PLAYER_BUFF_SLOTS]) {
@@ -439,7 +439,7 @@ typedef struct WoWAura {
 }
 
 - (BOOL)playerHasDebuffNamed: (NSString*)spellName {
-    if(!spellName || ![spellName length] || ![playerController playerIsValid]) return NO;
+    if(!spellName || ![spellName length] || ![playerController playerIsValid:self]) return NO;
     
     unsigned auras[PLAYER_DEBUFF_SLOTS];
     if([self loadAurasFrom: ([playerController infoAddress] + PLAYER_DEBUFFS_OFFSET) intoArray: (Byte*)&auras ofSize: PLAYER_DEBUFF_SLOTS]) {
@@ -605,7 +605,7 @@ typedef struct WoWAura {
     // get WoW memory and player structure
     MemoryAccess *wowMemory = [controller wowMemoryAccess];
     
-    if(wowMemory && [playerController playerIsValid]) {
+    if(wowMemory && [playerController playerIsValid:self]) {
         
         // unsigned i;
         

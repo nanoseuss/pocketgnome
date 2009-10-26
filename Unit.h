@@ -9,6 +9,14 @@
 #import <Cocoa/Cocoa.h>
 #import "WoWObject.h"
 
+enum MovementFlags{
+	
+	MovementFlags_InAir					= 0x1000,		// in air,		not mounted
+	MovementFlags_AirMounted			= 0x1000000,	// on ground,	on air mount
+	MovementFlags_AirMountedInAir		= 0x2000000,	// in air,		on air mount
+	
+};
+
 enum eUnitBaseFields {
     BaseField_XLocation                 = 0x790,  // 3.0.9: 0x7C4
     BaseField_YLocation                 = 0x794,  // 3.0.9: 0x7C8
