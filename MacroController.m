@@ -198,7 +198,7 @@
 		//	0x20 macro name
 		//	0x60 macro icon
 		//	0x160 macro text
-		// how to determine if it's an account macro: (macroID & 0x1000000) == 0x1000000
+		// how to determine if it's a character macro: (macroID & 0x1000000) == 0x1000000
 		
 		// initialize variables
 		char macroName[17], macroText[256];
@@ -221,7 +221,7 @@
 		[memory loadDataForObject:self atAddress:objectPtr Buffer:(Byte *)&macroID BufLength:sizeof(macroID)];
 		
 		// add it to our list	
-		Macro *macro = [Macro macroWithName:newMacroName number:[NSNumber numberWithInt:macroID] body:newMacroText isCharacter:((macroID & 0x1000000) != 0x1000000)];
+		Macro *macro = [Macro macroWithName:newMacroName number:[NSNumber numberWithInt:macroID] body:newMacroText isCharacter:((macroID & 0x1000000) == 0x1000000)];
 		[macros addObject:macro];
 
 		// get the next object ptr
