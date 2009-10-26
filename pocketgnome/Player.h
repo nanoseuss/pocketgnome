@@ -13,15 +13,14 @@
 enum ePlayerFields {
 	PlayerField_Flags                           = 0x3B0, // 3.1: need to verify this!
 
-    PlayerField_VisibleItem_Head                = 0x560,
-    PlayerField_VisibleItem_Neck                = 0x5A0,
-    // all the other slots in here at 0x40 intervals
-    PlayerField_VisibleItem_Weapon1             = 0x920,
-    PlayerField_VisibleItem_Weapon2             = 0x960,
-    
-    PlayerField_CharacterSlot                   = 0x4A8, // used by itemGUIDinSlot: for temporary weapon enchant condition
-    
-    // PlayerField_PackSlot_1                   = 0xAE0, // 3.1 unknown
+	// every 0x8 is the full 64-bit GUID of an item the player is wearing
+    PlayerField_CharacterSlot                   = 0x4A8, // goes through 0x538
+	PlayerField_BagStart						= 0x540, // 4 bag GUIDs will be listed starting here
+	PlayerField_BackPackStart					= 0x560, // all items go through 0x5D8, these are the GUIDs of items in the backpack
+	PlayerField_BankStart						= 0x5E0, // these items are in the bank (NOT in bags)
+	PlayerField_BankBags						= 0x6F0, // these are the GUIDs of the BAGS in your bank
+	PlayerField_Keys							= 0x758, // player keys
+	PlayerField_Marks							= 0x858, // player marks/emblems (currency)
 
     // PlayerField_FarSight                     = 0xE68, // 3.1 unknown
     // PlayerField_ComboPoint_Target            = 0xE70, // 3.1 unknown
@@ -29,6 +28,8 @@ enum ePlayerFields {
 	PlayerField_Experience                      = 0x980,
 	PlayerField_NextLevel_Experience            = 0x984,
 
+	PlayerField_TrackResources					= 0xF94,	// 3.2.2b
+	
     PlayerField_RestState_Experience            = 0x11DC, // rest experience remaining
     PlayerField_Coinage                         = 0x11E0, // in copper
     
@@ -40,6 +41,16 @@ enum ePlayerFields {
 	PlayerField_QuestStart						= 0x1A30,	// Every 0x10 is another quest ID.. Keep going til you hit 0, that is the full quest list
 	
 	PlayerField_Haste							= 0x2B00,
+};
+
+enum ePlayer_TrackResources_Fields {
+	TrackObject_All			= -1,
+	TrackObject_None		= 0x0,
+	TrackObject_Herbs		= 0x2,
+	TrackObject_Minerals	= 0x4,
+	TrackObject_Treasure	= 0x20,
+	TrackObject_Treasure2	= 0x1000,
+	TrackObject_Fish		= 0x40000,
 };
 
 enum ePlayer_VisibleItem_Fields {
@@ -90,4 +101,8 @@ typedef enum eCharacterSlot {
 - (BOOL)isGM;
 
 - (GUID)itemGUIDinSlot: (CharacterSlot)slot;    // invalid for other players
+
+- (NSArray*)itemGUIDsInBackpack;
+- (NSArray*)itemGUIDsOfBags;
+- (NSArray*)itemGUIDsPlayerIsWearing;
 @end

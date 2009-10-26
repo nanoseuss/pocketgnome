@@ -15,6 +15,7 @@ typedef enum ActionType {
     ActionType_Macro    = 3,
     ActionType_Delay    = 4,
     ActionType_Interact = 5,
+	ActionType_Jump = 6,
     ActionType_Max,
 } ActionType;
 

@@ -13,6 +13,7 @@
 @class PlayerDataController;
 @class AuraController;
 @class ChatController;
+@class OffsetController;
 
 @interface MacroController : NSObject {
 	IBOutlet Controller				*controller;
@@ -20,6 +21,7 @@
 	IBOutlet PlayerDataController	*playerData;
 	IBOutlet AuraController			*auraController;
 	IBOutlet ChatController			*chatController;
+	IBOutlet OffsetController		*offsetController;
 	
 	IBOutlet NSPopUpButton *macroAcceptBattleFieldPort;
 	IBOutlet NSPopUpButton *macroJoinBattlefield;
@@ -34,7 +36,10 @@
 	NSString *_accountName;
 	NSString *_playerName;
 	NSString *_serverName;
+	NSArray *_playerMacros;
 }
+
+@property (readonly) NSArray *playerMacros;
 
 - (IBAction) macroSelected: (id)sender;
 
@@ -45,5 +50,7 @@
 - (void)retrieveCorpse;
 - (void)clickPopup;
 - (void)dismount;
+
+- (void)reloadMacros;
 
 @end

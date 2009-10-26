@@ -11,11 +11,14 @@
 
 @interface Route : NSObject <NSCoding, NSCopying> {
     NSMutableArray *_waypoints;
+	
+	BOOL _isFlyingRoute;
 }
 
 + (id)route;
 
 @property (readonly, retain) NSArray *waypoints;
+@property (readwrite) BOOL isFlyingRoute;
 
 - (unsigned)waypointCount;
 - (Waypoint*)waypointAtIndex: (unsigned)index;

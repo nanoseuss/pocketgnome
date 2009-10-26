@@ -253,6 +253,8 @@ enum AutomatorIntervalType {
 
 - (IBAction)loadRoute: (id)sender {
     [waypointTable reloadData];
+	
+	[isFlyingRouteButton setState:[self currentRoute].isFlyingRoute];
 }
 
 - (IBAction)setRouteType: (id)sender {
@@ -445,9 +447,16 @@ enum AutomatorIntervalType {
     [visualizePanel orderOut: nil];
 }
 
+- (IBAction)optionSelected: (id)sender {
+    if(![self currentRoute])        return;
+    if(![self.view window])         return;	
+	
+	[self currentRoute].isFlyingRoute = [isFlyingRouteButton state];
+}
+
 - (IBAction)addWaypoint: (id)sender {
     if(![self currentRoute])        return;
-    if(![playerData playerIsValid]) return;
+    if(![playerData playerIsValid:self]) return;
     if(![self.view window])         return;
 
     Waypoint *newWP = [Waypoint waypointWithPosition: [playerData position]];
@@ -506,6 +515,8 @@ enum AutomatorIntervalType {
 		type = 0;
 	else if(wp.action.type == ActionType_Delay)
 		type = 1;
+	else if (wp.action.type == ActionType_Jump )
+		type = 3;
     else
         type = 2;
     
@@ -518,11 +529,14 @@ enum AutomatorIntervalType {
         
         // if we are a spell, item, or macro, set the correct segment
         // otherwise, just set it to spell
-        if(wp.action.isPerform) {
-            [wpActionTypeSegments selectSegmentWithTag: wp.action.type];
-        } else {
-            [wpActionTypeSegments selectSegmentWithTag: ActionType_Spell];
-        }
+		if ( [wp.action type] != ActionType_Jump ){
+			if(wp.action.isPerform) {
+				[wpActionTypeSegments selectSegmentWithTag: wp.action.type];
+			}
+			else {
+				[wpActionTypeSegments selectSegmentWithTag: ActionType_Spell];
+			}
+		}
         
         // generate the correct menu for the popup
         [self changeWaypointAction: wpActionTypeSegments];
@@ -574,28 +588,35 @@ enum AutomatorIntervalType {
     }
     
     wp.action.value = [NSNumber numberWithInt: 0];
+	
+	NSString *selectedTab = [[wpActionTabs selectedTabViewItem] identifier];
     
-    if([[[wpActionTabs selectedTabViewItem] identifier] isEqualToString: @"Normal"]) {
+    if ( [selectedTab isEqualToString: @"Normal"] ){
         wp.action.type = ActionType_None;
-    } else if([[[wpActionTabs selectedTabViewItem] identifier] isEqualToString: @"Delay"]) {
+    }
+	else if ( [selectedTab isEqualToString: @"Delay"] ){
         if([wpActionDelayText floatValue] == 0.0f) {   // if the delay is 0, set back to normal
             wp.action.type = ActionType_None;
-        } else {
+        }
+		else{
             wp.action.type = ActionType_Delay;
             wp.action.value = [NSNumber numberWithFloat: [wpActionDelayText floatValue]];
         }
-        //PGLog(@"Delay: %@", wp.action.value);
-    } else {
+	}
+	else if ( [selectedTab isEqualToString: @"Jump"] ){
+		wp.action.type = ActionType_Jump;
+    }
+	else{
         wp.action.type = ActionType_None;
         
         // waypoint actions are not currently enabled
-        if([[wpActionIDPopUp selectedItem] tag] == 0.0f) {    // if no action specified, set back to normal
+        if ( [[wpActionIDPopUp selectedItem] tag] == 0.0f ) {    // if no action specified, set back to normal
             wp.action.type = ActionType_None;
-        } else {
+        }
+		else {
             wp.action.type = [wpActionTypeSegments selectedTag];
             wp.action.value = [NSNumber numberWithUnsignedInt: [[wpActionIDPopUp selectedItem] tag]];
         }
-        //PGLog(@"Action: %@", wp.action.value);
     }
     
     _editWaypoint = nil;
@@ -700,7 +721,7 @@ enum AutomatorIntervalType {
 	if(!self.isAutomatorRunning)    return;
 	if(![self currentRoute])        return;
     if(![self.view window])         return;
-    if(![playerData playerIsValid]) return;
+    if(![playerData playerIsValid:self]) return;
     
 	// figure out how far we've moved
     Position *playerPosition = [playerData position];
@@ -795,6 +816,9 @@ enum AutomatorIntervalType {
         }
 		if(wp.action.type == ActionType_Interact) {
 			return [NSString stringWithFormat: @"Interact: %@", wp.action.value];
+		}
+		if(wp.action.type == ActionType_Jump) {
+			return [NSString stringWithFormat: @"Jump"];
 		}
         return [NSString stringWithFormat: @"X: %.1f; Y: %.1f; Z: %.1f", [[wp position] xPosition], [[wp position] yPosition], [[wp position] zPosition]];
     }

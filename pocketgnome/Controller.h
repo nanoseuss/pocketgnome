@@ -34,20 +34,20 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 
 
 @interface Controller : NSObject <GrowlApplicationBridgeDelegate> {
-    IBOutlet PlayerDataController *playerDataController;
-    IBOutlet MemoryViewController *memoryViewController;
-    IBOutlet BotController       *botController;
-    IBOutlet MobController       *mobController;
-    IBOutlet NodeController      *nodeController;
-    IBOutlet PlayersController   *playersController;
-    IBOutlet InventoryController *itemController;
-    IBOutlet SpellController     *spellController;
-    IBOutlet WaypointController  *routeController;
-    IBOutlet ProcedureController *behaviorController;
-    IBOutlet ChatLogController   *chatLogController;
-	IBOutlet CorpseController	 *corpseController;
-	IBOutlet FishController		 *fishController;
-	IBOutlet OffsetController	 *offsetController;
+    IBOutlet PlayerDataController	*playerData;
+    IBOutlet MemoryViewController	*memoryViewController;
+    IBOutlet BotController			*botController;
+    IBOutlet MobController			*mobController;
+    IBOutlet NodeController			*nodeController;
+    IBOutlet PlayersController		*playersController;
+    IBOutlet InventoryController	*itemController;
+    IBOutlet SpellController		*spellController;
+    IBOutlet WaypointController		*routeController;
+    IBOutlet ProcedureController	*behaviorController;
+    IBOutlet ChatLogController		*chatLogController;
+	IBOutlet CorpseController		*corpseController;
+	IBOutlet FishController			*fishController;
+	IBOutlet OffsetController		*offsetController;
 	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
@@ -75,19 +75,19 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     
     NSMutableArray *_items, *_mobs, *_players, *_gameObjects, *_dynamicObjects, *_corpses;
 	
-	NSMutableDictionary *_names;
-	NSMutableArray *_checkedAddresses;
+	// new scan
+	NSMutableArray *_objectAddresses;
+	UInt32 _currentObjectManager;
+	int _totalObjects;
+	UInt32 _currentAddress;
+	BOOL _validObjectListManager;
 	
     MemoryAccess *_wowMemoryAccess;
     NSString *_savedStatus;
     BOOL _appFinishedLaunching;
     int _currentState;
     BOOL _isRegistered;
-    BOOL _foundPlayer/*, _scanIsRunning*/;
-    NSMutableArray *_ignoredDepthAddresses;
-	
 	UInt32 _globalGUID;
-	UInt32 _currentObjectListPtr;
 	BOOL _invalidPlayerNotificationSent;
 
     NSDictionary *factionTemplate;
@@ -95,9 +95,9 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 
 + (Controller *)sharedController;
 
-@property UInt32 currentObjectListPtr;
 @property BOOL isRegistered;
 @property (readwrite, retain) NSNumber *selectedPID;
+@property (readonly) UInt32 globalGUID;
 
 - (IBAction)showAbout: (id)sender;
 - (IBAction)showSettings: (id)sender;
@@ -113,6 +113,10 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (NSString*)appSignature;
 - (NSString*)appIdentifier;
 - (BOOL)sendGrowlNotifications;
+
+// new scan
+- (NSArray*)allObjectAddresses;
+- (BOOL)isObjectManagerValid;
 
 // WoW information
 - (BOOL)isWoWOpen;

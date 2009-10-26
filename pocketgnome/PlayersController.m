@@ -15,6 +15,7 @@
 #import "ImageAndTextCell.h"
 
 #import "Player.h"
+#import "Unit.h"
 #import "Offsets.h"
 
 @interface PlayersController (Internal)
@@ -243,7 +244,7 @@ static PlayersController *sharedPlayers = nil;
 
 - (void)reloadPlayerData: (NSTimer*)timer {
     if(![[playerTable window] isVisible]) return;
-    if(![playerData playerIsValid]) return;
+    if(![playerData playerIsValid:self]) return;
     
     [_playerDataList removeAllObjects];
     
@@ -349,8 +350,32 @@ static PlayersController *sharedPlayers = nil;
     return unitsWithinRange;
 }
 
+- (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile {
+	
+	Position *position = [unit position];
+	
+	// loop through all players
+	for(Unit *player in [self allPlayers]) {
+		
+		BOOL isHostile = [playerData isHostileWithFaction: [player factionTemplate]];
+		// range check
+		float range = [position distanceToPosition: [player position]];
+		
+		if (
+			range <= distance &&						// 1 - in range
+			(!friendly || (friendly && !isHostile)) &&	// 2 - friendly
+			(!hostile || (hostile && isHostile))		// 3 - hostile
+			){
+			PGLog(@"[Loot] Player %@ found %0.2f yards away! I scared! Friendly?(%d)  Hostile?(%d)", player, range, friendly, hostile);
+			return YES;
+		}
+	}
+	
+	return NO;
+}
+
 - (IBAction)updateTracking: (id)sender {
-    if(![playerData playerIsValid]) return;
+    if(![playerData playerIsValid:self]) return;
     if((sender == nil) && ![trackHostile state] && ![trackFriendly state])
         return;
     
@@ -498,5 +523,41 @@ static PlayersController *sharedPlayers = nil;
     [memoryViewController showObjectMemory: [[_playerDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Player"]];
     [controller showMemoryView];
 }
+
+/*
+ void NameFromGuid(LONGLONG guid, int numBytes, char *name)
+ {                                                
+ static const unsigned long nameStorePtr        = 0x011AE3D0 + 0x8;  // Player name database
+ static const unsigned long nameMaskOffset      = 0x024;  // Offset for the mask used with GUID to select a linked list
+ static const unsigned long nameBaseOffset      = 0x01c;  // Offset for the start of the name linked list
+ static const unsigned long nameStringOffset    = 0x020;  // Offset to the C string in a name structure
+ 
+ unsigned long mask, base, offset, current, shortGUID, testGUID;
+ 
+ mask = ReadDword(nameStorePtr + nameMaskOffset);
+ base = ReadDword(nameStorePtr + nameBaseOffset);
+ 
+ shortGUID = guid & 0xffffffff;  // Only half the guid is used to check for a hit
+ offset = 12 * (mask & shortGUID);  // select the appropriate linked list
+ 
+ current = ReadDword(base + offset + 8);
+ offset = ReadDword(base + offset);  // next-4 ?
+ 
+ if (current == 0 || (current & 0x1)) {*name = 0; return;}
+ 
+ testGUID = ReadDword(current);
+ 
+ while (testGUID != shortGUID)
+ {
+ current = ReadDword(current + offset + 4);
+ 
+ if (current == 0 || (current & 0x1)) {*name = 0; return;}
+ testGUID = ReadDword(current);		
+ }
+ 
+ // Found the guid in the name list...
+ ReadBytesIntoBuffer(current + nameStringOffset, numBytes, name);	
+ }
+*/ 
 
 @end

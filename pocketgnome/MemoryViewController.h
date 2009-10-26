@@ -18,14 +18,22 @@
     IBOutlet id memoryTable;
     IBOutlet id memoryViewWindow;
     IBOutlet NSView *view;
-    NSNumber *currentAddress;
+    NSNumber *_currentAddress;
     NSTimer *_refreshTimer;
 	NSMutableDictionary *_lastValues;
+	int _formatOfSavedValues;
+	
+	IBOutlet NSTableView *bitTableView;
+	IBOutlet NSPanel	*bitPanel;
+	IBOutlet NSTextField	*numAddressesToScan;
     
     float refreshFrequency;
     int _displayFormat;
     int _displayCount;
     //id callback;
+	
+	// new pointer search
+	NSMutableDictionary *_pointerList;
     
     id _wowObject;
 
@@ -40,6 +48,9 @@
 
 - (void)showObjectMemory: (id)object;
 
+- (void)monitorObject: (id)object;
+- (void)monitorObjects: (id)objects;
+
 - (void)setBaseAddress: (NSNumber*)address;
 
 - (IBAction)setCustomAddress: (id)sender;
@@ -47,7 +58,11 @@
 - (IBAction)snapshotMemory: (id)sender;
 - (IBAction)saveValues: (id)sender;
 - (IBAction)clearValues: (id)sender;
-- (IBAction)dumpOffsets: (id)sender;
+
+// menu options
+- (IBAction)menuAction: (id)sender;
+
+- (IBAction)findPointers: (id)sender;
 
 - (int)displayFormat;
 - (void)setDisplayFormat: (int)displayFormat;

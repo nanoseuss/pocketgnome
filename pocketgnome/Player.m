@@ -31,9 +31,6 @@ enum PlayerFlags
     PLAYER_UNK                  = 0x00040000,               // 2.0.8...
 };
 
-@interface Player ()
-@property (readwrite, retain) NSString *name;
-@end
 
 @interface Player (Internal)
 - (UInt32)playerFlags;
@@ -77,6 +74,51 @@ enum PlayerFlags
 		return value;
     }
     return 0;
+}
+
+// items player has in their backpack
+- (NSArray*)itemGUIDsInBackpack{
+	NSMutableArray *itemGUIDs = [NSMutableArray array];
+	
+	const int numberOfItems = 16;	// this could change on a patch day, it's the number of items stored in a player's backpack
+	uint i;
+	GUID value = 0;
+	for ( i = 0; i < numberOfItems; i++ ){
+		if([_memory loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_BackPackStart + sizeof(GUID)*i) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+			[itemGUIDs addObject:[NSNumber numberWithLongLong:value]];
+		}
+	}
+	
+	return itemGUIDs;
+}
+
+// the GUIDs of the player's bags
+- (NSArray*)itemGUIDsOfBags{
+	NSMutableArray *bagGUIDs = [NSMutableArray array];
+	const int numberOfBags = 4;
+	uint i;
+	GUID value = 0;
+	for ( i = 0; i < numberOfBags; i++ ){
+		if([_memory loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_BagStart + sizeof(GUID)*i) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+			[bagGUIDs addObject:[NSNumber numberWithLongLong:value]];
+		}
+	}
+	
+	return bagGUIDs;
+}
+
+// items the player is wearing
+- (NSArray*)itemGUIDsPlayerIsWearing{
+	NSMutableArray *itemGUIDs = [NSMutableArray array];
+	uint slot;
+	GUID value = 0;
+	for ( slot = 0; slot <= SLOT_TABARD; slot++ ){
+		if([_memory loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_CharacterSlot + sizeof(GUID)*slot) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+			[itemGUIDs addObject:[NSNumber numberWithLongLong:value]];
+		}
+	}
+	
+	return itemGUIDs;
 }
 
 @end

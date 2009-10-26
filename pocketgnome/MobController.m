@@ -505,6 +505,10 @@ static MobController* sharedController = nil;
 #pragma mark -
 
 - (void)doCombatScan {
+
+	BOOL doNearbyScan = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnNearbyMob"] boolValue];
+	int nearbyEntryID = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnNearbyMobID"] intValue];
+
     // check to see if we're in combat
     NSMutableArray *inCombatMobs = [NSMutableArray array];
     for(Mob *mob in _mobList) {
@@ -515,6 +519,14 @@ static MobController* sharedController = nil;
            && ![playerData isFriendlyWithFaction: [mob factionTemplate]]) {
             [inCombatMobs addObject: mob];
         }
+		
+		if ( doNearbyScan ){
+			if ( [mob entryID] == nearbyEntryID ){
+				[[NSSound soundNamed: @"alarm"] play];
+				PGLog(@"[Combat] Found %d nearby! Playing alarm!", nearbyEntryID);
+			}
+		}
+		
     }
     [combatController setInCombatUnits: inCombatMobs];
 }
@@ -536,7 +548,7 @@ static MobController* sharedController = nil;
 
 - (void)reloadMobData: (NSTimer*)timer {
     if(![[mobTable window] isVisible] && ![botController isBotting]) return;
-    if(![playerData playerIsValid]) return;
+    if(![playerData playerIsValid:self]) return;
     
     [_mobDataList removeAllObjects];
     cachedPlayerLevel = [playerData level];
@@ -659,7 +671,7 @@ static MobController* sharedController = nil;
 }
 
 - (IBAction)updateTracking: (id)sender {
-    if(![playerData playerIsValid]) return;
+    if(![playerData playerIsValid:self]) return;
     
     if(sender && ![sender isKindOfClass: [self class]]) {
         // the stupid popup doesn't update the state of the menu items OR BINDINGS until after it fires off its selector.

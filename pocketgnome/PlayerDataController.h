@@ -21,6 +21,7 @@
 @class MemoryViewController;
 @class NodeController;
 @class OffsetController;
+@class MovementController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -47,6 +48,7 @@
     IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet NodeController			*nodeController;
 	IBOutlet OffsetController		*offsetController;
+	IBOutlet MovementController		*movementController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
@@ -91,6 +93,7 @@
 @property (readonly) NSString *lastErrorMessage;
 
 - (BOOL)playerIsValid;
+- (BOOL)playerIsValid: (id)sender;
 - (void)setStructureAddress: (NSNumber*)address;
 - (NSNumber*)structureAddress;
 - (UInt32)baselineAddress;

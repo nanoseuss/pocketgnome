@@ -142,7 +142,7 @@ static PlayerDataController* sharedController = nil;
 @synthesize pet = _pet;
 
 - (NSString*)playerHeader {
-    if( [self playerIsValid]  ) {
+    if( [self playerIsValid:self]  ) {
 		unsigned long offset = [offsetController offset:@"PLAYER_NAME_STATIC"];
         // get the player name if we can
         NSString *playerName = nil;
@@ -236,7 +236,12 @@ static PlayerDataController* sharedController = nil;
 
 #pragma mark -
 
-- (BOOL)playerIsValid {
+- (BOOL)playerIsValid{
+	//PGLog(@"UI UI UI");
+	return [self playerIsValid:nil];	
+}
+// 3 reads
+- (BOOL)playerIsValid: (id)sender {
     // check that our so-called player struct has the correct signature
     MemoryAccess *memory = [controller wowMemoryAccess];
     
@@ -246,42 +251,23 @@ static PlayerDataController* sharedController = nil;
     //  our object type
     // then compare GUIDs and validate object type
     
-    UInt32 globalGUID = 0, selfGUID = 0, objType = 0, infoAddress = 0;
+    UInt32 globalGUID = 0, selfGUID = 0, previousPtr = 0;
     [memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
-	
-	
-	// SANITY CHECKS!
-	// Get our max health! Sanity check.  For some reason as of 3.2.0 I'm running into issues detecting the player after they leave a BG
-	//	May be as I re-wrote the PvP shizit, not entirely sure
-	UInt32 maxHealth = 0;
-	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&infoAddress BufLength: sizeof(infoAddress)];
-	[memory loadDataForObject: self atAddress: (infoAddress + UnitField_MaxHealth) Buffer: (Byte *)&maxHealth BufLength: sizeof(maxHealth)];
-	
-	UInt32 nextStructPtr = 0, nextStructPtrCopy = 0, objStructure = 0;
-	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT4_POINTER) Buffer: (Byte *)&nextStructPtr BufLength: sizeof(nextStructPtr)];
-	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT4_POINTER_COPY) Buffer: (Byte *)&nextStructPtrCopy BufLength: sizeof(nextStructPtrCopy)];
-	[memory loadDataForObject: self atAddress: [self baselineAddress] Buffer: (Byte*)&objStructure BufLength: sizeof(objStructure)];
-	
-	// Object structur should always be 0xC16088
-	
-    if(globalGUID && selfGUID && [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objType BufLength: sizeof(objType)] && (objType == TYPEID_PLAYER)) {
-        if(globalGUID == selfGUID && maxHealth > 0 && maxHealth < 100000 && infoAddress > [self baselineAddress]/*&& nextStructPtr == nextStructPtrCopy*/ ) {
-			
-            if(!_lastState) {   // update binding
-                PGLog(@"[Player] Player is valid.");
-                [self loadState];
-            }
-            return YES;
-        }
-		else{
-			PGLog(@"0x%X == 0x%X  0x%X == 0x%X  0x%X", nextStructPtr, nextStructPtrCopy, globalGUID, selfGUID, objStructure);
-			PGLog(@"[Player] Player not valid at 0x%X %d %d %d %d", [self baselineAddress], globalGUID == selfGUID,maxHealth > 0,maxHealth < 100000, infoAddress > [self baselineAddress] );
+	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT3_POINTER) Buffer: (Byte*)&previousPtr BufLength: sizeof(previousPtr)];
+
+	// is the player still valid?
+    if ( globalGUID && selfGUID && previousPtr > 0x0 ) {
+		if(!_lastState) {
+			PGLog(@"[Player] Player is valid. %@", [sender class]);
+			[self loadState];
 		}
-    }
+		return YES;
+	}
+
     
     if(_lastState) {
-        PGLog(@"[Player] Player is invalid.");
+        PGLog(@"[Player] Player is invalid. %@", [sender class]);
         [self resetState];
     }
     return NO;
@@ -303,15 +289,23 @@ static PlayerDataController* sharedController = nil;
 	//[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];		// moved this to in controller.m when we CANNOT find a player - doesn't belong here!
 }
 
+// before we get here we've made the following comparisons:
+//	playerIsValid:
+//		GUID > 0
+//		guid == playerGUID
+//		PreviousPtr > 0
+//	setStructureAddress (from [controller sortObjects])
+//		GUID > 0
+//		guid == playerGUID
+// so lets ONLY compare the type! (since it wasn't done in playerIsValid, but WAS done in sortObjects)
+// 2 reads
 - (void)loadState {
     // load player info: info sub-struct, signature, and playerID
-    GUID playerGUID = 0;
     MemoryAccess *memory = [controller wowMemoryAccess];
     UInt32 objectType = 0, playerAddress = 0;
     if(memory && _baselineAddress && [self baselineAddress]) {
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&playerAddress BufLength: sizeof(playerAddress)];
-        [memory loadDataForObject: self atAddress: (playerAddress) Buffer: (Byte*)&playerGUID BufLength: sizeof(playerGUID)];
     }
     
     // if we got a ~~~~
@@ -320,7 +314,7 @@ static PlayerDataController* sharedController = nil;
     // 3) we have a real baseline address
     // 4) and a real player ID
     // ... then we're good to go.
-    if(playerAddress && (objectType == TYPEID_PLAYER) && (playerGUID > 0) ) {
+    if(playerAddress && (objectType == TYPEID_PLAYER)) {
         [_playerAddress release];
         _playerAddress = [[NSNumber numberWithUnsignedInt: playerAddress] retain];
         [self willChangeValueForKey: @"playerHeader"];
@@ -340,7 +334,7 @@ static PlayerDataController* sharedController = nil;
         return;
     }
     
-    PGLog(@"Error: Attemping to load invalid player; bailing.");
+    PGLog(@"Error: Attemping to load invalid player; bailing. Address: 0x%X Type: %d", playerAddress, objectType);
     [self resetState];
 }
 
@@ -594,7 +588,7 @@ static PlayerDataController* sharedController = nil;
 
 // 1 read, 2 writes
 - (void)faceToward: (Position*)position {
-    if([self playerIsValid]) {
+    if([self playerIsValid:self]) {
         Position *ourPosition = [self position];
         [self setHorizontalDirectionFacing: [ourPosition angleTo: position]];
         [self setVerticalDirectionFacing: [ourPosition verticalAngleTo: position]];
@@ -605,7 +599,7 @@ static PlayerDataController* sharedController = nil;
 
 - (BOOL)setPrimaryTarget: (UInt64)targetID {
     MemoryAccess *memory = [controller wowMemoryAccess];
-    if(memory && [self playerIsValid]) {
+    if(memory && [self playerIsValid:self]) {
         BOOL ret1, ret3;
         // save this value to the target table
         ret1 = [memory saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_CURRENT) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
@@ -623,7 +617,7 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (BOOL)setMouseoverTarget: (UInt64)targetID {
-    if([self playerIsValid]) {
+    if([self playerIsValid:self]) {
         // save this value to the target table
         if([[controller wowMemoryAccess] saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)])
             return YES;
@@ -905,7 +899,7 @@ static PlayerDataController* sharedController = nil;
 #pragma mark -
 
 - (IBAction)setPlayerDirectionInMemory: (id)sender {
-    if([self playerIsValid]) {
+    if([self playerIsValid:self]) {
         [self setHorizontalDirectionFacing: 6.28319f - [sender floatValue]];
     }
 }
@@ -943,7 +937,7 @@ static PlayerDataController* sharedController = nil;
 - (void)refreshPlayerData {
     
     MemoryAccess *memory = [controller wowMemoryAccess];
-    if( memory && [self playerIsValid] ) {  // ([botController isBotting] || [[self view] superview]) && 
+    if( memory && [self playerIsValid:self] ) {  // ([botController isBotting] || [[self view] superview]) && 
         
         Player *player = [self player];
         
@@ -1187,7 +1181,7 @@ static PlayerDataController* sharedController = nil;
 	 MemoryAccess *memory = [controller wowMemoryAccess];
 	
 	float pos[3] = {-1.0f, -1.0f, -1.0f };
-	if([memory loadDataForObject: self atAddress: [offsetController offset:@"CORPSE_STATIC"] Buffer: (Byte *)&pos BufLength: sizeof(float)*3])
+	if([memory loadDataForObject: self atAddress: [offsetController offset:@"CORPSE_POSITION_STATIC"] Buffer: (Byte *)&pos BufLength: sizeof(float)*3])
 		return [Position positionWithX: pos[0] Y: pos[1] Z: pos[2]];
 	return nil;
 }

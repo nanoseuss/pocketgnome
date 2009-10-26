@@ -12,6 +12,8 @@
 #import "Offsets.h"
 #import "Item.h"
 #import "WoWObject.h"
+#import "PlayerDataController.h"
+#import "Player.h"
 
 @interface InventoryController ()
 - (void)reloadItemData;
@@ -37,6 +39,11 @@ static InventoryController *sharedInventory = nil;
         sharedInventory = self;
         _itemList = [[NSMutableArray array] retain];
         _itemDataList = [[NSMutableArray array] retain];
+		_itemsPlayerIsWearing = nil;
+		_itemsInBags = nil;
+
+		// set to 20 to ensure it updates right away
+		_updateDurabilityCounter = 20;
         
         //[[NSUserDefaults standardUserDefaults] setObject: nil forKey: @"ItemNames"];
         //[MyUserDefaults synchronize];
@@ -67,6 +74,8 @@ static InventoryController *sharedInventory = nil;
 - (void)awakeFromNib {
     self.minSectionSize = [self.view frame].size;
     self.maxSectionSize = NSZeroSize;
+	
+	self.updateFrequency = [[NSUserDefaults standardUserDefaults] floatForKey: @"InventoryControllerUpdateFrequency"];
     
     [itemTable setDoubleAction: @selector(itemTableDoubleClick:)];
     [itemTable setTarget: self];
@@ -75,9 +84,23 @@ static InventoryController *sharedInventory = nil;
 @synthesize view;
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
+@synthesize updateFrequency;
 
 - (NSString*)sectionTitle {
     return @"Items";
+}
+
+- (void)setUpdateFrequency: (float)frequency {
+    if(frequency < 0.5) frequency = 0.5;
+    
+    [self willChangeValueForKey: @"updateFrequency"];
+    updateFrequency = [[NSString stringWithFormat: @"%.2f", frequency] floatValue];
+    [self didChangeValueForKey: @"updateFrequency"];
+    
+    [[NSUserDefaults standardUserDefaults] setFloat: updateFrequency forKey: @"InventoryControllerUpdateFrequency"];
+	
+    [_updateTimer invalidate];
+    _updateTimer = [NSTimer scheduledTimerWithTimeInterval: self.updateFrequency target: self selector: @selector(reloadItemData) userInfo: nil repeats: YES];
 }
 
 #pragma mark -
@@ -100,9 +123,6 @@ static InventoryController *sharedInventory = nil;
 #pragma mark -
 
 - (Item*)itemForGUID: (GUID)guid {
-    //if(GUID_HIPART(guid) != HIGHGUID_ITEM) return nil; - As of 3.1.3 I had to comment out this - i'm not sure why
-    
-	// To be thread safe - there another way for this?
 	NSArray *itemList = [[_itemList copy] autorelease];
 
     for(Item *item in itemList) {
@@ -170,35 +190,28 @@ static InventoryController *sharedInventory = nil;
     
     [self willChangeValueForKey: @"itemCount"];
 	
-	/*
-	[dataList removeAllObjects];
-	
-    // add all items
-    for(NSNumber *address in addresses) {
-		Item *item = [Item itemWithAddress: address inMemory: memory];
-		
-		// load item name
-		NSNumber *itemID = [NSNumber numberWithInt: [item entryID]];
-		if([_itemNameList objectForKey: itemID]) {
-			[item setName: [_itemNameList objectForKey: itemID]];
-		} else if(![item name]) {
-			[item loadName];
-		}
-		
-		[dataList addObject: item]; 
-	}*/
-
-	
     // enumerate current object addresses
     // determine which objects need to be removed
     for(WoWObject *obj in dataList) {
-        if([obj isValid]) {
+		
+		NSNumber *address = [NSNumber numberWithInt:[obj baseAddress]];
+		
+		// update our object on if it's in the master list
+		if ( ![addresses containsObject:address] ){
+			obj.notInObjectListCounter = 0;
+		}
+		else{
+			obj.notInObjectListCounter++;
+		}
+		
+		// check if we should remove the object
+        if(![obj isStale]) {
             [addressDict setObject: obj forKey: [NSNumber numberWithUnsignedLongLong: [obj baseAddress]]];
         } else {
             [objectsToRemove addObject: obj];
         }
     }
-    
+
     // remove any if necessary
     if([objectsToRemove count]) {
         [dataList removeObjectsInArray: objectsToRemove];
@@ -226,18 +239,35 @@ static InventoryController *sharedInventory = nil;
     }
     
     [self didChangeValueForKey: @"itemCount"];
-    
-    [self willChangeValueForKey: @"collectiveDurability"];
-    [self willChangeValueForKey: @"averageItemDurability"];
-    [self didChangeValueForKey: @"collectiveDurability"];
-    [self didChangeValueForKey: @"averageItemDurability"];
-    
-    [self reloadItemData];
 }
 
 
 - (void)reloadItemData {
 
+	// why do we only update on every 20th write?
+	//	to save memory reads of course!
+	if ( _updateDurabilityCounter == 20 ){
+
+		// release the old arrays
+		[_itemsPlayerIsWearing release]; _itemsPlayerIsWearing = nil;
+		[_itemsInBags release]; _itemsInBags = nil;
+	
+		// grab the new ones
+		_itemsPlayerIsWearing = [self itemsPlayerIsWearing];
+		_itemsInBags = [self itemsInBags];
+	
+		_updateDurabilityCounter = 0;
+	}
+	_updateDurabilityCounter++;
+	
+	if( ![[itemTable window] isVisible])
+		return;
+
+	[self willChangeValueForKey: @"collectiveDurability"];
+    [self willChangeValueForKey: @"averageItemDurability"];
+    [self didChangeValueForKey: @"collectiveDurability"];
+    [self didChangeValueForKey: @"averageItemDurability"];
+	
     [_itemDataList removeAllObjects];
 
     NSSortDescriptor *nameDesc = [[[NSSortDescriptor alloc] initWithKey: @"name" ascending: YES] autorelease];
@@ -254,19 +284,29 @@ static InventoryController *sharedInventory = nil;
             durString = @"-";
             durPercent = [NSNumber numberWithFloat: 101.0f];
         }
+		
+		// where is the item?
+		NSString *location = @"Bank";
+		if ( [_itemsPlayerIsWearing containsObject:item] ){
+			location = @"Wearing";
+		}
+		else if ( [_itemsInBags containsObject:item] ){
+			location = @"Player Bag";
+		}
+		else if ( [item itemType] == ItemType_Money || [item itemType] == ItemType_Key ){
+			location = @"Player";
+		}
         
         [_itemDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
                                    item,                                                @"Item",
                                    ([item name] ? [item name] : @""),                   @"Name",
-                                   [NSNumber numberWithUnsignedInt: [item entryID]],    @"ItemID",
+                                   [NSNumber numberWithUnsignedInt: [item cachedEntryID]],    @"ItemID",
                                    [NSNumber numberWithUnsignedInt: [item isBag] ? [item bagSize] : [item count]],      @"Count",
                                    [item itemTypeString],                               @"Type",
                                    [item itemSubtypeString],                            @"Subtype",
                                    durString,                                           @"Durability",
                                    durPercent,                                          @"DurabilityPercent",
-								   [NSNumber numberWithLongLong:[item ownerUID]],		@"Owner",
-								   [NSNumber numberWithLongLong:[item containerUID]],	@"Contained",
-								   [NSNumber numberWithInt:[item flags]],				@"Flags",
+								   location,											@"Location",
                                    nil]];
     }
     [_itemDataList sortUsingDescriptors: [itemTable sortDescriptors]];
@@ -303,6 +343,28 @@ static InventoryController *sharedInventory = nil;
 - (float)collectiveDurability {
     unsigned curDur = 0, maxDur = 0;
     for(Item *item in _itemList) {
+        curDur += [[item durability] unsignedIntValue];
+        maxDur += [[item maxDurability] unsignedIntValue];
+    }
+    return [[NSString stringWithFormat: @"%.2f", (1.0*curDur)/(1.0*maxDur)*100.0] floatValue];
+}
+
+- (float)averageWearableDurability{
+    float durability = 0;
+    int count = 0;
+    for(Item *item in _itemsPlayerIsWearing) {
+        if([[item maxDurability] unsignedIntValue]) {
+            durability += (([[item durability] unsignedIntValue]*1.0)/[[item maxDurability] unsignedIntValue]);
+            count++;
+        }
+    }
+	
+    return [[NSString stringWithFormat: @"%.2f", durability/count*100.0] floatValue];
+}
+
+- (float)collectiveWearableDurability;{
+    unsigned curDur = 0, maxDur = 0;
+    for(Item *item in _itemsPlayerIsWearing) {
         curDur += [[item durability] unsignedIntValue];
         maxDur += [[item maxDurability] unsignedIntValue];
     }
@@ -456,37 +518,61 @@ static InventoryController *sharedInventory = nil;
 	return stacks;	
 }
 
-/*
-- (NSMutableArray*)itemsInBags{
+// return an array of items for an array of guids
+- (NSArray*)itemsForGUIDs: (NSArray*) guids{
+	NSMutableArray *items = [NSMutableArray array];
 	
-	UInt32 itemFieldContained = 0;
-	UInt32 lowPlayerGUID = [playerData lowGUID];
-	
-	PGLog(@"called");
-	
-	NSMutableArray *items = [[NSMutableArray alloc] init];
-	int objectType = TYPEID_UNKNOWN;
-	
-	for(Item *item in _itemList) {
-		
-		if ( [item isBag] ){
-			
-			int ownerGUID = GUID_LOW32([item ownerUID])
-			int containerGUID = GUID_LOW32([item containerUID])
-			
-			PGLog(@"[Item] GUID: %qu  Size: %d Owner:%d  Container: %d", [item GUID], [item bagSize], ownerGUID, containerGUID );
-
-		}
-		
-		if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [item infoAddress] + 0x20 Buffer: (Byte *)&itemFieldContained BufLength: sizeof(itemFieldContained)]){
-			if ( itemFieldContained != lowPlayerGUID ){
-				[items addObject:item];
-			}
+	for ( NSNumber *guid in guids ){
+		Item *item = [self itemForGUID:[guid longLongValue]];
+		if ( item ){
+			[items addObject:item];
 		}
 	}
 	
-	return [items autorelease];
-}*/
+	return items;	
+}
+
+// return ONLY the items the player is wearing (herro % durability calculation)
+- (NSArray*)itemsPlayerIsWearing{
+	NSArray *items = [self itemsForGUIDs:[[playerData player] itemGUIDsPlayerIsWearing]];
+	
+	// it is the calling function's responsibility to release!
+	return [items retain];	
+}
+
+// will return an array of type Item
+- (NSArray*)itemsInBags{
+	
+	// will store all of our items
+	NSMutableArray *items = [NSMutableArray array];
+	
+	// grab the GUIDs of our bags
+	NSArray *GUIDsBagsOnPlayer = [[playerData player] itemGUIDsOfBags];
+	
+	// loop through all of our items to find
+	for ( Item *item in _itemList ){
+		NSNumber *itemContainerGUID = [NSNumber numberWithLongLong:[item containerUID]];
+		
+		if ( [GUIDsBagsOnPlayer containsObject:itemContainerGUID] ){
+			[items addObject:item];
+		}
+	}
+	
+	// start with the GUIDs of the items in our backpack
+	NSArray *backpackGUIDs = [[playerData player] itemGUIDsInBackpack];
+	
+	// loop through our backpack guids
+	for ( NSNumber *guid in backpackGUIDs ){
+		Item *item = [self itemForGUID:[guid longLongValue]];
+		if ( item ){
+			[items addObject:item];
+		}
+	}
+	
+	// it is the calling function's responsibility to release!
+	return [items retain];	
+}
+
 
 #pragma mark -
 #pragma mark TableView Delegate & Datasource
@@ -497,48 +583,8 @@ static InventoryController *sharedInventory = nil;
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
     if(rowIndex == -1) return nil;
-	
-	if ( [[aTableColumn identifier] isEqualToString:@"Contained"] 
-		|| [[aTableColumn identifier] isEqualToString:@"Owner"] 
-		|| [[aTableColumn identifier] isEqualToString:@"Flags"] ){
-		return [NSString stringWithFormat:@"0x%X", [[[_itemDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]] longLongValue]];
-	}
 
     return [[_itemDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
-    /*
-    if( [[aTableColumn identifier] isEqualToString: @"ItemID"] ) {
-        return [NSNumber numberWithUnsignedInt: [item entryID]];
-    }
-    if( [[aTableColumn identifier] isEqualToString: @"Name"] ) {
-        return [item name];
-    }
-    if( [[aTableColumn identifier] isEqualToString: @"Count"] ) {
-        return [NSNumber numberWithUnsignedInt: [item count]];
-    }
-    NSNumber *maxDur = [item maxDurability];
-    if( [[aTableColumn identifier] isEqualToString: @"Type"] ) {
-        return [item itemTypeString];
-        
-        NSString *type = @"Item";
-        if([item isBag])            type = @"Bag";
-        if([maxDur intValue] > 0)   type = @"Gear";
-        
-        if([item isSoulbound]) {
-            type = [type stringByAppendingString: @" (Soulbound)"];
-        }
-        return type;
-    }
-    if( [[aTableColumn identifier] isEqualToString: @"Subtype"] ) {
-        return [item itemSubtypeString];
-    }
-    if( [[aTableColumn identifier] isEqualToString: @"Durability"] ) {
-        if([maxDur intValue] > 0)
-            return [NSString stringWithFormat: @"%@/%@", [item durability], maxDur];
-     return @"-";
-     }
-     
-     
-     return nil;*/
 }
 
 - (void)tableView:(NSTableView *)aTableView sortDescriptorsDidChange:(NSArray *)oldDescriptors {

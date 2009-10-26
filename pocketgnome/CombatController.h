@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class Unit;
 @class Controller;
 @class ChatController;
 @class MobController;
@@ -16,6 +15,9 @@
 @class MovementController;
 @class PlayerDataController;
 @class PlayersController;
+@class MacroController;
+
+@class Unit;
 @class Position;
 
 @interface CombatController : NSObject {
@@ -26,11 +28,13 @@
     IBOutlet MobController *mobController;
     IBOutlet ChatController *chatController;
     IBOutlet MovementController *movementController;
+	IBOutlet MacroController		*macroController;
 
     BOOL _inCombat;
     BOOL _combatEnabled;
     BOOL _technicallyOOC;
     BOOL _attemptingCombat;
+	BOOL _lastWasBackEstablish;
     Unit *_attackUnit;
     NSMutableArray *_combatUnits;
     NSMutableArray *_attackQueue;

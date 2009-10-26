@@ -66,11 +66,16 @@
 	int _unstickAttempt;							// Tracks how many times we've tried to "unstick" ourselves from the same spot!
 	int _successfulMoves;							// How many times are we moving through our route correctly?
 	Waypoint * _lastTriedWaypoint;
+	float _averageSpeed;
+	float _averageDistance;
 }
 
 @property BOOL isMoving;
 @property BOOL isPatrolling;
 @property BOOL shouldJump;
+@property (readonly) int movementType;
+@property float averageSpeed;
+@property float averageDistance;
 
 - (void)resetMovementState;     // reset ALL movement state, completely
 - (void)resetUnit;				// just sets the unit to nil
@@ -100,6 +105,9 @@
 - (void)moveForwardStop;
 
 - (BOOL)useSmoothTurning;
+
+// CTM
+- (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;
 
 - (IBAction)prefsChanged: (id)sender;
 @end

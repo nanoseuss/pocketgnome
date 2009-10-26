@@ -255,8 +255,9 @@
 										 // 0x1172FE0 : 0x0 )	// 3.1.3 valid
 	#define CD_NEXT_ADDRESS	0x4
 	#define CD_SPELLID		0x8
-	#define CD_COOLDOWN		0x20
-	#define CD_COOLDOWN2	0x14
+	#define CD_COOLDOWN		0x14
+	#define CD_COOLDOWN2	0x20
+	#define CD_ENABLED		0x24
 	#define CD_STARTTIME	0x1C	// Also 0x10
 	#define CD_GCD			0x2C	// Also 0x2C
 
@@ -281,7 +282,7 @@
 enum ctmActionType{
 	ctmFaceTarget = 0x1,
 	ctmFaceDestination = 0x2,	// untested
-	ctmStop = 0x3,				// Also set to this when you're following a target (/follow) - not 100% sure this is correct - potential cause of chasing a target randomly?
+	ctmStopThrowsException = 0x3,				// Also set to this when you're following a target (/follow) - not 100% sure this is correct - potential cause of chasing a target randomly?
 	ctmWalkTo = 0x4,
 	ctmInteractNpc = 0x5,
 	ctmLoot = 0x6,
@@ -360,3 +361,38 @@ enum ctmActionType{
 // 0xCE2D10 : 0xCFA56C) // 2.4.1
 // 0xC9869C 2.3.3
 
+
+
+/*
+ 3.2.2a
+PLAYER_GUID_STATIC: 0xBA0EE0
+OBJECT_LIST_LL_PTR: 0x126A90C
+SERVER_NAME_STATIC: 0x1555426
+ACCOUNT_NAME_STATIC: 0xC49020
+PLAYER_NAME_STATIC: 0x1554D48
+COMBO_POINTS_STATIC: 0xBA28AC
+TARGET_TABLE_STATIC: 0xBA2990
+KNOWN_SPELLS_STATIC: 0x15AA560
+HOTBAR_BASE_STATIC: 0x159D4C0
+PLAYER_IN_BUILDING_STATIC: 0x124AF20
+LAST_SPELL_THAT_DIDNT_CAST_STATIC: 0x12738F4
+CHAT_BOX_OPEN_STATIC: 0xC379A0
+CORPSE_STATIC: 0x1555B80
+ITEM_IN_LOOT_WINDOW: 0x15930A4
+PLAYER_CURRENT_ZONE: 0xB9D0F8
+CD_OBJ_LIST_STATIC: 0x12737E0
+ 
+CTM_POS: 0x12857FC
+CTM_ACTION: 0x12858D4
+CTM_GUID: 0x12858F0
+CTM_SCALE: 0x12858E8
+CTM_DISTANCE: 0x12858E4
+ 
+LAST_RED_ERROR_MESSAGE: 0x1555BE0
+MOUNT_LIST_POINTER: 0x15A94F8
+BATTLEGROUND_STATUS: 0x155FE60
+CHATLOG_START: 0x14D765C
+LOGIN_SELECTED_CHAR: 0xBAE4B4
+LOGIN_STATE: 0x1557100
+LOGIN_TOTAL_CHARACTERS: 0x15C49A4
+*/ 

@@ -75,7 +75,7 @@ static CombatProfileEditor *sharedEditor = nil;
 
 - (IBAction)tankSelected: (id)sender{
 	NSNumber *tankGUID = [_currentCombatProfile selectedTankGUID];
-	Unit *tank = [playersController playerWithGUID:[tankGUID unsignedLongLongValue]];
+	Player *tank = [playersController playerWithGUID:[tankGUID unsignedLongLongValue]];
 	
 	PGLog(@"Selected Tank: %@", tank );	
 }

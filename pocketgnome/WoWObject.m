@@ -10,6 +10,7 @@
 #import "Offsets.h"
 
 #define STALE_TIME  (-10.0f)
+#define MAX_NOT_IN_LIST_UNTIL_STALE	5
 
 @implementation WoWObject
 
@@ -19,6 +20,7 @@
     if (self != nil) {
         _baseAddress = nil;
         _infoAddress = nil;
+		_notInObjectListCounter = 0;
         self.memoryAccess = nil;
         self.refreshDate = [NSDate distantFuture];
     }
@@ -32,6 +34,7 @@
         _baseAddress = [address copy];
         _memory = [memory retain];
         cachedEntryID = 0;
+		_notInObjectListCounter = 0;
         cachedGUID = [self GUID];
     }
     return self;
@@ -103,6 +106,9 @@
 
 @synthesize memoryAccess = _memory;
 @synthesize refreshDate = _refresh;
+@synthesize notInObjectListCounter = _notInObjectListCounter;
+@synthesize cachedEntryID;
+@synthesize cachedGUID;
 
 - (BOOL)isNPC {
     if([self objectTypeID] == TYPEID_UNIT)
@@ -191,6 +197,9 @@
 - (BOOL)isStale {
     if( [self.refreshDate timeIntervalSinceNow] < STALE_TIME)
         return YES;
+	if ( _notInObjectListCounter >= MAX_NOT_IN_LIST_UNTIL_STALE )
+		return YES;
+	
     return NO;
 }
 
