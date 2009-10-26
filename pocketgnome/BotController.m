@@ -128,7 +128,7 @@
 
 - (BOOL)mountNow;
 
-- (BOOL)scaryUnitsNearNode: (Node*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck;
+- (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck;
 
 @end
 
@@ -3822,7 +3822,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 // check if units are nearby
-- (BOOL)scaryUnitsNearNode: (Node*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
+- (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
 	if ( doMobCheck ){
 		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
 		if ( [mobs count] ){
@@ -3884,14 +3884,7 @@ NSMutableDictionary *_diffDict = nil;
 	PGLog(@"Attack range: %0.2f", self.theCombatProfile.attackRange);
 	PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);
 	*/
-	
-	
-	[macroController reloadMacros];
-	
-	
-	
-	
-	
+
 }
 
 #define ACCOUNT_NAME_SEP	@"SET accountName \""
