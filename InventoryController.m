@@ -44,9 +44,8 @@ static InventoryController *sharedInventory = nil;
 
 		// set to 20 to ensure it updates right away
 		_updateDurabilityCounter = 20;
-        
-        //[[NSUserDefaults standardUserDefaults] setObject: nil forKey: @"ItemNames"];
-        //[MyUserDefaults synchronize];
+		
+		self.updateFrequency = 1.0f;
 
         // load in item names
         id itemNames = [[NSUserDefaults standardUserDefaults] objectForKey: @"ItemNames"];
@@ -76,6 +75,8 @@ static InventoryController *sharedInventory = nil;
     self.maxSectionSize = NSZeroSize;
 	
 	self.updateFrequency = [[NSUserDefaults standardUserDefaults] floatForKey: @"InventoryControllerUpdateFrequency"];
+	[_updateTimer invalidate];
+    _updateTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(reloadItemData) userInfo: nil repeats: YES];
     
     [itemTable setDoubleAction: @selector(itemTableDoubleClick:)];
     [itemTable setTarget: self];
@@ -90,6 +91,7 @@ static InventoryController *sharedInventory = nil;
     return @"Items";
 }
 
+
 - (void)setUpdateFrequency: (float)frequency {
     if(frequency < 0.5) frequency = 0.5;
     
@@ -100,7 +102,7 @@ static InventoryController *sharedInventory = nil;
     [[NSUserDefaults standardUserDefaults] setFloat: updateFrequency forKey: @"InventoryControllerUpdateFrequency"];
 	
     [_updateTimer invalidate];
-    _updateTimer = [NSTimer scheduledTimerWithTimeInterval: self.updateFrequency target: self selector: @selector(reloadItemData) userInfo: nil repeats: YES];
+    _updateTimer = [NSTimer scheduledTimerWithTimeInterval: frequency target: self selector: @selector(reloadItemData) userInfo: nil repeats: YES];
 }
 
 #pragma mark -
@@ -165,6 +167,18 @@ static InventoryController *sharedInventory = nil;
     if(![refItem isValid]) return 0;
     int count = 0;
     for(Item* item in _itemList) {
+        if([item entryID] == [refItem entryID]) { // they are the same type of item
+            count += [item count];
+        }
+    }
+    //PGLog(@"Found count %d for item %@", count, refItem);
+    return count;
+}
+
+- (int)collectiveCountForItemInBags: (Item*)refItem{
+	if(![refItem isValid]) return 0;
+    int count = 0;
+    for(Item* item in [self itemsInBags]) {
         if([item entryID] == [refItem entryID]) { // they are the same type of item
             count += [item count];
         }
@@ -249,18 +263,20 @@ static InventoryController *sharedInventory = nil;
 	if ( _updateDurabilityCounter == 20 ){
 
 		// release the old arrays
-		[_itemsPlayerIsWearing release]; _itemsPlayerIsWearing = nil;
-		[_itemsInBags release]; _itemsInBags = nil;
+		_itemsPlayerIsWearing = nil;
+		_itemsInBags = nil;
 	
 		// grab the new ones
-		_itemsPlayerIsWearing = [self itemsPlayerIsWearing];
-		_itemsInBags = [self itemsInBags];
+		_itemsPlayerIsWearing = [[self itemsPlayerIsWearing] retain];
+		_itemsInBags = [[self itemsInBags] retain];
 	
 		_updateDurabilityCounter = 0;
 	}
 	_updateDurabilityCounter++;
 	
 	if( ![[itemTable window] isVisible])
+		return;
+	if ( ![playerData playerIsValid:self] )
 		return;
 
 	[self willChangeValueForKey: @"collectiveDurability"];
@@ -535,9 +551,7 @@ static InventoryController *sharedInventory = nil;
 // return ONLY the items the player is wearing (herro % durability calculation)
 - (NSArray*)itemsPlayerIsWearing{
 	NSArray *items = [self itemsForGUIDs:[[playerData player] itemGUIDsPlayerIsWearing]];
-	
-	// it is the calling function's responsibility to release!
-	return [items retain];	
+	return [[items retain] autorelease];	
 }
 
 // will return an array of type Item
@@ -569,8 +583,32 @@ static InventoryController *sharedInventory = nil;
 		}
 	}
 	
-	// it is the calling function's responsibility to release!
-	return [items retain];	
+	return [[items retain] autorelease];	
+}
+
+- (int)bagSpacesAvailable{
+	return [self bagSpacesTotal] - [[self itemsInBags] count];	
+}
+
+- (int)bagSpacesTotal{
+	
+	// grab all of the bags ON the player
+	NSArray *bagGUIDs = [[playerData player] itemGUIDsOfBags];
+	int totalBagSpaces = 16; // have to start w/the backpack size!
+	// loop through our backpack guids
+	for ( NSNumber *guid in bagGUIDs ){
+		Item *item = [self itemForGUID:[guid longLongValue]];
+		if ( item ){
+			totalBagSpaces += [item bagSize];
+		}
+	}
+	
+	return totalBagSpaces;
+}
+
+- (BOOL)arePlayerBagsFull{
+	//PGLog(@"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
+	return [self bagSpacesAvailable] == 0;
 }
 
 

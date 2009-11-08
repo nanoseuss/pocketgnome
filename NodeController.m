@@ -456,7 +456,8 @@ typedef enum {
     if(type == AnyNode)         nodeList = _nodeList;
     if(type == MiningNode)      nodeList = [self allMiningNodes];
     if(type == HerbalismNode)   nodeList = [self allHerbalismNodes];
-    
+	if(type == FishingSchool)	nodeList = [self nodesOfType:GAMEOBJECT_TYPE_FISHINGHOLE shouldLock:NO];
+	
     Position *playerPosition = [(PlayerDataController*)playerController position];
     for(Node* node in nodeList) {
         if(   [node isValid]

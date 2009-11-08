@@ -20,8 +20,8 @@
 #import "MemoryViewController.h"
 #import "PlayersController.h"
 #import "CorpseController.h"
-#import "FishController.h"
 #import "OffsetController.h"
+#import "StatisticsController.h"
 
 #import "CGSPrivate.h"
 
@@ -128,7 +128,7 @@ static Controller* sharedController = nil;
 		_invalidPlayerNotificationSent = NO;
 		
 		_lastAttachedPID = 0;
-		selectedPID = [NSNumber numberWithInt:0];
+		_selectedPID = 0;
 		_globalGUID = 0;
 		
 		// new search
@@ -193,27 +193,7 @@ static Controller* sharedController = nil;
             [mainToolbar insertItemWithItemIdentifier: [chatLogToolbarItem itemIdentifier] atIndex: 1];
         }
         [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedChatLogToolbarItem"];
-    }
-	
-    // insert the new Fishing toolbar item if it hasn't been done before and it's not there
-    if(![[NSUserDefaults standardUserDefaults] boolForKey: @"AddedFishingToolbarItem"]) {
-        BOOL foundFishing = NO;
-        for(NSToolbarItem *item in [mainToolbar items]) {
-            if([[item itemIdentifier] isEqualToString: [fishingToolbarItem itemIdentifier]]) {
-                foundFishing = YES;
-            }
-        }
-        if(!foundFishing) {
-            PGLog(@"Inserting Fishing toolbar item.");
-            [mainToolbar insertItemWithItemIdentifier: [fishingToolbarItem itemIdentifier] atIndex: 1];
-        }
-        [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedFishingToolbarItem"];
-    }
-    
-    //UInt32 bleh = 3250009464u;
-    //float bleh2;
-    //memcpy(&bleh2, &bleh, 4);
-    //PGLog(@"%f", bleh2);
+	}
 }
 
 - (void)finalizeUserDefaults {
@@ -340,7 +320,7 @@ static Controller* sharedController = nil;
 	return YES;
 }
 
-
+// player GUID (lower) is stored at [[OBJECT_LIST_LL_PTR] + 0xBC]
 - (UInt32)getNextObjectAddress:(MemoryAccess*)memory{
 	if ( _currentAddress == 0 ){
 		UInt32 objectManager = 0;
@@ -429,7 +409,6 @@ static Controller* sharedController = nil;
 	}
 }
 
-
 // [[OBJECT_MANAGER] + 0xC] ==[[OBJECT_MANAGER] + 0xAC] = First object in object list
 // [[OBJECT_MANAGER] + 0x1C] = Object list (not in order)
 - (UInt32)objectManager:(MemoryAccess*)memory{
@@ -461,11 +440,8 @@ static Controller* sharedController = nil;
 		UInt32 objectManager = [self objectManager:memory];
 		// we have a valid object list
 		if ( objectManager > 0x0 ){
-			
 			// our object manager has changed (wonder if this happens often?)
 			if ( _currentObjectManager > 0x0 && _currentObjectManager != objectManager ){
-				
-				PGLog(@"OBJECT MANAGER HAS CHANGED 0x%X != 0x%X", _currentObjectManager, objectManager);
 				_validObjectListManager = NO;
 			}
 			
@@ -477,22 +453,19 @@ static Controller* sharedController = nil;
 			if ( !_invalidPlayerNotificationSent ){
 				_invalidPlayerNotificationSent = YES;
 				[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsInvalidNotification object: nil];
-				PGLog(@"Invalid notification sent...");
 			}
 			
 			// memory is valid, but no player :(
 			[self setCurrentState: memoryValidState];
 		}
-	}
-	
-	// we only need memory to try our scan!
-    if ( memory ) {
+		
+		// now lets tell our appropriate controllers!
         [_items removeAllObjects];
         [_mobs removeAllObjects];
         [_players removeAllObjects];
         [_gameObjects removeAllObjects];
         [_dynamicObjects removeAllObjects];
-        [_corpses removeAllObjects];
+        //[_corpses removeAllObjects];
         
         //NSDate *date = [NSDate date];
 		[memory resetLoadCount];
@@ -507,7 +480,7 @@ static Controller* sharedController = nil;
         [itemController addAddresses: _items];
         [nodeController addAddresses: _gameObjects];
         [playersController addAddresses: _players];
-		[corpseController addAddresses: _corpses];
+		//[corpseController addAddresses: _corpses];
 		
         //PGLog(@"Controller adding took %.4f sec", [date timeIntervalSinceNow]*-1.0f);
         //date = [NSDate date];
@@ -518,7 +491,7 @@ static Controller* sharedController = nil;
         [_players removeAllObjects];
         [_gameObjects removeAllObjects];
         [_dynamicObjects removeAllObjects];
-        [_corpses removeAllObjects];
+        //[_corpses removeAllObjects];
 		
 		// is our player invalid?
 		if ( ![playerData playerIsValid:self] ){
@@ -678,13 +651,13 @@ static Controller* sharedController = nil;
         minSize = [chatLogController minSectionSize];
         maxSize = [chatLogController maxSectionSize];
     }
-    if( [sender tag] == 13) {
-        newView = [fishController view];
-        addToTitle = [fishController sectionTitle];
-        minSize = [fishController minSectionSize];
-        maxSize = [fishController maxSectionSize];
+    if( [sender tag] == 14) {
+        newView = [statisticsController view];
+        addToTitle = [statisticsController sectionTitle];
+        minSize = [statisticsController minSectionSize];
+        maxSize = [statisticsController maxSectionSize];
     }
-    
+	
     if(newView) {
         [self loadView: newView withTitle: addToTitle];
     }
@@ -749,7 +722,6 @@ static Controller* sharedController = nil;
 @synthesize currentState = _currentState;
 @synthesize isRegistered = _isRegistered;   // too many bindings rely on this property, keep it
 @synthesize matchExistingApp = _matchExistingApp;
-@synthesize selectedPID;
 @synthesize globalGUID = _globalGUID;
 
 - (void)setCurrentState: (int)state {
@@ -1004,15 +976,15 @@ static Controller* sharedController = nil;
 			
 			OSStatus err = GetProcessPID(&pSN, &wowPID);
 			_lastAttachedPID = wowPID;
-			if( err == noErr && wowPID > 0 && wowPID == [selectedPID intValue]) {
+			if( err == noErr && wowPID > 0 && wowPID == _selectedPID) {
 				return pSN;
 			}
 		}
 	}
 
 	// This is ONLY the case when we load PG!
-	if ( wowPID != [selectedPID intValue] ){
-		selectedPID = [NSNumber numberWithInt:wowPID];
+	if ( wowPID != _selectedPID ){
+		_selectedPID = wowPID;
 		
 		// Now rebuild menu!
 		[self populateWowInstances];
@@ -1023,7 +995,7 @@ static Controller* sharedController = nil;
 
 - (IBAction)pidSelected: (id)sender{
 	// Only switch if the user chose a new one!
-	if ( [selectedPID intValue] != _lastAttachedPID ){
+	if ( _selectedPID != _lastAttachedPID ){
 		_wowMemoryAccess = nil;
 		[self wowMemoryAccess];
 	}
@@ -1072,8 +1044,8 @@ static Controller* sharedController = nil;
 			[wowInstanceMenu addItem: [wowInstanceItem autorelease]];
 		}
 		
-		if ( [selectedPID intValue] != 0 ){
-			tagToSelect = [selectedPID intValue];
+		if ( _selectedPID != 0 ){
+			tagToSelect = _selectedPID;
 		}
 		else{
 			tagToSelect = [[PIDs objectAtIndex:0] intValue];;
@@ -1327,7 +1299,7 @@ static Controller* sharedController = nil;
             NSToolbarSpaceItemIdentifier,
             [playerToolbarItem itemIdentifier], 
             [spellsToolbarItem itemIdentifier],
-			[fishingToolbarItem itemIdentifier],
+			[statisticsToolbarItem itemIdentifier],
             NSToolbarSpaceItemIdentifier,
             [playersToolbarItem itemIdentifier], 
             [mobsToolbarItem itemIdentifier], 
@@ -1357,7 +1329,7 @@ static Controller* sharedController = nil;
             [memoryToolbarItem itemIdentifier],
             [prefsToolbarItem itemIdentifier],
             [chatLogToolbarItem itemIdentifier], 
-			[fishingToolbarItem itemIdentifier], nil];
+			[statisticsToolbarItem itemIdentifier],nil];
 }
 
 #pragma mark -

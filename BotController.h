@@ -46,6 +46,7 @@
 @class MacroController;
 @class OffsetController;
 @class MemoryViewController;
+@class CombatProfileEditor;
 
 @class ScanGridView;
 
@@ -81,6 +82,7 @@
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
 	IBOutlet MemoryViewController	*memoryViewController;
+	IBOutlet CombatProfileEditor	*combatProfileEditor;
 
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;
@@ -160,7 +162,18 @@
 	int _strandTotalMovementChecks;
 	BOOL _strandMoveForwardStarted;
 	
+	// auto join WG options
 	NSTimer *_wgTimer;
+	int _lastNumWGMarks;
+	NSDate *_dateWGEnded;
+	
+	// anti afk options
+	NSTimer *_afkTimer;
+	int _afkTimerCounter;
+	BOOL _lastPressedWasForward;
+	
+	// log out options
+	NSTimer *_logOutTimer;
     
     // -----------------
     // -----------------
@@ -177,11 +190,13 @@
     IBOutlet NSButton *anyLevelCheckbox;
     
 	// Log Out options
-	IBOutlet NSButton *logOutOnBrokenItemsCheckbox;
-	IBOutlet NSButton *logOutOnFullInventoryCheckbox;
-	IBOutlet NSButton *logOutOnTimerExpireCheckbox;
-	IBOutlet NSButton *logOutAfterStuckCheckbox;
-	IBOutlet NSButton *logOutUseHearthstoneCheckbox; 
+	IBOutlet NSButton		*logOutOnBrokenItemsCheckbox;
+	IBOutlet NSButton		*logOutOnFullInventoryCheckbox;
+	IBOutlet NSButton		*logOutOnTimerExpireCheckbox;
+	IBOutlet NSButton		*logOutAfterStuckCheckbox;
+	IBOutlet NSButton		*logOutUseHearthstoneCheckbox;
+	IBOutlet NSTextField	*logOutDurabilityTextField;
+	IBOutlet NSTextField	*logOutAfterRunningTextField;
 	
     IBOutlet NSButton *miningCheckbox;
     IBOutlet NSButton *herbalismCheckbox;
@@ -202,6 +217,9 @@
 	IBOutlet NSButton *fishingRecastCheckbox;
 	IBOutlet NSButton *fishingUseContainersCheckbox;
 	IBOutlet NSButton *fishingLurePopUpButton;
+	
+	IBOutlet NSButton		*autoJoinWG;
+	IBOutlet NSButton		*antiAFKButton;
 	
 	IBOutlet NSTextField *nodeIgnoreHostileDistanceText;
 	IBOutlet NSTextField *nodeIgnoreFriendlyDistanceText;
@@ -260,6 +278,8 @@
 - (IBAction)stopBot: (id)sender;
 - (IBAction)startStopBot: (id)sender;
 - (IBAction)testHotkey: (id)sender;
+
+- (IBAction)autoJoinWG: (id)sender;
 
 - (void)updateRunningTimer;
 

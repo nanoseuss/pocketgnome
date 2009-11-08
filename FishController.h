@@ -30,41 +30,16 @@
     IBOutlet Controller             *controller;
 	IBOutlet NodeController			*nodeController;
 	IBOutlet PlayerDataController	*playerController;
-	IBOutlet ChatController			*chatController;
 	IBOutlet BotController			*botController;
     IBOutlet InventoryController    *itemController;
-	IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet LootController			*lootController;
 	IBOutlet SpellController		*spellController;
 	IBOutlet MovementController		*movementController;
 	
-	IBOutlet NSButton				*applyLureCheckbox;
-	IBOutlet NSButton				*killWoWCheckbox;
-	IBOutlet NSButton				*showGrowlNotifications;
-	IBOutlet NSButton				*useContainers;
-	IBOutlet NSButton				*faceSchool;
-	IBOutlet NSButton				*recastIfMiss;
-	IBOutlet NSButton				*hideOtherBobbers;
-    IBOutlet NSView					*view;
-	IBOutlet NSButton				*startStopButton;
-	IBOutlet SRRecorderControl		*fishingRecorder;
-	IBOutlet NSPopUpButton			*luresPopUpButton;
-	IBOutlet NSTextField			*fishCaught;
-	IBOutlet NSTextField			*status;
-	IBOutlet NSTextField			*closeWoWTimer;
-	IBOutlet NSTableView			*statisticsTableView;
-	IBOutlet NSPopUpButton			*macroDropDown;
-
-	PTHotKey *startStopBotGlobalHotkey;
-	
-	//Checkbox options
 	BOOL _optApplyLure;
-	BOOL _optKillWow;
-	BOOL _optShowGrowl;
 	BOOL _optUseContainers;
-	BOOL _optFaceSchool;
 	BOOL _optRecast;
-	BOOL _optHideOtherBobbers;
+	int _optLureItemID;
 	
 	BOOL _isFishing;
 	BOOL _ignoreIsFishing;
@@ -72,29 +47,25 @@
 	int _applyLureAttempts;
 	int _totalFishLooted;
 	int _useContainer;
-	
-	Node *_nearbySchool;
-	
+	int _castNumber;
 	UInt32 _fishingSpellID;
 	UInt64 _playerGUID;
-
-	Node *_bobber;
 	
-    NSSize minSectionSize, maxSectionSize;
+	Node *_nearbySchool;
+	//Node *_bobber;
+	NSDate *_castStartTime;
+	
+	NSMutableArray *_facedSchool;
 }
 
-// Controller interface
-@property (readonly) NSView *view;
-@property (readonly) NSString *sectionTitle;
-@property (readonly) NSPopUpButton *macroDropDown;
-@property NSSize minSectionSize;
-@property NSSize maxSectionSize;
+@property (readonly) BOOL isFishing;
 
-- (IBAction)startStopFishing: (id)sender;
-- (IBAction)showBobberStructure: (id)sender;
+- (void)fish: (BOOL)optApplyLure 
+  withRecast:(BOOL)optRecast 
+	 withUse:(BOOL)optUseContainers 
+	withLure:(int)optLureID
+  withSchool:(Node*)nearbySchool;
 
-- (IBAction)tmp: (id)sender;
+- (void)stopFishing;
 
-- (BOOL)isFishing;
-	
 @end

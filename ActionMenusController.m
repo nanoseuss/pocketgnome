@@ -105,9 +105,6 @@ static ActionMenusController *sharedMenus = nil;
         item = [[[NSMenuItem alloc] initWithTitle: @"There are no available macros." action: nil keyEquivalent: @""] autorelease];
         [item setIndentationLevel: 1];
         [macroMenu addItem: item];
-        item = [[[NSMenuItem alloc] initWithTitle: @"Please reload UI (or quit WoW) to save new macros." action: nil keyEquivalent: @""] autorelease];
-        [item setIndentationLevel: 1];
-        [macroMenu addItem: item];
     }
         
     return macroMenu;

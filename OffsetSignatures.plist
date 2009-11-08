@@ -2,6 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>KEYBINDINGS_PTR</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\xA1\x60\x50\xBA\x00\x89\x45\xE0\xC7\x44\x24\x04\x01\x00\x00\x00\x89\x3C\x24</string>
+			<key>Mask</key>
+			<string>x????xxxxxxxxxxxxxx</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>MACRO_LIST_PTR</key>
 	<dict>
 		<key>Intel</key>
@@ -445,9 +462,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x7C\x08\x02\xA6\xBF\xA1\xFF\xF4\x3F\xA0\x00\xB3\x3B\xBD\xEA\x70\x7C\x64\x1B\x78\x38\xA0\x05\x00</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xxxxxxxxxx??xx??xxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>PLAYER_GUID_STATIC</key>
@@ -483,9 +502,13 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x40\x01\x41\x38\x42\xFA\x40\x88\x02\x00\x08\x38\x62\x00\x08\x2F\x80\x00\x00\x4C\xBE\x00\x20\x38\x60\x00\x00\x4E\x80\x00\x20</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xx??xxxxxxxxxxxxxxxxxxxxxxxx</string>
+			<key>AdditionalOffset</key>
+			<string>0x8</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>OBJECT_LIST_LL_PTR</key>
@@ -519,9 +542,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<data></data>
+			<string>\x38\x00\x00\x01\x3C\x40\x00\xB3\x3C\x60\x01\x41\x90\x02\xCE\x64\x38\x63\x01\x18\x38\xA0\x01\x48\x80\x9C\x00\x08\x7C\x84\xF2\x14\x48\x61\x11\x0D\x38\x60\x00\x01\x48\x00\x00\x24</string>
 			<key>Mask</key>
-			<data></data>
+			<string>xxxxxx%%xx??xx%%xx??xxxxxxxxxxxxxxxxxxxxxxxx</string>
+			<key>AdditionalOffset</key>
+			<string>0x6</string>
 		</dict>
 	</dict>
 </dict>

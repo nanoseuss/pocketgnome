@@ -519,6 +519,7 @@ typedef enum MovementFlag {
 - (UInt32)currentHealth;
 - (UInt32)percentHealth;
 - (UInt32)factionTemplate;
+- (UInt32)movementFlags;
 
 - (UInt32)currentStance; // only works for the current player
 
@@ -548,6 +549,7 @@ typedef enum MovementFlag {
 - (BOOL)isElite;
 - (BOOL)isCasting;
 - (BOOL)isMounted;
+- (BOOL)isOnGround;
 
 - (UInt32)stateFlags;
 - (BOOL)isPVP;

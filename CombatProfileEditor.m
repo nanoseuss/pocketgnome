@@ -61,21 +61,21 @@ static CombatProfileEditor *sharedEditor = nil;
         self.currentCombatProfile = [_combatProfiles objectAtIndex: 0];
         [ignoreTable reloadData];
     }
-	
+
 	// Populate the player list!
 	[self populatePlayerList];
 }
 
+@synthesize combatProfiles = _combatProfiles;
 @synthesize currentCombatProfile = _currentCombatProfile;
-
 
 - (IBAction)playerList: (id)sender{
 	[self populatePlayerList];
 }
 
 - (IBAction)tankSelected: (id)sender{
-	NSNumber *tankGUID = [_currentCombatProfile selectedTankGUID];
-	Player *tank = [playersController playerWithGUID:[tankGUID unsignedLongLongValue]];
+	UInt64 tankGUID = [_currentCombatProfile selectedTankGUID];
+	Player *tank = [playersController playerWithGUID:tankGUID];
 	
 	PGLog(@"Selected Tank: %@", tank );	
 }
@@ -111,16 +111,21 @@ static CombatProfileEditor *sharedEditor = nil;
 #pragma mark -
 
 - (void)showEditorOnWindow: (NSWindow*)window forProfileNamed: (NSString*)profileName {
+	
+	PGLog(@"Old: %@", self.currentCombatProfile);
 
     if([profileName length]) {
         for(CombatProfile *profile in [self combatProfiles]) {
             if( [profileName isEqualToString: [profile name]] ) {
                 self.currentCombatProfile = profile;
+				PGLog(@"new: %@", profile);
                 break;
             }
         }
     }
-    PGLog(@"Showing cpEditor of size %@", NSStringFromRect([editorPanel frame]));
+	
+	
+	
 	[NSApp beginSheet: editorPanel
 	   modalForWindow: window
 		modalDelegate: self

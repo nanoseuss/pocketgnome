@@ -25,6 +25,7 @@
 @class CorpseController;
 @class FishController;
 @class OffsetController;
+@class StatisticsController;
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
@@ -46,17 +47,17 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet ProcedureController	*behaviorController;
     IBOutlet ChatLogController		*chatLogController;
 	IBOutlet CorpseController		*corpseController;
-	IBOutlet FishController			*fishController;
 	IBOutlet OffsetController		*offsetController;
+	IBOutlet StatisticsController	*statisticsController;
 	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *itemsToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *playersToolbarItem, *mobsToolbarItem, *nodesToolbarItem, *routesToolbarItem, *behavsToolbarItem;
-    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *fishingToolbarItem;
+    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *statisticsToolbarItem;
 	
 	IBOutlet NSPopUpButton *wowInstancePopUpButton;
-	NSNumber *selectedPID;
+	int _selectedPID;
 	int _lastAttachedPID;
     
     IBOutlet NSView *aboutView, *settingsView;
@@ -96,7 +97,6 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 + (Controller *)sharedController;
 
 @property BOOL isRegistered;
-@property (readwrite, retain) NSNumber *selectedPID;
 @property (readonly) UInt32 globalGUID;
 
 - (IBAction)showAbout: (id)sender;

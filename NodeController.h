@@ -15,6 +15,7 @@ typedef enum {
     AnyNode = 0,
     MiningNode = 1,
     HerbalismNode = 2,
+	FishingSchool = 3,
 } NodeType;
 
 @interface NodeController : NSObject {

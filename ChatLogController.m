@@ -11,6 +11,8 @@
 #import "Controller.h"
 #import "MemoryAccess.h"
 #import "PlayerDataController.h"
+#import "OffsetController.h"
+
 #import "Offsets.h"
 
 #import "ChatLogEntry.h"
@@ -65,7 +67,8 @@
         _chatActions = [[NSMutableArray array] retain];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsValid:) name: MemoryAccessValidNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsInvalid:) name: MemoryAccessInvalidNotification object: nil];
-        
+		
+		_whisperHistory = [[NSMutableDictionary dictionary] retain];
         
         _timestampFormat = [[NSDateFormatter alloc] init];
         [_timestampFormat setDateStyle: NSDateFormatterNoStyle];
@@ -91,6 +94,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     [_timestampFormat release];
     [_chatLog release];
+	[_whisperHistory release];
     [super dealloc];
 }
 
@@ -117,6 +121,7 @@
 // this is run in a separate thread
 - (void)scanChatLog {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	UInt32 offset = [offsetController offset:@"CHATLOG_START"];
     
     NSMutableArray *chatEntries = [NSMutableArray array];
     MemoryAccess *memory = [controller wowMemoryAccess];
@@ -131,7 +136,7 @@
         for(i = 0; i< 60; i++) {
             finishedAt = i;
             char buffer[400];
-            UInt32 logStart = CHATLOG_START + ChatLog_NextEntryOffset*i;
+            UInt32 logStart = offset + ChatLog_NextEntryOffset*i;
             if([memory loadDataForObject: self atAddress: logStart Buffer: (Byte *)&buffer BufLength: sizeof(buffer)-1])
             {
                 //GUID unitGUID = *(GUID*)(buffer + ChatLog_UnitGUIDOffset);
@@ -529,7 +534,7 @@
 	
 	PGLog(@"You've been whispered %@ times by %@", numWhispers, key);
 	
-	BOOL checkWhispers = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"alarmWhispered"] boolValue];
+	BOOL checkWhispers = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhispered"] boolValue];
 
 	// Lets check to see if the numWhispers is too high!
 	if ( checkWhispers ){

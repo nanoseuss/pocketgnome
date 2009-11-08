@@ -23,9 +23,21 @@
 	NSMutableDictionary *_lastValues;
 	int _formatOfSavedValues;
 	
-	IBOutlet NSTableView *bitTableView;
-	IBOutlet NSPanel	*bitPanel;
+	IBOutlet NSTableView	*bitTableView;
+	IBOutlet NSPanel		*bitPanel;
 	IBOutlet NSTextField	*numAddressesToScan;
+	
+	// search options
+	IBOutlet NSPanel		*searchPanel;
+	IBOutlet NSPopUpButton	*searchTypePopUpButton;
+	IBOutlet NSPopUpButton	*operatorPopUpButton;
+	IBOutlet NSMatrix		*signMatrix;
+	IBOutlet NSMatrix		*valueMatrix;
+	IBOutlet NSTextField	*searchText;
+	IBOutlet NSButton		*searchButton;
+	IBOutlet NSButton		*clearButton;
+	IBOutlet NSTableView	*searchTableView;
+	NSArray					*_searchArray;
     
     float refreshFrequency;
     int _displayFormat;
@@ -66,4 +78,10 @@
 
 - (int)displayFormat;
 - (void)setDisplayFormat: (int)displayFormat;
+
+// search option
+- (IBAction)openSearch: (id)sender;
+- (IBAction)startSearch: (id)sender;
+- (IBAction)clearSearch: (id)sender;
+- (IBAction)typeSelected: (id)sender;
 @end

@@ -38,13 +38,14 @@
 		self.yardsBehindTarget = 10.0f;
 		self.healingRange = 40.0f;
 		self.mountEnabled = NO;
-		self.selectedTankGUID = nil;
+		self.selectedTankGUID = 0x0;
 		self.healthThreshold = 95;
 
         self.attackRange = 20.0f;
         self.attackLevelMin = 2;
         self.attackLevelMax = 70;
     }
+	PGLog(@"CombatProfile created with name %@", self.name);
     return self;
 }
 
@@ -116,7 +117,7 @@
 		self.yardsBehindTarget = [[decoder decodeObjectForKey: @"YardsBehindTarget"] floatValue];
 		self.healingRange = [[decoder decodeObjectForKey: @"HealingRange"] floatValue];
 		self.mountEnabled = [[decoder decodeObjectForKey: @"MountEnabled"] boolValue];
-		self.selectedTankGUID = [decoder decodeObjectForKey: @"selectedTankGUID"];
+		self.selectedTankGUID = [[decoder decodeObjectForKey: @"selectedTankGUID"] unsignedLongLongValue];
 		self.healthThreshold = [[decoder decodeObjectForKey: @"HealthThreshold"] intValue];
 		
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
@@ -144,7 +145,7 @@
     [coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTarget] forKey: @"YardsBehindTarget"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.healingRange] forKey: @"HealingRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.mountEnabled] forKey: @"MountEnabled"];
-	[coder encodeObject: self.selectedTankGUID forKey: @"selectedTankGUID"];
+	[coder encodeObject: [NSNumber numberWithUnsignedLongLong: self.selectedTankGUID]forKey: @"selectedTankGUID"];
 	[coder encodeObject: [NSNumber numberWithInt: self.healthThreshold] forKey: @"HealthThreshold"];
 	
     [coder encodeObject: [NSNumber numberWithFloat: self.attackRange] forKey: @"AttackRange"];

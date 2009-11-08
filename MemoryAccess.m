@@ -22,12 +22,13 @@
     PGLog(@"Got WoW PID: %d; GodMode: %d", PID, MEMORY_GOD_MODE);
     task_for_pid(current_task(), AppPid, &MySlaveTask);
     
-    loaderDict = [[NSMutableDictionary dictionary] retain];
+    _loaderDict = [[NSMutableDictionary dictionary] retain];
     readsProcessed = 0;
     gAuth = NULL;
     self.throughput = 0.0f;
 	_totalReadsProcessed = 0;
 	_totalWritesProcessed = 0;
+	_startTime = [[NSDate date] retain];
     
     //if(!MEMORY_GOD_MODE) [self performToolVersionCheck];
     [NSTimer scheduledTimerWithTimeInterval: 5.0 target: self selector: @selector(refreshThroughput:) userInfo: nil repeats: YES];
@@ -35,6 +36,7 @@
 }
 
 @synthesize throughput;
+@synthesize operationsDictionary = _loaderDict;
 
 - (BOOL)isValid {
     ProcessSerialNumber psn = { kNoProcess, kNoProcess };
@@ -96,14 +98,15 @@
     readsProcessed++;
 	_totalReadsProcessed++;
     
-    /*
-    NSString *className = [object className];
-    if( [loaderDict objectForKey: className]) {
-        [loaderDict setObject: [NSNumber numberWithInt: [[loaderDict objectForKey: className] intValue]+1] forKey: className];
-    } else {
-        [loaderDict setObject: [NSNumber numberWithInt: 1] forKey: className];
-    }
     
+    NSString *className = [object className];
+    if( [_loaderDict objectForKey: className]) {
+        [_loaderDict setObject: [NSNumber numberWithInt: [[_loaderDict objectForKey: className] intValue]+1] forKey: className];
+    } else {
+        [_loaderDict setObject: [NSNumber numberWithInt: 1] forKey: className];
+    }
+	
+	/*
     if(readsProcessed % 20000 == 0) {
         [self printLoadCount];
         PGLog(@"Loader Dict: %@", loaderDict);
@@ -140,6 +143,48 @@
 
 - (void)refreshThroughput: (id)timer {
     self.throughput = [self loadCount]/5.0f;
+}
+
+- (float)readsPerSecond{
+	if ( !_startTime || !_totalReadsProcessed )
+		return 0.0f;
+	
+	NSTimeInterval timeIntervalInSeconds = [[NSDate date] timeIntervalSinceDate:_startTime];
+	return _totalReadsProcessed/timeIntervalInSeconds;
+}
+
+- (float)writesPerSecond{
+	if ( !_startTime || !_totalWritesProcessed )
+		return 0.0f;
+	
+	NSTimeInterval timeIntervalInSeconds = [[NSDate date] timeIntervalSinceDate:_startTime];
+	return _totalWritesProcessed/timeIntervalInSeconds;
+}
+
+// return a new dictionary that's value per class is the memory reads/second
+- (NSDictionary*)operationsByClassPerSecond{
+	
+	NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+	NSTimeInterval timeIntervalInSeconds = [[NSDate date] timeIntervalSinceDate:_startTime];
+	NSArray *keys = [_loaderDict allKeys];
+	
+	// loop through + re-calculate
+	for ( NSString *key in keys ){
+		NSNumber *readsPerSecond = [NSNumber numberWithInt:[[_loaderDict objectForKey:key] intValue]/timeIntervalInSeconds];
+		
+		[dict setObject:readsPerSecond forKey:key];		
+	}
+	
+	return dict;	
+}
+
+- (void)resetCounters{
+	_totalReadsProcessed = 0;
+	_totalWritesProcessed = 0;
+	[_loaderDict removeAllObjects];
+	[_startTime release];_startTime=nil;
+	_startTime = [[NSDate date] retain];
+	[_loaderDict removeAllObjects];
 }
 
 @end

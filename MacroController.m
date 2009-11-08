@@ -33,6 +33,8 @@
 		_serverName = nil;
 		_playerMacros = nil;
 		
+		_macroDictionary = [[NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"Macros" ofType: @"plist"]] retain];
+		
 		 // Notifications
 		 [[NSNotificationCenter defaultCenter] addObserver: self
 		 selector: @selector(playerIsValid:) 
@@ -46,6 +48,7 @@
 	[_playerName release];
 	[_accountName release];
 	[_serverName release];
+	[_macroDictionary release];
     [super dealloc];
 }
 
@@ -115,7 +118,7 @@
 	else{
 		// Does hitting escape work to close the chat?
 		if ( [controller isWoWChatBoxOpen] ){
-			PGLog(@"[Macro] Sending escape!");
+			PGLog(@"[Macro] Sending escape to close open chat!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
@@ -156,19 +159,16 @@
 	
 	// Swift Flight Form
 	if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] ){
-		
 		[self takeAction: macroCancelSwiftFlightForm Sequence:@"/cancelaura Swift Flight Form"];
 	}
 	
 	// Flight Form
 	else if ( [auraController unit: [playerData player] hasAuraNamed: @"Flight Form"] ){
-		
 		[self takeAction: macroCancelFlightForm Sequence:@"/cancelaura Flight Form"];
 	}
 	
 	// Otherwise dismount!
 	else{
-		
 		[self takeAction: macroDismount Sequence:@"/dismount"];
 	}
 }
@@ -229,6 +229,68 @@
 	}
 
 	_playerMacros = [macros retain];
+}
+
+// this function is, epic, and will loop through all the existing character macros to automatically find + use them! woohoo! (b/c people are stupid)
+- (void)findExistingMacros{
+
+	// here we will use our _macroDictionary!
+	//	key
+	//		Macro (the actual command)
+	//		Description (for our UI)
+	
+	// update our internal macro list first!
+	[self reloadMacros];
+
+	if ( _macroDictionary && _playerMacros ){
+		
+		// all of our keys
+		NSArray *allKeys = [_macroDictionary allKeys];
+		
+		for ( NSString *key in allKeys ){
+
+			// grab the macro data! (macro and the description)
+			NSDictionary *macroData = [_macroDictionary valueForKey:key];
+			
+			// the actual command
+			NSString *macroCommand = [macroData valueForKey:@"Macro"];
+			
+			// now lets loop through all of our player macros!
+			for ( Macro *macro in _playerMacros ){
+				  
+				// match found! yay!
+				if ( [[macro body] isEqualToString:[NSString stringWithFormat:@"%@%c", macroCommand, '\n']] ){
+					PGLog(@"[Macro] Match found! Linking %@ to %@", [macro name], key);						
+				}				
+			}
+		}
+	}
+}
+
+- (UInt32)findMacroID: (NSString*)macroTitle{
+	
+	// update our internal macro list first!
+	[self reloadMacros];
+	
+	if ( _macroDictionary && _playerMacros ){
+
+		// grab the macro data! (macro and the description)
+		NSDictionary *macroData = [_macroDictionary valueForKey:macroTitle];
+			
+		// the actual command
+		NSString *macroCommand = [macroData valueForKey:@"Macro"];
+			
+		// now lets loop through all of our player macros!
+		for ( Macro *macro in _playerMacros ){
+				
+			// match found! yay!
+			if ( [[macro body] isEqualToString:[NSString stringWithFormat:@"%@%c", macroCommand, '\n']] ){
+				return [[macro number] unsignedIntValue];
+			}				
+		}
+	}
+	
+	return 0;
 }
 
 @end

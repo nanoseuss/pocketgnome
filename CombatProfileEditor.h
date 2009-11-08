@@ -24,6 +24,8 @@
     CombatProfile				*_currentCombatProfile;
 }
 
+@property (readonly) NSArray *combatProfiles;
+
 + (CombatProfileEditor *)sharedEditor;
 - (void)showEditorOnWindow: (NSWindow*)window forProfileNamed: (NSString*)profile;
 
