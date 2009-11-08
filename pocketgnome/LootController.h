@@ -27,10 +27,8 @@
 	NSMutableDictionary	*_itemsLooted;
 	
 	int		_lastLootedItem;
-	UInt32	_lastTimeItemWasLooted;
+	BOOL _shouldMonitor;
 }
-
-@property UInt32 lastTimeItemWasLooted;
 
 - (NSDictionary*)itemsLooted;
 - (void)resetLoot;

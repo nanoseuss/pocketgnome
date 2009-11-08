@@ -14,17 +14,26 @@
 	// statistics info
 	int _totalReadsProcessed;
 	int _totalWritesProcessed;
-    
-    NSMutableDictionary *loaderDict;
+    NSDate *_startTime;
+	
+    NSMutableDictionary *_loaderDict;
 }
 - (id)init;
 - (id)initWithPID:(pid_t)PID;
 - (BOOL)isValid;
 
 @property float throughput;
+@property (readonly) NSDictionary *operationsDictionary;
+
 - (void)resetLoadCount;
 - (void)printLoadCount;
 - (int)loadCount;
+
+// for statistics
+- (float)readsPerSecond;
+- (float)writesPerSecond;
+- (void)resetCounters;
+- (NSDictionary*)operationsByClassPerSecond;
 
 // save record to application addresses
 - (BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;

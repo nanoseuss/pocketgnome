@@ -23,7 +23,7 @@
 	BOOL healingEnabled, autoFollowTarget, mountEnabled;
 	float yardsBehindTarget, healingRange;
 	int healthThreshold;
-	NSNumber *selectedTankGUID;
+	UInt64 selectedTankGUID;
     
     float attackRange;
     int attackLevelMin, attackLevelMax;
@@ -43,7 +43,7 @@
 
 @property (readwrite, retain) NSArray *entries;
 @property (readwrite, copy) NSString *name;
-@property (readwrite, retain) NSNumber *selectedTankGUID;
+@property (readwrite, assign) UInt64 selectedTankGUID;
 @property (readwrite, assign) BOOL combatEnabled;
 @property (readwrite, assign) BOOL onlyRespond;
 @property (readwrite, assign) BOOL attackNeutralNPCs;

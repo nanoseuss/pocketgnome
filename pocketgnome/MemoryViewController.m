@@ -21,7 +21,6 @@ typedef enum ViewTypes {
 	View_UInt16 = 5,
 } ViewTypes;
 
-
 @interface MemoryViewController ()
 @property (readwrite, retain) NSNumber *currentAddress;
 @property (readwrite, retain) id wowObject;
@@ -46,6 +45,7 @@ typedef enum ViewTypes {
 		_lastValues = [[NSMutableDictionary dictionary] retain];
 		_pointerList = [[NSMutableDictionary dictionary] retain];
 		_formatOfSavedValues = 0;
+		_searchArray = nil;
     }
     return self;
 }
@@ -493,8 +493,6 @@ typedef enum ViewTypes {
 	NSNumber *address = [dict objectForKey:@"Address"];
 	NSArray *addresses = [dict objectForKey:@"Addresses"];
 	
-	PGLog(@"B4[] Address: %d  Addresses: %d", [address retainCount], [addresses retainCount]);
-	
 	// add them to our mutable dictionary!
 	if ( [addresses count] ){
 		[_pointerList setObject:addresses forKey:[NSString stringWithFormat:@"%d", [address unsignedIntValue]]];
@@ -503,9 +501,7 @@ typedef enum ViewTypes {
 	else{
 		[_pointerList setObject:[NSNumber numberWithInt:0] forKey:[NSString stringWithFormat:@"%d", [address unsignedIntValue]]];
 	}
-	
-	PGLog(@"After[] Address: %d  Addresses: %d", [address retainCount], [addresses retainCount]);
-	
+
 	// since we retained it in the detached thread!
 	[addresses release];
 	
@@ -739,6 +735,8 @@ typedef enum ViewTypes {
 	return;
 }
 
+#pragma mark Experimental Object Monitoring
+
 - (void)monitorObjects: (id)objects{
 	
 	BOOL firstCall = NO;
@@ -937,5 +935,194 @@ typedef enum ViewTypes {
 	
 	return [dict autorelease];
 }
+
+#pragma mark Search Options
+
+typedef enum Types {
+	Type_8bit	= 0,
+	Type_16bit	= 1,
+	Type_32bit	= 2,
+	Type_64bit	= 3,
+	Type_Float	= 4,
+	Type_Double	= 5,
+	Type_String	= 6,
+} Types;
+
+typedef enum Signage{
+	Type_Unsigned = 0,
+	Type_Signed = 1,
+} Signage;
+
+typedef enum SearchType{
+	Value_Current = 0,
+	Value_Last = 1,
+} SearchType;
+
+- (IBAction)openSearch: (id)sender{	
+	[searchPanel makeKeyAndOrderFront: self];
+}
+
+- (IBAction)startSearch: (id)sender{
+	
+	// we're currently searching
+	if ( [[searchButton title] isEqualToString:@"Search"] ){
+		
+		// only want to check what we've already searched
+		if ( [valueMatrix selectedTag] == Value_Last ){
+			PGLog(@"updating latest...");
+		}
+		// current value
+		else{
+			PGLog(@"searching for new values... %d %d", sizeof(float), sizeof(double));
+			
+			NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: 
+								[NSNumber numberWithInt:[signMatrix selectedTag]],		@"Sign",
+								[NSNumber numberWithInt:[signMatrix selectedTag]],		@"Type",
+								[searchText stringValue],								@"Value",				  
+								nil];
+			
+			//[NSThread detachNewThreadSelector: @selector(searchPlease:) toTarget: self withObject: dict];
+		}
+		
+		[searchButton setTitle:@"Cancel"];
+	}
+	else{
+		
+		[searchButton setTitle:@"Search"];
+	}
+}
+
+- (IBAction)clearSearch: (id)sender{
+	[_searchArray release]; _searchArray = nil;
+}
+
+// we just want to disable the signed/unsigned if we selected a float/double/string
+- (IBAction)typeSelected: (id)sender{
+	
+}
+
+- (void)searchPlease: (NSDictionary*)dict{
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
+	int searchType	= [[dict objectForKey:@"Type"] intValue];
+	int signage		= [[dict objectForKey:@"Sign"] intValue];
+	NSString *value = [dict objectForKey:@"Value"];
+    NSDate *date = [NSDate date];
+	
+	// determine the size we are searching for
+	size_t size = 0;
+	if ( searchType == Type_8bit )				// 1
+		size = sizeof(uint8_t);
+	else if ( searchType == Type_16bit )		// 2
+		size = sizeof(uint16_t);
+	else if ( searchType == Type_32bit )		// 4
+		size = sizeof(uint32_t);
+	else if ( searchType == Type_64bit )		// 8
+		size = sizeof(uint64_t);
+	else if ( searchType == Type_Float )		// 4
+		size = sizeof(float);
+	else if ( searchType == Type_Double )		// 8
+		size = sizeof(double);
+
+	// block of data!
+	Byte *dataBlock = malloc(size);
+	
+    // get the WoW PID
+    pid_t wowPID = 0;
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    OSStatus err = GetProcessPID(&wowPSN, &wowPID);
+    
+    if((err == noErr) && (wowPID > 0)) {
+        
+        // now we need a Task for this PID
+        mach_port_t MySlaveTask;
+        kern_return_t KernelResult = task_for_pid(current_task(), wowPID, &MySlaveTask);
+        if(KernelResult == KERN_SUCCESS) {
+            // Cool! we have a task...
+            // Now we need to start grabbing blocks of memory from our slave task and copying it into our memory space for analysis
+            vm_address_t SourceAddress = 0;
+            vm_size_t SourceSize = 0;
+            vm_region_basic_info_data_t SourceInfo;
+            mach_msg_type_number_t SourceInfoSize = VM_REGION_BASIC_INFO_COUNT;
+            mach_port_t ObjectName = MACH_PORT_NULL;
+            
+			// this will always be 4, as the address space will only be 32-bit!
+            int MemSize = sizeof(UInt32);
+            int x;
+            vm_size_t ReturnedBufferContentSize;
+            Byte *ReturnedBuffer = nil;
+            
+            while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
+                // If we get here then we have a block of memory and we know how big it is... let's copy readable blocks and see what we've got!
+				//PGLog(@"we have a block of memory!");
+				
+                // ensure we have access to this block
+                if ((SourceInfo.protection & VM_PROT_READ)) {
+                    NS_DURING {
+                        ReturnedBuffer = malloc(SourceSize);
+                        ReturnedBufferContentSize = SourceSize;
+                        if ( (KERN_SUCCESS == vm_read_overwrite(MySlaveTask,SourceAddress,SourceSize,(vm_address_t)ReturnedBuffer,&ReturnedBufferContentSize)) &&
+                            (ReturnedBufferContentSize > 0) )
+                        {
+                            // the last address we check must be far enough from the end of the buffer to check all the bytes of our sought value
+                            if((ReturnedBufferContentSize % MemSize) != 0) {
+                                ReturnedBufferContentSize -= (ReturnedBufferContentSize % MemSize);
+                            }
+                            
+							
+                            // Note: We can assume memory alignment because... well, it's always aligned.
+                            for (x=0; x<ReturnedBufferContentSize; x+=size) // x++
+                            {
+								dataBlock = &ReturnedBuffer[x];
+								
+								// compare each one, clearly this will take a long time!
+								/*for ( NSNumber *address in addresses ){
+								 if ( [address unsignedIntValue] == *checkVal ){
+								 
+								 UInt32 foundAddress = SourceAddress + x;
+								 PGLog(@"Match for 0x%X found at 0x%X", [address unsignedIntValue], foundAddress);
+								 }
+								 }*/
+								// is this our address?
+								/*if ( *checkVal == addressToFind ){
+									UInt32 foundAddress = SourceAddress + x;
+									PGLog(@"Match for 0x%X found at 0x%X", addressToFind, foundAddress);
+									[addressesFound addObject:[NSNumber numberWithUnsignedInt:foundAddress]];
+								}*/
+                            }
+                        }
+                    } NS_HANDLER {
+                    } NS_ENDHANDLER
+                    
+                    if (ReturnedBuffer != nil)
+                    {
+                        free(ReturnedBuffer);
+                        ReturnedBuffer = nil;
+                    }
+                }
+                
+                // reset some values to search some more
+                SourceAddress += SourceSize;
+            }
+            //[pBar setHidden:true];
+        }
+    }
+    
+    PGLog(@"[Memory] Pointer scan took %.4f seconds.", 0.0f-[date timeIntervalSinceNow]);
+    /*
+	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+						  address,				@"Address",
+						  addressesFound,      @"Addresses",
+						  nil];
+	
+	
+    // tell the main thread we are done
+	[self performSelectorOnMainThread: @selector(findPointerAddresses:)
+						   withObject: dict
+                        waitUntilDone: NO];*/
+    
+    [pool release];
+}
+
 
 @end

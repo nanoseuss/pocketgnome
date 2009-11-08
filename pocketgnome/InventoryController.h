@@ -54,6 +54,7 @@
 - (NSString*)nameForID: (NSNumber*)itemID;
 
 - (int)collectiveCountForItem: (Item*)item;
+- (int)collectiveCountForItemInBags: (Item*)item;
 
 - (float)averageItemDurability;
 - (float)collectiveDurability;
@@ -67,6 +68,10 @@
 - (NSMenu*)prettyInventoryItemsMenu;
 - (NSArray*)itemsPlayerIsWearing;
 - (NSArray*)itemsInBags;
+
+- (int)bagSpacesAvailable;
+- (int)bagSpacesTotal;
+- (BOOL)arePlayerBagsFull;
 
 // Total number of marks (from all BG)
 - (int)pvpMarks;

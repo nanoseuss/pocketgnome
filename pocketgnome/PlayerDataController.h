@@ -129,6 +129,9 @@
 - (float)speedMax;
 - (float)maxGroundSpeed;
 - (float)maxAirSpeed;
+- (UInt32)copper;
+- (UInt32)honor;
+- (void)trackResources: (int)resource;
 
 - (BOOL)setPrimaryTarget: (UInt64)targetID;
 - (BOOL)setMouseoverTarget: (UInt64)targetID;

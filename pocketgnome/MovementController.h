@@ -25,6 +25,8 @@
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
 // How close do we need to be to a node before we dismount?
 #define NODE_DISTANCE_UNTIL_DISMOUNT	4.5f
+// how close do we need to be to a school to fish?
+#define NODE_DISTANCE_UNTIL_FISH		17.0f
 
 @interface MovementController : NSObject {
     IBOutlet id controller;
@@ -35,7 +37,8 @@
     IBOutlet PlayerDataController	*playerData;
 	IBOutlet OffsetController		*offsetController;
     
-	IBOutlet NSPopUpButton *movementType;
+	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
+	IBOutlet NSPopUpButton	*movementType;
 
     BOOL _shouldAttack;
     BOOL _shouldJump;
@@ -53,8 +56,6 @@
     Unit *_unit;
     Route *_route;
 	
-	
-	
 	// New error correction stuff
 	int _movementChecks;							// This keeps track of the number of movement checks we have (every 0.1 second) to the same position (while attempting to moveToPosition)
 													//	if this number gets too high (it tracks the number of attempts to hit one position), we can be sure we're stuck!
@@ -68,6 +69,7 @@
 	Waypoint * _lastTriedWaypoint;
 	float _averageSpeed;
 	float _averageDistance;
+	NSDate *_lastResumeCorrection;					// this is for when we start to fly too far away from our WP!
 }
 
 @property BOOL isMoving;
@@ -94,6 +96,7 @@
 - (void)establishPosition;
 - (void)backEstablishPosition;
 
+- (void)moveNearPosition: (Position*)position andCloseness: (float)closeness;
 - (void)moveToObject: (WoWObject*)unit andNotify: (BOOL)notifyBotController;
 - (void)moveToWaypoint: (Waypoint*)waypoint;
 
@@ -101,6 +104,7 @@
 
 - (void)followObject: (WoWObject*)unit;
 
+- (void)moveBackwardStop;
 - (void)moveForwardStart;
 - (void)moveForwardStop;
 

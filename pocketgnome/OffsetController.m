@@ -70,6 +70,9 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 // new and improved offset finder, will loop through our plist file to get the signatures! yay! Easier to store PPC/Intel
 - (void)findOffsets: (Byte*)data Len:(unsigned long)len StartAddress:(unsigned long)startAddress{
 
+	// should only be set to yes during testing!
+	BOOL emulatePPC = NO;
+	
 	if ( _offsetDictionary ){
 		
 		NSArray *allKeys = [_offsetDictionary allKeys];
@@ -78,6 +81,9 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		NSString *arch = (IS_X86) ? @"Intel" : @"ppc";
 		NSRange range;
 		
+		if ( emulatePPC )
+			arch = @"ppc";
+
 		// this will be a key, such as PLAYER_NAME_STATIC
 		for ( NSString *key in allKeys ){
 
@@ -96,6 +102,11 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			NSString *dictStartScanAddress		= [offsetData objectForKey: @"StartScanAddress"];
 			NSString *dictCount					= [offsetData objectForKey: @"Count"];
 			NSString *dictAdditionalOffset		= [offsetData objectForKey: @"AdditionalOffset"];
+			NSString *dictSubtractOffset		= [offsetData objectForKey: @"SubtractOffset"];
+			
+			// no offset data found, move on to the next one!
+			if ( [dictMask length] == 0 || [dictSignature length] == 0 )
+				continue;
 			
 			// what is the count #?
 			unsigned int count = 1;
@@ -105,7 +116,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 
 			// start offset specified?
 			unsigned long startScanAddress = 0x0;
-			if ( dictStartScanAddress != nil ){
+			if ( [dictStartScanAddress length] > 0 ){
 				range.location = 2;
 				range.length = [dictStartScanAddress length]-range.location;
 				
@@ -114,12 +125,21 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 			
 			unsigned long additionalOffset = 0x0;
-			if ( dictAdditionalOffset != nil ){
+			if ( [dictAdditionalOffset length] > 0 ){
 				range.location = 2;
 				range.length = [dictAdditionalOffset length]-range.location;
 				
 				const char *szAdditionalOffsetInHex = [[dictAdditionalOffset substringWithRange:range] UTF8String];
 				additionalOffset = strtol(szAdditionalOffsetInHex, NULL, 16);
+			}
+			
+			long subtractOffset = 0x0;
+			if ( [dictSubtractOffset length] > 0 ){
+				range.location = 2;
+				range.length = [dictSubtractOffset length]-range.location;
+				
+				const char *szSubtractOffsetInHex = [[dictSubtractOffset substringWithRange:range] UTF8String];
+				subtractOffset = strtol(szSubtractOffsetInHex, NULL, 16);
 			}
 			
 			// allocate our bytes variable which will store our signature
@@ -142,14 +162,14 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			
 			unsigned long offset = 0x0;
 			// Intel
-			if ( IS_X86 ){
+			if ( IS_X86 && !emulatePPC ){
 				offset = [self dwFindPattern:bytes
 										withStringMask:szMask 
 											  withData:data
 											   withLen:len
 									  withStartAddress:startAddress 
 										 withMinOffset:startScanAddress
-											 withCount:count] + additionalOffset;
+											 withCount:count] + additionalOffset - subtractOffset;
 			}
 			// PPC
 			else {
@@ -159,7 +179,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 									 withLen:len
 							withStartAddress:startAddress 
 							   withMinOffset:startScanAddress
-								   withCount:count] + additionalOffset;
+								   withCount:count] + additionalOffset - subtractOffset;
 			}
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
@@ -283,7 +303,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
+				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}

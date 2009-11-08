@@ -237,10 +237,11 @@ static PlayerDataController* sharedController = nil;
 #pragma mark -
 
 - (BOOL)playerIsValid{
-	//PGLog(@"UI UI UI");
+	PGLog(@"UI UI UI");
 	return [self playerIsValid:nil];	
 }
-// 3 reads
+// 4 reads
+//  could take this down to 3 if we store the global GUID somewhere + ONLY reset when player is invalid
 - (BOOL)playerIsValid: (id)sender {
     // check that our so-called player struct has the correct signature
     MemoryAccess *memory = [controller wowMemoryAccess];
@@ -248,25 +249,25 @@ static PlayerDataController* sharedController = nil;
     // load the following:
     //  global GUID
     //  our GUID
-    //  our object type
-    // then compare GUIDs and validate object type
+    //  previous pointer
+    // then compare GUIDs and validate previous pointer is valid
     
-    UInt32 globalGUID = 0, selfGUID = 0, previousPtr = 0;
+    UInt32 globalGUID = 0, selfGUID = 0, previousPtr = 0, objectType = 0;
     [memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
 	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT3_POINTER) Buffer: (Byte*)&previousPtr BufLength: sizeof(previousPtr)];
-
+	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
+	
 	// is the player still valid?
-    if ( globalGUID && selfGUID && previousPtr > 0x0 ) {
-		if(!_lastState) {
+    if ( globalGUID == selfGUID && objectType == TYPEID_PLAYER && previousPtr > 0x0 ) {
+		if ( !_lastState ) {
 			PGLog(@"[Player] Player is valid. %@", [sender class]);
 			[self loadState];
 		}
 		return YES;
 	}
 
-    
-    if(_lastState) {
+    if ( _lastState ) {
         PGLog(@"[Player] Player is invalid. %@", [sender class]);
         [self resetState];
     }
@@ -294,6 +295,7 @@ static PlayerDataController* sharedController = nil;
 //		GUID > 0
 //		guid == playerGUID
 //		PreviousPtr > 0
+//		object type == TYPEID_PLAYER
 //	setStructureAddress (from [controller sortObjects])
 //		GUID > 0
 //		guid == playerGUID
@@ -586,6 +588,20 @@ static PlayerDataController* sharedController = nil;
     return floatValue;
 }
 
+// 1 read
+- (UInt32)copper {
+	UInt32 value = 0;
+	[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_Coinage) Buffer: (Byte*)&value BufLength: sizeof(value)];
+	return value;
+}
+
+// 1 read
+- (UInt32)honor {
+	UInt32 value = 0;
+	[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_Coinage) Buffer: (Byte*)&value BufLength: sizeof(value)];
+	return value;
+}
+
 // 1 read, 2 writes
 - (void)faceToward: (Position*)position {
     if([self playerIsValid:self]) {
@@ -593,6 +609,12 @@ static PlayerDataController* sharedController = nil;
         [self setHorizontalDirectionFacing: [ourPosition angleTo: position]];
         [self setVerticalDirectionFacing: [ourPosition verticalAngleTo: position]];
     }
+}
+
+// 1 write
+- (void)trackResources: (int)resource{
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	[memory saveDataForAddress: ([self infoAddress] + PlayerField_TrackResources) Buffer: (Byte *)&resource BufLength: sizeof(resource)];
 }
 
 #pragma mark Player Targeting

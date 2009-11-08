@@ -408,6 +408,7 @@ static MobController* sharedController = nil;
 		if ( mobIDs == nil ){
 			float distance = [position distanceToPosition: [mob position]];
 			if((distance != INFINITY) && (distance <= mobDistance)) {
+				PGLog(@"[Mob] Mob %@ is %0.2f away", mob, distance);
 				
 				// Living check?
 				if ( !aliveOnly || (aliveOnly && ![mob isDead]) ){

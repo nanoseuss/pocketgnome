@@ -29,6 +29,7 @@
 #import "MacroController.h"
 #import "OffsetController.h"
 #import "MemoryViewController.h"
+#import "CombatProfileEditor.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -63,6 +64,9 @@
 #define WaitingToRezSpellID     2584
 #define HearthstoneItemID		6948
 #define HearthStoneSpellID		8690
+
+#define RefreshmentTableID		193061	// "Refreshment Table"
+#define SoulwellID				193169	// "Soulwell"
 
 
 // For strand of the ancients
@@ -179,10 +183,6 @@
                                                      name: AllItemsLootedNotification 
                                                    object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(itemLooted:) 
-                                                     name: ItemLootedNotification 
-                                                   object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(whisperReceived:) 
                                                      name: WhisperReceived 
                                                    object: nil];
@@ -215,8 +215,21 @@
         self.pvpLeaveInactive = NO;
         self.pvpPlayWarning = NO;
 		
+		// anti afk
+		_lastPressedWasForward = NO;
+		_afkTimerCounter = 0;
+		
+		// wg stuff
+		_lastNumWGMarks = 0;
+		_dateWGEnded = nil;
+		
+		_logOutTimer = nil;
+		
 		// Every 15 seconds we'll want to send clicks!
 		_wgTimer = [NSTimer scheduledTimerWithTimeInterval: 15.0f target: self selector: @selector(wgTimer:) userInfo: nil repeats: YES];
+		
+		// Every 30 seconds for an anti-afk
+		_afkTimer = [NSTimer scheduledTimerWithTimeInterval: 30.0f target: self selector: @selector(afkTimer:) userInfo: nil repeats: YES];
 	
 		
         [NSBundle loadNibNamed: @"Bot" owner: self];
@@ -679,7 +692,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     //PGLog(@"-- Checking inventory condition --");
                     Item *item = ([condition type] == TypeValue) ? [itemController itemForID: [condition value]] : [itemController itemForName: [condition value]];
                     
-                    int totalCount = [itemController collectiveCountForItem: item];
+                    int totalCount = [itemController collectiveCountForItemInBags: item];
                     if( [condition comparator] == CompareMore) {
                         conditionEval = (totalCount > [condition state]) ? YES : NO;
                     }
@@ -1044,7 +1057,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// if we're healing - is our target still valid?
 	if( [[self procedureInProgress] isEqualToString: HealingProcedure] && ![self unitValidToHeal:target] ){
 		[self finishCurrentProcedure: state];
-		return;
+		return; 
 	}
 	
     // send your pet to attack
@@ -1052,6 +1065,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( [[self procedureInProgress] isEqualToString: PreCombatProcedure] || [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
             if(![controller isWoWChatBoxOpen] && (_currentPetAttackHotkey >= 0)) {
                 [chatController pressHotkey: _currentPetAttackHotkey withModifier: _currentPetAttackHotkeyModifier];
+				PGLog(@"[Bot] Sending in pet to attack!");
             }
         }
     }
@@ -1229,29 +1243,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 #pragma mark -
-#pragma mark Full Inventory Check
-
-// This is called as SOON as the first item in a loot window has been read (so NOT when it's in the player's bag)
-- (void)itemLooted: (NSNotification*)notification {
-	if ( !self.isBotting )
-		return;
-	
-	// Need to check the error message in half a second (or the error message won't have registered yet)
-	[self performSelector: @selector(checkForFullInventory) withObject: nil afterDelay: 0.5f];
-}
-
-- (void)checkForFullInventory{
-	if ( [logOutOnFullInventoryCheckbox state] ){
-		int lastErrorID = [self errorValue:[playerController lastErrorMessage]];
-		if ( lastErrorID == ErrInventoryFull ){
-			PGLog(@"[Bot] Inventory full, closing game");
-			[self logOut];
-			[self updateStatus: @"Bot: Inventory full, closing game"];
-		}
-	}
-}
-
-#pragma mark -
 #pragma mark Loot Helpers
 
 - (void)lootNode: (WoWObject*) unit{
@@ -1389,6 +1380,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)skinOrFinish{
+	
+	if ( [fishController isFishing] )
+		return;
 	
 	BOOL canSkin = NO;
 	BOOL unitIsMob = ([self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]);
@@ -2063,25 +2057,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	//PGLog(@"[Bot] Evaluate Situation");
     
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
-    
-	// Check to see if we should stop the bot!
-    if( [logOutOnTimerExpireCheckbox state] && self.startDate ) {
-		float hours = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"LogOutTimerLength"] floatValue];
-		NSDate *stopDate = [[NSDate alloc] initWithTimeInterval:hours * 60 * 60 sinceDate:self.startDate];
-		
-		//PGLog ( @"[Timer] %@ < %@ == %@", stopDate, [NSDate date], [stopDate earlierDate: [NSDate date] ] );
-		
-		if ( [stopDate earlierDate: [NSDate date] ] == stopDate ){
-			[stopDate release];
-			PGLog(@"[Bot] Timer expired after %0.2f hours! Logging out!", hours);
-			[self logOut];
-			NSString *status = [NSString stringWithFormat:@"Bot: Logged out after botting for %0.2f hours", hours];
-			[controller setCurrentStatus: status];
-			return NO;
-		}
-
-		[stopDate release];
-    }
 	
 	// Check for preparation buff
 	if ( self.isPvPing && [pvpWaitForPreparationBuff state] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
@@ -2235,8 +2210,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		
 		// We could have our follow unit as who we should heal right now, but psh tank gets priority!
-		NSNumber *tankGUID = [theCombatProfile selectedTankGUID];
-		Unit *tank = [playersController playerWithGUID:[tankGUID unsignedLongLongValue]];
+		UInt64 tankGUID = [theCombatProfile selectedTankGUID];
+		Unit *tank = [playersController playerWithGUID:tankGUID];
 		
 		if ( tank != nil ){
 			
@@ -2344,21 +2319,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     /* *** if we get here, we aren't in combat *** */
-	
-	// Lets check to see if we have some broken items
-	if([logOutOnBrokenItemsCheckbox state]){
-		float averageDurability = [itemController averageWearableDurability];
-		float durabilityPercentage = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"LogOutOnBrokenItemsPercentage"] floatValue];
-		
-		if ( averageDurability > 0 && averageDurability < durabilityPercentage ){
-		
-			// Lets just kill the process, we could send "/logout" but then we will have to wait 20 seconds, and things like combat could take place etc...
-			PGLog(@"[Bot] Item durability has reached %02.f, logging out!", averageDurability);
-			[self logOut];
-			[controller setCurrentStatus: @"Bot: Logged out due to low durability"];
-			return NO;
-		}
-	}
     
     // first, check if we are in combat
     // this is to compensate for MovementController calling evaluate while moving to a mob
@@ -2497,6 +2457,101 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         }
     }
 	
+	// check for fishing
+	if ( ![movementController moveToObject] ){
+		if ( _doFishing ){
+			
+			// fishing only in schools! (probably have a route we're following)
+			if ( _fishingOnlySchools ){
+				NSMutableArray *nodes = [NSMutableArray array];
+				[nodes addObjectsFromArray:[nodeController nodesWithinDistance:_fishingGatherDistance ofType: FishingSchool maxLevel: 1]];
+				[nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
+				
+				// are we close enough to start fishing?
+				if ( [nodes count] ){
+					
+					// lets find a node
+					Node *nodeToFish = nil;
+					float nodeDist = INFINITY;
+					for(nodeToFish in nodes) {
+						
+						if ( [_unitsBlacklisted containsObject:nodeToFish] ){
+							PGLog(@"[Bot] Node %@ blacklisted, ignoring", nodeToFish);
+							continue;
+						}
+						
+						if ( nodeToFish && [nodeToFish isValid] ) {
+							nodeDist = [playerPosition distanceToPosition: [nodeToFish position]];
+							break;
+						}
+					}
+					
+					BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToFish doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
+					
+					// we have a valid node!
+					if ( [nodeToFish isValid] && (nodeDist != INFINITY) && !nearbyScaryUnits ) {
+						[movementController pauseMovement];
+						
+						PGLog(@"[Bot] Found closest school %@ at dist %.2f", nodeToFish, nodeDist);
+						if(nodeDist <= NODE_DISTANCE_UNTIL_FISH){
+							
+							// turn toward
+							[movementController turnTowardObject:nodeToFish];
+							[movementController backEstablishPosition];
+							
+							// add some blacklisting logic here...
+							
+							// now we fish!
+							
+							PGLog(@"[Bot] We are near %@, time to fish!", nodeToFish);
+							
+							if ( ![fishController isFishing] ){
+								[fishController fish: _fishingApplyLure
+										  withRecast:_fishingRecast
+											 withUse:_fishingUseContainers
+											withLure:_fishingLureSpellID
+										  withSchool:nodeToFish];
+							}
+							
+							return YES;
+						}
+						// Should we be mounted before we move to the node?
+						else if ( [self mountNow] ){
+							[self performSelector: _cmd withObject: nil afterDelay: 2.2f];	
+							return YES;
+						}
+						// Safe to move to the node!
+						else{
+							[controller setCurrentStatus: @"Bot: Moving to fishing pool"];
+							[movementController moveToObject: nodeToFish andNotify: YES];
+						}
+						return YES;
+					}
+				}
+				
+				PGLog(@"[Fishing] Didn't find a node, so we're doing nothing...");
+			}
+			
+			// fish where we are
+			else{
+				PGLog(@"[Fishing] Just fishing from wherever we are!");
+				
+				[fishController fish: _fishingApplyLure
+						  withRecast:NO
+							 withUse:_fishingUseContainers
+							withLure:_fishingLureSpellID
+						  withSchool:nil];		
+				
+				return YES;
+			}
+			
+			// if we get here, we shouldn't be fishing, stop if we are
+			if ( [fishController isFishing] ){
+				[fishController stopFishing];
+			}
+		}
+	}
+	
 	// Should we be mounted?
 	if ( [self mountNow] ){
 		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
@@ -2542,8 +2597,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                            forProfileNamed: [[NSUserDefaults standardUserDefaults] objectForKey: @"CombatProfile"]];
 }
 
+- (IBAction)autoJoinWG: (id)sender{
+	if ( [autoJoinWG state] ){
+		[autoJoinWG setTitle:@"Don't forget to set up your macro on the settings tab!"];
+		[NSObject cancelPreviousPerformRequestsWithTarget:self selector: @selector(resetAutoJoinWGText) object:nil];
+		[self performSelector:@selector(resetAutoJoinWGText) withObject:nil afterDelay:3.5f];
+	}
+}
+
+- (void)resetAutoJoinWGText{
+	[autoJoinWG setTitle:@"Stay in Wintergrasp (this will persist if the bot isn't running)"];
+}
+
 - (IBAction)updateStatus: (id)sender {
     CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
+	
+	PGLog(@"Updating status... %@", profile);
 	
     NSString *status = [NSString stringWithFormat: @"%@ (%@). ", 
                         [[[behaviorPopup selectedItem] representedObject] name],    // behavior
@@ -2590,6 +2659,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+	PGLog(@"[Bot] Starting with attack range of %0.2f", [self.theCombatProfile attackRange]);
     
     // get hotkey settings
     KeyCombo hotkey = [shortcutRecorder keyCombo];
@@ -2697,6 +2767,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_nodeIgnoreFriendlyDistance		= [nodeIgnoreFriendlyDistanceText floatValue];
 		_nodeIgnoreHostileDistance		= [nodeIgnoreHostileDistanceText floatValue];
 		_nodeIgnoreMobDistance			= [nodeIgnoreMobDistanceText floatValue];
+		
+		// start our log out timer - only check every 5 seconds!
+		_logOutTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(logOutTimer:) userInfo: nil repeats: YES];
 		
         int canSkinUpToLevel = 0;
         if(_skinLevel <= 100) {
@@ -2808,6 +2881,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [controller setCurrentStatus: @"Bot: Stopped"];
     
     PGLog(@"[Bot] Stopped.");
+	
+	// stop our log out timer
+	[_logOutTimer invalidate];_logOutTimer=nil;
     
     if(self.isPvPing) {
         PGLog(@"[Bot] Bot stopped but PvP is ongoing...");
@@ -3573,15 +3649,136 @@ NSMutableDictionary *_diffDict = nil;
     [[NSSound soundNamed: @"alarm"] play];
 }
 
-- (void)wgTimer: (NSTimer*)timer {
-	if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AutoJoinWG"] boolValue] && ![playerController isDead] ){
+#pragma mark Timers
+
+- (void)logOutTimer: (NSTimer*)timer {
+	if ( !self.isBotting )
+		PGLog(@"[Bot] We should never be here!!");
+	
+	BOOL logOutNow = NO;
+	NSString *logMessage = nil;
+	
+	// check for full inventory
+	if ( [logOutOnFullInventoryCheckbox state] && [itemController arePlayerBagsFull] ){
+		logOutNow = YES;
+		logMessage = @"Inventory full, closing game";
+	}
+	
+	// check for timer
+	if ( [logOutOnTimerExpireCheckbox state] && self.startDate ){
+		float hours = [logOutDurabilityTextField floatValue];
+		NSDate *stopDate = [[NSDate alloc] initWithTimeInterval:hours * 60 * 60 sinceDate:self.startDate];
 		
-		if ( [[fishController macroDropDown] selectedTag] ){
-			UInt32 actionID = (USE_MACRO_MASK + [[fishController macroDropDown] selectedTag]);
+		// check to see which date is earlier
+		if ( [stopDate earlierDate: [NSDate date] ] == stopDate ){
+			logOutNow = YES;
+			logMessage = [NSString stringWithFormat:@"Timer expired after %0.2f hours! Logging out!", hours];
+		}
+	}
+	
+	// check durability
+	if ( [logOutOnBrokenItemsCheckbox state] ){
+		float averageDurability = [itemController averageWearableDurability];
+		float durabilityPercentage = [logOutAfterRunningTextField floatValue];
+		
+		if ( averageDurability > 0 && averageDurability < durabilityPercentage ){
+			logOutNow = YES;
+			logMessage = [NSString stringWithFormat:@"Item durability has reached %02.f, logging out!", averageDurability];
+		}
+	}
+	
+	// time to stop botting + log!
+	if ( logOutNow ){
+		PGLog(@"[Bot] %@", logMessage);
+		[self logOut];
+		[self updateStatus: [NSString stringWithFormat:@"Bot: %@", logMessage]];
+	}
+}
+
+// called every 30 seconds
+- (void)afkTimer: (NSTimer*)timer {
+	
+	// don't need this if we're botting since we're doing things!
+	if ( self.isBotting || ![playerController playerIsValid] )
+		return;
+	
+	PGLog(@"[AFK] Attempt: %d", _afkTimerCounter);
+	
+	
+	if ( [antiAFKButton state] ){
+		_afkTimerCounter++;
+		
+		// then we are at 4 minutes
+		if ( _afkTimerCounter > 8 ){
+
+			// move backward!
+			if ( _lastPressedWasForward ){
+				[movementController moveBackwardStop];
+				_lastPressedWasForward = NO;
+				PGLog(@"[AFK] Moving backward!");
+			}
+			// move forward!
+			else{
+				[movementController moveForwardStop];
+				_lastPressedWasForward = YES;
+				PGLog(@"[AFK] Moving forward!");
+			}
 			
-			[self performAction:actionID];
+			_afkTimerCounter = 0;
+		}
+	}
+	
+	
+}
+
+- (void)wgTimer: (NSTimer*)timer {
+	
+	// WG zone ID: 4197
+	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 ){
+		
+		BOOL enableClicking = NO;
+		
+		// we should ONLY be clicking if we KNOW it's w/in the time period something will come up! (7200 = 2 hours)
+		NSDate *currentTime = [NSDate date];
+		if ( _dateWGEnded == nil || [currentTime timeIntervalSinceDate: _dateWGEnded] > 7200 ){
+			enableClicking = YES;
+		}
+		
+		if ( !enableClicking ){
+			PGLog(@"[Bot] Not clicking, as we're not w/in the window of joining WG!");
+			return;
+		}
+		
+		// click
+		UInt32 macroID = [macroController findMacroID:@"ClickFirstButton"];
+		if ( macroID > 0 ){
+			[self performAction:USE_MACRO_MASK + macroID];
+			PGLog(@"[Bot] Auto joining for WG! Using macro 0x%X", macroID);
+		}
+		else{
+			PGLog(@"[Bot] Unable to auto join for WG, macro not found to click!");
+		}
+		
+		// check how many marks they have (if it went up, we need to leave the group)!
+		Item *item = [itemController itemForID:[NSNumber numberWithInt:43589]];
+		if ( item && [item isValid] ){
 			
-			PGLog(@"Clicking dialogue! 0x%X", actionID);
+			// the player has more!
+			if ( _lastNumWGMarks > 0 && _lastNumWGMarks != [item count] ){
+				_lastNumWGMarks = [item count];
+				
+				PGLog(@"[Bot] Wintergrasp over you know have %d marks! Leaving group!", _lastNumWGMarks);
+				
+				UInt32 macroID = [macroController findMacroID:@"LeaveParty"];
+				if ( macroID > 0 ){
+					[self performAction:USE_MACRO_MASK + macroID];
+				}
+				
+				// update our time
+				PGLog(@"[Bot] It's been %0.2f seconds since we were last given marks!", [currentTime timeIntervalSinceDate: _dateWGEnded]);
+				[_dateWGEnded release]; _dateWGEnded = nil;
+				_dateWGEnded = [[NSDate date] retain];
+			}
 		}
 	}
 }
@@ -3589,22 +3786,22 @@ NSMutableDictionary *_diffDict = nil;
 - (BOOL)performAction: (int32_t) actionID{
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
-	if ( !memory ){
+	if ( !memory )
 		return NO;
-	}
 	
-	int32_t oldActionID = 0;
-	
-	// get hotkey settings
+	UInt32 oldActionID = 0;
+	UInt32 cooldown = [controller refreshDelay]*2;
 	KeyCombo hotkey = [shortcutRecorder keyCombo];
 	_currentHotkeyModifier = hotkey.flags;
 	_currentHotkey = hotkey.code;
 	
-	UInt32 cooldown = [controller refreshDelay]*2;
-	
-	// replace the first entry on the hotbar
+	// save the old spell + write the new one
 	[memory loadDataForObject: self atAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
+	
+	// write gibberish to the error location
+	char string[3] = {'_', '_', '\0'};
+	[[controller wowMemoryAccess] saveDataForAddress: [offsetController offset:@"LAST_RED_ERROR_MESSAGE"] Buffer: (Byte *)&string BufLength:sizeof(string)];
 	
 	// wow needs time to process the spell change
 	usleep(cooldown);
@@ -3616,7 +3813,7 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	
 	// wow needs time to process the spell change before we change it back
-	usleep(cooldown);
+	usleep(cooldown*2);
 	
 	// then save our old action back
 	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"]+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
@@ -3625,68 +3822,53 @@ NSMutableDictionary *_diffDict = nil;
 	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ){
 		return ErrNone;
 	}
-	 
-	 if ( [spellController lastAttemptedActionID] == actionID ){
-		 int errID = [self errorValue:[playerController lastErrorMessage]];
-		 PGLog(@"[Bot] Spell (%d) didn't cast: %@", actionID, [playerController lastErrorMessage] );
-		 
-		 return errID;
-	 }
 	
+	// give WoW time to write to memory in case the spell didn't cast
+	usleep(cooldown);
 	
-	int castspellSuccess = [self errorValue:[playerController lastErrorMessage]];
-	_lastActionErrorCode = castspellSuccess;
 	_lastActionTime = [playerController currentTime];
 	
-	if ( castspellSuccess != ErrNone ){
-		
-		
-		if ( castspellSuccess == ErrSpellNot_Ready){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];	
-			
-		}
-		else if ( castspellSuccess == ErrTargetNotInLOS ){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInLOS object: nil];	
-		}
-		else if ( castspellSuccess == ErrInvalidTarget ){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];
-		}
-		else if ( castspellSuccess == ErrTargetOutRange ){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorOutOfRange object: nil];
-		}
-		else if ( castspellSuccess == ErrCantAttackMounted || castspellSuccess == ErrYouAreMounted ){
-			if ( ![playerController isOnGround] ){
-				[macroController dismount];
-			}
-		}
-		else if ( castspellSuccess == ErrTargetNotInFrnt || castspellSuccess == ErrWrng_Way ){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
-			// PGLog(@"[Bot] Target Behind us..%@");
-			//[movementController moveForwardStop];
-		}
-		else if ( castspellSuccess == ErrCantMove ){
-			// PGLog(@"[Bot] Stop Moving!!%@");
-			//[movementController pauseMovement];
-		}
-		else if ( castspellSuccess == ErrWrng_Way ){
-			// PGLog(@"[Bot] Target Behind us..%@");
-			//[movementController moveForwardStop];
-		}
-		else if ( castspellSuccess == ErrAttack_Stunned ){
-			
-			//pvp trinket?
-		}
-		
-		
-		// TO DO: Do a check here for if a GM is nearby?  "That spell cannot be cast on beast master or invisible god targets"
-		//   then kill wow?
+	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
+		PGLog(@"ZOMG THERE IS AN ERROR! AHHHHHH! %@", [playerController lastErrorMessage]);
 	}
+	
+	// did the spell not cast?
+	 if ( [spellController lastAttemptedActionID] == actionID ){
+		
+		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
+		 _lastActionErrorCode = lastErrorMessage;
+		 PGLog(@"[Bot] Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
+
+		 // do something?
+		 if ( lastErrorMessage == ErrSpellNot_Ready){
+			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];	
+		 }
+		 else if ( lastErrorMessage == ErrTargetNotInLOS ){
+			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInLOS object: nil];	
+		 }
+		 else if ( lastErrorMessage == ErrInvalidTarget ){
+			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];
+		 }
+		 else if ( lastErrorMessage == ErrTargetOutRange ){
+			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorOutOfRange object: nil];
+		 }
+		 else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ){
+			 if ( ![playerController isOnGround] ){
+				 [macroController dismount];
+			 }
+		 }
+		 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ){
+			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
+		 }
+		 
+		 return lastErrorMessage;
+	}
+
 	return ErrNone;
 }
 
 - (int)errorValue: (NSString*) errorMessage{
 	if (  [errorMessage isEqualToString: INV_FULL] ){
-		//disable looting
 		return ErrInventoryFull;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_LOS] ){
@@ -3824,6 +4006,7 @@ NSMutableDictionary *_diffDict = nil;
 // check if units are nearby
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
 	if ( doMobCheck ){
+		PGLog(@"[Bot] Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
 		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
 		if ( [mobs count] ){
 			PGLog(@"[Bot] There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);
@@ -3878,12 +4061,80 @@ NSMutableDictionary *_diffDict = nil;
 	return flags;	
 }
 
+- (char*)randomString: (int)maxLength{
+	// generate a random string to write
+	int i, len = SSRandomIntBetween(3,maxLength);
+	char *string = (char*)malloc(len);
+	char randomChar = 0;
+    for (i = 0; i < len; i++) {
+        while (YES) {
+            randomChar = SSRandomIntBetween(0,128);
+            if (((randomChar >= '0') && (randomChar <= '9')) || ((randomChar >= 'a') && (randomChar <= 'z'))) {
+                string[i] = randomChar;
+                break; // we found an alphanumeric character, move on
+            }
+        }
+    }
+	string[i] = '\0';
+	
+	return string;
+}
+
+//0x1555BE0
 - (IBAction)test: (id)sender{
+	
+
+	
+	/*
+
+	PGLog(@"After  write:'%@'", [playerController lastErrorMessage]);
+	NSString *lastErrorMessageAltered = [playerController lastErrorMessage];*/
+	//free(string);
+
+	
+	//(BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
+	
+	/*
+	CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
+	PGLog(@"Currently selected object: %@  %@", profile, [profile name]);
+	PGLog(@"Attack range: %0.2f", [profile attackRange]);
+	
+	if([[profile name] length]) {
+        for(CombatProfile *prof in [combatProfileEditor combatProfiles]) {
+            if( [[profile name] isEqualToString: [prof name]] ) {
+				PGLog(@"LOOPED: %@ with %0.2f" , prof, [prof attackRange]);
+                break;
+            }
+        }
+    }
+	
+	PGLog(@"CURRENT PROFILE: %@ %0.2f", self.theCombatProfile, [self.theCombatProfile  attackRange]);
+	
+	
+	
+	Position *playerPosition = [playerController position];
+	Position *destination = [Position positionWithX:5486.823f Y:297.879f Z:147.4111];
+	Position *pos = [destination positionAtDistance:15.0f withDestination:playerPosition];
+	
+	PGLog(@"10 yards from %@ is %@", destination, pos);
+	//[movementController turnToward:pos];
+	
+	[movementController moveNearPosition:pos andCloseness:0.0f];
+	
+	
+	
+	*/
+	
+	
+	
 	/*if ( self.theCombatProfile == nil )
 		self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+	
+	
 	PGLog(@"Attack range: %0.2f", self.theCombatProfile.attackRange);
-	PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);
-	*/
+	PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);*/
+	
+	
 
 }
 

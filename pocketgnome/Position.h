@@ -21,6 +21,7 @@
 @property (readwrite, assign) float yPosition;
 @property (readwrite, assign) float zPosition;
 
+- (Position*)positionAtDistance:(float)distance withDestination:(Position*)playerPosition;
 - (float)angleTo: (Position*)position;
 - (float)verticalAngleTo: (Position*)position;
 - (float)distanceToPosition: (Position*)position;

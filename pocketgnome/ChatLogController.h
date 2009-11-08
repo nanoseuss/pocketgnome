@@ -10,11 +10,13 @@
 
 @class Controller;
 @class ChatLogEntry;
+@class OffsetController;
 
 #define WhisperReceived		@"WhisperReceived"
 
 @interface ChatLogController : NSObject {
     IBOutlet Controller *controller;
+	IBOutlet OffsetController *offsetController;
     
     IBOutlet NSView *view;
     IBOutlet NSTableView *chatLogTable;

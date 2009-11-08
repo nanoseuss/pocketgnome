@@ -18,7 +18,11 @@
 #import "Offsets.h"
 
 
-// TO DO: Needs to remember all items in the loot window, not just the one :/  But it's a start!
+@interface LootController (Internal)
+- (void)addItem: (int)itemID Quantity:(int)quantity Location:(int)location;
+- (void)lootingComplete;
+- (void)itemLooted: (NSArray*)data;
+@end
 
 @implementation LootController
 
@@ -28,14 +32,19 @@
 		
 		_itemsLooted = [[NSMutableDictionary alloc] init];
 		_lastLootedItem = 0;
+		_shouldMonitor = NO;
 		
-		// Fire off a thread to start monitoring our loot
-		[NSThread detachNewThreadSelector: @selector(findLootWindow) toTarget: self withObject: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(playerIsInvalid:) 
+                                                     name: PlayerIsInvalidNotification 
+                                                   object: nil];
+        [[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(playerIsValid:) 
+                                                     name: PlayerIsValidNotification 
+                                                   object: nil];
     }
     return self;
 }
-
-@synthesize lastTimeItemWasLooted = _lastTimeItemWasLooted;
 
 - (void)dealloc {
 	[_itemsLooted release];
@@ -46,126 +55,94 @@
 	[_itemsLooted removeAllObjects];
 }
 
+// return a copy of our list
 - (NSDictionary*)itemsLooted{
-	// We could probably just do dictionaryWithDictionary here, as I beleive this is autoreleased
-	// We want to return a copy since a thread is updating the original array and we don't want to be enumerating it while it's updated! (or crash ftl)
 	return [[[NSDictionary alloc] initWithDictionary:_itemsLooted] autorelease];
 }
 
-- (void)addItem: (int)itemID Quantity:(int)quantity{
-	// Lets check to see if we have looted one of these items already!
-	NSString *key = [NSString stringWithFormat:@"%d",itemID];
-	NSNumber *lootCount = [_itemsLooted objectForKey:key];
+// save a copy of this item as it was looted
+- (void)addItem: (int)itemID Quantity:(int)quantity Location:(int)location{
 	
-	// We've already caught one of these!  Incremement!
-	if ( lootCount != nil ){
-		NSNumber *newCount = [NSNumber numberWithInt:[lootCount intValue]+1];
-		[_itemsLooted setValue:newCount forKey:key];
-		
-		//PGLog(@"[Loot] Updating count to %d", [lootCount intValue]+1);
+	NSString *key = [NSString stringWithFormat:@"%d",itemID];
+
+	// item exists in our list, increment
+	if ( [_itemsLooted objectForKey:key] ){
+		[_itemsLooted setValue:[NSNumber numberWithInt:[[_itemsLooted objectForKey:key] intValue]+quantity] forKey:key];
 	}
-	// New object!  Add it! Woohoo!
+	// new object
 	else{
 		[_itemsLooted setObject:[NSNumber numberWithInt:1] forKey:key];
-		
-		//PGLog(@"[Loot] Adding new item!  %@", [itemController nameForID: [NSNumber numberWithInt:lootedItem]]);
 	}
 	
-	_lastTimeItemWasLooted = [playerDataController currentTime];
-
-	[self performSelectorOnMainThread: @selector(itemLooted:)
-						   withObject: key
-						waitUntilDone: NO];
+	// pass the item ID and the location
+	NSArray *data = [NSArray arrayWithObjects:[NSNumber numberWithInt:itemID], [NSNumber numberWithInt:location], nil];
+	[self itemLooted:data];
 }
 
-// Running in it's own thread!
-- (void)findLootWindow{
+// this will continuously check to see if we are looting!
+- (void)lootMonitor{
 	
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	UInt32 lootedItem = 0;
-	UInt32 quantity = 0;
+	// Player is invalid, lets stop monitoring!
+	if ( !_shouldMonitor )
+		return;
 	
-	MemoryAccess *memory = nil;
-	while ( 1 ){
-		memory = [controller wowMemoryAccess];
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	if ( memory ){
+		UInt32 lootedItem = 0, quantity = 0;
 		unsigned long offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
-		if( memory && [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)]) {
+		
+		// check for our first looted item
+		if ( [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)] ){
 			
-			// Then we have a NEW item
+			// make sure we have a new item
 			if ( lootedItem > 0 && _lastLootedItem == 0 && _lastLootedItem != lootedItem ){
 				_lastLootedItem = lootedItem;
 				
-				// Grab the quantity!
+				// grab the quantity
 				[memory loadDataForObject: self atAddress: offset + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
 				
-				// Add our item!
-				[self addItem:lootedItem Quantity:quantity];
+				// add our item
+				[self addItem:lootedItem Quantity:quantity Location:0];
 				
-				// Are there more to add?
+				// check for more to add
 				int i = 1;
 				while ([memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootedItem BufLength: sizeof(lootedItem)] && lootedItem > 0 ){
-					// Grab the quantity!
 					[memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) + LOOT_QUANTITY Buffer: (Byte *)&quantity BufLength: sizeof(quantity)];
-					
-					// Add our item!
-					[self addItem:lootedItem Quantity:quantity];
-					
-					//PGLog(@"[Loot] Adding an additional item! Item:%d Quantity:%d Slot:%d", lootedItem, quantity, i);
-					
+					[self addItem:lootedItem Quantity:quantity Location:i];
 					i++;
 				}
 				
-				[self performSelectorOnMainThread: @selector(allItemsLooted)
-									withObject: nil
-									waitUntilDone: NO];
+				[self lootingComplete];
 			}
+			// reset so we can continue scanning again
 			else if ( lootedItem == 0 ){
 				_lastLootedItem = 0;
 			}
 		}
-		
-		// Sleep for 0.1 seconds
-		usleep(10000);
 	}
 	
-	[pool drain];
+	// keep monitoring
+	[self performSelector:@selector(lootMonitor) withObject:nil afterDelay:0.1f];
 }
 
-// This should really be called "item is in the window" vs. looted.  No checks are done here to see if the item makes it into your bag
-- (void) itemLooted: (NSNumber *) itemID{
-	// Call our notifier!
-	[[NSNotificationCenter defaultCenter] postNotificationName: ItemLootedNotification object: itemID];
-}
-
-- (void) allItemsLooted{
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(allItemsLooted) object: nil];
-	
-	// Only call our notifier if the loot window isn't open!
-	if ( ![self isLootWindowOpen] ){
-		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: nil];
-	}
-	// Lets check again shortly!
-	else{
-		[self performSelector: @selector(allItemsLooted) withObject: nil afterDelay: 0.1f];
-	}
-}
 
 #define MAX_ITEMS_IN_LOOT_WINDOW			10		// I don't actually know if this is correct, just an estimate
 - (BOOL)isLootWindowOpen{
-	UInt32 lootWindowOpen;
-	int itemsInWindow = 0, i=0;
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	while( [memory loadDataForObject: self atAddress: [offsetController offset:@"ITEM_IN_LOOT_WINDOW"] + (LOOT_NEXT * (i)) Buffer: (Byte *)&lootWindowOpen BufLength: sizeof(lootWindowOpen)] && i < MAX_ITEMS_IN_LOOT_WINDOW ){
-		if ( lootWindowOpen > 0 ){
-			itemsInWindow++;
-		}
-		
-		i++;
-	}
+	if ( !memory )
+		return NO;
 	
-	if( itemsInWindow > 0 ) {
-		return YES;
-	}	
+	UInt32 item = 0;
+	UInt32 offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
+	int i = 0;
+	
+	for ( ; i < MAX_ITEMS_IN_LOOT_WINDOW; i++ ){
+		[memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)];
+		if ( item > 0 ){
+			return YES;
+		}
+	}
 	
 	return NO;
 }
@@ -176,14 +153,14 @@
 	int i = 0;
 	unsigned long offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	while ( [memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
+	while ( memory && [memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
 		if ( item > 0 ){
 			// Loot the item!
 			[chatController enter];             // open/close chat box
             usleep(100000);
 			[chatController sendKeySequence: [NSString stringWithFormat: @"/script LootSlot(%d);%c", i+1, '\n']];
 			usleep(500000);
-		
+			
 			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
 				[chatController enter];             // open/close chat box
@@ -209,6 +186,56 @@
 		
 		i++;
 	}
+}
+
+#pragma mark Notification Firing Mechanisms
+
+- (void)lootingComplete{
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(lootingComplete) object: nil];
+	
+	// Only call our notifier if the loot window isn't open!
+	if ( ![self isLootWindowOpen] ){
+		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: nil];
+	}
+	// Lets check again shortly!
+	else{
+		[self performSelector: @selector(lootingComplete) withObject: nil afterDelay: 0.1f];
+	}
+}
+
+// future improvement: we could just monitor the items in our bag? (only drawback here is the object list is only updated every second)
+- (void)itemLooted: (NSArray*)data{
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return;
+	
+	int location = [[data objectAtIndex:1] intValue];
+	UInt32 itemID = 0;
+	unsigned long offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
+	
+	// check to see if the item is still in the list!
+	if ( [memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (location)) Buffer: (Byte *)&itemID BufLength: sizeof(itemID)] && itemID > 0 ){
+		[self performSelector:@selector(itemLooted:) withObject:data afterDelay:0.1f];
+		return;
+	}
+
+	// fire off the notification
+	[[NSNotificationCenter defaultCenter] postNotificationName: ItemLootedNotification object: [data objectAtIndex:0]];
+}
+
+#pragma mark Notifications
+
+// lets stop monitoring!
+- (void)playerIsInvalid: (NSNotification*)not {
+    [NSObject cancelPreviousPerformRequestsWithTarget: self];
+	_shouldMonitor = NO;
+}
+
+// start monitoring!
+- (void)playerIsValid: (NSNotification*)not {
+	_shouldMonitor = YES;
+	// Fire off a thread to start monitoring our loot
+	[self performSelector:@selector(lootMonitor) withObject:nil afterDelay:0.1f];
 }
 
 @end

@@ -37,11 +37,13 @@
 	NSString *_playerName;
 	NSString *_serverName;
 	NSArray *_playerMacros;
+	NSDictionary *_macroDictionary;
+	NSDictionary *_macroMap;
 }
 
 @property (readonly) NSArray *playerMacros;
 
-- (IBAction) macroSelected: (id)sender;
+- (IBAction)macroSelected: (id)sender;
 
 - (void)acceptBattlefield;
 - (void)joinBattlefield;
@@ -52,5 +54,8 @@
 - (void)dismount;
 
 - (void)reloadMacros;
+
+- (void)findExistingMacros;
+- (UInt32)findMacroID: (NSString*)macroTitle;
 
 @end

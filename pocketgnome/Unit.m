@@ -130,6 +130,23 @@ enum NPCFlags
     return NO;
 }
 
+- (BOOL)isOnGround {
+	UInt32 movementFlags = [self movementFlags];
+	
+	// player is air mounted + in the air!
+	if ( (movementFlags & MovementFlags_AirMountedInAir) == MovementFlags_AirMountedInAir ){
+		return NO;
+	}
+	
+	// player is in the air
+	if ( (movementFlags & MovementFlags_InAir) == MovementFlags_InAir ){
+		return NO;
+	}
+	
+	// we should assume if we get here, the player must be on the ground	
+	return YES;
+}
+
 - (BOOL)isElite {
     return NO;
 }
@@ -230,6 +247,13 @@ enum NPCFlags
 - (UInt32)factionTemplate {
     UInt32 value = 0;
     [_memory loadDataForObject: self atAddress: ([self infoAddress] + UnitField_FactionTemplate) Buffer: (Byte *)&value BufLength: sizeof(value)];
+    return value;
+}
+
+// 1 read
+- (UInt32)movementFlags {
+    UInt32 value = 0;
+    [_memory loadDataForObject: self atAddress: ([self baseAddress] + BaseField_MovementFlags) Buffer: (Byte*)&value BufLength: sizeof(value)];
     return value;
 }
 

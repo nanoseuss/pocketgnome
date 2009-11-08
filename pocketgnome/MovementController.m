@@ -61,7 +61,6 @@
 - (void)turnToward: (Position*)position;
 
 - (void)moveBackwardStart;
-- (void)moveBackwardStop;
 
 - (void)correctDirection: (BOOL)force;
 
@@ -106,6 +105,7 @@
 		_unstickAttempt = 0;
 		_successfulMoves = 0;
 		self.lastTriedWaypoint = nil;
+		_lastResumeCorrection = [[NSDate date] retain];
 
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
     }
@@ -424,9 +424,33 @@ typedef enum MovementType {
 	}
 	
 	// check to see if we're flying off into space?
-	if ( [self.lastAttemptedPosition distanceToPosition:playerPosition] > 125.0f ){
-		PGLog(@"[Move] We're a little too far away from %@ for my liking!", self.lastAttemptedPosition );
-		_isStuck++;
+	float distance = [self.lastAttemptedPosition distanceToPosition:playerPosition];
+	if ( distance > 250.0f ){
+		
+		
+		float horizontalAngleToward = [playerPosition angleTo:self.lastAttemptedPosition];
+		float directionFacing = [playerData directionFacing];
+		
+		//[self setHorizontalDirectionFacing: [ourPosition angleTo: position]];
+        //[self setVerticalDirectionFacing: [ourPosition verticalAngleTo: position]];
+		
+		PGLog(@"[Move] Too far away for my liking! %0.2f == %0.2f near %0.2f %0.2f", distance, horizontalAngleToward, directionFacing, [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
+		
+		float difference = fabs(horizontalAngleToward - directionFacing);
+		
+		// then we have a problem + need to start going back to our waypoint!
+		if ( difference > 0.1f && ( [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] > 15.0f )){
+			[_lastResumeCorrection release]; _lastResumeCorrection = nil;
+			_lastResumeCorrection = [[NSDate date] retain];
+			
+			PGLog(@"[Move] Flying in the wrong direction, correcting");
+			
+			[self moveUpStop];
+			
+			[self moveForwardStop];
+			usleep(10000);
+			[self resumeMovement];
+		}
 	}
 	
 	// Crap we're stuck, we need to do something now :(
@@ -485,7 +509,7 @@ typedef enum MovementType {
 			
 			// Check to see if we should log out!
 			if ( [[botController logOutAfterStuckCheckbox] state] ){
-				int stuckTries = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"LogOutStuckTries"] intValue];
+				int stuckTries = [logOutStuckAttemptsTextField intValue];
 				
 				if ( _unstickAttempt > stuckTries ){
 					PGLog(@"[Bot] We're stuck, closing wow!");
@@ -519,6 +543,10 @@ typedef enum MovementType {
     [self moveToPosition: [waypoint position]];
 	
 	//PGLog(@"[Move] Moving to %@", waypoint );
+}
+
+- (void)moveNearPosition: (Position*)position andCloseness: (float)closeness{
+	[self setClickToMove:position andType:ctmWalkTo andGUID:0];
 }
 
 - (void)moveToObject: (WoWObject*)unit andNotify: (BOOL)notify {
@@ -909,8 +937,8 @@ typedef enum MovementType {
 }
 
 - (void)moveUpStop {
-	PGLog(@"Moving up stop....");
-    [self setIsMoving: NO];
+	PGLog(@"[Move] Releasing jump button!");
+
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
     // post another key down
