@@ -2,6 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>PARTY_LEADER_PTR</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x89\xE5\x57\x83\xEC\x14\xBF\xE0\xB9\x55\x01\xFC\xB9\x08\x00\x00\x00\x31\xC0\xF3\xAB</string>
+			<key>Mask</key>
+			<string>xxxxxxxx????xxxxxxxxxx</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>KEYBINDINGS_PTR</key>
 	<dict>
 		<key>Intel</key>
@@ -31,9 +48,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3F\xA0\x01\x4D\x38\x5D\x53\xEC\x83\xE2\x00\x0C\x73\xE0\x00\x01\x40\x82\x00\x0C</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xx??xxxxxxxxxxxx</string>
+			<key>AdditionalOffset</key>
+			<string>0xC</string>
 		</dict>
 	</dict>
 	<key>PLAYER_NAME_LIST</key>
@@ -173,9 +192,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x60\x01\x47\x38\x63\xA1\x3C\x7F\x64\xDB\x78\x38\xA0\x0B\xB8\x4B\xDB\x95\x9D</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xx??xxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>CTM_DISTANCE</key>
@@ -360,9 +381,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x40\x01\x1E\x7E\xA3\xAB\x78\x7E\xE4\xBB\x78\x90\x02\x17\xC8\x7E\x65\x9B\x78\x38\xC0\x00\xBA</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxxxxxx??xxxxxxxx</string>
 		</dict>
 	</dict>
 	<key>PLAYER_IN_BUILDING_STATIC</key>
@@ -377,9 +398,13 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3F\xC0\x01\x1E\x3C\x60\x00\x11\x90\x02\x00\x3C\x3B\xDE\xE5\xA4</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxxxxxx??</string>
+			<key>AdditionalOffset</key>
+			<string>0x7C</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>HOTBAR_BASE_STATIC</key>
@@ -394,9 +419,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x7C\x08\x02\xA6\x3C\x60\x01\x4B\x38\x80\x00\x00\x38\xA0\x02\x40\x38\x63\xFE\x70</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xxxxxx??xxxxxxxxxx??</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>KNOWN_SPELLS_STATIC</key>
@@ -411,9 +438,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3D\x20\x01\x4C\x54\x00\x10\x3A\x81\x62\x60\x0C\x39\x29\xCE\xD0</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxxxxxx??</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>TARGET_TABLE_STATIC</key>
@@ -427,10 +456,12 @@
 		</dict>
 		<key>ppc</key>
 		<dict>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 			<key>Signature</key>
-			<string></string>
+			<string>\x7C\x08\x02\xA6\xBF\xC1\xFF\xF8\x3F\xC0\x00\xB3\x7C\x7F\x1B\x78\x38\x5E\xDD\x28</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xxxxxxxxxx??xxxxxx??</string>
 		</dict>
 	</dict>
 	<key>COMBO_POINTS_STATIC</key>
@@ -447,6 +478,8 @@
 			<key>Signature</key>
 			<string></string>
 			<key>Mask</key>
+			<string></string>
+			<key>SubtractOffset</key>
 			<string></string>
 		</dict>
 	</dict>
@@ -481,9 +514,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>PLAYER_NAME_STATIC</key>
