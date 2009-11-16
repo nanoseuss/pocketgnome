@@ -154,9 +154,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x40\x01\x47\x55\x29\x18\x38\x7C\x09\x00\x50\x38\x42\x1E\xB8\x7C\x40\x12\x15\x41\x82\x00\x24\x80\x02\x00\x30</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxxxxxx??xxxxxxxxxxxx</string>
 		</dict>
 	</dict>
 	<key>MOUNT_LIST_POINTER</key>
@@ -175,9 +175,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x40\x01\x4C\x38\x42\xBE\x7C\x81\x62\x00\x04\x81\x22\x00\x08\x55\x60\x10\x3A\x39\x6B\x00\x01\x7D\x69\x03\xA6\x7C\x40\x4A\x14</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xx??xxxxxxxxxxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10008</string>
 		</dict>
 	</dict>
 	<key>LAST_RED_ERROR_MESSAGE</key>
@@ -211,9 +213,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x40\x01\x1F\x91\x3F\x00\x08\x90\x1F\x00\x00\xC3\xC2\x4E\xD8\x48\x00\x01\x14</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxxxxxx??xxxx</string>
 		</dict>
 	</dict>
 	<key>CTM_SCALE</key>
@@ -228,9 +230,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\xC0\x02\x00\xA8\x3C\x40\x01\x1F\xD0\x02\x4E\xDC\x48\x00\x00\x14</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xxxxxx??xx??xxxx</string>
 		</dict>
 	</dict>
 	<key>CTM_GUID</key>
@@ -245,9 +247,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3F\x40\x01\x1F\x3C\xC0\x00\x82\x38\xA0\x00\x01\x38\x5A\x4E\xE0\x38\xC6\xBE\x64\x38\xE0\x48\xD9</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxxxxxx??xxxxxxxx</string>
 		</dict>
 	</dict>
 	<key>CTM_ACTION</key>
@@ -262,9 +264,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3F\xA0\x01\x1F\x3B\xBD\x4E\xC8\x80\x1D\x00\x00\x2F\x80\x00\x0D\x41\x9E\x00\x60</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xx??xxxxxxxxxxxx</string>
 		</dict>
 	</dict>
 	<key>CTM_POS</key>
@@ -279,9 +281,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3C\x80\x01\x1F\x38\x61\x00\x50\x38\x84\x4D\xEC\x48\x07\x0E\x05\x80\x01\x00\x50\x80\x41\x00\x54\x90\x01\x00\x38\x80\x01\x00\x58\x90\x41\x00\x3C\x90\x01\x00\x40\x80\x1D\x00\x00</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xxxxxx??xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 		</dict>
 	</dict>
 	<key>CD_LIST_STATIC</key>
@@ -313,9 +315,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3E\xA0\x00\xB3\x3C\x40\x00\xB6\x3D\x20\x00\xB3\x80\x15\xD1\xE8\x80\x42\xC1\x24\x2F\x80\x00\x00\x81\x62\x00\x00\x91\x69\xD1\xE0\x40\x9E\x02\x74</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx%%xx%%xx??xx%%xx%%xxxxxxxxxx??xxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>ITEM_IN_LOOT_WINDOW</key>
@@ -330,9 +334,11 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x3E\xC0\x01\x4A\x3B\xF6\x5A\xD8\x3F\xA0\x00\x51\x3B\xBD\x5B\x0C\x3B\xDF\x02\x40</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xx??xx??xxxxxxxxxxxx</string>
+			<key>AdditionalOffset</key>
+			<string>0x4</string>
 		</dict>
 	</dict>
 	<key>CORPSE_POSITION_STATIC</key>
@@ -364,9 +370,9 @@
 		<key>ppc</key>
 		<dict>
 			<key>Signature</key>
-			<string></string>
+			<string>\x7C\x08\x02\xA6\xBF\x61\xFF\xEC\x3F\xC0\x00\xBB\x7C\x7F\x1B\x78\x90\x01\x00\x08\x94\x21\xFF\xA0\x80\x1E\x13\x58\x7F\x80\x18\x00\x41\x9E\x00\x98</string>
 			<key>Mask</key>
-			<string></string>
+			<string>xxxxxxxxxx??xxxxxxxxxxxxxx??xxxxxxxx</string>
 		</dict>
 	</dict>
 	<key>LAST_SPELL_THAT_DIDNT_CAST_STATIC</key>
