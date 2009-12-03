@@ -186,6 +186,12 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			PGLog(@"%@: 0x%X", key, offset);
 		}
 		
+		// hard-code some as i'm lazy + can't test on PPC yet :(
+		if ( IS_PPC || emulatePPC ){
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0x146A0F8] forKey:@"CORPSE_POSITION_STATIC"];
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0x14C5748] forKey:@"PLAYER_IN_BUILDING_STATIC"];	// also 0x136EE64
+		}
+		
 		_offsetsLoaded = YES;
 	}
 	// technically should never be here

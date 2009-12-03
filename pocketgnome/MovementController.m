@@ -1356,7 +1356,7 @@ typedef enum MovementType {
 - (BOOL)dismount{
 	
 	[macroController useMacroOrSendCmd:@"Dismount"];
-	return;
+	return YES;
 	
 	
 	// get memory
