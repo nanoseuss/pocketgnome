@@ -46,8 +46,9 @@
 	
 	int _applyLureAttempts;
 	int _totalFishLooted;
-	int _useContainer;
 	int _castNumber;
+	int _lootAttempt;
+	
 	UInt32 _fishingSpellID;
 	UInt64 _playerGUID;
 	
@@ -67,5 +68,7 @@
   withSchool:(Node*)nearbySchool;
 
 - (void)stopFishing;
+
+- (Node*)nearbySchool;
 
 @end

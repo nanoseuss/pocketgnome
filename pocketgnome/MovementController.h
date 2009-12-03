@@ -18,8 +18,11 @@
 @class WoWObject;
 @class Waypoint;
 @class Position;
+
 @class PlayerDataController;
 @class OffsetController;
+@class AuraController;
+@class MacroController;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
@@ -34,9 +37,11 @@
     IBOutlet id botController;
     IBOutlet id chatController;
     IBOutlet id combatController;
+	IBOutlet AuraController			*auraController;
     IBOutlet PlayerDataController	*playerData;
 	IBOutlet OffsetController		*offsetController;
-    
+    IBOutlet MacroController		*macroController;
+	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementType;
 
@@ -109,6 +114,8 @@
 - (void)moveForwardStop;
 
 - (BOOL)useSmoothTurning;
+
+- (BOOL)dismount;		// dismount the player
 
 // CTM
 - (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;

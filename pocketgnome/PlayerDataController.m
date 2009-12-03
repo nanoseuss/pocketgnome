@@ -19,6 +19,7 @@
 #import "BotController.h"
 #import "NodeController.h"
 #import "OffsetController.h"
+#import "MobController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -237,7 +238,7 @@ static PlayerDataController* sharedController = nil;
 #pragma mark -
 
 - (BOOL)playerIsValid{
-	PGLog(@"UI UI UI");
+	//PGLog(@"UI UI UI");
 	return [self playerIsValid:nil];	
 }
 // 4 reads
@@ -252,14 +253,15 @@ static PlayerDataController* sharedController = nil;
     //  previous pointer
     // then compare GUIDs and validate previous pointer is valid
     
-    UInt32 globalGUID = 0, selfGUID = 0, previousPtr = 0, objectType = 0;
+    UInt32 selfGUID = 0, previousPtr = 0, objectType = 0;
+	UInt64 globalGUID = 0;
     [memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
 	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT3_POINTER) Buffer: (Byte*)&previousPtr BufLength: sizeof(previousPtr)];
 	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
 	
 	// is the player still valid?
-    if ( globalGUID == selfGUID && objectType == TYPEID_PLAYER && previousPtr > 0x0 ) {
+    if ( GUID_LOW32(globalGUID) == selfGUID && objectType == TYPEID_PLAYER && previousPtr > 0x0 ) {
 		if ( !_lastState ) {
 			PGLog(@"[Player] Player is valid. %@", [sender class]);
 			[self loadState];
@@ -619,24 +621,46 @@ static PlayerDataController* sharedController = nil;
 
 #pragma mark Player Targeting
 
-- (BOOL)setPrimaryTarget: (UInt64)targetID {
-    MemoryAccess *memory = [controller wowMemoryAccess];
-    if(memory && [self playerIsValid:self]) {
+- (BOOL)setTarget: (UInt64)targetID{
+	
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+    if(memory && [self playerIsValid]) {
         BOOL ret1, ret3;
         // save this value to the target table
         ret1 = [memory saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_CURRENT) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
-        //ret2 = [[self wowMemory] saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
+        //ret2 = [[self wowMemory] saveDataForAddress: self atAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_MOUSEOVER) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
         
         // and to the player table
         ret3 = [memory saveDataForAddress: ([self infoAddress] + UnitField_Target) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
-        
+		
         if(ret1 && ret3)    
             return YES;
         else
             return NO;
     }
     return NO;
+	
 }
+
+- (BOOL)setPrimaryTarget: (WoWObject*)target {
+	
+	// is target valid
+	if ( !target || ![target isValid] ){
+		PGLog(@"[Player] Unable to target %@", target);
+		[mobController clearTargets];
+		return [self setTarget:0];
+	}
+	
+	// need to make sure we hit the mob selection variable as well!
+	if ( [target isNPC] ){
+		Mob *mob = (Mob*)target;
+		[mob select];			
+	}
+	
+	return [self setTarget:[target GUID]];
+}
+
 
 - (BOOL)setMouseoverTarget: (UInt64)targetID {
     if([self playerIsValid:self]) {
@@ -1216,7 +1240,7 @@ static PlayerDataController* sharedController = nil;
 
 - (int)battlegroundStatus{
 	UInt32 status = 0;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: BATTLEGROUND_INFO + BG_STATUS Buffer: (Byte *)&status BufLength: sizeof(status)];
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"BATTLEGROUND_STATUS"] + BG_STATUS Buffer: (Byte *)&status BufLength: sizeof(status)];
 	
 	if ( status < BGNone || status > BGActive )
 		return -1;
@@ -1224,8 +1248,8 @@ static PlayerDataController* sharedController = nil;
 	return status;	
 }
 
-- (BOOL)isInBG{
-	switch([self zone]){
+- (BOOL)isInBG:(int)zone{
+	switch(zone){
 		case 4384:	// Strand of the Ancients
 		case 3358:	// Arathi Basin
 		case 3277:	// Warsong Gulch

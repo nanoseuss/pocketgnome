@@ -18,6 +18,8 @@
 #import "CombatController.h"
 #import "ChatController.h"
 #import "OffsetController.h"
+#import "AuraController.h"
+#import "MacroController.h"
 
 #import "WoWObject.h"
 #import "Offsets.h"
@@ -27,6 +29,7 @@
 #import "Waypoint.h"
 #import "Action.h"
 #import "Node.h"
+#import "Player.h"
 
 #define STUCK_THRESHOLD		5
 
@@ -889,6 +892,9 @@ typedef enum MovementType {
 
 - (void)resetMovementState {
 	PGLog(@"resetMovementState");
+	if ( [movementType selectedTag] == MOVE_CTM ){
+		[self setClickToMove:nil andType:ctmIdle andGUID:0x0];
+	}
     [self moveForwardStop];
     [self resetMovementTimer];
 	[self resetSpeedDistanceCheck];
@@ -1345,6 +1351,48 @@ typedef enum MovementType {
 
 - (void)followObject: (WoWObject*)unit{
 	[self setClickToMove: [unit position] andType:ctmWalkTo andGUID:[unit GUID]];
+}
+
+- (BOOL)dismount{
+	
+	[macroController useMacroOrSendCmd:@"Dismount"];
+	return;
+	
+	
+	// get memory
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return NO;
+	
+	// do they have a standard mount?
+	UInt32 mountID = [[playerData player] mountID];
+	
+	// check for druids
+	if ( mountID == 0 ){
+		if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] )
+			mountID = 40120;
+		else if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] )
+			mountID = 33943;
+	}
+	
+	// mount found! "use" it!
+	if ( mountID > 0 ){
+		
+		PGLog(@"[Movement] Dismounting from %d", mountID);
+		
+		[botController performAction: mountID];
+		
+		usleep(100000);
+		
+		return YES;
+	}
+	
+	// just in case people have problems, we'll print something to their log file
+	if ( ![playerData isOnGround] ) {
+		PGLog(@"[Movement] Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
+    }
+	
+	return NO;	
 }
 
 @end

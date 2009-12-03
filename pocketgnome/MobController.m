@@ -164,19 +164,12 @@ static MobController* sharedController = nil;
 }
 
 #pragma mark -
-
-- (void)selectMob: (Mob*)mob {
-    // set mob as target
-    if(mob && [mob isValid]) {
-        [playerData setPrimaryTarget: [mob GUID]];
-        [mob select];
-    } else {
-        // deselect all
-        [playerData setPrimaryTarget: 0];
-        for(Mob *mob in _mobList) {
-            [mob deselect];
-        }
-    }
+// deselect all mobs
+- (void)clearTargets{
+	// deselect all
+	for(Mob *mob in _mobList) {
+		[mob deselect];
+	}
 }
 
 /*
@@ -305,7 +298,7 @@ static MobController* sharedController = nil;
     
     if(selectedRow >= [_mobDataList count]) return;
     Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
-    [self selectMob: mob];
+	[playerData setPrimaryTarget:mob];
 }
 
 - (IBAction)faceMob: (id)sender {
@@ -381,7 +374,7 @@ static MobController* sharedController = nil;
     }
     
     if(mobToMove) {
-        [self selectMob: mobToMove];
+		[playerData setPrimaryTarget:mobToMove];
         //Position *mobPosition = [mobToMove position];
         //if(tag == 23311)    // adjust the height for peons
         //    [mobPosition setZPosition: [mobPosition zPosition] + 20.0f];

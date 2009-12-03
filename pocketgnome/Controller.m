@@ -141,7 +141,11 @@ static Controller* sharedController = nil;
         
         // load in our faction dictionary
         factionTemplate = [[NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"FactionTemplate" ofType: @"plist"]] retain];
-    }
+		
+		// start our name list update timer!
+		_updateNameListTimer = [NSTimer scheduledTimerWithTimeInterval: 30.0f target: self selector: @selector(updateNameList:) userInfo: nil repeats: YES];
+		_nameListAddresses = [[NSMutableDictionary dictionary] retain];
+	}
     
     return self;
 }
@@ -283,6 +287,115 @@ static Controller* sharedController = nil;
     [connection autorelease];
 }
 
+#pragma mark Name List Scanning
+
+typedef struct NameListStruct{
+	UInt32 four;
+	UInt32 nextPtr;
+	UInt32 prevPtr;
+} NameListStruct;
+
+// next + prev could be swapped, not sure, but pointers nonetheless
+typedef struct NameObjectStruct{
+	UInt32 guidLow;
+	UInt32 addr;
+	UInt32 unk;
+	UInt32 nextPtr;			// 0xC			need to subtract 0xC to get to the start
+	UInt32 prevPtr;			// 0x10			no change req'd
+	UInt64 guid;
+	char   name[16];		// max length is 12 chars
+} NameObjectStruct;
+
+- (void)updateNameList: (NSTimer*)timer{
+	[self traverseNameList];
+}
+
+- (NameObjectStruct)readPlayerName: (UInt32)address withMemory:(MemoryAccess*)memory{
+	NameObjectStruct objBad;
+	objBad.guidLow = 1;
+	
+	NSNumber *key = [NSNumber numberWithUnsignedLong:address];
+	NSNumber *value = [_nameListAddresses objectForKey:key];
+	
+	// we already have this guy stored?
+	if ( value != nil ){
+		[_nameListAddresses setObject:[NSNumber numberWithInt:[value intValue]+1] forKey:key];
+
+		//_nameListSavedRead++;
+		
+		return objBad;
+	}
+	// add to list
+	else{
+		[_nameListAddresses setObject:[NSNumber numberWithInt:1] forKey:key];
+	}
+	
+	// invalid address
+	if ( address & 1 )
+		return objBad;
+	
+	// load the entire chunk
+	NameObjectStruct obj;
+	[memory loadDataForObject: self atAddress: address Buffer: (Byte *)&obj BufLength: sizeof(obj)];
+	
+	// back in list, ignore!
+	if ( obj.guidLow == 0x4 )
+		return objBad;
+	
+	// if we get here we should have a valid name!
+	NSString *newTmpName = [NSString stringWithUTF8String: obj.name];  // will stop after it's first encounter with '\0'
+	
+	// add the player?
+	[playersController addPlayerName:newTmpName withGUID:obj.guid];
+	
+	return obj;
+}
+
+- (void)traverseNameList{
+	UInt32 curObjAddress = 0x0, offset = [offsetController offset:@"PLAYER_NAME_LIST"];
+	
+	// reset our stats guy
+	//_nameListSavedRead = 0;
+	
+	// + 0x58 is another pointer to within the list, not sure what it means?  first or last?
+	MemoryAccess *memory = [self wowMemoryAccess];
+	[memory resetLoadCount];
+	if ( memory && [memory loadDataForObject: self atAddress: offset Buffer: (Byte*)&curObjAddress BufLength: sizeof(curObjAddress)] && curObjAddress ){
+		
+		// check to make sure the first value is 0x4!
+		NameListStruct nameListStruct;
+		NameObjectStruct nameStruct1, nameStruct2;
+		
+		[memory loadDataForObject: self atAddress: curObjAddress Buffer: (Byte*)&nameListStruct BufLength: sizeof(nameListStruct)];
+		while ( nameListStruct.four == 0x4 ){
+						
+			// FIRST one in the list
+			nameStruct1 = [self readPlayerName:nameListStruct.nextPtr - 0x4 withMemory:memory];
+			
+			// there are 2 pointers in EACH player struct, so lets check both
+			if ( nameStruct1.guidLow != 1 ){
+
+				[self readPlayerName:nameStruct1.nextPtr - 0xC withMemory:memory];
+				[self readPlayerName:nameStruct1.prevPtr withMemory:memory];
+			}
+				
+			// second in the list
+			nameStruct2 = [self readPlayerName:nameListStruct.prevPtr withMemory:memory];
+			
+			// 2 more pointers due to the second struct check!
+			if ( nameStruct2.guidLow != 1 ){
+				[self readPlayerName:nameStruct2.nextPtr - 0xC withMemory:memory];
+				[self readPlayerName:nameStruct2.prevPtr withMemory:memory];
+			}
+
+			curObjAddress += 0xC;
+			[memory loadDataForObject: self atAddress: curObjAddress Buffer: (Byte*)&nameListStruct BufLength: sizeof(nameListStruct)];
+		}
+	}
+	
+	PGLog(@"[Controller] Player names updated after %d memory reads", [memory loadCount]);
+}
+
 #pragma mark -
 #pragma mark WoW Structure Scanning
 
@@ -367,7 +480,7 @@ static Controller* sharedController = nil;
 				
 				// read player GUID
 				UInt32 guid = 0;
-				if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_GUID_LOW32) Buffer: (Byte*)&guid BufLength: sizeof(guid)] && guid == _globalGUID ){
+				if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_GUID_LOW32) Buffer: (Byte*)&guid BufLength: sizeof(guid)] && guid == GUID_LOW32(_globalGUID) ){
 					if ( objectAddress != [playerData baselineAddress] ){
 						
 						PGLog(@"[Controller] Player base address 0x%X changed to 0x%X, verifying change...", [playerData baselineAddress], objectAddress);
@@ -433,6 +546,7 @@ static Controller* sharedController = nil;
 	
 	// grab our global GUID
 	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
+	//PGLog(@"[Controller] Player GUID: 0x%qX 0x%qX Low32:0x%X High32:0x%X HiPart:0x%X", _globalGUID, CFSwapInt64HostToLittle(_globalGUID), GUID_LOW32(_globalGUID), GUID_HIGH32(_globalGUID), GUID_HIPART(_globalGUID));
 	
 	// object manager
 	if ( memory ){

@@ -596,7 +596,7 @@ typedef enum {
     
     Node *node = [[_nodeDataList objectAtIndex: selectedRow] objectForKey: @"Node"];
     
-    [playerController setPrimaryTarget: [node GUID]];
+    [playerController setPrimaryTarget: node];
 }
 
 - (IBAction)filterList: (id)sender {

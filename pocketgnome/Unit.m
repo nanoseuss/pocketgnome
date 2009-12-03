@@ -115,6 +115,14 @@ enum NPCFlags
     return NO;
 }
 
+- (UInt32)mountID{
+	UInt32 value = 0;
+	if([_memory loadDataForObject: self atAddress: ([self infoAddress] + UnitField_MountDisplayID) Buffer: (Byte*)&value BufLength: sizeof(value)] && (value > 0) && (value != 0xDDDDDDDD)) {
+        return value;
+    }
+	return 0;
+}
+
 
 - (BOOL)isMounted {
     UInt32 value = 0;
@@ -145,6 +153,16 @@ enum NPCFlags
 	
 	// we should assume if we get here, the player must be on the ground	
 	return YES;
+}
+
+-(BOOL)isSwimming{
+	UInt32 movementFlags = [self movementFlags];
+	
+	if ( (movementFlags & MovementFlag_Swimming) == MovementFlag_Swimming ){
+		return YES;
+	}
+	
+	return NO;
 }
 
 - (BOOL)isElite {
