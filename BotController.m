@@ -3562,7 +3562,7 @@ NSMutableDictionary *_diffDict = nil;
 	[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextCheck];
 }
 
-// this will join our battleground for us!
+// this will keep us from going afk
 - (void)pvpCheck {
 	if(![playerController playerIsValid:self])   return;
 	
@@ -3578,16 +3578,6 @@ NSMutableDictionary *_diffDict = nil;
             self.pvpCheckCount = 0;
             [self noAFK];
         }
-
-		// don't try to join if we have deserter.  Although I'm not entirely sure this function will ever be called if you have the aura
-		if( [auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
-			return;
-		}
-
-		// Lets join the BG!
-		if ( [playerController battlegroundStatus] == BGWaiting ){
-			[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
-		}
 		
         [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 1.0f];
     }
