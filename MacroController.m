@@ -21,18 +21,20 @@
 #import "MemoryAccess.h"
 #import "Macro.h"
 
+@interface MacroController (Internal)
+- (void)reloadMacros;
+- (BOOL)executeMacro: (NSString*)key;
+- (Macro*)findMacro: (NSString*)key;
+@end
+
 @implementation MacroController
 
 
 - (id) init{
     self = [super init];
     if (self != nil) {
-        
-		_playerName = nil;
-		_accountName = nil;
-		_serverName = nil;
+
 		_playerMacros = nil;
-		
 		_macroDictionary = [[NSDictionary dictionaryWithContentsOfFile: [[NSBundle mainBundle] pathForResource: @"Macros" ofType: @"plist"]] retain];
 		
 		 // Notifications
@@ -45,9 +47,6 @@
 }
 
 - (void) dealloc{
-	[_playerName release];
-	[_accountName release];
-	[_serverName release];
 	[_macroDictionary release];
     [super dealloc];
 }
@@ -56,120 +55,38 @@
 
 #pragma mark Notifications
 
-- (void)setMenu: (NSPopUpButton*)popUpButton Key:(NSString*)key{
-	NSString *newKey = [NSString stringWithFormat:@"%@_%@_%@_%@", _serverName, _accountName, _playerName, key];
-	UInt32 actionID = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: newKey] intValue];
-	//PGLog(@"Looking up for key: %@  Value: %d", newKey, actionID);
-	NSMenu *macroMenu = [[[ActionMenusController sharedMenus] menuType: MenuType_Macro actionID: actionID] retain];
-	[popUpButton setMenu: macroMenu];
-	if ( actionID ) [popUpButton selectItemWithTag:actionID];
-}
-
-// save helper
-- (void)saveMacro: (NSPopUpButton*)popUpButton Key:(NSString*)key{
-	NSString *newKey = [NSString stringWithFormat:@"%@_%@_%@_%@", _serverName, _accountName, _playerName, key];
-	//PGLog(@"Saving key: %@", newKey);
-	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithInt:[popUpButton selectedTag]] forKey: newKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-// save all info!
-- (IBAction)macroSelected: (id)sender{
-	[self saveMacro:macroAcceptBattleFieldPort			Key:@"MacroAcceptBattlefieldPort"];
-	[self saveMacro:macroJoinBattlefield				Key:@"MacroJoinBattlefield"];
-	[self saveMacro:macroLeaveBattlefield				Key:@"MacroLeaveBattlefield"];
-	[self saveMacro:macroRepopMe						Key:@"MacroRepopMe"];
-	[self saveMacro:macroRetrieveCorpse					Key:@"MacroRetrieveCorpse"];
-	[self saveMacro:macroDismount						Key:@"MacroDismount"];
-	[self saveMacro:macroCancelSwiftFlightForm			Key:@"MacroCancelSwiftFlightForm"];
-	[self saveMacro:macroCancelFlightForm				Key:@"MacroCancelFlightForm"];
-	[self saveMacro:macroClickPopup						Key:@"MacroClickPopup"];
-}
-
 //	update our list of macros when the player is valid
 - (void)playerIsValid: (NSNotification*)not {
-	
-	[_playerName release]; _playerName = nil;
-	[_accountName release]; _accountName = nil;
-	[_serverName release]; _serverName = nil;
-	_playerName = [[playerData playerName] retain];
-	_accountName = [[playerData accountName] retain];
-	_serverName = [[playerData serverName] retain];
-	
-	[self setMenu:macroAcceptBattleFieldPort		Key:@"MacroAcceptBattlefieldPort"];
-	[self setMenu:macroJoinBattlefield				Key:@"MacroJoinBattlefield"];
-	[self setMenu:macroLeaveBattlefield				Key:@"MacroLeaveBattlefield"];
-	[self setMenu:macroRepopMe						Key:@"MacroRepopMe"];
-	[self setMenu:macroRetrieveCorpse				Key:@"MacroRetrieveCorpse"];
-	[self setMenu:macroDismount						Key:@"MacroDismount"];
-	[self setMenu:macroCancelSwiftFlightForm		Key:@"MacroCancelSwiftFlightForm"];
-	[self setMenu:macroCancelFlightForm				Key:@"MacroCancelFlightForm"];
-	[self setMenu:macroClickPopup					Key:@"MacroClickPopup"];
+	[self reloadMacros];
 }
 
 // actually will take an action (macro or send command)
-- (void)takeAction: (NSPopUpButton*)popUpButton Sequence:(NSString*)sequence{
+- (void)useMacroOrSendCmd: (NSString*)key{
 	
-	// use macro
-	if ( [popUpButton selectedTag] ){
-		int actionID = (USE_MACRO_MASK + [popUpButton selectedTag]);
-		[botController performAction:actionID];	
-	}
-	else{
-		// Does hitting escape work to close the chat?
+	BOOL macroExecuted = [self executeMacro:key];
+	
+	// if we didnt' find a macro, lets send the command!
+	if ( !macroExecuted ){
+
+		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){
 			PGLog(@"[Macro] Sending escape to close open chat!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
 		
-		// Send dismount!
+		// get the macro info
+		NSDictionary *macroData = [_macroDictionary valueForKey:key];
+		
+		// the actual command
+		NSString *macroCommand = [macroData valueForKey:@"Macro"];
+		
+		// send the command
 		[chatController enter];
 		usleep(100000);
-		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", sequence, '\n']];
-	}
-}
-
-- (void)acceptBattlefield{
-	[self takeAction: macroAcceptBattleFieldPort Sequence:@"/script AcceptBattlefieldPort(1,1);"];
-}
-
-- (void)joinBattlefield{
-	[self takeAction: macroJoinBattlefield Sequence:@"/script JoinBattlefield(0);"];
-}
-
-- (void)leaveBattlefield{
-	[self takeAction: macroLeaveBattlefield Sequence:@"/script LeaveBattlefield();"];
-}
-
-- (void)rePopMe{
-	[self takeAction: macroRepopMe Sequence:@"/script RepopMe();"];
-}
-
-- (void)retrieveCorpse{
-	[self takeAction: macroRetrieveCorpse Sequence:@"/script RetrieveCorpse();"];
-}
-
-- (void)clickPopup{
-	[self takeAction: macroClickPopup Sequence:@"/run if StaticPopup1:IsVisible() then StaticPopup_OnClick(StaticPopup1, 1) end"];
-}
-
-// dismount please!
-- (void)dismount{
-	
-	// Swift Flight Form
-	if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] ){
-		[self takeAction: macroCancelSwiftFlightForm Sequence:@"/cancelaura Swift Flight Form"];
-	}
-	
-	// Flight Form
-	else if ( [auraController unit: [playerData player] hasAuraNamed: @"Flight Form"] ){
-		[self takeAction: macroCancelFlightForm Sequence:@"/cancelaura Flight Form"];
-	}
-	
-	// Otherwise dismount!
-	else{
-		[self takeAction: macroDismount Sequence:@"/dismount"];
+		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", macroCommand, '\n']];
+		
+		PGLog(@"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in! Check the settings tab.", key);
 	}
 }
 
@@ -186,6 +103,8 @@
 	UInt32 offset = [offsetController offset:@"MACRO_LIST_PTR"];
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return;
 	
 	UInt32 objectPtr = 0, macroID = 0;
 	[memory loadDataForObject:self atAddress:offset Buffer:(Byte *)&objectPtr BufLength:sizeof(objectPtr)];
@@ -231,43 +150,27 @@
 	_playerMacros = [macros retain];
 }
 
-// this function is, epic, and will loop through all the existing character macros to automatically find + use them! woohoo! (b/c people are stupid)
-- (void)findExistingMacros{
-
-	// here we will use our _macroDictionary!
-	//	key
-	//		Macro (the actual command)
-	//		Description (for our UI)
+// pass an identifier and the macro will be executed!
+- (BOOL)executeMacro: (NSString*)key{
 	
-	// update our internal macro list first!
-	[self reloadMacros];
-
-	if ( _macroDictionary && _playerMacros ){
+	Macro *macro = [self findMacro:key];
+	
+	if ( macro ){
+		UInt32 macroID = [[macro number] unsignedIntValue];
 		
-		// all of our keys
-		NSArray *allKeys = [_macroDictionary allKeys];
+		//PGLog(@"[Macro] Executing macro '%@' with id 0x%X", key, macroID);
 		
-		for ( NSString *key in allKeys ){
-
-			// grab the macro data! (macro and the description)
-			NSDictionary *macroData = [_macroDictionary valueForKey:key];
-			
-			// the actual command
-			NSString *macroCommand = [macroData valueForKey:@"Macro"];
-			
-			// now lets loop through all of our player macros!
-			for ( Macro *macro in _playerMacros ){
-				  
-				// match found! yay!
-				if ( [[macro body] isEqualToString:[NSString stringWithFormat:@"%@%c", macroCommand, '\n']] ){
-					PGLog(@"[Macro] Match found! Linking %@ to %@", [macro name], key);						
-				}				
-			}
-		}
+		[botController performAction:USE_MACRO_MASK + macroID];
+		usleep(100000);
+		
+		return YES;
 	}
+	
+	return NO;	
 }
 
-- (UInt32)findMacroID: (NSString*)macroTitle{
+// find a macro given the key (check Macros.plist)
+- (Macro*)findMacro: (NSString*)key{
 	
 	// update our internal macro list first!
 	[self reloadMacros];
@@ -275,7 +178,7 @@
 	if ( _macroDictionary && _playerMacros ){
 
 		// grab the macro data! (macro and the description)
-		NSDictionary *macroData = [_macroDictionary valueForKey:macroTitle];
+		NSDictionary *macroData = [_macroDictionary valueForKey:key];
 			
 		// the actual command
 		NSString *macroCommand = [macroData valueForKey:@"Macro"];
@@ -285,8 +188,15 @@
 				
 			// match found! yay!
 			if ( [[macro body] isEqualToString:[NSString stringWithFormat:@"%@%c", macroCommand, '\n']] ){
-				return [[macro number] unsignedIntValue];
-			}				
+				return macro;
+			}
+			
+			// search for partial match!
+			NSRange range = [[macro body] rangeOfString : macroCommand];
+			if ( range.location != NSNotFound ) {
+				PGLog(@"[Macro] Found partial match! '%@'", macroCommand);
+				return macro;
+			}
 		}
 	}
 	

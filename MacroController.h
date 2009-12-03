@@ -23,19 +23,6 @@
 	IBOutlet ChatController			*chatController;
 	IBOutlet OffsetController		*offsetController;
 	
-	IBOutlet NSPopUpButton *macroAcceptBattleFieldPort;
-	IBOutlet NSPopUpButton *macroJoinBattlefield;
-	IBOutlet NSPopUpButton *macroLeaveBattlefield;
-	IBOutlet NSPopUpButton *macroRepopMe;
-	IBOutlet NSPopUpButton *macroRetrieveCorpse;
-	IBOutlet NSPopUpButton *macroDismount;
-	IBOutlet NSPopUpButton *macroCancelSwiftFlightForm;
-	IBOutlet NSPopUpButton *macroCancelFlightForm;
-	IBOutlet NSPopUpButton *macroClickPopup;
-	
-	NSString *_accountName;
-	NSString *_playerName;
-	NSString *_serverName;
 	NSArray *_playerMacros;
 	NSDictionary *_macroDictionary;
 	NSDictionary *_macroMap;
@@ -43,19 +30,7 @@
 
 @property (readonly) NSArray *playerMacros;
 
-- (IBAction)macroSelected: (id)sender;
-
-- (void)acceptBattlefield;
-- (void)joinBattlefield;
-- (void)leaveBattlefield;
-- (void)rePopMe;
-- (void)retrieveCorpse;
-- (void)clickPopup;
-- (void)dismount;
-
-- (void)reloadMacros;
-
-- (void)findExistingMacros;
-- (UInt32)findMacroID: (NSString*)macroTitle;
+// this will make us do something!
+- (void)useMacroOrSendCmd: (NSString*)key;
 
 @end

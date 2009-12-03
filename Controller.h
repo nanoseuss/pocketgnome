@@ -88,8 +88,12 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     BOOL _appFinishedLaunching;
     int _currentState;
     BOOL _isRegistered;
-	UInt32 _globalGUID;
+	UInt64 _globalGUID;
 	BOOL _invalidPlayerNotificationSent;
+	
+	NSTimer *_updateNameListTimer;
+	NSMutableDictionary *_nameListAddresses;
+	int _nameListSavedRead;
 
     NSDictionary *factionTemplate;
 }
@@ -97,7 +101,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 + (Controller *)sharedController;
 
 @property BOOL isRegistered;
-@property (readonly) UInt32 globalGUID;
+@property (readonly) UInt64 globalGUID;
 
 - (IBAction)showAbout: (id)sender;
 - (IBAction)showSettings: (id)sender;
@@ -157,6 +161,8 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (IBAction)renameShowHelp: (id)sender;
 
 - (IBAction)testFront: (id)sender;
+
+- (void)traverseNameList;
 @end
 
 @interface NSObject (MemoryViewControllerExtras)

@@ -680,5 +680,4 @@ static SpellController *sharedSpells = nil;
 	return 0;
 }
 
-
 @end

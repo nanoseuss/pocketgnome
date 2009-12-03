@@ -63,6 +63,7 @@
 - (void)monitorBobber:(Node*)bobber;
 - (BOOL)isPlayerFishing;
 - (void)facePool:(Node*)school;
+- (void)verifyLoot;
 @end
 
 
@@ -74,8 +75,8 @@
 		_isFishing = NO;
 		_totalFishLooted = 0;
 		_ignoreIsFishing = NO;
-		_useContainer = 0;
 		//_blockActions = NO;
+		_lootAttempt = 0;
 		
 		_nearbySchool = nil;	
 		_facedSchool = [[NSMutableArray array] retain];
@@ -183,6 +184,43 @@
 		return;
 	}
 	
+	// loot window open?  check again shortly
+	if ( [lootController isLootWindowOpen] ){
+		PGLog(@"[Fishing] Loot window is open! Attempting to loot");
+		
+		// cancel previous requests if any
+		[NSObject cancelPreviousPerformRequestsWithTarget: self];
+		
+		// need to loot soon?
+		_lootAttempt = 0;
+		[self verifyLoot];
+		
+		return;
+	}
+	
+	// school is gone!
+	if ( _nearbySchool && ![_nearbySchool isValid] ){
+		
+		[self stopFishing];
+		
+		[botController evaluateSituation];
+		return;
+	}
+	
+	// use containers?
+	if ( _optUseContainers ){
+		
+		Item *item = [itemController itemForID:[NSNumber numberWithInt:ITEM_REINFORCED_CRATE]]; 
+		
+		if ( item && [itemController collectiveCountForItem:item] > 0 ){
+			// Use our crate!
+			[botController performAction:(USE_ITEM_MASK + ITEM_REINFORCED_CRATE)];
+			
+			// Wait a bit so we can loot it!
+			usleep([controller refreshDelay]*2);
+		}
+	}
+	
 	// Lets apply some lure if we need to!
 	[self applyLure];
 	
@@ -191,19 +229,6 @@
 		
 		// Reset this!  We only want this to be YES when we have to re-cast b/c we're not close to a school!
 		_ignoreIsFishing = NO;
-		
-		// Do we need to use a crate?
-		if ( _useContainer > 0 && _optUseContainers ){
-			
-			// Use our crate!
-			[botController performAction:(USE_ITEM_MASK + _useContainer)];
-			
-			// Wait a bit so we can loot it!
-			usleep([controller refreshDelay]*2);
-			
-			// Reset our container item ID!
-			_useContainer = 0;
-		}
 		
 		// Time to fish!
 		[botController performAction: _fishingSpellID];
@@ -239,7 +264,8 @@
 		}
 	}
 	
-	if ( foundLure ){
+	// lure still in bags or we're using the hat!
+	if ( foundLure || _optLureItemID == 33820 ){
 		
 		Item *item = [itemController itemForGUID: [[playerController player] itemGUIDinSlot: SLOT_MAIN_HAND]];
 		if ( ![item hasTempEnchantment] && _applyLureAttempts < 3 ){
@@ -252,11 +278,14 @@
 			// Wait a bit before we cast the next one!
 			usleep([controller refreshDelay]*2);
 			
-			// Now use our fishing pole so it's applied!
-			[botController performAction:(USE_ITEM_MASK + [item entryID])];
+			// don't need to use the pole if we're casting a spell!
+			if ( _optLureItemID == 33820 ){
+				// Now use our fishing pole so it's applied!
+				[botController performAction:(USE_ITEM_MASK + [item entryID])];
 			
-			// we may need this?
-			usleep([controller refreshDelay]);
+				// we may need this?
+				usleep([controller refreshDelay]);
+			}
 			
 			// Are we casting the lure on our fishing pole?
 			if ( [playerController spellCasting] > 0 && ![self isPlayerFishing] ){
@@ -388,7 +417,8 @@
 			[nodeController finishedNode:bobber];
 			
 			// make sure the fish was looted!
-			[self performSelector:@selector(verifyLoot:) withObject:[NSNumber numberWithInt:0] afterDelay:0.1f];
+			_lootAttempt = 0;
+			[self performSelector:@selector(verifyLoot) withObject:nil afterDelay:0.3f];
 			
 			return;
 		}
@@ -415,23 +445,26 @@
 	return ([playerController spellCasting] == _fishingSpellID);
 }
 
-- (void)verifyLoot:(NSNumber*)tries{
+- (void)verifyLoot{
 	
-	int attempts = [tries intValue];
+	if ( !_isFishing )
+		return;
 	
 	// Sometimes the loot window sticks, i hate it, lets add a fix!
 	if ( [lootController isLootWindowOpen] ){
-		attempts++;
+		
+		_lootAttempt++;
 		
 		// Loot window has been open too long lets accept it!
-		if ( attempts > 20 ){
+		if ( _lootAttempt > 10 ){
 			[lootController acceptLoot];
 		}
 		
-		PGLog(@"[Fishing] Verifying loot attempt %d", attempts);
+		PGLog(@"[Fishing] Verifying loot attempt %d", _lootAttempt);
 		
-		[self performSelector:@selector(verifyLoot:) withObject:[NSNumber numberWithInt:attempts] afterDelay:0.1f];
+		[self performSelector:@selector(verifyLoot) withObject:nil afterDelay:0.1f];
 	}
+	
 	// just in case the item notification doesn't fire off
 	else{
 		PGLog(@"[Fishing] Attempting to cast in 3.0 seconds");
@@ -446,13 +479,6 @@
 - (void)fishLooted: (NSNotification*)notification {
 	if ( !_isFishing )
 		return;
-	
-	NSNumber *itemID = (NSNumber *)[notification object];
-	
-	// Lets use the crate we looted!
-	if ( [itemID intValue] == ITEM_REINFORCED_CRATE ){
-		_useContainer = ITEM_REINFORCED_CRATE;
-	}
 	
 	_totalFishLooted++;
 	
@@ -558,5 +584,8 @@
  }
  }*/
 
+- (Node*)nearbySchool{
+	return [[_nearbySchool retain] autorelease];
+}
 
 @end

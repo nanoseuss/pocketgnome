@@ -197,6 +197,8 @@ typedef enum ViewTypes {
 	int clickedRow = [memoryTable clickedRow];
 	unsigned startAddress = [self.currentAddress unsignedIntValue];
 	
+	PGLog(@"[Memory] Clicked with tag %d and row %d", [sender tag], clickedRow);
+	
 	// jump to address
 	if ( [sender tag] == 0 ){
 		// we have to be in 32 bit mode!
@@ -221,6 +223,7 @@ typedef enum ViewTypes {
 			NSString *num = [self formatNumber:nil WithAddress:addr DisplayFormat:[self displayFormat]];
 			[[NSPasteboard generalPasteboard] declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
 			[[NSPasteboard generalPasteboard] setString:num forType:NSStringPboardType];
+			PGLog(@"[Memory] Put %@ on the clipboard 1", num);
 		}
 	}
 	
@@ -233,6 +236,7 @@ typedef enum ViewTypes {
 			NSString *num = [self formatNumber:[NSNumber numberWithLong:addr] WithAddress:0 DisplayFormat:4];
 			[[NSPasteboard generalPasteboard] declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
 			[[NSPasteboard generalPasteboard] setString:num forType:NSStringPboardType];
+			PGLog(@"[Memory] Put %@ on the clipboard 2", num);
 		}
 	}
 	

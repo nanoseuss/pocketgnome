@@ -62,11 +62,11 @@
 - (void)resetAllMobs;
 - (void)doCombatScan;
 
+- (void)clearTargets;
 - (Mob*)playerTarget;
 - (Mob*)mobWithEntryID: (int)entryID;
 - (NSArray*)mobsWithEntryID: (int)entryID;
 - (Mob*)mobWithGUID: (GUID)guid;
-- (void)selectMob: (Mob*)mob;
 
 - (NSArray*)mobsWithinDistance: (float)mobDistance 
 						MobIDs: (NSArray*)mobIDs 

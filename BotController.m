@@ -30,6 +30,7 @@
 #import "OffsetController.h"
 #import "MemoryViewController.h"
 #import "CombatProfileEditor.h"
+#import "EventController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -106,6 +107,7 @@
 @interface BotController (Internal)
 
 - (void)timeUp: (id)sender;
+- (void)noAFK;
 
 - (void)preRegen;
 - (void)evaluateRegen: (NSDictionary*)regenDict;
@@ -185,6 +187,14 @@
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(whisperReceived:) 
                                                      name: WhisperReceived 
+                                                   object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(eventZoneChanged:) 
+                                                     name: EventZoneChanged 
+                                                   object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(eventBattlegroundStatusChange:) 
+                                                     name: EventBattlegroundStatusChange 
                                                    object: nil];
 		
         _procedureInProgress = nil;
@@ -1061,11 +1071,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
     // send your pet to attack
-    if( [self.theBehavior usePet] && [playerController pet]) {
+    if( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead]) {
         if( [[self procedureInProgress] isEqualToString: PreCombatProcedure] || [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
             if(![controller isWoWChatBoxOpen] && (_currentPetAttackHotkey >= 0)) {
                 [chatController pressHotkey: _currentPetAttackHotkey withModifier: _currentPetAttackHotkeyModifier];
-				PGLog(@"[Bot] Sending in pet to attack!");
             }
         }
     }
@@ -1113,6 +1122,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     int i;
     for(i = completed; i< ruleCount; i++) {
         Rule *rule = [procedure ruleAtIndex: i];
+		
+		// We want to use our combat target! Unless we're casting on ourself!
+		if ( target != [playerController player] && [rule target] != TargetSelf ){
+			// make sure this target stays around
+			target = [combatController attackUnit];
+			[[target retain] autorelease];
+		}
+		PGLog(@"[Bot] Using target %@ for rule %@ RC:%d", target, rule, [target retainCount]);
+		
         if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
             
             if( [rule resultType] > 0) {
@@ -1137,25 +1155,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     // if we can cast the spell, do so
                     if(canPerformAction) {
                         
-						/*  why is this needed? the below should handle it anyways
-                        // special rule for Hunter's Mark in pre-combat
-                        if(([[self procedureInProgress] isEqualToString: PreCombatProcedure]) && 
-                           ([rule resultType] == ActionType_Spell) &&
-                           ([[[spellController spellForID: [NSNumber numberWithUnsignedInt: actionID]] name] isEqualToString: @"Hunter's Mark"]))
-                        {
-                            // target the unit if we are casting Hunter's mark in pre-combat
-                            if([target isNPC])  [mobController selectMob: (Mob*)target];
-                            else                [playerController setPrimaryTarget: [target GUID]];
-                        }*/
-						
-						// Select ourself if we have to!
 						if ( [rule target] == TargetSelf ){
-							[playerController setPrimaryTarget: [[playerController player] GUID]];
+							[playerController setPrimaryTarget: [playerController player]];
+							PGLog(@"SELECTING (bot) %@ self", [playerController player]);	
 						}
-						// Select target
-						else{
-							if([target isNPC])  [mobController selectMob: (Mob*)target];
-							else                [playerController setPrimaryTarget: [target GUID]];	
+						else if ( target != nil ){
+							[playerController setPrimaryTarget: target];
+							PGLog(@"SELECTING (bot) %@ ", target);
 						}
 						
 						// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
@@ -1599,24 +1605,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		PGLog(@"Attempting to attack a blacklisted unit, ruh-roh");
 	}
 	
-	//PGLog(@"Attacking %@", unit);
-    
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        //PGLog(@"[Bot] Starting combat procedure (current: %@).", [self procedureInProgress]);
+        PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
         // stop and attack
         [self cancelCurrentProcedure];
         
         // check to see if we are supposed to be in melee range
         if( self.theBehavior.meleeCombat) {
 			//PGLog(@"[Bot] Should be in melee range!");
-        
+			
             // see if we are moving to this unit already
             if( ![[movementController moveToObject] isEqualToObject: unit]) {
                 float distance = [[playerController position] distanceToPosition2D: [unit position]];
                 
                 if( distance > 5.0f) {
                     // if we are more than 5 yards away, move to this unit
-                    PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
+                    //PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
                     [movementController moveToObject: unit andNotify: YES];
                 } else  {
                     // if we are in melee range, stop
@@ -1642,6 +1646,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     } else {
         // we are currently executing the combat routine;
         // do nothing
+		
+		//PGLog(@"[Bot] could we be moving toward the target here?");
     }
 }
 
@@ -1802,7 +1808,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
 		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
-			[macroController dismount];
+			[movementController dismount];
 			[self lootNode: unit];
 		}
 		else{
@@ -2146,7 +2152,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             if(!_reviveAttempt) _reviveAttempt = 1;
             else _reviveAttempt = _reviveAttempt*2;
             
-            [macroController retrieveCorpse];    // get corpse
+            [macroController useMacroOrSendCmd:@"Resurrect"];    // get corpse
+			
+			if ( _reviveAttempt > 15 ){
+				_reviveAttempt = 15;
+			}
             
             PGLog(@"Waiting %d seconds to resurrect.", _reviveAttempt);
             [self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
@@ -2461,6 +2471,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![movementController moveToObject] ){
 		if ( _doFishing ){
 			
+			PGLog(@"[Bot] Fishing scan!");
+			
 			// fishing only in schools! (probably have a route we're following)
 			if ( _fishingOnlySchools ){
 				NSMutableArray *nodes = [NSMutableArray array];
@@ -2505,6 +2517,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							
 							PGLog(@"[Bot] We are near %@, time to fish!", nodeToFish);
 							
+							if ( [[playerController player] isMounted] ){
+								PGLog(@"[Bot] Dismounting...");
+								[movementController dismount]; 
+							}
+							
 							if ( ![fishController isFishing] ){
 								[fishController fish: _fishingApplyLure
 										  withRecast:_fishingRecast
@@ -2515,6 +2532,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							
 							return YES;
 						}
+						/*
 						// Should we be mounted before we move to the node?
 						else if ( [self mountNow] ){
 							[self performSelector: _cmd withObject: nil afterDelay: 2.2f];	
@@ -2525,7 +2543,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							[controller setCurrentStatus: @"Bot: Moving to fishing pool"];
 							[movementController moveToObject: nodeToFish andNotify: YES];
 						}
-						return YES;
+						return YES;*/
 					}
 				}
 				
@@ -2575,7 +2593,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)mountNow{
-	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] ) && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
+	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state] ) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
 		
 		PGLog(@"[Bot] Mounting!");
 		usleep(100000);
@@ -2709,13 +2727,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         PGLog(@"[Bot] The current route is not valid.");
         NSRunAlertPanel(@"Route is not valid", @"You must select a valid route before starting the bot.  If you removed or renamed a route, please select an alternative.", @"Okay", NULL, NULL);
         
-        return;
-    }
-    
-    if( ![[self.theRoute routeForKey: PrimaryRoute] waypointCount] && !ignoreRoute ) {
-        PGLog(@"[Bot] The primary route has no waypoints.");
-        NSBeep();
-        NSRunAlertPanel(@"Route has no Waypoints", @"This route has no waypoints, and thus cannot be used.", @"Okay", NULL, NULL);
         return;
     }
     
@@ -2991,19 +3002,49 @@ NSMutableDictionary *_diffDict = nil;
 
 - (void)gatheringLootingDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
     [gatheringLootingPanel orderOut: nil];
-	
-    /*if(returnCode == NSCancelButton) {
-		self.isPvPing = NO;
-        return;
-    }
-    
-    if(returnCode == NSOKButton) {
-		self.isPvPing = YES;
-        [self pvpStart];
-    }*/
 }
 
+// sometimes queueing for the BG fails, so lets just check every second to make sure we queued
+- (void)queueForBGCheck{
+	int status = [playerController battlegroundStatus];
+	if ( status == BGWaiting ){
+		// queue then check again!
+		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
+		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:1.0f];
+		PGLog(@"[PvP] Additional join BG check executed!");
+	}
+}
+
+
 #pragma mark Notifications
+
+- (void)eventBattlegroundStatusChange: (NSNotification*)notification{
+	int status = [[notification object] intValue];
+	
+	// Lets join the BG!
+	if ( status == BGWaiting ){
+		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
+		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:1.0f];
+		PGLog(@"[PvP] Joining the BG!");
+	}
+	else if ( status == BGNone ){
+		// just stop movement
+		[movementController resetMovementState];
+		PGLog(@"[PvP] Battleground is over?? Resetting movement state");
+	}
+}
+
+- (void)eventZoneChanged: (NSNotification*)notification{
+	NSNumber *lastZone = [notification object];
+	
+	if ( [playerController isInBG:[lastZone intValue]] && self.isBotting ){
+		[self stopBot:nil];
+		PGLog(@"[PvP] Left BG, stopping bot!");
+		//asdfasfsafd TO FIX
+	}
+	
+	PGLog(@"[Bot] Zone change fired... to %@", lastZone);
+}
 
 // Want to respond to some commands? o.O
 - (void)whisperReceived: (NSNotification*)notification{
@@ -3103,7 +3144,7 @@ NSMutableDictionary *_diffDict = nil;
 		}
 		PGLog(@"[Bot] Attempting to repop %d.", try);
 		
-		[macroController rePopMe];
+		[macroController useMacroOrSendCmd:@"ReleaseCorpse"];
 		
 		// Try again every 5 seconds pls
 		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 5.0];
@@ -3113,7 +3154,7 @@ NSMutableDictionary *_diffDict = nil;
 	else{
 		// run back if we have a route
 		if(!self.isPvPing) {
-			if([self.theRoute routeForKey: CorpseRunRoute] && ![playerController isInBG]) {
+			if([self.theRoute routeForKey: CorpseRunRoute] && ![playerController isInBG:[playerController zone]]) {
 				PGLog(@"[Bot] Starting Corpse Run...");
 				[controller setCurrentStatus: @"Bot: Running back from graveyard..."];
 				[movementController setPatrolRoute: [self.theRoute routeForKey: CorpseRunRoute]];
@@ -3339,7 +3380,7 @@ NSMutableDictionary *_diffDict = nil;
 	if(!self.isPvPing)						return;
 	if(![playerController playerIsValid:self])   return;
 	
-	BOOL isPlayerInBG = [playerController isInBG];
+	BOOL isPlayerInBG = [playerController isInBG:[playerController zone]];
 	Player *player = [playerController player];
 	
 	// Player just left the BG!
@@ -3433,7 +3474,7 @@ NSMutableDictionary *_diffDict = nil;
 				// leave the battleground
 				PGLog(@"[PvP] Leaving battleground due to Inactive debuff.");
 				
-				[macroController leaveBattlefield];
+				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
 			}
 		}
 		
@@ -3471,7 +3512,7 @@ NSMutableDictionary *_diffDict = nil;
 	if(!self.isPvPing)						return;
 	if(![playerController playerIsValid:self])   return;
 	
-	if ( [playerController isInBG] ){
+	if ( [playerController isInBG:[playerController zone]] ){
 		PGLog(@"[PvP] Why are we trying to queue if we're in the BG?");
 		return;
 	}
@@ -3489,7 +3530,7 @@ NSMutableDictionary *_diffDict = nil;
         if(self.pvpCheckCount++ >= 4) {
             self.pvpCheckCount = 0;
             if(![controller isWoWChatBoxOpen]) {
-				[chatController jump];
+				[self noAFK];
 			}
         }
 		
@@ -3508,9 +3549,9 @@ NSMutableDictionary *_diffDict = nil;
 	usleep(10000);
 	
 	// Lets queue!
-	[macroController joinBattlefield];
+	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
 	        
-	if(![controller isWoWChatBoxOpen]) [chatController jump];  // jump to clear AFK
+	[self noAFK];
 	self.pvpCheckCount = 0;
 	[controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
 	[self pvpCheck];
@@ -3525,7 +3566,7 @@ NSMutableDictionary *_diffDict = nil;
 	if(![playerController playerIsValid:self])   return;
 	
     if(self.isPvPing) {
-		if ( [playerController isInBG] ){
+		if ( [playerController isInBG:[playerController zone]] ){
 			return;
 		}
 		
@@ -3534,9 +3575,7 @@ NSMutableDictionary *_diffDict = nil;
 		// Will jump once every minute
         if(self.pvpCheckCount++ >= 60) {
             self.pvpCheckCount = 0;
-            if(![controller isWoWChatBoxOpen]) {
-				[chatController jump];
-			}
+            [self noAFK];
         }
 
 		// don't try to join if we have deserter.  Although I'm not entirely sure this function will ever be called if you have the aura
@@ -3545,9 +3584,8 @@ NSMutableDictionary *_diffDict = nil;
 		}
 
 		// Lets join the BG!
-		PGLog(@"[Bot] BG Status = %d", [playerController battlegroundStatus] );
 		if ( [playerController battlegroundStatus] == BGWaiting ){
-			[macroController acceptBattlefield];
+			[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
 		}
 		
         [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 1.0f];
@@ -3702,7 +3740,7 @@ NSMutableDictionary *_diffDict = nil;
 	if ( self.isBotting || ![playerController playerIsValid] )
 		return;
 	
-	PGLog(@"[AFK] Attempt: %d", _afkTimerCounter);
+	//PGLog(@"[AFK] Attempt: %d", _afkTimerCounter);
 	
 	
 	if ( [antiAFKButton state] ){
@@ -3711,71 +3749,82 @@ NSMutableDictionary *_diffDict = nil;
 		// then we are at 4 minutes
 		if ( _afkTimerCounter > 8 ){
 
-			// move backward!
-			if ( _lastPressedWasForward ){
-				[movementController moveBackwardStop];
-				_lastPressedWasForward = NO;
-				PGLog(@"[AFK] Moving backward!");
-			}
-			// move forward!
-			else{
-				[movementController moveForwardStop];
-				_lastPressedWasForward = YES;
-				PGLog(@"[AFK] Moving forward!");
-			}
+			[self noAFK];
 			
 			_afkTimerCounter = 0;
 		}
 	}
-	
-	
+}
+
+// call this to prevent afk!
+- (void)noAFK{
+	// move backward!
+	if ( _lastPressedWasForward ){
+		[movementController moveBackwardStop];
+		_lastPressedWasForward = NO;
+		//PGLog(@"[AFK] Moving backward!");
+	}
+	// move forward!
+	else{
+		[movementController moveForwardStop];
+		_lastPressedWasForward = YES;
+		//PGLog(@"[AFK] Moving forward!");
+	}
 }
 
 - (void)wgTimer: (NSTimer*)timer {
 	
 	// WG zone ID: 4197
-	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 ){
+	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 && [playerController playerIsValid] ){
 		
-		BOOL enableClicking = NO;
-		
-		// we should ONLY be clicking if we KNOW it's w/in the time period something will come up! (7200 = 2 hours)
 		NSDate *currentTime = [NSDate date];
-		if ( _dateWGEnded == nil || [currentTime timeIntervalSinceDate: _dateWGEnded] > 7200 ){
-			enableClicking = YES;
+		
+		// then we are w/in the first hour after we've done a WG!  Let's leave party!
+		if ( _dateWGEnded && [currentTime timeIntervalSinceDate: _dateWGEnded] < 3600 ){
+			// check to see if they are in a party - and leave!
+			UInt32 offset = [offsetController offset:@"PARTY_LEADER_PTR"];
+			UInt64 guid = 0;
+			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&guid BufLength: sizeof(guid)] && guid ){
+				
+				[macroController useMacroOrSendCmd:@"LeaveParty"];
+				PGLog(@"[Bot] Player is in party leaving!");				
+			}
+			
+			PGLog(@"[Bot] Leaving party anyways - there a leader? 0x%qX", guid);
+			[macroController useMacroOrSendCmd:@"LeaveParty"];
 		}
 		
-		if ( !enableClicking ){
-			PGLog(@"[Bot] Not clicking, as we're not w/in the window of joining WG!");
+		// only autojoin if it's 2 hours+ after a WG end
+		if ( _dateWGEnded && [currentTime timeIntervalSinceDate: _dateWGEnded] <= 7200 ){
+			PGLog(@"[Bot] Not autojoing WG since it's been %0.2f seconds", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 			return;
 		}
 		
-		// click
-		UInt32 macroID = [macroController findMacroID:@"ClickFirstButton"];
-		if ( macroID > 0 ){
-			[self performAction:USE_MACRO_MASK + macroID];
-			PGLog(@"[Bot] Auto joining for WG! Using macro 0x%X", macroID);
-		}
-		else{
-			PGLog(@"[Bot] Unable to auto join for WG, macro not found to click!");
-		}
+		// should we auto accept quests too? o.O
+		
+		// click the button!
+		[macroController useMacroOrSendCmd:@"ClickFirstButton"];
+		PGLog(@"[Bot] Autojoining WG!  Seconds since last WG: %0.2f", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 		
 		// check how many marks they have (if it went up, we need to leave the group)!
 		Item *item = [itemController itemForID:[NSNumber numberWithInt:43589]];
 		if ( item && [item isValid] ){
 			
+			// it's never been set - /cry - lets set it!
+			if ( _lastNumWGMarks == 0 ){
+				_lastNumWGMarks = [item count];
+				PGLog(@"[Bot] Setting wintegrasp mark counter to %d", _lastNumWGMarks);
+			}
+			
 			// the player has more!
-			if ( _lastNumWGMarks > 0 && _lastNumWGMarks != [item count] ){
+			if ( _lastNumWGMarks != [item count] ){
 				_lastNumWGMarks = [item count];
 				
-				PGLog(@"[Bot] Wintergrasp over you know have %d marks! Leaving group!", _lastNumWGMarks);
-				
-				UInt32 macroID = [macroController findMacroID:@"LeaveParty"];
-				if ( macroID > 0 ){
-					[self performAction:USE_MACRO_MASK + macroID];
-				}
+				PGLog(@"[Bot] Wintergrasp over you now have %d marks! Leaving group!", _lastNumWGMarks);
+				[macroController useMacroOrSendCmd:@"LeaveParty"];
 				
 				// update our time
-				PGLog(@"[Bot] It's been %0.2f seconds since we were last given marks!", [currentTime timeIntervalSinceDate: _dateWGEnded]);
+				PGLog(@"[Bot] It's been %0.2f:: opens seconds since we were last given marks!", [currentTime timeIntervalSinceDate: _dateWGEnded]);
 				[_dateWGEnded release]; _dateWGEnded = nil;
 				_dateWGEnded = [[NSDate date] retain];
 			}
@@ -3854,7 +3903,7 @@ NSMutableDictionary *_diffDict = nil;
 		 }
 		 else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ){
 			 if ( ![playerController isOnGround] ){
-				 [macroController dismount];
+				 [movementController dismount];
 			 }
 		 }
 		 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ){
@@ -3996,6 +4045,7 @@ NSMutableDictionary *_diffDict = nil;
 	_zoneBeforeHearth = -1;
 	
 	// Stop the bot
+	[self pvpStop];
 	[self stopBot: nil];
 	usleep(1000000);
 		
@@ -4082,9 +4132,53 @@ NSMutableDictionary *_diffDict = nil;
 
 //0x1555BE0
 - (IBAction)test: (id)sender{
+	//0-2pi. North is 0, west is pi/2, south is pi, east is 3pi/2.
 	
+	float direction = [playerController directionFacing];
+	int quadrant = 0;
+	
+	if ( 0.0f < direction && direction <= M_PI/2.0f ){
+		quadrant = 1;
+	}
+	else if ( M_PI/2.0f < direction && direction <= M_PI ){
+		quadrant = 2;
+	}
+	else if ( M_PI < direction && direction <= (3*M_PI)/2.0f ){
+		quadrant = 3;
+	}
+	else if ( (3.0f*M_PI)/2.0f < direction && direction <= 2*M_PI ){
+		quadrant = 4;
+	}
+	
+	Node *nearbySchool = [fishController nearbySchool];
+	float x,y;
+	
+	if ( nearbySchool ){
+		//Position *schoolPos = [nearbySchool position];
+		float closeness = 10.0f;
 
+		if ( quadrant == 1 ){
+			x = - (sinf(direction) * closeness);
+			y = cosf(direction) * closeness;
+		}
+		else if ( quadrant == 2 ){
+			x = - (sinf(direction) * closeness);
+			y = cosf(direction) * closeness;	
+		}
+		else if ( quadrant == 3 ){
+			x = - (sinf(direction) * closeness);
+			y = cosf(direction) * closeness;
+		}
+		else if ( quadrant == 4 ){
+			x = - (sinf(direction) * closeness);
+			y = cosf(direction) * closeness;
+		}
+		
+		PGLog(@"Change in position: {%0.2f, %0.2f} Quadrant %d", x, y, quadrant);
+		
+	}
 	
+	//[controller traverseNameList];
 	/*
 
 	PGLog(@"After  write:'%@'", [playerController lastErrorMessage]);

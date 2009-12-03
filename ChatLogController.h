@@ -19,7 +19,7 @@
 	IBOutlet OffsetController *offsetController;
     
     IBOutlet NSView *view;
-    IBOutlet NSTableView *chatLogTable;
+    IBOutlet NSTableView *chatLogTable, *whisperLogTable;
     IBOutlet NSPredicateEditor *ruleEditor;
     IBOutlet NSArrayController *chatActionsController;
     IBOutlet NSPanel *relayPanel;
@@ -27,8 +27,8 @@
 	IBOutlet NSButton *enableGrowlNotifications;
 
     NSUInteger passNumber;
-    BOOL _shouldScan, _lastPassFoundChat;
-    NSMutableArray *_chatLog, *_chatActions;
+    BOOL _shouldScan, _lastPassFoundChat, _lastPassFoundWhisper;
+    NSMutableArray *_chatLog, *_chatActions, *_whisperLog;
     NSSize minSectionSize, maxSectionSize;
     NSDateFormatter *_timestampFormat;
     NSSortDescriptor *_passNumberSortDescriptor;

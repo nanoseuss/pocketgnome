@@ -13,8 +13,8 @@
 // from Mangos, ObjectDefines.h
 #define GUID_HIPART(x)   (UInt32)((((UInt64)(x)) >> 48) & 0x0000FFFF)
 
-#define GUID_LOW32(x)    (UInt32)(((UInt64)(x)) & 0x00000000FFFFFFFFULL);
-#define GUID_HIGH32(x)    (UInt32)(((UInt64)(x) >> 32) & 0xFFFFFFFF00000000ULL);
+#define GUID_LOW32(x)    (UInt32)(((UInt64)(x)) & 0x00000000FFFFFFFFULL)
+#define GUID_HIGH32(x)    (UInt32)(((UInt64)(x) >> 32) & 0xFFFFFFFF00000000ULL)
 
 enum HighGuid {
     HIGHGUID_ITEM           = 0x4580,   // 3.1, was 0x4000 before, 0x4100 in 3.1.1, 0x4580 in 3.1.2

@@ -71,8 +71,6 @@
 - (void)showCooldownPanel;
 - (void)reloadCooldownInfo;
 
-
-
 // Cooldown info
 -(BOOL)isGCDActive;
 -(BOOL)isSpellOnCooldown:(UInt32)spell;

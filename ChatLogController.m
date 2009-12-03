@@ -63,7 +63,9 @@
         passNumber = 0;
         self.shouldScan = NO;
         self.lastPassFoundChat = NO;
+		_lastPassFoundWhisper = NO;
         _chatLog = [[NSMutableArray array] retain];
+		_whisperLog = [[NSMutableArray array] retain];
         _chatActions = [[NSMutableArray array] retain];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsValid:) name: MemoryAccessValidNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(memoryIsInvalid:) name: MemoryAccessInvalidNotification object: nil];
@@ -94,6 +96,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver: self];
     [_timestampFormat release];
     [_chatLog release];
+	[_whisperLog release];
 	[_whisperHistory release];
     [super dealloc];
 }
@@ -122,9 +125,11 @@
 - (void)scanChatLog {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	UInt32 offset = [offsetController offset:@"CHATLOG_START"];
-    
+
     NSMutableArray *chatEntries = [NSMutableArray array];
     MemoryAccess *memory = [controller wowMemoryAccess];
+	//NSDate *date = [NSDate date];
+    //[memory resetLoadCount];
     if(self.shouldScan && memory) {
         if(self.lastPassFoundChat) {
             passNumber++;
@@ -190,6 +195,10 @@
         }
         [chatEntries sortUsingDescriptors: [NSArray arrayWithObject: _relativeOrderSortDescriptor]];
     }
+	
+
+	//PGLog(@"[Chat] New chat scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
+	
     
     [self performSelectorOnMainThread: @selector(scanCompleteWithNewEntries:) withObject: chatEntries waitUntilDone: YES];
     [pool drain];
@@ -263,7 +272,19 @@
                     }
                 }
             }
+			
+			// add a whisper?
+			if ( ![_whisperLog containsObject: entry] && [entry isWhisperReceived] ){
+				[_whisperLog addObject: entry];
+				_lastPassFoundWhisper = YES;
+			}
         }
+		
+		if ( _lastPassFoundWhisper ){
+			[_whisperLog sortUsingDescriptors: [NSArray arrayWithObjects: _passNumberSortDescriptor, _relativeOrderSortDescriptor, nil]];
+            [whisperLogTable reloadData];
+			_lastPassFoundWhisper = NO;
+		}
         
         if(self.lastPassFoundChat) {
             [_chatLog sortUsingDescriptors: [NSArray arrayWithObjects: _passNumberSortDescriptor, _relativeOrderSortDescriptor, nil]];
@@ -278,7 +299,7 @@
             }
         }
     }
-    [self performSelector: @selector(kickOffScan) withObject: nil afterDelay: 5.0];
+    [self performSelector: @selector(kickOffScan) withObject: nil afterDelay: 1.0];
 }
 
 - (void)kickOffScan {
@@ -524,15 +545,11 @@
 	NSNumber *numWhispers = nil;
 	if ( ![_whisperHistory objectForKey: key] ){
 		numWhispers = [NSNumber numberWithInt:1];
-		PGLog(@"doesn't exist.");
 	}
 	else{
 		numWhispers = [NSNumber numberWithInt:[[_whisperHistory objectForKey: key] intValue] + 1];
-		PGLog(@"exists..");
 	}
 	[_whisperHistory setObject: numWhispers forKey: key];
-	
-	PGLog(@"You've been whispered %@ times by %@", numWhispers, key);
 	
 	BOOL checkWhispers = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhispered"] boolValue];
 
@@ -549,19 +566,38 @@
 #pragma mark TableView Delegate & Datasource
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-    return [_chatLog count];
+	if ( aTableView == chatLogTable )
+		return [_chatLog count];
+	else if ( aTableView == whisperLogTable )
+		return [_whisperLog count];
+	
+	return 0;
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
-    if((rowIndex == -1) || (rowIndex >= [_chatLog count]))
-        return nil;
+	
+	// chat log
+	if ( aTableView == chatLogTable ){
+		
+		if((rowIndex == -1) || (rowIndex >= [_chatLog count]))
+			return nil;
     
-    if(aTableView == chatLogTable) {
+
         ChatLogEntry *entry = [_chatLog objectAtIndex: rowIndex];
         // [%u:%@] [%@] 
         // entry.relativeOrder, entry.timeStamp, entry.sequence, 
         return [NSString stringWithFormat: @"[%@] %@", [_timestampFormat stringFromDate: [entry dateStamp]], [entry wellFormattedText]];
-    }
+	}
+	else if ( aTableView == whisperLogTable ){
+		if((rowIndex == -1) || (rowIndex >= [_whisperLog count]))
+			return nil;
+		
+		
+        ChatLogEntry *entry = [_whisperLog objectAtIndex: rowIndex];
+        // [%u:%@] [%@] 
+        // entry.relativeOrder, entry.timeStamp, entry.sequence, 
+        return [NSString stringWithFormat: @"[%@] %@", [_timestampFormat stringFromDate: [entry dateStamp]], [entry wellFormattedText]];
+	}
     
     return nil;
 }
@@ -569,21 +605,24 @@
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
     return NO;
 }
+
 - (BOOL)tableViewCopy: (NSTableView*)tableView {
-    NSIndexSet *rowIndexes = [tableView selectedRowIndexes];
-    if([rowIndexes count] == 0) {
-        return NO;
-    }
-    NSPasteboard *pboard = [NSPasteboard generalPasteboard];
-    [pboard declareTypes: [NSArray arrayWithObjects: NSStringPboardType, nil] owner: nil];
-    
-    NSMutableString *stringVal = [NSMutableString string];
-    int row = [rowIndexes firstIndex];
-    while(row != NSNotFound) {
-        [stringVal appendFormat: @"%@\n", [[_chatLog objectAtIndex: row] wellFormattedText]];
-        row = [rowIndexes indexGreaterThanIndex: row];
-    }
-    [pboard setString: stringVal forType: NSStringPboardType];
+	if ( tableView == chatLogTable ){
+		NSIndexSet *rowIndexes = [tableView selectedRowIndexes];
+		if([rowIndexes count] == 0) {
+			return NO;
+		}
+		NSPasteboard *pboard = [NSPasteboard generalPasteboard];
+		[pboard declareTypes: [NSArray arrayWithObjects: NSStringPboardType, nil] owner: nil];
+		
+		NSMutableString *stringVal = [NSMutableString string];
+		int row = [rowIndexes firstIndex];
+		while(row != NSNotFound) {
+			[stringVal appendFormat: @"%@\n", [[_chatLog objectAtIndex: row] wellFormattedText]];
+			row = [rowIndexes indexGreaterThanIndex: row];
+		}
+		[pboard setString: stringVal forType: NSStringPboardType];
+	}
     
     return YES;
 }

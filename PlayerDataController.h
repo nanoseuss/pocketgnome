@@ -12,7 +12,9 @@
 @class Unit;
 @class Player;
 @class Position;
+@class WoWObject;
 @class MemoryAccess;
+
 @class MobController;
 @class CombatController;
 @class Controller;
@@ -22,6 +24,7 @@
 @class NodeController;
 @class OffsetController;
 @class MovementController;
+@class MobController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -49,6 +52,7 @@
 	IBOutlet NodeController			*nodeController;
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet MovementController		*movementController;
+	IBOutlet MobController			*mobController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
@@ -133,7 +137,7 @@
 - (UInt32)honor;
 - (void)trackResources: (int)resource;
 
-- (BOOL)setPrimaryTarget: (UInt64)targetID;
+- (BOOL)setPrimaryTarget: (WoWObject*)target;
 - (BOOL)setMouseoverTarget: (UInt64)targetID;
 - (UInt64)targetID;
 - (UInt64)mouseoverID;
@@ -172,7 +176,7 @@
 
 - (int)battlegroundStatus;
 - (UInt32)zone;
-- (BOOL)isInBG;
+- (BOOL)isInBG:(int)zone;
 - (BOOL)isOnBoatInStrand;
 - (BOOL)isOnLeftBoatInStrand;
 - (BOOL)isOnRightBoatInStrand;

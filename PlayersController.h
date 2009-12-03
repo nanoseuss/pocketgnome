@@ -53,7 +53,6 @@
 - (void)addAddresses: (NSArray*)addresses;
 //- (BOOL)addPlayer: (Player*)player;
 - (void)resetAllPlayers;
-- (void)addPlayerNames: (NSDictionary*)names;
 
 - (NSArray*)playersWithinDistance: (float)distance
                        levelRange: (NSRange)range
@@ -66,6 +65,13 @@
 - (IBAction)facePlayer: (id)sender;
 - (IBAction)targetPlayer: (id)sender;
 - (IBAction)resetPlayerList: (id)sender;
+- (IBAction)reloadNames: (id)sender;
 
 - (IBAction)updateTracking: (id)sender;
+
+- (NSString*)playerNameWithGUID:(UInt64)guid;
+
+// player name
+- (BOOL)addPlayerName: (NSString*)name withGUID:(UInt64)guid;
+- (int)totalNames;
 @end

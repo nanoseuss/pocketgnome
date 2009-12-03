@@ -187,22 +187,36 @@ static PlayersController *sharedPlayers = nil;
     [self updateTracking: nil];
 }
 
-- (void)addPlayerNames: (NSDictionary*)names{
+#pragma mark Player Name Storage
+
+- (NSString*)playerNameWithGUID:(UInt64)guid{
+	NSNumber *fullGUID = [NSNumber numberWithUnsignedLongLong:guid];
+	NSString *name = [_playerNameList objectForKey: fullGUID];
 	
-	//[addressDict setObject: obj forKey: [NSNumber numberWithUnsignedLongLong: [obj baseAddress]]];
-	
-	// Loop through our existing dictionary, we ONLY want to add new values!
-	NSArray *keys = [names allKeys];
-	
-	for ( NSNumber *key in keys ){
-		// It's new! Add it!
-		if ( ![_playerNameList objectForKey: key] ){
-			NSString *name = [names objectForKey:key];
-			
-			//PGLog(@"Add name: %@ for GUID: 0x%qx", name, [key longLongValue]);
-			[_playerNameList  setObject: name forKey: key];
-		}
+	if ( name ){
+		return [[name copy] autorelease];
 	}
+	
+	return @"";
+}
+
+// returns yes on adding
+- (BOOL)addPlayerName: (NSString*)name withGUID:(UInt64)guid{
+	
+	NSNumber *fullGUID = [NSNumber numberWithUnsignedLongLong:guid];
+	
+	if ( ![_playerNameList objectForKey: fullGUID] ){
+		
+		[_playerNameList  setObject: name forKey: fullGUID];
+		
+		return YES;
+	}
+	
+	return NO;
+}
+
+- (int)totalNames{
+	return [_playerNameList count];
 }
 
 /*- (BOOL)addPlayer: (Player*)player {
@@ -271,6 +285,7 @@ static PlayersController *sharedPlayers = nil;
             [_playerDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
                                          player,                                                                @"Player",
                                          [NSString stringWithFormat: @"0x%X", [player lowGUID]],                @"ID",
+										 [self playerNameWithGUID:[player GUID]],								@"Name",
                                          ([player isGM] ? @"GM" : [Unit stringForClass: [player unitClass]]),   @"Class",
                                          [Unit stringForRace: [player race]],                                   @"Race",
                                          [Unit stringForGender: [player gender]],                               @"Gender",
@@ -417,12 +432,16 @@ static PlayersController *sharedPlayers = nil;
     
     if(selectedRow >= [_playerDataList count]) return;
     Player *player = [[_playerDataList objectAtIndex: selectedRow] objectForKey: @"Player"];
-    [playerData setPrimaryTarget: [player GUID]];
+    [playerData setPrimaryTarget: player];
 }
 
 - (IBAction)resetPlayerList: (id)sender {
     [self resetAllPlayers];
     [playerTable reloadData];
+}
+
+- (IBAction)reloadNames: (id)sender {
+	[controller traverseNameList];
 }
 
 #pragma mark -
