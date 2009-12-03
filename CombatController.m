@@ -289,7 +289,7 @@
 	
 	// shouldn't be mounted when attacking!
 	if ( [[playerData player] isMounted] ){
-		[macroController dismount];
+		[movementController dismount];
 	}
     
     if(self.attackUnit != unit)
@@ -334,6 +334,8 @@
 		return;
 	}
 	
+	PGLog(@"Attacking %@", unit);
+	
 	//PGLog(@"Attacking unit %@ with health %d", unit, [unit currentHealth]);
     if( !isCasting ) {
         
@@ -349,8 +351,7 @@
             
             PGLog(@"[Combat] Targetting %@", unit);
             
-            if([unit isNPC])    [mobController selectMob: (Mob*)unit];
-            else                [playerData setPrimaryTarget: unitUID];
+            [playerData setPrimaryTarget: unit];
             usleep([controller refreshDelay]);
         }
     }

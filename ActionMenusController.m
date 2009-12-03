@@ -45,14 +45,9 @@ static ActionMenusController *sharedMenus = nil;
 #pragma mark -
 
 - (NSMenu*)createMacroMenu {
-    
-	// reload our macro list (just in case)
-	[macroController reloadMacros];
 	
 	// get the player/account macros
 	NSArray *macros = [macroController playerMacros];
-	
-
 	
 	NSMutableArray *accountMacros = [NSMutableArray array];
 	NSMutableArray *characterMacros = [NSMutableArray array];
