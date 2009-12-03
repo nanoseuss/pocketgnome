@@ -2,17 +2,17 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10B504</string>
-		<string key="IBDocument.InterfaceBuilderVersion">732</string>
-		<string key="IBDocument.AppKitVersion">1038.2</string>
-		<string key="IBDocument.HIToolboxVersion">437.00</string>
+		<string key="IBDocument.SystemVersion">10C540</string>
+		<string key="IBDocument.InterfaceBuilderVersion">740</string>
+		<string key="IBDocument.AppKitVersion">1038.25</string>
+		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">732</string>
+			<string key="NS.object.0">740</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1207"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -45,7 +45,7 @@
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<object class="NSBox" id="735507409">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">12</int>
+						<int key="NSvFlags">10</int>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSView" id="91954122">
@@ -231,7 +231,7 @@
 					</object>
 					<object class="NSBox" id="983246513">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">12</int>
+						<int key="NSvFlags">10</int>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSView" id="417546175">
@@ -491,7 +491,7 @@
 					</object>
 					<object class="NSBox" id="66493635">
 						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">12</int>
+						<int key="NSvFlags">10</int>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSView" id="302940166">
@@ -6435,7 +6435,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{725, 251}, {740, 490}}</string>
+					<string>{{237, 255}, {740, 490}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
@@ -7482,6 +7482,7 @@
 							<string>combatController</string>
 							<string>controller</string>
 							<string>logOutStuckAttemptsTextField</string>
+							<string>macroController</string>
 							<string>mobController</string>
 							<string>movementType</string>
 							<string>offsetController</string>
@@ -7495,6 +7496,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>NSTextField</string>
+							<string>MacroController</string>
 							<string>id</string>
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>
@@ -7671,12 +7673,14 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>facePlayer:</string>
+							<string>reloadNames:</string>
 							<string>resetPlayerList:</string>
 							<string>targetPlayer:</string>
 							<string>updateTracking:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

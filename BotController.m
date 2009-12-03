@@ -3024,8 +3024,9 @@ NSMutableDictionary *_diffDict = nil;
 	// Lets join the BG!
 	if ( status == BGWaiting ){
 		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
-		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:1.0f];
-		PGLog(@"[PvP] Joining the BG!");
+		float queueAfter = SSRandomFloatBetween(3.0f, 20.0f);
+		[self performSelector:@selector(queueForBGCheck) withObject: nil afterDelay:queueAfter];
+		PGLog(@"[PvP] Joining the BG after %0.2f seconds", queueAfter);
 	}
 	else if ( status == BGNone ){
 		// just stop movement
@@ -3704,7 +3705,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// check for timer
 	if ( [logOutOnTimerExpireCheckbox state] && self.startDate ){
-		float hours = [logOutDurabilityTextField floatValue];
+		float hours = [logOutAfterRunningTextField floatValue];
 		NSDate *stopDate = [[NSDate alloc] initWithTimeInterval:hours * 60 * 60 sinceDate:self.startDate];
 		
 		// check to see which date is earlier
