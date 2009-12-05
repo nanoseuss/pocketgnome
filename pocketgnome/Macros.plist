@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LeaveParty</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script LeaveParty();</string>
+		<key>Description</key>
+		<string>This will leave a party/raid</string>
+	</dict>
+	<key>ReleaseCorpse</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script RepopMe();</string>
+		<key>Description</key>
+		<string>This will release your corpse after you die</string>
+	</dict>
+	<key>JoinBattlefield</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script JoinBattlefield(0);</string>
+		<key>Description</key>
+		<string>This will queue you for the battleground</string>
+	</dict>
+	<key>LeaveBattlefield</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script LeaveBattlefield();</string>
+		<key>Description</key>
+		<string>This will make you leave the battleground</string>
+	</dict>
+	<key>AcceptBattlefield</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script AcceptBattlefieldPort(1,1);</string>
+		<key>Description</key>
+		<string>This will accept the battleground queue</string>
+	</dict>
+	<key>Resurrect</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script RetrieveCorpse();</string>
+		<key>Description</key>
+		<string>This will resurrect your body</string>
+	</dict>
+	<key>Dismount</key>
+	<dict>
+		<key>Macro</key>
+		<string>/dismount</string>
+		<key>Description</key>
+		<string>This will dismount</string>
+	</dict>
+	<key>CancelSwiftFlightForm</key>
+	<dict>
+		<key>Macro</key>
+		<string>/cancelaura Swift Flight Form</string>
+		<key>Description</key>
+		<string>This will dismount</string>
+	</dict>
+	<key>CancelFlightForm</key>
+	<dict>
+		<key>Macro</key>
+		<string>/cancelaura Flight Form</string>
+		<key>Description</key>
+		<string>This will dismount</string>
+	</dict>
+	<key>ClickFirstButton</key>
+	<dict>
+		<key>Macro</key>
+		<string>/run if StaticPopup1:IsVisible() then StaticPopup_OnClick(StaticPopup1, 1) end</string>
+		<key>Description</key>
+		<string>This will click a dialogue box. (useful for auto-joining WG)</string>
+	</dict>
+</dict>
+</plist>
