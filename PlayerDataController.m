@@ -1131,14 +1131,13 @@ static PlayerDataController* sharedController = nil;
         BOOL combatState = [self isInCombat];
         if( !_lastCombatState && combatState) {
             // we were not in combat, now we are
-            //PGLog(@"------ Player Entering Combat ------");
-            //[[NSNotificationCenter defaultCenter] postNotificationName: PlayerEnteringCombatNotification object: nil];
-            [combatController playerEnteringCombat];
+            PGLog(@"[PlayerData] ------ Player Entering Combat ------");
+            [[NSNotificationCenter defaultCenter] postNotificationName: PlayerEnteringCombatNotification object: nil];
         }
         if( _lastCombatState && !combatState) {
             // we were in combat, now we are not
-            //[[NSNotificationCenter defaultCenter] postNotificationName: PlayerLeavingCombatNotification object: nil];
-            [combatController playerLeavingCombat];
+			PGLog(@"[PlayerData] ------ Player Leaving Combat ------");
+            [[NSNotificationCenter defaultCenter] postNotificationName: PlayerLeavingCombatNotification object: nil];
         }
         _lastCombatState = combatState;
 		
@@ -1263,6 +1262,43 @@ static PlayerDataController* sharedController = nil;
 	return NO;
 }
 
+// the graceful maiden - right boat
+// the frostbreaker - left boat
+#define StrandPrivateerZierhut			32658		// right boat
+#define StrandPrivateerStonemantle		32657		// left boat
+- (BOOL)isOnRightBoatInStrand{
+	
+	// not on a boat
+	if ( ![self isOnBoatInStrand] )
+		return NO;
+	
+	if ( [[mobController mobsWithinDistance:50.0f	// actual value is around 35.0f
+									MobIDs:[NSArray arrayWithObject:[NSNumber numberWithInt:StrandPrivateerZierhut]]
+								  position: [[self player] position]
+								 aliveOnly:NO] count] ){
+		return YES;
+	}
+	
+	return NO;
+	
+}
+
+- (BOOL)isOnLeftBoatInStrand{
+	
+	// not on a boat
+	if ( ![self isOnBoatInStrand] )
+		return NO;
+	
+	if ( [[mobController mobsWithinDistance:50.0f 
+									 MobIDs:[NSArray arrayWithObject:[NSNumber numberWithInt:StrandPrivateerStonemantle]]
+								   position: [[self player] position]
+								  aliveOnly:NO] count]){
+		return YES;
+	}
+	
+	return NO;	
+}
+
 - (BOOL)isOnBoatInStrand{
 	Position *playerPos = [self position];
 	
@@ -1271,83 +1307,6 @@ static PlayerDataController* sharedController = nil;
 		if ( playerPos.yPosition > -15.0f && playerPos.yPosition < 15.0f ){			// Really -9 < y < 9							14
 			if ( playerPos.zPosition > -15.0f && playerPos.zPosition < 15.0f ){		// Really -10 < z < 10							5
 				return YES;
-			}
-		}
-	}
-	
-	return NO;
-}
-
-- (BOOL)isOnLeftBoatInStrand{
-	
-	//#define StrandGateOfTheBlueSapphire		190724
-	//#define StrandGateOfTheGreenEmerald		190722
-	
-	if ( [self isOnBoatInStrand] ){
-
-		// Note: There is a potential 1.5 second window where this gate could exist, but this function will return false!
-		Node *blueGate		= [nodeController nodeWithEntryID:StrandGateOfTheBlueSapphire];
-		Node *greenGate		= [nodeController nodeWithEntryID:StrandGateOfTheGreenEmerald];
-		
-		if ( blueGate != nil && greenGate != nil ){
-			Position *playerPosition = [self position];
-			float distanceToBlue = [playerPosition distanceToPosition:[blueGate position]];
-			float distanceToGreen = [playerPosition distanceToPosition:[greenGate position]];
-			
-			PGLog(@"Blue: %0.2f 2 Green: %0.2f", distanceToBlue, distanceToGreen);
-			
-			if ( distanceToGreen < distanceToBlue ){
-				return YES;				
-			}
-		}
-	}
-	
-	return NO;
-}
-
-- (Position*)closestPositionToGate: (BOOL)leftBoat{
-	Node *gate = nil;
-	Position *position = [Position positionWithX:5.988355f Y:13.60136f Z:5.059512f];
-	Position *position2 = [Position positionWithX:5.988355f Y:-13.60136f Z:5.059512f];
-	
-	// Checking against distance to green!
-	if ( leftBoat ){
-		gate = [nodeController nodeWithEntryID:StrandGateOfTheGreenEmerald];
-		PGLog(@"green gate");
-	}
-	else{
-		gate = [nodeController nodeWithEntryID:StrandGateOfTheBlueSapphire];
-		PGLog(@"blue gate");
-	}
-	
-	PGLog(@"Distance to gate: %0.2f < %0.2f", [position distanceToPosition:[gate position]], [position2 distanceToPosition:[gate position]]);
-	
-	if ( [position distanceToPosition:[gate position]] < [position2 distanceToPosition:[gate position]] ){
-		return position;
-	}
-
-	return position2;		
-}
-
-- (BOOL)isOnRightBoatInStrand{
-	
-	//#define StrandGateOfTheBlueSapphire		190724
-	//#define StrandGateOfTheGreenEmerald		190722
-	
-	if ( [self isOnBoatInStrand] ){
-		
-		// Note: There is a potential 1.5 second window where this gate could exist, but this function will return false!
-		Node *blueGate		= [nodeController nodeWithEntryID:StrandGateOfTheBlueSapphire];
-		Node *greenGate		= [nodeController nodeWithEntryID:StrandGateOfTheGreenEmerald];
-		
-		if ( blueGate != nil && greenGate != nil ){
-			Position *playerPosition = [self position];
-			float distanceToBlue = [playerPosition distanceToPosition:[blueGate position]];
-			float distanceToGreen = [playerPosition distanceToPosition:[greenGate position]];
-			
-			PGLog(@"Blue: %0.2f 1 Green: %0.2f", distanceToBlue, distanceToGreen);
-			if ( distanceToBlue < distanceToGreen ){
-				return YES;				
 			}
 		}
 	}

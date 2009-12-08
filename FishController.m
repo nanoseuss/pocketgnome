@@ -279,7 +279,7 @@
 			usleep([controller refreshDelay]*2);
 			
 			// don't need to use the pole if we're casting a spell!
-			if ( _optLureItemID == 33820 ){
+			if ( _optLureItemID != 33820 ){
 				// Now use our fishing pole so it's applied!
 				[botController performAction:(USE_ITEM_MASK + [item entryID])];
 			

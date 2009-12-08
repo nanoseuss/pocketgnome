@@ -114,6 +114,7 @@
 - (void)moveForwardStop;
 
 - (BOOL)useSmoothTurning;
+- (BOOL)useClickToMove;
 
 - (BOOL)dismount;		// dismount the player
 

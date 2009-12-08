@@ -33,8 +33,8 @@
 #define PlayerHasRevivedNotification        @"PlayerHasRevivedNotification"
 #define PlayerChangedTargetNotification     @"PlayerChangedTargetNotification"
 
-//#define PlayerEnteringCombatNotification    @"PlayerEnteringCombatNotification"
-//#define PlayerLeavingCombatNotification     @"PlayerLeavingCombatNotification"
+#define PlayerEnteringCombatNotification    @"PlayerEnteringCombatNotification"
+#define PlayerLeavingCombatNotification     @"PlayerLeavingCombatNotification"
 
 #define ZoneStrandOfTheAncients		4384
 
@@ -180,6 +180,5 @@
 - (BOOL)isOnBoatInStrand;
 - (BOOL)isOnLeftBoatInStrand;
 - (BOOL)isOnRightBoatInStrand;
-- (Position*)closestPositionToGate: (BOOL)leftBoat;
 
 @end
