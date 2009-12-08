@@ -15,6 +15,8 @@
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
+		0350738410CDBA460004636E /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0350738310CDBA460004636E /* SpellCooldown.xib */; };
+		0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0350738810CDBA640004636E /* SpellCooldownConditionController.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
@@ -328,6 +330,9 @@
 		034429BC0FAA3E3800E9DE03 /* QuestItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestItem.m; sourceTree = "<group>"; };
 		034429BE0FAA3E5600E9DE03 /* QuestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestController.h; sourceTree = "<group>"; };
 		034429BF0FAA3E5600E9DE03 /* QuestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestController.m; sourceTree = "<group>"; };
+		0350738310CDBA460004636E /* SpellCooldown.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellCooldown.xib; sourceTree = "<group>"; };
+		0350738710CDBA640004636E /* SpellCooldownConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellCooldownConditionController.h; sourceTree = "<group>"; };
+		0350738810CDBA640004636E /* SpellCooldownConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellCooldownConditionController.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -1080,6 +1085,7 @@
 		7D54DCB80E08449F00E1B463 /* Condition NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				0350738310CDBA460004636E /* SpellCooldown.xib */,
 				7DCE50700E12F05E00C5DF01 /* AuraCondition.xib */,
 				7D5496450E1AA0F5004AA3E9 /* AuraStackCondition.xib */,
 				7DCE50710E12F05E00C5DF01 /* StatusCondition.xib */,
@@ -1132,6 +1138,8 @@
 				7D7C66DC0E58E97D002A6C96 /* CombatCountConditionController.m */,
 				7D7C67140E58EC79002A6C96 /* ProximityCountConditionController.h */,
 				7D7C67150E58EC79002A6C96 /* ProximityCountConditionController.m */,
+				0350738710CDBA640004636E /* SpellCooldownConditionController.h */,
+				0350738810CDBA640004636E /* SpellCooldownConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1592,6 +1600,7 @@
 				03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */,
 				03C42CCA1096839E0085E888 /* Macros.plist in Resources */,
 				03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */,
+				0350738410CDBA460004636E /* SpellCooldown.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1698,6 +1707,7 @@
 				0306057C10881CAE00C57D77 /* MacroController.m in Sources */,
 				03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */,
 				0313B4D810BAEA0B009E74E4 /* EventController.m in Sources */,
+				0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
