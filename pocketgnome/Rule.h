@@ -21,7 +21,8 @@ typedef enum TargetType {
 	TargetNone = 0,
 	TargetSelf = 1,
 	TargetEnemy = 2,
-	TargetFriend = 3	
+	TargetFriend = 3,	
+	TargetAdd = 4
 } TargetType;
 
 @interface Rule : NSObject <NSCoding, NSCopying> {

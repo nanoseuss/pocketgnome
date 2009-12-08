@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class Unit;
 @class Controller;
 @class ChatController;
 @class MobController;
@@ -15,9 +16,6 @@
 @class MovementController;
 @class PlayerDataController;
 @class PlayersController;
-@class MacroController;
-
-@class Unit;
 @class Position;
 
 @interface CombatController : NSObject {
@@ -28,20 +26,15 @@
     IBOutlet MobController *mobController;
     IBOutlet ChatController *chatController;
     IBOutlet MovementController *movementController;
-	IBOutlet MacroController		*macroController;
-
+	
     BOOL _inCombat;
     BOOL _combatEnabled;
     BOOL _technicallyOOC;
     BOOL _attemptingCombat;
-	BOOL _lastWasBackEstablish;
     Unit *_attackUnit;
-    NSMutableArray *_combatUnits;
     NSMutableArray *_attackQueue;
     NSMutableArray *_blacklist;
 	NSMutableArray *_unitsAttackingMe;
-    NSMutableDictionary *_initialDistances;
-	NSMutableDictionary *_combatDictionaryWithWeights;
 }
 
 @property BOOL combatEnabled;
@@ -50,15 +43,8 @@
 // combat status
 - (BOOL)inCombat;
 
-// sent from PlayerDataController
-- (void)playerEnteringCombat;
-- (void)playerLeavingCombat;
-
-// Send from Mob Controller (later PlayersController)
-- (void)setInCombatUnits: (NSArray*)units;
-
 // combat state
-- (NSArray*)combatUnits;
+//- (NSArray*)combatUnits;
 - (NSArray*)attackQueue;
 - (NSArray*)unitsAttackingMe;
 
@@ -79,10 +65,18 @@
 // Should only be called when a spell cast fails on a target!
 - (void)blacklistUnit: (Unit*)unit;
 
+
+//    float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+//([[unit position] verticalDistanceToPosition: position] <= vertOffset)  
+
+
+
 ////// INPUTS //////
-// --> playerEnteringCombat
-// --> playerLeavingCombat
-// --> setInCombatUnits
+// --> playerEnteringCombat	via PlayerData notification
+// --> playerLeavingCombat	via PlayerData notification
+// --> disposeOfUnit (bot) via findBestUnitToAttack in evaluateSituation (if in combat)
+// --> disposeOfUnit (bot) via searching nearby mobs/players in evaluateSituation (if not in combat + need to search around)
+// --> disposeOfUnit (bot) as soon as the bot is started a check is done for mobs you're in combat with
 ////// OUTPUT /////
 // <-- playerEnteringCombat
 // <-- playerLeavingCombat

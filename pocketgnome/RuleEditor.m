@@ -31,6 +31,7 @@
 #import "TargetClassConditionController.h"
 #import "CombatCountConditionController.h"
 #import "ProximityCountConditionController.h"
+#import "SpellCooldownConditionController.h"
 
 #import "Macro.h"
 #import "Action.h"
@@ -170,11 +171,12 @@
     if(type == 7)   newRule = [[[AuraStackConditionController alloc] init] autorelease];
     if(type == 8)   newRule = [[[TotemConditionController alloc] init] autorelease];
     if(type == 9)   newRule = [[[TempEnchantConditionController alloc] init] autorelease];
-
     if(type == 10)   newRule = [[[TargetTypeConditionController alloc] init] autorelease];
     if(type == 11)   newRule = [[[TargetClassConditionController alloc] init] autorelease];
     if(type == 12)   newRule = [[[CombatCountConditionController alloc] init] autorelease];
     if(type == 13)   newRule = [[[ProximityCountConditionController alloc] init] autorelease];
+	if(type == 14)   newRule = [[[SpellCooldownConditionController alloc] init] autorelease];
+	
     
     if(newRule) {
         [_conditionList addObject: newRule];

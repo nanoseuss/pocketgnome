@@ -3,15 +3,16 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">732</string>
+		<string key="IBDocument.InterfaceBuilderVersion">740</string>
 		<string key="IBDocument.AppKitVersion">1038.25</string>
 		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">732</string>
+			<string key="NS.object.0">740</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="2913"/>
 			<integer value="3638"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -1258,7 +1259,7 @@
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{640, 225}</string>
 				<object class="NSView" key="NSWindowView" id="94846559">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1985,6 +1986,31 @@
 											<int key="NSTag">9</int>
 											<reference key="NSTarget" ref="259284535"/>
 										</object>
+										<object class="NSMenuItem" id="368530753">
+											<reference key="NSMenu" ref="789242150"/>
+											<bool key="NSIsDisabled">YES</bool>
+											<string key="NSTitle">Spell Conditions</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="172017760"/>
+											<reference key="NSMixedImage" ref="36563510"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<reference key="NSTarget" ref="259284535"/>
+										</object>
+										<object class="NSMenuItem" id="500596095">
+											<reference key="NSMenu" ref="789242150"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Spell Cooldown</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="172017760"/>
+											<reference key="NSMixedImage" ref="36563510"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">14</int>
+											<reference key="NSTarget" ref="259284535"/>
+										</object>
 										<object class="NSMenuItem" id="863223482">
 											<reference key="NSMenu" ref="789242150"/>
 											<bool key="NSIsDisabled">YES</bool>
@@ -2039,6 +2065,7 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
+								<int key="NSSelectedIndex">6</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -2138,11 +2165,11 @@
 										<object class="NSSegmentedControl" id="1014057217">
 											<reference key="NSNextResponder" ref="261130585"/>
 											<int key="NSvFlags">292</int>
-											<string key="NSFrame">{{71, 11}, {267, 24}}</string>
+											<string key="NSFrame">{{71, 11}, {314, 24}}</string>
 											<reference key="NSSuperview" ref="261130585"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="NSSegmentedCell" key="NSCell" id="936330838">
-												<int key="NSCellFlags">-2080244224</int>
+												<int key="NSCellFlags">67239424</int>
 												<int key="NSCellFlags2">0</int>
 												<reference key="NSSupport" ref="699098009"/>
 												<reference key="NSControlView" ref="1014057217"/>
@@ -2158,7 +2185,6 @@
 														<string key="NSSegmentItemLabel">Self</string>
 														<string key="NSSegmentItemTooltip">Cast a spell on yourself</string>
 														<int key="NSSegmentItemTag">1</int>
-														<bool key="NSSegmentItemSelected">YES</bool>
 														<int key="NSSegmentItemImageScaling">0</int>
 													</object>
 													<object class="NSSegmentItem">
@@ -2166,6 +2192,7 @@
 														<string key="NSSegmentItemLabel">Enemy</string>
 														<string key="NSSegmentItemTooltip">Cast a spell on an enemy</string>
 														<int key="NSSegmentItemTag">2</int>
+														<bool key="NSSegmentItemSelected">YES</bool>
 														<int key="NSSegmentItemImageScaling">0</int>
 													</object>
 													<object class="NSSegmentItem">
@@ -2175,8 +2202,14 @@
 														<int key="NSSegmentItemTag">3</int>
 														<int key="NSSegmentItemImageScaling">0</int>
 													</object>
+													<object class="NSSegmentItem">
+														<string key="NSSegmentItemLabel">Add</string>
+														<string key="NSSegmentItemTooltip">Cast a spell on a nearby aggroed unit</string>
+														<int key="NSSegmentItemTag">4</int>
+														<int key="NSSegmentItemImageScaling">0</int>
+													</object>
 												</object>
-												<int key="NSSelectedSegment">1</int>
+												<int key="NSSelectedSegment">2</int>
 												<int key="NSSegmentStyle">1</int>
 											</object>
 										</object>
@@ -2223,6 +2256,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{705, 351}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{640, 247}</string>
@@ -9868,14 +9902,6 @@ bGx5IHVzZSB0aGVtIQ</string>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">macroController</string>
-						<reference key="source" ref="983345874"/>
-						<reference key="destination" ref="305775892"/>
-					</object>
-					<int key="connectionID">4005</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">memoryViewController</string>
 						<reference key="source" ref="94147614"/>
 						<reference key="destination" ref="1071325592"/>
@@ -11964,6 +11990,8 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<reference ref="314435581"/>
 							<reference ref="823523136"/>
 							<reference ref="159187158"/>
+							<reference ref="368530753"/>
+							<reference ref="500596095"/>
 						</object>
 						<reference key="parent" ref="259284535"/>
 					</object>
@@ -13770,6 +13798,16 @@ bGx5IHVzZSB0aGVtIQ</string>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Events</string>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4061</int>
+						<reference key="object" ref="368530753"/>
+						<reference key="parent" ref="789242150"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4062</int>
+						<reference key="object" ref="500596095"/>
+						<reference key="parent" ref="789242150"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -14175,6 +14213,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<string>3302.CustomClassName</string>
 					<string>3302.IBPluginDependency</string>
 					<string>3303.IBPluginDependency</string>
+					<string>3303.IBSegmentedControlInspectorSelectedSegmentMetadataKey</string>
 					<string>3309.IBPluginDependency</string>
 					<string>3311.IBPluginDependency</string>
 					<string>3312.IBPluginDependency</string>
@@ -14328,6 +14367,8 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<string>4040.IBPluginDependency</string>
 					<string>4054.IBPluginDependency</string>
 					<string>4055.IBPluginDependency</string>
+					<string>4061.IBPluginDependency</string>
+					<string>4062.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -14373,9 +14414,9 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{466, 67}, {705, 351}}</string>
+					<string>{{498, 249}, {705, 351}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{466, 67}, {705, 351}}</string>
+					<string>{{498, 249}, {705, 351}}</string>
 					<integer value="0"/>
 					<string>{{99, 739}, {705, 301}}</string>
 					<integer value="1"/>
@@ -14652,7 +14693,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<string>{{6, 979}, {302, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{601, 636}, {239, 413}}</string>
+					<string>{{1024, 129}, {236, 453}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -14759,6 +14800,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<string>BetterSegmentedControl</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="2"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -14915,6 +14957,8 @@ bGx5IHVzZSB0aGVtIQ</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -14952,7 +14996,7 @@ bGx5IHVzZSB0aGVtIQ</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4060</int>
+			<int key="maxID">4062</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15366,7 +15410,6 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>botController</string>
 							<string>chatController</string>
 							<string>controller</string>
-							<string>macroController</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
@@ -15377,7 +15420,6 @@ bGx5IHVzZSB0aGVtIQ</string>
 							<string>BotController</string>
 							<string>ChatController</string>
 							<string>Controller</string>
-							<string>MacroController</string>
 							<string>MobController</string>
 							<string>MovementController</string>
 							<string>PlayerDataController</string>
@@ -16111,12 +16153,14 @@ bGx5IHVzZSB0aGVtIQ</string>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>facePlayer:</string>
+							<string>reloadNames:</string>
 							<string>resetPlayerList:</string>
 							<string>targetPlayer:</string>
 							<string>updateTracking:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

@@ -589,9 +589,6 @@ typedef enum MovementType {
 
 - (void)establishPosition {
 	PGLog(@"[Move] establishPosition");
-	/*if ( [movementType selectedTag] == MOVE_CTM ){
-		return;
-	}*/
 	
     [self moveForwardStart];
     usleep(100000);
@@ -601,9 +598,6 @@ typedef enum MovementType {
 
 - (void)backEstablishPosition {
 	PGLog(@"[Move] backEstablishPosition");
-	/*if ( [movementType selectedTag] == MOVE_CTM ){
-		return;
-	}*/
 	
     [self moveBackwardStart];
     usleep(100000);
@@ -1279,9 +1273,12 @@ typedef enum MovementType {
 }
 
 - (BOOL)useSmoothTurning{
-	return ([movementType selectedTag] == MOVE_KEYBOARD || [movementType selectedTag] == MOVE_CTM);
+	return ([movementType selectedTag] == MOVE_KEYBOARD);
 }
 
+- (BOOL)useClickToMove{
+	return ([movementType selectedTag] == MOVE_CTM);	
+}
 
 #pragma mark IB Actions
 

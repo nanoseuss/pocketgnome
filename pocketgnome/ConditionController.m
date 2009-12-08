@@ -21,6 +21,7 @@
 #import "TargetClassConditionController.h"
 #import "CombatCountConditionController.h"
 #import "ProximityCountConditionController.h"
+#import "SpellCooldownConditionController.h"
 
 @implementation ConditionController
 
@@ -83,6 +84,9 @@
     }
     if( [condition variety] == VarietyProximityCount ) {
         newController = [[ProximityCountConditionController alloc] init];
+    }
+	if( [condition variety] == VarietySpellCooldown ) {
+        newController = [[SpellCooldownConditionController alloc] init];
     }
     
     if(newController) {

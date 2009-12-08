@@ -23,6 +23,7 @@ typedef enum Variety {
     VarietyTargetClass      = 11,
     VarietyCombatCount      = 12,
     VarietyProximityCount   = 13,
+	VarietySpellCooldown	= 14,
 } ConditionVariety;
 
 typedef enum UnitComponents {
@@ -31,6 +32,7 @@ typedef enum UnitComponents {
     UnitTarget = 2,
     UnitPlayerPet = 3,
 	UnitFriend = 4,
+	UnitAdd = 5,
 } ConditionUnit;
 
 typedef enum QualityComponents {

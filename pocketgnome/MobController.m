@@ -499,30 +499,20 @@ static MobController* sharedController = nil;
 #pragma mark -
 
 - (void)doCombatScan {
-
 	BOOL doNearbyScan = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnNearbyMob"] boolValue];
 	int nearbyEntryID = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnNearbyMobID"] intValue];
 
     // check to see if we're in combat
-    NSMutableArray *inCombatMobs = [NSMutableArray array];
-    for(Mob *mob in _mobList) {
-        if(   [mob isValid] 
-           && ![mob isDead] 
-           && [mob isSelectable] 
-           && [mob isInCombat] 
-           && ![playerData isFriendlyWithFaction: [mob factionTemplate]]) {
-            [inCombatMobs addObject: mob];
-        }
-		
-		if ( doNearbyScan ){
-			if ( [mob entryID] == nearbyEntryID ){
+
+	if ( doNearbyScan ){
+		for(Mob *mob in _mobList) {
+			if ( [mob entryID] == nearbyEntryID && ![mob isDead] ){
 				[[NSSound soundNamed: @"alarm"] play];
 				PGLog(@"[Combat] Found %d nearby! Playing alarm!", nearbyEntryID);
 			}
 		}
+	}
 		
-    }
-    [combatController setInCombatUnits: inCombatMobs];
 }
 
 - (BOOL)trackingMob: (Mob*)trackingMob {

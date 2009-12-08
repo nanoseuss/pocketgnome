@@ -158,9 +158,6 @@
 	int _pvpMarks;
 	BOOL _attackingInStrand;
 	BOOL _strandDelay;
-	BOOL _strandMovementCounter;
-	int _strandTotalMovementChecks;
-	BOOL _strandMoveForwardStarted;
 	
 	// auto join WG options
 	NSTimer *_wgTimer;
