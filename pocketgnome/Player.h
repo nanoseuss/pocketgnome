@@ -14,13 +14,13 @@ enum ePlayerFields {
 	PlayerField_Flags                           = 0x3B0, // 3.1: need to verify this!
 
 	// every 0x8 is the full 64-bit GUID of an item the player is wearing
-    PlayerField_CharacterSlot                   = 0x4A8, // goes through 0x538
-	PlayerField_BagStart						= 0x540, // 4 bag GUIDs will be listed starting here
-	PlayerField_BackPackStart					= 0x560, // all items go through 0x5D8, these are the GUIDs of items in the backpack
-	PlayerField_BankStart						= 0x5E0, // these items are in the bank (NOT in bags)
-	PlayerField_BankBags						= 0x6F0, // these are the GUIDs of the BAGS in your bank
-	PlayerField_Keys							= 0x758, // player keys
-	PlayerField_Marks							= 0x858, // player marks/emblems (currency)
+    PlayerField_CharacterSlot                   = 0x510, // 
+	PlayerField_BagStart						= 0x5A8, // 4 bag GUIDs will be listed starting here
+	PlayerField_BackPackStart					= 0x5C8, // all items go through 0x5D8, these are the GUIDs of items in the backpack
+	PlayerField_BankStart						= 0x648, // these items are in the bank (NOT in bags)
+	PlayerField_BankBags						= 0x758, // these are the GUIDs of the BAGS in your bank
+	PlayerField_Keys							= 0x7C0, // player keys
+	PlayerField_Marks							= 0x8C0, // player marks/emblems (currency)
 
     // PlayerField_FarSight                     = 0xE68, // 3.1 unknown
     // PlayerField_ComboPoint_Target            = 0xE70, // 3.1 unknown

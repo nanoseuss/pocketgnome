@@ -310,7 +310,10 @@ static PlayerDataController* sharedController = nil;
     if(memory && _baselineAddress && [self baselineAddress]) {
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&playerAddress BufLength: sizeof(playerAddress)];
+		PGLog(@"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
     }
+	
+	PGLog(@"loading state...");
     
     // if we got a ~~~~
     // 1) valid player address
@@ -331,6 +334,7 @@ static PlayerDataController* sharedController = nil;
         self.wasDead = [self isDead];
         savedLevel = 0;
         
+		PGLog(@"[PlayerData] Sending player is valid notification!");
         [[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsValidNotification object: nil];
         
         // and start the update process

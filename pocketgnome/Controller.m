@@ -440,7 +440,7 @@ typedef struct NameObjectStruct{
 		if([memory loadDataForObject: self atAddress: [offsetController offset:@"OBJECT_LIST_LL_PTR"] Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager) {
 			_validObjectListManager = YES;
 			UInt32 firstObjectPtr = 0;
-			if([memory loadDataForObject: self atAddress: objectManager + 0xAC Buffer: (Byte*)&firstObjectPtr BufLength: sizeof(firstObjectPtr)] && firstObjectPtr) {
+			if([memory loadDataForObject: self atAddress: objectManager + 0xB4 Buffer: (Byte*)&firstObjectPtr BufLength: sizeof(firstObjectPtr)] && firstObjectPtr) {
 				return firstObjectPtr;
 			}
 		}
@@ -462,7 +462,7 @@ typedef struct NameObjectStruct{
 		
 		int objectType = TYPEID_UNKNOWN;
 		if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)] ) {
-			
+
 			// item
 			if ( objectType == TYPEID_ITEM || objectType == TYPEID_CONTAINER ) {
 				[_items addObject: objAddress];
@@ -499,7 +499,7 @@ typedef struct NameObjectStruct{
 						[self setCurrentState: playerValidState];
 					}			
 				}
-				
+
 				[_players addObject: objAddress];
 				continue;
 			}
@@ -557,6 +557,7 @@ typedef struct NameObjectStruct{
 			// our object manager has changed (wonder if this happens often?)
 			if ( _currentObjectManager > 0x0 && _currentObjectManager != objectManager ){
 				_validObjectListManager = NO;
+				PGLog(@"[Controller] Object manager changed from 0x%X to 0x%X", _currentObjectManager, objectManager);
 			}
 			
 			_currentObjectManager = objectManager;

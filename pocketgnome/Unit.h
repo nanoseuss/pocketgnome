@@ -121,7 +121,7 @@ enum eUnitBaseFields {
     BaseField_AirSpeed_Max              = 0x820,	// 3.0.9: 0x850
     
 
-    BaseField_Spell_ToCast              = 0xA4C,	// 3.0.9: 0xA28
+    BaseField_Spell_ToCast              = 0xA50,	// 3.0.9: 0xA28
     BaseField_Spell_Casting             = 0xA5C,	// 3.0.9: 0xA2C
     BaseField_Spell_TargetGUID_Low      = 0xA60,	// 3.0.9: 0xA30  (not sure how to verify if 3.1.0 offset is correct)
     BaseField_Spell_TargetGUID_High     = 0xA64,	// 3.0.9: 0xA34  (not sure how to verify if 3.1.0 offset is correct)
