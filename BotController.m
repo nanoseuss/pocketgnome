@@ -4169,7 +4169,128 @@ NSMutableDictionary *_diffDict = nil;
 - (IBAction)test: (id)sender{
 	
 	
-	[playerController isOnRightBoatInStrand];
+	//[playerController isOnRightBoatInStrand];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	int v0=0,i=0,tmp=0,ptr=0;
+	[memory loadDataForObject: self atAddress: 0x10E760C Buffer: (Byte*)&ptr BufLength: sizeof(ptr)];
+	[memory loadDataForObject: self atAddress: ptr + 180 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
+	
+	if ( v0 & 1 || !v0 )
+		v0 = 0;
+	
+	
+	for ( i = 0; !(v0 & 1); ){
+		[memory loadDataForObject: self atAddress: ptr + 172 Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
+		[memory loadDataForObject: self atAddress: tmp + v0 + 4 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
+		PGLog(@"[Test] Address: 0x%X", v0);
+		if ( !v0 )
+			break;
+		++i;
+	}
+	
+	PGLog(@"[Test] Total : %d", i);
+	
+	int v2=0, v3=0;
+	[memory loadDataForObject: self atAddress: ptr + 12 Buffer: (Byte*)&v2 BufLength: sizeof(v2)];
+	if ( v2 & 1 || !v2 )
+		v2 = 0;
+	v3 = 0;
+	
+	/*
+	int v0; // eax@1
+	int i; // edi@3
+	int v2; // eax@6
+	int v3; // esi@8
+	int v4; // eax@12
+	int v5; // eax@16
+	int v6; // ebx@18
+	
+	v0 = *(_DWORD *)(dword_10E760C + 180);
+	if ( v0 & 1 || !v0 )
+		v0 = 0;
+	for ( i = 0; !(v0 & 1); v0 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 172) + v0 + 4) )
+	{
+		if ( !v0 )
+			break;
+		++i;
+	}
+	v2 = *(_DWORD *)(dword_10E760C + 12);
+	if ( v2 & 1 || !v2 )
+		v2 = 0;
+	v3 = 0;
+LABEL_9:
+	if ( !(v2 & 1) )
+	{
+		while ( v2 )
+		{
+			++v3;
+			if ( v2 )
+				v4 = *(_DWORD *)(dword_10E760C + 4) + v2;
+			else
+				v4 = dword_10E760C + 8;
+			v2 = *(_DWORD *)(v4 + 4);
+			if ( v2 & 1 )
+			{
+				v2 = 0;
+			}
+			else
+			{
+				if ( v2 )
+					goto LABEL_9;
+				v2 = 0;
+			}
+			if ( v2 & 1 )
+				break;
+		}
+	}
+	v5 = *(_DWORD *)(dword_10E760C + 56);
+	if ( v5 & 1 || !v5 )
+		v5 = 0;
+	v6 = 0;
+LABEL_19:
+	if ( !(v5 & 1) )
+	{
+		while ( v5 )
+		{
+			++v6;
+			v5 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 48) + v5 + 4);
+			if ( v5 & 1 )
+			{
+				v5 = 0;
+			}
+			else
+			{
+				if ( v5 )
+					goto LABEL_19;
+				v5 = 0;
+			}
+			if ( v5 & 1 )
+				break;
+		}
+	}
+	sub_1214D0("Object manager list status:", 7);
+	sub_122110("    Active objects:              %u objects (%u visible)", 7, v3);
+	sub_122110("    Objects waiting to be freed: %u objects", 7, v6, i);
+	return 1;
+*/	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	return;
 	
