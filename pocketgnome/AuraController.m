@@ -107,6 +107,17 @@ typedef struct WoWAura {
  
  */
 
+/*
+ BaseField_Auras_ValidCount          = 0xDC0,
+ BaseField_Auras_Start               = 0xC40,
+ 
+ // I'm not entirely sure what the story is behind these pointers
+ // but it seems that once the player hits > 16 buffs/debuffs (17 or more)
+ // the Aura fields in the player struct is abandoned and moves elsewhere
+ BaseField_Auras_OverflowValidCount  = 0xC44,
+ BaseField_Auras_OverflowPtr1        = 0xC58,    // 3.0.8-9: i could not verify overflow 2, 3, 4
+ */
+
 
 - (NSArray*)aurasForUnit: (Unit*)unit idsOnly: (BOOL)IDs {
     // PGLog(@"Loading for unit: %@ (0x%X)", unit, [unit baseAddress]);
@@ -166,11 +177,12 @@ typedef struct WoWAura {
     // we're overflowing. try the backup.
     if(validAuras == 0xFFFFFFFF) {
         [wowMemory readAddress: ([unit baseAddress] + BaseField_Auras_OverflowValidCount) Buffer: (Byte*)&validAuras BufLength: sizeof(validAuras)];
-    }
+		//PGLog(@"[Auras] Lot of auras! Switching to backup!");
+	}
     
     if(validAuras <= 0 || validAuras > 56) 
 	{
-		//PGLog(@"[Auras] Not a valid aura count %d", validAuras);
+		PGLog(@"[Auras] Not a valid aura count %d", validAuras);
 		return nil;
 	}
 	
@@ -185,6 +197,8 @@ typedef struct WoWAura {
             return nil;
         }
     }
+	
+	//PGLog(@"[Auras] Address start: 0x%X", aurasAddress);
     
     
     int i;
@@ -197,6 +211,7 @@ typedef struct WoWAura {
             aura.bytes = CFSwapInt32HostToLittle(aura.bytes);
 			
 			//PGLog(@"[auras] Bytes: %d", aura.bytes);
+			//PGLog(@"[Auras] 0x%X Entry ID: %d", (aurasAddress) + i*sizeof(aura), aura.entryID);
 			
             // skip empty buckets
             if(aura.entryID == 0) continue;
