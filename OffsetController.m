@@ -194,10 +194,10 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		
 		if ( IS_X86 ){
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10E760C] forKey:@"OBJECT_LIST_LL_PTR"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3C718] forKey:@"PLAYER_GUID_STATIC"];
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C0] forKey:@"PLAYER_GUID_STATIC"];		//0xF4DCB0
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C8] forKey:@"PLAYER_NAME_STATIC"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0x1028EA6] forKey:@"SERVER_NAME_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287fc] forKey:@"PLAYER_CURRENT_ZONE"];
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD79C] forKey:@"PLAYER_CURRENT_ZONE"];		// 0xE3DB19  0xE3E58C
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE35E4C] forKey:@"ACCOUNT_NAME_STATIC"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCAC40] forKey:@"KNOWN_SPELLS_STATIC"];		// 0xFCBC40
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E5D0] forKey:@"TARGET_TABLE_STATIC"];
@@ -216,12 +216,14 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74F0] forKey:@"CTM_GUID"];
 			
 			
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10EA3D8] forKey:@"PLAYER_IN_BUILDING_STATIC"];
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBB8A0] forKey:@"PLAYER_IN_BUILDING_STATIC"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF47DFC] forKey:@"CHATLOG_START"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4A20] forKey:@"CD_LIST_STATIC"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFC9BC0] forKey:@"MOUNT_LIST_POINTER"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E4E0] forKey:@"COMBO_POINTS_STATIC"];
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA2980] forKey:@"CORPSE_POSITION_STATIC"];
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF3C3A0 + 0x28] forKey:@"PLAYER_NAME_LIST"];
+			
 			
 			
 			

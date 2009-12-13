@@ -3962,6 +3962,7 @@ NSMutableDictionary *_diffDict = nil;
 		return ErrSpellNotReady;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_FRNT] ){
+		PGLog(@"TARGET IS NOT IN FRONT OF YOU!");
 		return ErrTargetNotInFrnt;
 	}
 	else if ( [errorMessage isEqualToString:CANT_MOVE] ){
@@ -4179,11 +4180,12 @@ NSMutableDictionary *_diffDict = nil;
 	if ( v0 & 1 || !v0 )
 		v0 = 0;
 	
-	
+	int type = 0;
 	for ( i = 0; !(v0 & 1); ){
 		[memory loadDataForObject: self atAddress: ptr + 172 Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
 		[memory loadDataForObject: self atAddress: tmp + v0 + 4 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
-		PGLog(@"[Test] Address: 0x%X", v0);
+		[memory loadDataForObject: self atAddress: v0 + 0x10 Buffer: (Byte*)&type BufLength: sizeof(type)];
+		PGLog(@"[Test] Address: 0x%X %d", v0, type);
 		if ( !v0 )
 			break;
 		++i;

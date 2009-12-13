@@ -499,6 +499,8 @@ typedef struct NameObjectStruct{
 						[self setCurrentState: playerValidState];
 					}			
 				}
+				
+				//PGLog(@"[Controller] Player GUID: 0x%qX Yours: 0x%qX", guid, _globalGUID);
 
 				[_players addObject: objAddress];
 				continue;
