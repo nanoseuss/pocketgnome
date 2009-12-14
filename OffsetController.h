@@ -22,4 +22,6 @@
 
 - (unsigned long) offset: (NSString*)key;
 
+- (unsigned long) offsetWithByteSignatre: (NSString*)signature withMask:(NSString*)mask;
+
 @end

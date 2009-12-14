@@ -183,7 +183,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
-			PGLog(@"%@: 0x%X", key, offset);
+			if ( offset > 0x0 )
+				PGLog(@"%@: 0x%X", key, offset);
 		}
 		
 		// hard-code some as i'm lazy + can't test on PPC yet :(
@@ -193,41 +194,47 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		}
 		
 		if ( IS_X86 ){
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10E760C] forKey:@"OBJECT_LIST_LL_PTR"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C0] forKey:@"PLAYER_GUID_STATIC"];		//0xF4DCB0
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C8] forKey:@"PLAYER_NAME_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x1028EA6] forKey:@"SERVER_NAME_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD79C] forKey:@"PLAYER_CURRENT_ZONE"];		// 0xE3DB19  0xE3E58C
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE35E4C] forKey:@"ACCOUNT_NAME_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCAC40] forKey:@"KNOWN_SPELLS_STATIC"];		// 0xFCBC40
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E5D0] forKey:@"TARGET_TABLE_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF45220] forKey:@"HOTBAR_BASE_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4B38] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA29E0] forKey:@"LAST_RED_ERROR_MESSAGE"];		// this signature is actually correct, lol one made it through 3.3
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x1225A80] forKey:@"CHAT_BOX_OPEN_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBA2A4] forKey:@"ITEM_IN_LOOT_WINDOW"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF46F20] forKey:@"BATTLEGROUND_STATUS"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD6AC] forKey:@"MACRO_LIST_PTR"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10E760C] forKey:@"OBJECT_LIST_LL_PTR"];		// function from 14th offset, 3.3.0 binary  sub_49D820
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C0] forKey:@"PLAYER_GUID_STATIC"];		//0xF4DCB0
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C8] forKey:@"PLAYER_NAME_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x1028EA6] forKey:@"SERVER_NAME_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD79C] forKey:@"PLAYER_CURRENT_ZONE"];		// 0xE3DB19  0xE3E58C
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE35E4C] forKey:@"ACCOUNT_NAME_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCAC40] forKey:@"KNOWN_SPELLS_STATIC"];		// 0xFCBC40
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E5D0] forKey:@"TARGET_TABLE_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF45220] forKey:@"HOTBAR_BASE_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4B38] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA29E0] forKey:@"LAST_RED_ERROR_MESSAGE"];		// this signature is actually correct, lol one made it through 3.3
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x1225A80] forKey:@"CHAT_BOX_OPEN_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBA2A4] forKey:@"ITEM_IN_LOOT_WINDOW"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF46F20] forKey:@"BATTLEGROUND_STATUS"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD6AC] forKey:@"MACRO_LIST_PTR"];
 			
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C73FC] forKey:@"CTM_POS"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74D8] forKey:@"CTM_ACTION"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74E8] forKey:@"CTM_DISTANCE"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74EC] forKey:@"CTM_SCALE"];	
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74F0] forKey:@"CTM_GUID"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C73FC] forKey:@"CTM_POS"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74D8] forKey:@"CTM_ACTION"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74E8] forKey:@"CTM_DISTANCE"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74EC] forKey:@"CTM_SCALE"];	
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74F0] forKey:@"CTM_GUID"];
 			
 			
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBB8A0] forKey:@"PLAYER_IN_BUILDING_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF47DFC] forKey:@"CHATLOG_START"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4A20] forKey:@"CD_LIST_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFC9BC0] forKey:@"MOUNT_LIST_POINTER"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E4E0] forKey:@"COMBO_POINTS_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA2980] forKey:@"CORPSE_POSITION_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF3C3A0 + 0x28] forKey:@"PLAYER_NAME_LIST"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBB8A0] forKey:@"PLAYER_IN_BUILDING_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF47DFC] forKey:@"CHATLOG_START"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4A20] forKey:@"CD_LIST_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFC9BC0] forKey:@"MOUNT_LIST_POINTER"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E4E0] forKey:@"COMBO_POINTS_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA2980] forKey:@"CORPSE_POSITION_STATIC"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF3C3A0 + 0x28] forKey:@"PLAYER_NAME_LIST"];
 			
+			
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF22FBC] forKey:@"PLAYER_IN_BUILDING_STATIC"];
+			
+			// i'm lazy for 3.3.0a
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE02A78] forKey:@"MOUNT_LIST_POINTER"];
 			
 			
 			
 			// for the mini-map (x,y only) 010B2C60
+			
 
 			
 			
@@ -242,6 +249,52 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	else{
 		PGLog(@"[Offsets] No offset dictionary found, PG will be unable to function!");
 	}
+}
+
+- (unsigned long) offsetWithByteSignatre: (NSString*)signature withMask:(NSString*)mask{
+	/*
+	const char *szMaskUTF8 = [mask UTF8String];
+	char *szMask = strdup(szMaskUTF8);
+	
+	PGLog(@"%s %s", szMaskUTF8, szMask);
+	
+	Byte *bytes = calloc( [signature length]/2, sizeof( Byte ) );
+	// incrementing by 4 (to skip the beginning \x)
+	unsigned int i = 0, k = 0;
+	NSRange range;
+	for ( ;i < [signature length]; i+=4 ){
+		range.length = 2;
+		range.location = i+2;
+		
+		const char *sigMask = [[signature substringWithRange:range] UTF8String];
+		long one = strtol(sigMask, NULL, 16);
+		bytes[k++] = (Byte)one;
+	}
+	
+	unsigned long offset = 0x0;
+	// Intel
+	if ( IS_X86 ){
+		offset = [self dwFindPattern:bytes
+					  withStringMask:szMask 
+							withData:data
+							 withLen:len
+					withStartAddress:0x0 
+					   withMinOffset:0x0
+						   withCount:0;
+	}
+	// PPC
+	else {
+		offset = [self dwFindPatternPPC:bytes
+						 withStringMask:szMask 
+							   withData:data
+								withLen:len
+					   withStartAddress:0x0 
+						  withMinOffset:0x0
+							  withCount:0;
+	}
+	
+	PGLog(@"[Offset] Found: 0x%X", offset);*/
+	return 0x0;
 }
 
 - (void)memoryChunk{
@@ -400,7 +453,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
+				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}

@@ -41,9 +41,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x89\x35\xCC\x2B\x5C\x01\xC7\x05\xE4\x2B\x5C\x01\xFF\xFF\xFF\xFF\x8B\x1D\x0C\x80\x5F\x01\x89\x5C\x24\x08\xC7\x44\x24\x04\x00\x00\x00\x00\xC7\x04\x24\x2C\x34\x61\x00\xE8\x24\x4E\x4C\xFF\xB8\xA4\x2B\x5C\x01\x83\xC8\x01\xC7\x05\xA0\x2B\x5C\x01\x90\x05\x00\x00\xC7\x05\xA4\x2B\x5C\x01\xA4\x2B\x5C\x01</string>
+			<string>\x89\xC8\xF7\xD0\x21\xC2\x89\x15\x60\x69\x19\x01\x8B\x15\xAC\xD6\xFC\x00\xC1\xE9\x10\x49\x89\x8D\x90\xF3\xFF\xFF\xF6\xC2\x01\x0F\x84\xCC\x00\x00\x00</string>
 			<key>Mask</key>
-			<string>xx????xx????xxxxxx????xxxxxxxxxxxxxxx????x????x????xxxxx????xxxxxx????xxxx</string>
+			<string>xxxxxxxx%%%%xx????xxxxxx%xxxxxxxx%%%%</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_6B7C00  (this one definitely took some time to find, kind of sucked to get a good signature that worked for 3.3.0 and 3.3.0a)</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -60,11 +62,13 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x89\x5C\x24\x04\x89\x74\x24\x08\xC7\x04\x24\xA0\xC2\x51\x01</string>
+			<string>\x89\x5C\x24\x04\x89\x74\x24\x08\xC7\x04\x24\xA0\xC3\xF3\x00\xE8\x17</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxx????</string>
+			<string>xxxxxxxxxxx????xx</string>
 			<key>AdditionalOffset</key>
 			<string>0x24</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_1A8860</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -130,9 +134,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xC6\x80\x5C\x76\x4D\x01\x00\xC6\x80\x14\x82\x4D\x01\x00\xC7\x80\xCC\x8D\x4D\x01\x00\x00\x00\x00\xC7\x80\xD0\x8D\x4D\x01\x00\x00\x00\x00\xC7\x80\xD4\x8D\x4D\x01\x00\x00\x00\x00\xC7\x80\xD8\x8D\x4D\x01\x00\x00\x00\x00\x83\xC2\x01\x05\xBC\x17\x00\x00</string>
+			<string>\xC6\x80\xFC\x7D\xF4\x00\x00\xC6\x80\xB4\x89\xF4\x00\x00\xC7\x80\x6C\x95\xF4\x00\x00\x00\x00\x00\xC7\x80\x70\x95\xF4\x00\x00\x00\x00\x00\xC7\x80\x74\x95\xF4\x00\x00\x00\x00\x00\xC7\x80\x78\x95\xF4\x00\x00\x00\x00\x00\x05\xBC\x17\x00\x00</string>
 			<key>Mask</key>
-			<string>xx????xxx????xxx????xxxxxx????xxxxxx????xxxxxx????xxxxxxxxxxxx</string>
+			<string>xx????xxx%%%%xxx%%%%xxxxxx%%%%xxxxxx%%%%xxxxxx%%%%xxxxxxxxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_535030</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -147,9 +153,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x89\xDA\x0F\xAC\xF2\x10\x8B\x45\xD4\x89\x50\x08\x0F\xB6\x87\x60\xFE\x55\x01\x83\xE0\x7F\x8B\x7D\xD4</string>
+			<string>\x6B\xD8\x34\x89\x34\x24\x8D\xBB\x20\x6F\xF4\x00\x89\x7C\x24\x04</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxxxx????xxxxxx</string>
+			<string>xxxxxxxx????xxxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_50BD80</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -163,14 +171,14 @@
 	<dict>
 		<key>Intel</key>
 		<dict>
-			<key>Signature</key>
-			<string>\x55\x89\xE5\x53\x83\xEC\x14\xBB\xD4\x84\x5A\x01</string>
-			<key>Mask</key>
-			<string>xxxxxxxx????</string>
 			<key>Count</key>
-			<string>75</string>
-			<key>AdditionalOffset</key>
-			<string>0x4</string>
+			<string>100</string>
+			<key>Signature</key>
+			<string>\x89\x4C\x24\x04\xC7\x04\x24\xC8\x9B\xFC\x00\xE8\x33\x86\x00\x00</string>
+			<key>Mask</key>
+			<string>xxxxxxx????x????</string>
+			<key>Comment</key>
+			<string></string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -186,8 +194,10 @@
 	<dict>
 		<key>Intel</key>
 		<dict>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_5A5870</string>
 			<key>Signature</key>
-			<string>\xC7\x44\x24\x08\xB8\x0B\x00\x00\x89\x5C\x24\x04\xC7\x04\x24\xE0\x0B\x54\x01</string>
+			<string>\xC7\x44\x24\x08\xB8\x0B\x00\x00\x89\x5C\x24\x04\xC7\x04\x24\xE0\x29\xFA\x00</string>
 			<key>Mask</key>
 			<string>xxxxxxxxxxxxxxx????</string>
 		</dict>
@@ -206,9 +216,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8B\x45\xC8\x89\x03\x8B\x45\xCC\x89\x43\x04\x8B\x45\xD0\x89\x43\x08\xF3\x0F\x10\x05\xE4\x09\x27\x01</string>
+			<string>\xF3\x0F\x51\x05\xFC\x74\x0C\x01\xC7\x05\xE4\x74\x0C\x01\x00\x00\x00\x00\xF3\x0F\x11\x05\xE8\x74\x0C\x01\x0F\x57\xC0</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxxxxxxxxxx????</string>
+			<string>xxxx%%%%xx%%%%xxxxxxxx????xxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_42EF80</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -222,10 +234,12 @@
 	<dict>
 		<key>Intel</key>
 		<dict>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_42EF80</string>
 			<key>Signature</key>
-			<string>\xC7\x05\xE8\x09\x27\x01\x00\x00\x34\x43\x0F\x2E\x15\xB8\x2A\xB9\x00\x76\x09</string>
+			<string>\xC7\x05\xEC\x74\x0C\x01\xDB\x0F\x49\x40</string>
 			<key>Mask</key>
-			<string>xx????xxxxxxx????xx</string>
+			<string>xx????xxxx</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -240,9 +254,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8B\x4D\x10\x8B\x01\x8B\x51\x04\xA3\xF0\x09\x27\x01</string>
+			<string>\xC7\x05\xF0\x74\x0C\x01\x00\x00\x00\x00\xC7\x05\xF4\x74\x0C\x01\x00\x00\x00\x00\xC7\x05\x10\x75\x0C\x01\x00\x00\x00\x00\xC7\x05\xE4\x74\x0C\x01\x00\x00\x00\x00\xC7\x05\xD8\x74\x0C\x01\x0D\x00\x00\x00</string>
 			<key>Mask</key>
-			<string>xxxxxxxxx????</string>
+			<string>xx????xxxxxx%%%%xxxxxx%%%%xxxxxx%%%%xxxxxx%%%%xxxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_42EC50</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -256,10 +272,12 @@
 	<dict>
 		<key>Intel</key>
 		<dict>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_41ADB0</string>
 			<key>Signature</key>
-			<string>\x55\x89\xE5\x53\x8B\x1D\xD4\x09\x27\x01\x83\xFB\x0D</string>
+			<string>\xC7\x05\xD8\x74\x0C\x01\x0D\x00\x00\x00\xC7\x05\xE4\x74\x0C\x01\x00\x00\x00\x00\xC7\x05\x40\x75\x0C\x01\x00\x00\x00\x00\xC7\x05\x44\x75\x0C\x01\x00\x00\x00\x00</string>
 			<key>Mask</key>
-			<string>xxxxxx????xxx</string>
+			<string>xx????xxxxxx%%%%xxxxxx%%%%xxxxxx%%%%xxxx</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -274,9 +292,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8D\x45\xD8\x8B\x55\x0C\x89\x54\x24\x08\xC7\x44\x24\x04\xFC\x08\x27\x01\x89\x04\x24</string>
+			<string>\x8B\x55\x0C\x8D\x45\xD8\x89\x04\x24\xC7\x44\x24\x04\xFC\x73\x0C\x01\x89\x54\x24\x08</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxxx????xxx</string>
+			<string>xxxxxxxxxxxxx????xxxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_41AA60</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -291,9 +311,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x89\x5C\x24\x08\x8B\x84\x88\x00\x01\x00\x00\x89\x44\x24\x04\xC7\x04\x24\x40\xE9\x25\x01</string>
+			<string>\x8B\x40\x04\x8B\x40\x0C\xC7\x04\x24\x20\x4A\x0B\x01\x89\x44\x24\x08\x8B\x45\xE4\x89\x44\x24\x04</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxxxxxxx????</string>
+			<string>xxxxxxxxx????xxxxxxxxxxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_32B9B0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -308,9 +330,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8B\x10\x89\x15\xF8\x80\xB9\x00\x8B\x0D\x00\x81\xB9\x00\x85\xC9</string>
+			<string>\x55\x89\xE5\x83\xEC\x08\xC7\x05\xA0\xD7\xFC\x00\xFF\xFF\xFF\xFF\xC7\x05\x9C\xD7\xFC\x00\x00\x00\x00\x00</string>
 			<key>Mask</key>
-			<string>xxxx????xx????xx</string>
+			<string>xxxxxxxx%%%%xxxxxx????xxxx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_6D32D0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -327,9 +351,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x83\xFA\x11\x77\x0B\xC1\xE2\x05\x8B\x82\xE4\xE0\x57\x01\x5D\xC3</string>
+			<string>\x89\xF3\xC1\xE3\x05\x8B\x83\xA4\xA2\xFB\x00\x85\xC0</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxx????xx</string>
+			<string>xxxxxxx????xx</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_5EB6A0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -346,9 +372,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xA1\x80\x0B\x54\x01\x89\x03\xA1\x84\x0B\x54\x01\x89\x43\x04\xA1\x88\x0B\x54\x01\x89\x43\x08</string>
+			<string>\x8B\x02\x85\xC9\xA3\x80\x29\xFA\x00\x8B\x42\x04\xA3\x84\x29\xFA\x00\x8B\x42\x08\xA3\x88\x29\xFA\x00</string>
 			<key>Mask</key>
-			<string>x????xxx????xxxx????xxx</string>
+			<string>xxxxx????xxxx%%%%xxxx%%%%</string>
+			<key>Comment</key>
+			<string>For 3.3.0: sub_5A0A50</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -363,9 +391,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xA1\x20\x2B\xC2\x00\x85\xC0\x74\x3A</string>
+			<string>\x55\x89\xE5\x53\x83\xEC\x14\x8B\x5D\x08\x39\x1D\x80\x5A\x22\x01\x74\x34</string>
 			<key>Mask</key>
-			<string>x????xxxx</string>
+			<string>xxxxxxxxxxxx????xx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_9E3630</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -380,9 +410,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x89\xC2\x8B\x85\xE0\xF2\xFF\xFF\x3B\x05\x54\xEA\x25\x01</string>
+			<string>\x8B\x8D\xE0\xF2\xFF\xFF\x3B\x0D\x38\x4B\x0B\x01\x89\xC2</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxx????</string>
+			<string>xxxxxxxx????xx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_323A30</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -397,9 +429,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x0F\xB6\xD0\x8B\x0D\x80\x60\x23\x01\x89\x15\x80\x60\x23\x01\x84\xC0</string>
+			<string>\x8D\x95\x68\xFF\xFF\xFF\x89\x5C\x24\x1C\xC7\x44\x24\x18\xA0\xB8\xFB\x00\xC7\x44\x24\x14\xE0\x48\x0F\x01</string>
 			<key>Mask</key>
-			<string>xxxxx????xx????xx</string>
+			<string>xxxxxxxxxxxxxx????xxxx%%%%</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_606980</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -418,9 +452,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8B\x45\x08\x8B\x14\x85\x00\x85\x58\x01\x85\xD2\x74\x3B</string>
+			<string>\x55\x89\xE5\x83\xEC\x18\xC7\x44\x24\x08\x40\x02\x00\x00\xC7\x44\x24\x04\x00\x00\x00\x00\xC7\x04\x24\x20\x52\xF4\x00</string>
 			<key>Mask</key>
-			<string>xxxxxx????xxxx</string>
+			<string>xxxxx%xxxxxxxxxxxxxxxxxxx????</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_4E8860</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -437,9 +473,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x83\xC0\x04\x3D\xA0\x55\x59\x01\x75\xEE</string>
+			<string>\xE8\xEF\x49\xC3\x00\xC7\x44\x24\x08\x00\x10\x00\x00\xC7\x44\x24\x04\x00\x00\x00\x00\xC7\x04\x24\x40\xAC\xFC\x00\xE8\xD3\x49\xC3\x00</string>
 			<key>Mask</key>
-			<string>xxxx????xx</string>
+			<string>x%%%%xxxxxxxxxxxxxxxxxxx????x%%%%</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_65E7F0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -456,9 +494,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x55\x89\xE5\x56\x53\x83\xEC\x20\x8B\x75\x08\x8B\x0D\x90\xD9\xB9\x00</string>
+			<string>\x55\x89\xE5\x83\xEC\x28\x89\x75\xFC\x8B\x75\x08\x89\x5D\xF8\x8B\x0D\xD0\xE5\xE3\x00\x8B\x1D\xD4\xE5\xE3\x00\x8B\x56\x04\x8B\x06</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxx????</string>
+			<string>xxxxx%xxxxxxxxxxx????xx%%%%xx%xx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_596DB0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -475,9 +515,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x0F\xB6\x05\xAC\xD8\xB9\x00\x5B\x5D\xC3</string>
+			<string>\x8B\x1D\xEC\xE4\xE3\x00\x0F\xB6\x0D\xE0\xE4\xE3\x00\x31\xD3\x8B\x15\xE8\xE4\xE3\x00\x31\xC2\x31\xC0\x09\xD3\x5B\x0F\x44\xC1\xC9\xC3</string>
 			<key>Mask</key>
-			<string>xxx????xxx</string>
+			<string>xx%%%%xxx????xxxx%%%%xxxxxxxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_588A90</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -494,9 +536,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xC7\x44\x24\x08\x00\x05\x00\x00\x8B\x45\x08\x89\x44\x24\x04\xC7\x04\x24\x80\x41\xC3\x00</string>
+			<string>\xC6\x06\x00\xC7\x04\x24\x4C\x5E\xE3\x00\xE8\x14\xC8\xDB\xFF\xC7\x44\x24\x08\x52\xD7\xC0\x00\xC7\x44\x24\x04\xFC\x56\xC4\x00\xC7\x04\x24\x03\x00\x00\x00</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxxxxxxx????</string>
+			<string>xxxxxx????x%%%%%xxx%%%%xxxx%%%%xxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_2F28C0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -513,9 +557,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8B\x75\x10\x8B\x7D\x14\x8B\x15\xE0\xBE\xB9\x00\x8D\x42\x01\xA3\xE0\xBE\xB9\x00</string>
+			<string>\xC7\x44\x24\x08\x5E\x01\x00\x00\xC7\x04\x24\xC0\x87\x02\x01</string>
 			<key>Mask</key>
-			<string>xxxxxxxx????xxxx????</string>
+			<string>xxxxxxxxxxx????</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_8474E0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -532,13 +578,13 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x55\x89\xE5\x31\xC0\x80\x3D\x28\x3D\x55\x01\x00\xBA\x28\x3D\x55\x01\x0F\x45\xC2\x5D\xC3</string>
+			<string>\x55\x31\xC0\x89\xE5\xBA\xC8\x87\x02\x01\x80\x3D\xC8\x87\x02\x01\x00\xC9\x0F\x45\xC2\xC3</string>
 			<key>Mask</key>
-			<string>xxxxxxx????xx????xxxxx</string>
-			<key>StartScanAddress</key>
-			<string>0x1500000</string>
+			<string>xxxxxx????xx====xxxxxx</string>
 			<key>Count</key>
 			<string>4</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_847580</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -557,9 +603,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x0D\x6C\x5A\x25\x01\x8D\x91\xA4\x00\x00\x00\x8B\x42\x08\xA8\x01\x0F\x85\xE6\x00\x00\x00\x85\xC0\x0F\x84\xDE\x00\x00\x00</string>
+			<string>\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x0D\x0C\x76\x0E\x01\x8D\x91\xAC\x00\x00\x00\x8B\x42\x08\xA8\x01</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxx????xxxxxxxxxxxxx????xxxx????</string>
+			<string>xxxxxxxx%xx????xx%xxxxx%xx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_49D820</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -574,11 +622,13 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xB8\x00\x44\x55\x01\x89\xD3\x0F\x45\xD8\xA1\x0C\x86\x5F\x01\x89\x44\x24\x04\x8D\x45\xF4\x89\x04\x24\xE8\x66\xFF\x29\x00\xC7\x44\x24\x08\x58\x00\x00\x00\xC7\x44\x24\x04\x00\x00\x00\x00\xC7\x04\x24\xA0\x43\x55\x01</string>
+			<string>\x56\x89\xD6\x53\x89\xD3\x83\xEC\x20\x80\x3D\x20\x89\x02\x01\x00\x0F\x45\xF0\xB8\xA0\x8E\x02\x01\x80\x3D\x81\x51\xE4\x00\x00</string>
 			<key>Mask</key>
-			<string>x????xxxxxx????xxxxxxxxxxx????xxxxxxxxxxxxxxxxxxx????</string>
+			<string>xxxxxxxxxxx%%%%xxxxx????xx%%%%x</string>
 			<key>AdditionalOffset</key>
 			<string>0x6</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_847A80</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -588,6 +638,27 @@
 			<string>xxxxxx%%xx??xx%%xx??xxxxxxxxxxxxxxxxxxxxxxxx</string>
 			<key>AdditionalOffset</key>
 			<string>0x6</string>
+		</dict>
+	</dict>
+	<key>FIRST_OBJECT_OFFSET</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x0D\x0C\x76\x0E\x01\x8D\x91\xAC\x00\x00\x00\x8B\x42\x08\xA8\x01</string>
+			<key>Mask</key>
+			<string>xxxxxxxx%xx%%%%xx?xxxxx%xx</string>
+			<key>AdditionalOffset</key>
+			<string>0x8</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_49D820   I don&apos;t believe the last % of 8 would change, but if so, that would be added to the offset retreived by the above signature</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x3F\xA0\x01\x1D\x3C\xA0\x00\x0F\x80\x42\xBF\xFC\x3B\xBD\x76\xCC\x38\xA5\x39\x84\x91\x9D\x00\x00\x38\x80\x00\xA9\x38\xC0\x00\x00</string>
+			<key>Mask</key>
+			<string>xx??xxxxxx%%xx??xxxxxxxxxxxxxxxx</string>
 		</dict>
 	</dict>
 </dict>

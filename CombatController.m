@@ -13,11 +13,13 @@
 #import "BotController.h"
 #import "MobController.h"
 #import "ChatController.h"
+#import "BlacklistController.h"
+#import "PlayersController.h"
+
 #import "Unit.h"
 #import "Mob.h"
 #import "Player.h"
 #import "CombatProfile.h"
-#import "PlayersController.h"
 
 @interface CombatController ()
 @property BOOL inCombat;
@@ -39,10 +41,6 @@
 - (Unit*)findBestUnitToAttack;
 - (BOOL)addUnitToCombatQueue: (Unit*)unit;
 - (BOOL)removeUnitFromCombatQueue: (Unit*)unit;
-
-- (void)refreshBlacklist;
-- (int)blacklistCountForUnit: (Unit*)unit;
-- (void)removeUnitFromBlacklist: (Unit*)mob;
 @end
 
 @implementation CombatController
@@ -57,7 +55,6 @@
         _attemptingCombat = NO;
         //_combatUnits = [[NSMutableArray array] retain];
         _attackQueue = [[NSMutableArray array] retain];
-        _blacklist = [[NSMutableArray array] retain];
 		_unitsAttackingMe = [[NSMutableArray array] retain];
         
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
@@ -124,8 +121,8 @@
     
     for(Unit* unit in _attackQueue) {
         // remove the unit if it's invalid, blacklisted, dead, evading or no longer in combat
-        if( ![unit isValid] || [self isUnitBlacklisted: unit] || [unit isDead] || [unit isEvading] || [unit isTappedByOther] || ![unit isInCombat] ) {
-            PGLog(@"[Combat] [A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [self isUnitBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
+        if( ![unit isValid] || [blacklistController isBlacklisted: unit] || [unit isDead] || [unit isEvading] || [unit isTappedByOther] || ![unit isInCombat] ) {
+            PGLog(@"[Combat] [A] Removing %@  NotValid?(%d) Blacklisted?(%d) Dead?(%d) Evading?(%d) TappedByOther?(%d) NotInCombat?(%d)", unit, ![unit isValid], [blacklistController isBlacklisted: unit], [unit isDead], [unit isEvading], [unit isTappedByOther], ![unit isInCombat]);
 			[unitsToRemove addObject: unit];
         }
     }
@@ -167,7 +164,7 @@
     // if the unit is either not in combat, or is evading
     if( ![unit isInCombat] || [unit isEvading] || ![unit isAttackable] ) { 
         PGLog(@"[Combat] -XX- Unit %@ not in combat (%d), evading (%d), or not attackable(%d), blacklisting.", unit, ![unit isInCombat], [unit isEvading], ![unit isAttackable] );
-        [self blacklistUnit: unit];
+        [blacklistController blacklistObject: unit];
         return;
     }
 	
@@ -178,7 +175,7 @@
     /*float currentDistance = [[playerData position] distanceToPosition2D: [unit position]];
     if( botController.theCombatProfile.attackRange < currentDistance ) {
 		PGLog(@"[Combat] -XX- Unit %@ distance (%.2f) is greater than the attack distance (%.2f).", unit, currentDistance, botController.theCombatProfile.attackRange);
-        [self blacklistUnit: unit];
+
         return;
     }*/
     
@@ -189,8 +186,8 @@
 }
 
 - (void)attackTheUnit: (Unit*)unit {
-    if(![unit isValid] || [unit isDead] || [unit isEvading] || [self isUnitBlacklisted:unit]) {
-		PGLog(@"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![unit isValid], [unit isDead], [unit isEvading], [self isUnitBlacklisted:unit]);
+    if(![unit isValid] || [unit isDead] || [unit isEvading] || [blacklistController isBlacklisted:unit]) {
+		PGLog(@"STOP ATTACK: Invalid? (%d)  Dead? (%d)  Evading? (%d)  Blacklisted? (%d)", ![unit isValid], [unit isDead], [unit isEvading], [blacklistController isBlacklisted:unit]);
 		[self finishUnit:unit];
 		return;
 	}
@@ -293,7 +290,7 @@
 	// is there a unit we should be attacking
 	if ( self.attackUnit && [playerData targetID] == [self.attackUnit GUID] ){
 		PGLog(@"[Combat] Target not valid, blacklisting %@", self.attackUnit);
-		[self blacklistUnit: self.attackUnit];
+		[blacklistController blacklistObject: self.attackUnit];
 		[self finishUnit:self.attackUnit];
 	}
 }
@@ -307,7 +304,7 @@
 		// is this who we are currently attacking?
 		if ( [playerData targetID] == [self.attackUnit GUID] ){
 			PGLog(@"[Combat] Out of range, blacklisting %@", self.attackUnit);
-			[self blacklistUnit: self.attackUnit];
+			[blacklistController blacklistObject: self.attackUnit];
 			[self finishUnit:self.attackUnit];
 		}
 	}
@@ -315,96 +312,15 @@
 
 - (void)targetNotInFront: (NSNotification*)notification {
 	PGLog(@"[Combat] Target not in front!");
+	[movementController backEstablishPosition];
 }
-
-
-#pragma mark Blacklist
-
-- (void)blacklistUnit: (Unit*)unit {
-    [self refreshBlacklist];
-    int blackCount = [self blacklistCountForUnit: unit];
-    if( blackCount == 0 ) {
-        PGLog(@"[Combat] Blacklisting %@ for 15 seconds. Strike 1.", unit);
-        [_blacklist addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                unit,                                       @"Unit", 
-                                [NSDate date],                              @"Date", 
-                                [NSNumber numberWithInt: 1],                @"Count", nil]];
-    } else {
-        // the blacklist already contains this unit!
-        [self removeUnitFromBlacklist: unit];
-        PGLog(@"[Combat] Blacklisting %@ again. Strike %d.", unit, blackCount + 1);
-        [_blacklist addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                unit,                                       @"Unit", 
-                                [NSDate date],                              @"Date", 
-                                [NSNumber numberWithInt: blackCount + 1],   @"Count", nil]];
-    }
-    
-    // if we're not in combat after we blacklist something...
-    // then we need to trigger a leaving combat notification
-    if( ![self inCombat] ) {
-        PGLog(@"[Combat] Not in combat after blacklisting; concluding combat.");
-        [self playerLeavingCombat:nil];
-    }
-}
-
-- (int)blacklistCountForUnit: (Unit*)unit {
-    for(NSDictionary *black in _blacklist) {
-        if( [[black objectForKey: @"Unit"] isEqualToObject: unit]) {
-            return [[black objectForKey: @"Count"] intValue];
-        }
-    }
-    return 0;
-}
-
-- (BOOL)isUnitBlacklisted: (Unit*)unit {
-    int count = [self blacklistCountForUnit: unit];
-    if(count == 0)  return NO;
-    if(count >= 3)  return YES;
-    
-    // check the time on the blacklist
-    for(NSDictionary *black in _blacklist) {
-        if([[black objectForKey: @"Unit"] isEqualToObject: unit]) {
-            int count = [[black objectForKey: @"Count"] intValue];
-            if(count < 1) count = 1;
-            if( [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0 > (15.0*count)) 
-                return NO;
-        }
-    }
-    
-    return YES;
-}
-
-- (void)removeUnitFromBlacklist: (Unit*)unit {
-    
-    NSMutableArray *blRemove = [NSMutableArray array];
-    for(NSDictionary *black in _blacklist) {
-        if([[black objectForKey: @"Unit"] isEqualToObject: unit])
-            [blRemove addObject: black];
-    }
-    [_blacklist removeObjectsInArray: blRemove];
-}
-
-- (void)refreshBlacklist {
-    // remove invalid or dead entries
-    NSMutableArray *blRemove = [NSMutableArray array];
-    for(NSDictionary *black in _blacklist) {
-        Unit *unit = [black objectForKey: @"Unit"];
-        if( ![unit isValid] || [unit isDead] ) {
-            [blRemove addObject: black];
-        }
-    }
-    [_blacklist removeObjectsInArray: blRemove];
-}
-
 
 #pragma mark from BotController
 
 - (void)disposeOfUnit: (Unit*)unit {
     if(!self.combatEnabled) return;
 	
-    // refresh blacklist
-    [self refreshBlacklist];
-    BOOL isBlacklisted = [self isUnitBlacklisted: unit];
+    BOOL isBlacklisted = [blacklistController isBlacklisted: unit];
 	
     if(![unit isValid]) { // if we were sent a bad unit
         PGLog(@"[Combat] Unit to attack is not valid!");
@@ -417,13 +333,13 @@
         
         if( [unit isDead]) {
             PGLog(@"[Combat] Cannot attack a dead unit %@.", unit);
-            [self blacklistUnit: unit];
+			[blacklistController blacklistObject: unit];
             return;
         }
 		
         if( [unit isEvading]) {
             PGLog(@"[Combat] %@ appears to be evading...", unit);
-            [self blacklistUnit: unit];
+			[blacklistController blacklistObject: unit];
             return;
         }
     }
@@ -447,7 +363,7 @@
 - (void)cancelAllCombat {
     PGLog(@"[Combat] Clearing all combat state.");
     self.attackUnit = nil;
-    [_blacklist removeAllObjects];
+	[blacklistController removeAllUnits];
     [_attackQueue removeAllObjects];
 	[_unitsAttackingMe removeAllObjects];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
@@ -641,7 +557,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 			}
 			
 			// ignore blacklisted units
-			if ( [self isUnitBlacklisted:unit] ){
+			if ( [blacklistController isBlacklisted:unit] ){
 				continue;
 			}
 			
@@ -741,7 +657,7 @@ int DistanceFromPositionCmp(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 - (BOOL)addUnitToCombatQueue: (Unit*)unit{
 	if ( ![_unitsAttackingMe containsObject: unit] ){
 		[_unitsAttackingMe addObject:unit];
-		[self removeUnitFromBlacklist: unit];	// TO DO: should this really be here?  stuck in infinite add/remove?
+		// should we remove the unit from the blacklist?
 		PGLog(@"[Combat] Adding ---> [C] %@ (%d total)", unit, [_unitsAttackingMe count]);
 		return YES;
 	}
