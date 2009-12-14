@@ -334,7 +334,6 @@ static PlayerDataController* sharedController = nil;
         self.wasDead = [self isDead];
         savedLevel = 0;
         
-		PGLog(@"[PlayerData] Sending player is valid notification!");
         [[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsValidNotification object: nil];
         
         // and start the update process

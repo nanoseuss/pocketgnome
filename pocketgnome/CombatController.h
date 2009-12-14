@@ -17,15 +17,17 @@
 @class PlayerDataController;
 @class PlayersController;
 @class Position;
+@class BlacklistController;
 
 @interface CombatController : NSObject {
-    IBOutlet Controller *controller;
-    IBOutlet PlayerDataController *playerData;
-	IBOutlet PlayersController *playersController;
-    IBOutlet BotController *botController;
-    IBOutlet MobController *mobController;
-    IBOutlet ChatController *chatController;
-    IBOutlet MovementController *movementController;
+    IBOutlet Controller				*controller;
+    IBOutlet PlayerDataController	*playerData;
+	IBOutlet PlayersController		*playersController;
+    IBOutlet BotController			*botController;
+    IBOutlet MobController			*mobController;
+    IBOutlet ChatController			*chatController;
+    IBOutlet MovementController		*movementController;
+	IBOutlet BlacklistController	*blacklistController;
 	
     BOOL _inCombat;
     BOOL _combatEnabled;
@@ -33,7 +35,6 @@
     BOOL _attemptingCombat;
     Unit *_attackUnit;
     NSMutableArray *_attackQueue;
-    NSMutableArray *_blacklist;
 	NSMutableArray *_unitsAttackingMe;
 }
 
@@ -61,10 +62,6 @@
 // new combat search
 - (Unit*)findBestUnitToAttack;
 - (UInt32)unitWeight: (Unit*)unit PlayerPosition:(Position*)playerPosition;
-
-// Should only be called when a spell cast fails on a target!
-- (void)blacklistUnit: (Unit*)unit;
-
 
 //    float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
 //([[unit position] verticalDistanceToPosition: position] <= vertOffset)  

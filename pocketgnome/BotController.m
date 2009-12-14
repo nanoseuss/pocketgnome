@@ -31,6 +31,7 @@
 #import "MemoryViewController.h"
 #import "CombatProfileEditor.h"
 #import "EventController.h"
+#import "BlacklistController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -217,7 +218,6 @@
 		_jumpAttempt = 0;
         
         _mobsToLoot = [[NSMutableArray array] retain];
-		_unitsBlacklisted = [[NSMutableArray array] retain];
         
         // wipe pvp options
         self.isPvPing = NO;
@@ -1244,7 +1244,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						else if ( actionResult == ErrInvalidTarget || actionResult == ErrTargetOutRange || actionResult == ErrTargetNotInLOS ){
 							// Cancel, I don't want to keep attacking this target!
 							//PGLog(@"[Bot] Spell didn't cast on target %@, blacklisting and moving on!", target);
-							//[combatController blacklistUnit:target];
+		
 							//[self finishCurrentProcedure: state];
 							//return;
 						}
@@ -1662,7 +1662,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)attackUnit: (Unit*)unit {
     if(![self isBotting]) return;
 	
-	if ( [_unitsBlacklisted containsObject:unit] ){
+	if ( [blacklistController isBlacklisted:unit] ){
 		PGLog(@"Attempting to attack a blacklisted unit, ruh-roh");
 	}
 	
@@ -1816,31 +1816,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 #pragma mark -
 #pragma mark [Input] MovementController
-
-- (void)blacklistUnit: (WoWObject*)unit{
-	
-	if ( [_unitsBlacklisted containsObject:unit] ){
-		PGLog(@"[Bot] ** Why is %s blacklisted already?", unit);
-	}
-	else{
-		[_unitsBlacklisted addObject:unit];
-	}
-	
-	float delay = 20.0f;
-	PGLog(@"[Bot] Unable to reach %@, blacklisting for %0.2f seconds", unit, delay);
-	[self performSelector:@selector(removeUnitFromBlacklist:) withObject:unit afterDelay:delay];
-}
-
-- (void)removeUnitFromBlacklist: (WoWObject*)unit{
-	if ( [_unitsBlacklisted containsObject:unit] ){
-		[_unitsBlacklisted removeObject:unit];
-		PGLog(@"[Bot] Unit %@ removed from blacklist", unit);
-	}
-	else{
-		PGLog(@"[Bot] ** How was %@ removed already?", unit);
-	}
-}
-
 
 - (void)reachedUnit: (WoWObject*)unit {
     
@@ -2046,7 +2021,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // unit is not blacklisted
     if(   ([self.theCombatProfile unitFitsProfile: unit ignoreDistance: ignoreDistance])
        && ([[unit position] verticalDistanceToPosition: position] <= vertOffset)  
-       && (![combatController isUnitBlacklisted: unit])) {
+       && (![blacklistController isBlacklisted:unit]) ) {
         return YES;
     }
     return NO;
@@ -2388,7 +2363,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(mobToLoot && (mobToLootDist < unitToAttackDist)) {
         if(mobToLoot != [movementController moveToObject]) {
             // either move toward it or loot it now
-            if([mobToLoot isValid] && (mobToLootDist < INFINITY) && ![_unitsBlacklisted containsObject:mobToLoot]) {
+            if([mobToLoot isValid] && (mobToLootDist < INFINITY) && ![blacklistController isBlacklisted:mobToLoot]) {
 				
 				// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
 				if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
@@ -2403,11 +2378,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
             }
 			else{
-				PGLog(@"[Loot] Mob found, but either isn't valid (%d), is too far away (%d) or is blacklisted (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY), [_unitsBlacklisted containsObject:mobToLoot] );
+				PGLog(@"[Loot] Mob found, but either isn't valid (%d), is too far away (%d) or is blacklisted (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY), [blacklistController isBlacklisted:mobToLoot] );
 			}
         }
 		else{
-			//PGLog(@"[Loot] We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
+			PGLog(@"[Loot] We're already moving toward %@ (%d)", mobToLoot, mobToLoot != [movementController moveToObject]);
 		}
     }
     
@@ -2438,7 +2413,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             self.preCombatUnit = nil;
             
             // turn and attack
-            PGLog(@"Found %@ and attacking.", unitToAttack);
+            PGLog(@"[Bot] Found %@ and attacking.", unitToAttack);
             [movementController turnTowardObject: unitToAttack];
             [combatController disposeOfUnit: unitToAttack];
             return YES;
@@ -2463,11 +2438,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             
             for(nodeToLoot in nodes) {
 				
-				if ( [_unitsBlacklisted containsObject:nodeToLoot] ){
+				if ( [blacklistController isBlacklisted:nodeToLoot] ){
 					PGLog(@"[Bot] Node %@ blacklisted, ignoring", nodeToLoot);
 				}
 				
-                if(nodeToLoot && [nodeToLoot isValid] && ![_unitsBlacklisted containsObject:nodeToLoot]) {
+                if(nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot]) {
                     nodeDist = [playerPosition distanceToPosition: [nodeToLoot position]];
                     break;
                 }
@@ -2527,7 +2502,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					float nodeDist = INFINITY;
 					for(nodeToFish in nodes) {
 						
-						if ( [_unitsBlacklisted containsObject:nodeToFish] ){
+						if ( [blacklistController isBlacklisted:nodeToFish] ){
 							PGLog(@"[Bot] Node %@ blacklisted, ignoring", nodeToFish);
 							continue;
 						}

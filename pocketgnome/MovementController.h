@@ -23,6 +23,7 @@
 @class OffsetController;
 @class AuraController;
 @class MacroController;
+@class BlacklistController;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
@@ -41,6 +42,7 @@
     IBOutlet PlayerDataController	*playerData;
 	IBOutlet OffsetController		*offsetController;
     IBOutlet MacroController		*macroController;
+	IBOutlet BlacklistController	*blacklistController;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementType;

@@ -437,10 +437,11 @@ typedef struct NameObjectStruct{
 - (UInt32)getNextObjectAddress:(MemoryAccess*)memory{
 	if ( _currentAddress == 0 ){
 		UInt32 objectManager = 0;
+		UInt32 firstObjectOffset = [offsetController offset:@"FIRST_OBJECT_OFFSET"];
 		if([memory loadDataForObject: self atAddress: [offsetController offset:@"OBJECT_LIST_LL_PTR"] Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager) {
 			_validObjectListManager = YES;
 			UInt32 firstObjectPtr = 0;
-			if([memory loadDataForObject: self atAddress: objectManager + 0xB4 Buffer: (Byte*)&firstObjectPtr BufLength: sizeof(firstObjectPtr)] && firstObjectPtr) {
+			if([memory loadDataForObject: self atAddress: objectManager + firstObjectOffset Buffer: (Byte*)&firstObjectPtr BufLength: sizeof(firstObjectPtr)] && firstObjectPtr) {
 				return firstObjectPtr;
 			}
 		}
@@ -500,7 +501,7 @@ typedef struct NameObjectStruct{
 					}			
 				}
 				
-				//PGLog(@"[Controller] Player GUID: 0x%qX Yours: 0x%qX", guid, _globalGUID);
+				//PGLog(@"[Controller] Player GUID: 0x%X Yours: 0x%X 0x%qX", guid, GUID_LOW32(_globalGUID), _globalGUID);
 
 				[_players addObject: objAddress];
 				continue;

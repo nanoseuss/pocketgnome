@@ -20,6 +20,7 @@
 #import "OffsetController.h"
 #import "AuraController.h"
 #import "MacroController.h"
+#import "BlacklistController.h"
 
 #import "WoWObject.h"
 #import "Offsets.h"
@@ -478,7 +479,7 @@ typedef enum MovementType {
 		PGLog(@"[Move] ... Unable to reach unit %@; Blacklisting and resuming route.", self.unit);
 		
 		// Blacklist the unit for a bit since we can't get to it :(
-		[botController blacklistUnit:self.unit];
+		[blacklistController blacklistObject:self.unit];
 		
 		self.unit = nil;
 		

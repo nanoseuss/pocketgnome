@@ -47,6 +47,7 @@
 @class OffsetController;
 @class MemoryViewController;
 @class CombatProfileEditor;
+@class BlacklistController;
 
 @class ScanGridView;
 
@@ -83,6 +84,7 @@
     IBOutlet ProcedureController    *procedureController;
 	IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
+	IBOutlet BlacklistController	*blacklistController;
 
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;
@@ -124,7 +126,6 @@
 	WoWObject *_unitToLoot;
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;
-	NSMutableArray *_unitsBlacklisted;			// This will track units we're trying to move to - but the move failed :(
 	
 	// fishing shit
 	float _fishingGatherDistance;
@@ -269,7 +270,6 @@
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
-- (void)blacklistUnit: (WoWObject*)unit;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

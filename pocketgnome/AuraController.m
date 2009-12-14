@@ -180,9 +180,8 @@ typedef struct WoWAura {
 		//PGLog(@"[Auras] Lot of auras! Switching to backup!");
 	}
     
-    if(validAuras <= 0 || validAuras > 56) 
-	{
-		PGLog(@"[Auras] Not a valid aura count %d", validAuras);
+    if ( validAuras <= 0 || validAuras > 500 ) {
+		//PGLog(@"[Auras] Not a valid aura count %d", validAuras);
 		return nil;
 	}
 	

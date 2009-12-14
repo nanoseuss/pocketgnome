@@ -73,10 +73,8 @@ enum eMobNameStructFields {
             if([_memory loadDataForObject: self atAddress: (value + NAMESTRUCT_NAME_PTR) Buffer: (Byte *)&stringPtr BufLength: sizeof(stringPtr)] &&
                [_memory loadDataForObject: self atAddress: (value + NAMESTRUCT_ENTRY_ID) Buffer: (Byte *)&entryID BufLength: sizeof(entryID)])
             {
-				PGLog(@"[Mob] 2 %d == %d 0x%X", entryID, [self entryID], stringPtr);
                 if( (entryID == [self entryID]) && stringPtr )
                 {
-					PGLog(@"[Mob] 3");
                     // get title ptr if it exists; we dont care if this op fails
                     [_memory loadDataForObject: self atAddress: (value + NAMESTRUCT_TITLE_PTR) Buffer: (Byte *)&titlePtr BufLength: sizeof(titlePtr)];
                     
@@ -84,10 +82,8 @@ enum eMobNameStructFields {
                     name[96] = 0;  // make sure it's null terminated, just incase
                     if([_memory loadDataForObject: self atAddress: stringPtr Buffer: (Byte *)&name BufLength: sizeof(name)-1])
                     {
-						PGLog(@"[Mob] 4");
                         NSString *newName = [NSString stringWithUTF8String: name];  // will stop after it's first encounter with '\0'
                         if([newName length]) {
-							PGLog(@"[Mob] 5");
                             // now see if there's a title
                             NSString *title = nil;
                             UInt32 titleOffset = titlePtr - stringPtr;
