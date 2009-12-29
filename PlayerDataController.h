@@ -171,6 +171,7 @@
 - (IBAction)showPlayerStructure: (id)sender;
 - (IBAction)showAuraWindow: (id)sender;
 - (IBAction)showCooldownWindow: (id)sender;
+- (IBAction)showCombatWindow: (id)sender;
 
 - (void)refreshPlayerData;
 

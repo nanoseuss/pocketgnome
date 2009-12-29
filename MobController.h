@@ -11,10 +11,12 @@
 
 @class CombatProfile;
 
+@class BotController;
+
 @interface MobController : NSObject {
     IBOutlet id controller;
     IBOutlet id playerData;
-    IBOutlet id botController;
+    IBOutlet BotController *botController;
     IBOutlet id memoryViewController;
     IBOutlet id combatController;
     IBOutlet id movementController;

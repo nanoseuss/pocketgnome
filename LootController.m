@@ -6,6 +6,8 @@
 //  Copyright 2009 Savory Software, LLC. All rights reserved.
 //
 
+#import <Carbon/Carbon.h>
+
 #import "LootController.h"
 
 #import	"Controller.h"
@@ -13,6 +15,7 @@
 #import "ChatController.h"
 #import "PlayerDataController.h"
 #import "OffsetController.h"
+#import "MacroController.h"
 
 #import "Item.h"
 #import "Offsets.h"
@@ -147,41 +150,69 @@
 	return NO;
 }
 
+// simply loots an item w/a macro or sends the command
+- (void)lootItem:(int)slotNum{
+	NSString *lootSlot = [NSString stringWithFormat: @"/script LootSlot(%d);%c", slotNum, '\n'];
+	NSString *lootBoP = [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", slotNum, '\n'];
+	int macroID = 0;
+	
+	// use macro to loot
+	macroID = [macroController macroIDForCommand:lootSlot];
+	PGLog(@"[Loot] Macro ID: %d", macroID);
+	if ( macroID > 0 ){
+		[macroController useMacroByID:macroID];
+		PGLog(@"[Loot] Executing loot macro %d", macroID);
+	}
+	// send the command
+	else{
+		
+		// hit escape to close the chat window if it's open
+		if ( [controller isWoWChatBoxOpen] ){
+			PGLog(@"[Loot] Sending escape to close open chat!");
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
+			usleep(100000);
+		}
+		
+		[chatController enter];             // open/close chat box
+		usleep(100000);
+		[chatController sendKeySequence: [NSString stringWithFormat: @"/script LootSlot(%d);%c", slotNum, '\n']];
+		usleep(500000);
+	}
+	
+	// use macro to loot
+	macroID = [macroController macroIDForCommand:lootBoP];
+	if ( macroID > 0 ){
+		[macroController useMacroByID:macroID];
+		PGLog(@"[Loot] Executing loot macro %d", macroID);
+	}
+	// send the command
+	else{
+		
+		// hit escape to close the chat window if it's open
+		if ( [controller isWoWChatBoxOpen] ){
+			PGLog(@"[Loot] Sending escape to close open chat!");
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
+			usleep(100000);
+		}
+		
+		[chatController enter];             // open/close chat box
+		usleep(100000);
+		[chatController sendKeySequence: [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", slotNum, '\n']];
+		usleep(500000);
+	}
+}
+
 // auto loot? PLAYER_AUTOLOOT{INT} = [Pbase + 0xD8] + 0x1010
 - (void)acceptLoot{
+	
 	UInt32 item;
 	int i = 0;
 	unsigned long offset = [offsetController offset:@"ITEM_IN_LOOT_WINDOW"];
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	while ( memory && [memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
+	while ( offset && memory && [memory loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && i < MAX_ITEMS_IN_LOOT_WINDOW ) {
 		if ( item > 0 ){
-			// Loot the item!
-			[chatController enter];             // open/close chat box
-            usleep(100000);
-			[chatController sendKeySequence: [NSString stringWithFormat: @"/script LootSlot(%d);%c", i+1, '\n']];
-			usleep(500000);
-			
-			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
-			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
-				[chatController enter];             // open/close chat box
-				usleep(100000);
-				[chatController sendKeySequence: [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", i+1, '\n']];
-				usleep(500000);
-			}
-			
-			// do it again for the next slot (sometimes the first slot is money! we don't know how to determine this)
-			[chatController enter];             // open/close chat box
-            usleep(100000);
-			[chatController sendKeySequence: [NSString stringWithFormat: @"/script LootSlot(%d);%c", i+2, '\n']];
-			usleep(500000);
-			
-			// Check to see if the item is still in memory - if it is then it's a BoP item!  Lets loot it!
-			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset + (LOOT_NEXT * (i)) Buffer: (Byte *)&item BufLength: sizeof(item)] && item > 0 ){	
-				[chatController enter];             // open/close chat box
-				usleep(100000);
-				[chatController sendKeySequence: [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", i+2, '\n']];
-				usleep(500000);
-			}
+			[self lootItem:i+1];
+			[self lootItem:i+2];
 		}
 		
 		i++;

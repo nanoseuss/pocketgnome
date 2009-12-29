@@ -21,6 +21,8 @@
     IBOutlet NSMenu *actionMenu;
     IBOutlet NSPanel *renamePanel;
     IBOutlet NSPanel *exportPanel;
+	
+	IBOutlet NSTextField *combatPriorityTextField;
 
     Behavior *_behavior;
     NSMutableArray *_behaviors;

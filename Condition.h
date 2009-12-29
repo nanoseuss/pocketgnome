@@ -24,6 +24,7 @@ typedef enum Variety {
     VarietyCombatCount      = 12,
     VarietyProximityCount   = 13,
 	VarietySpellCooldown	= 14,
+	VarietyLastSpellCast	= 15,
 } ConditionVariety;
 
 typedef enum UnitComponents {

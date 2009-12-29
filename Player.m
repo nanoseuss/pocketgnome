@@ -11,6 +11,8 @@
 #import "Mob.h"
 #import "Offsets.h"
 
+#import "PlayersController.h"
+
 enum PlayerFlags
 {
     PLAYER_FLAGS_GROUP_LEADER   = 0x00000001,
@@ -119,6 +121,10 @@ enum PlayerFlags
 	}
 	
 	return itemGUIDs;
+}
+
+- (NSString*)name {
+    return [playersController playerNameWithGUID:[self GUID]];
 }
 
 @end

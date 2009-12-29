@@ -347,20 +347,30 @@ static PlayersController *sharedPlayers = nil;
             int faction = [unit factionTemplate];
             BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
             BOOL isHostile = [playerData isHostileWithFaction: faction];
+			BOOL isNeutral = (!isHostile && ![playerData isFriendlyWithFaction: faction]);
+			
+			//PGLog(@"%d %d (%d || %d || %d) %d %d %d %d %@", [unit isValid], ![unit isDead], (friendly && isFriendly), (neutral && isNeutral), (hostile && isHostile), ((unitLevel >= lowLevel) && (unitLevel <= highLevel)), [unit isSelectable], 
+			//	  [unit isAttackable],  [unit isPVP], unit);
 			
             // only include:
             if(   [unit isValid]                                                // 1) valid units
                && ![unit isDead]                                                // 2) units that aren't dead
                && ((friendly && isFriendly)                                     // 3) friendly as specified
-                   || (neutral && !isFriendly && !isHostile)                    //    neutral as specified
+                   || (neutral && isNeutral)									//    neutral as specified
                    || (hostile && isHostile))                                   //    hostile as specified
                && (unitLevel >= lowLevel) && unitLevel <= highLevel             // 4) units within the level range
                && [unit isSelectable]                                           // 5) units that are selectable
-               && [unit isAttackable]                                           // 6) units that are attackable
-               && [unit isPVP] )                                                // 7) units that are PVP
-                [unitsWithinRange addObject: unit];
+               && [unit isAttackable]/*                                           // 6) units that are attackable
+               && [unit isPVP]*/ ){                                                // 7) units that are PVP
+                //PGLog(@"[PlayersController] Adding player %@", unit);
+				
+				[unitsWithinRange addObject: unit];
+				
+			}
         }
     }
+	
+	//PGLog(@"[PlayersController] Found %d players", [unitsWithinRange count]);
     
     return unitsWithinRange;
 }

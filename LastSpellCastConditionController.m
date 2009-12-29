@@ -1,21 +1,21 @@
 //
-//  SpellCooldownConditionController.m
+//  LastSpellCastConditionController.m
 //  Pocket Gnome
 //
-//  Created by Josh on 12/7/09.
-//  Copyright 2009 Savory Software, LLC. All rights reserved.
+//  Created by Josh on 12/28/09.
+//  Copyright 2009 __MyCompanyName__. All rights reserved.
 //
 
-#import "SpellCooldownConditionController.h"
+#import "LastSpellCastConditionController.h"
 
 
-@implementation SpellCooldownConditionController
+@implementation LastSpellCastConditionController
 
 - (id) init {
     self = [super init];
     if (self != nil) {
-        if(![NSBundle loadNibNamed: @"SpellCooldown" owner: self]) {
-            PGLog(@"Error loading SpellCooldown.nib.");
+        if(![NSBundle loadNibNamed: @"LastSpellCast" owner: self]) {
+            PGLog(@"Error loading LastSpellCast.nib.");
             
             [self release];
             self = nil;
@@ -37,10 +37,10 @@
     if( [typeSegment selectedTag] == TypeString )
         value = [valueText stringValue];
     
-    Condition *condition = [Condition conditionWithVariety: VarietySpellCooldown 
+    Condition *condition = [Condition conditionWithVariety: VarietyLastSpellCast 
                                                       unit: UnitNone
                                                    quality: QualityNone
-                                                comparator: [comparatorSegment selectedTag]
+                                                comparator: [[comparatorPopUp selectedItem] tag]
                                                      state: StateNone
                                                       type: [typeSegment selectedTag]
                                                      value: value];
@@ -52,10 +52,13 @@
 - (void)setStateFromCondition: (Condition*)condition {
     [super setStateFromCondition: condition];
 	
-    if( [condition variety] != VarietySpellCooldown) return;
+    if( [condition variety] != VarietyLastSpellCast ) return;
+	
+	if ( ![comparatorPopUp selectItemWithTag: [condition comparator]] ) {
+        [comparatorPopUp selectItemWithTag: CompareIs];
+    }
     
     [typeSegment selectSegmentWithTag: [condition type]];
-	[comparatorSegment selectSegmentWithTag: [condition comparator]];
 	[valueText setStringValue:[NSString stringWithFormat:@"%@", [condition value]]];
 	
     [self validateState: nil];

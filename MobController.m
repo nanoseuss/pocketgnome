@@ -18,6 +18,7 @@
 #import "SpellController.h"
 
 #import "MemoryAccess.h"
+#import "CombatProfile.h"
 
 #import "Mob.h"
 #import "Waypoint.h"
@@ -440,11 +441,25 @@ static MobController* sharedController = nil;
     
     BOOL ignoreLevelOne = ([playerData level] > 10) ? YES : NO;
     Position *playerPosition = [(PlayerDataController*)playerData position];
+	
+	//PGLog(@"[Mob] Total mobs: %d", [_mobList count]);
     
     for(Mob *mob in _mobList) {
         
-        if(!includeElite && [mob isElite])
+        if ( !includeElite && [mob isElite] ){
+			//PGLog(@"[Mob] Ignoring elite %@", mob);
             continue;   // ignore elite if specified
+		}
+		
+		// ignore units that don't meet the combat profile
+		if ( [botController.theCombatProfile unitShouldBeIgnored: mob] ){
+			continue;
+		}
+		
+		// ignore pets?
+		if ( ![botController.theCombatProfile attackPets] && [mob isPet] ){
+			continue;
+		}
         
         float distance = [playerPosition distanceToPosition: [mob position]];
                 
@@ -458,21 +473,27 @@ static MobController* sharedController = nil;
             int faction = [mob factionTemplate];
             BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
             BOOL isHostile = [playerData isHostileWithFaction: faction];
-            
+			BOOL isNeutral = (!isHostile && ![playerData isFriendlyWithFaction: faction]);
+			
+			//PGLog(@"%d %d (%d || %d || %d) %d %d %d %d %@", [mob isValid], ![mob isDead], (friendly && isFriendly), (neutral && isNeutral), (hostile && isHostile), ((mobLevel >= lowLevel) && (mobLevel <= highLevel)), [mob isSelectable], 
+			//	  [mob isAttackable],   ![mob isTappedByOther], mob);
+			
             // only include:
             if(   [mob isValid]                                             // 1) valid mobs
                && ![mob isDead]                                             // 2) mobs that aren't dead
                && ((friendly && isFriendly)                                 // 3) friendly as specified
-                   || (neutral && !isFriendly && !isHostile)                //    neutral as specified
-                   || (hostile && isHostile))                               //    hostile as specified
+                   || (neutral && isNeutral)								//    neutral as specified
+                   || (hostile && isHostile) )                              //    hostile as specified
                && ((mobLevel >= lowLevel) && (mobLevel <= highLevel))       // 4) mobs within the level range
-               && ![mob isPet]                                              // 5) mobs that are not player pets
+               //&& ![mob isPet]                                              // 5) mobs that are not player pets
                && [mob isSelectable]                                        // 6) mobs that are selectable
                && [mob isAttackable]                                        // 7) mobs that are attackable
                && ![mob isTappedByOther] )                                  // 8) mobs that are not tapped by someone else
                 [withinRangeMobs addObject: mob];
         }
     }
+	
+	//PGLog(@"[MobController] Found %d mobs", [withinRangeMobs count]);
     
     return withinRangeMobs;
 }
@@ -640,9 +661,7 @@ static MobController* sharedController = nil;
         [mobTable reloadData];
     }
     
-    if( [combatController combatEnabled] ) {
-        [self doCombatScan];
-    }
+	[self doCombatScan];
 }
 
 - (IBAction)filterMobs: (id)sender {

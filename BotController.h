@@ -100,12 +100,14 @@
     int _currentHotkeyModifier, _currentPetAttackHotkeyModifier;
     int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
+	UInt32 _lastSpellCast;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg, _doFishing;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
     BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
+	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
     Unit *preCombatUnit;
     NSMutableArray *_mobsToLoot;
@@ -119,6 +121,7 @@
 	// healing shit
 	BOOL _shouldFollow;
 	Unit *_lastUnitAttemptedToHealed;
+	BOOL _includeFriendly;
 	
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;
@@ -246,12 +249,14 @@
 @property (readonly) NSString *sectionTitle;
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
-@property (assign) BOOL isBotting;
+@property (readwrite, assign) BOOL isBotting;
+@property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
 
 @property (readonly, retain) RouteSet *theRoute;
 @property (readonly, retain) Behavior *theBehavior;
 @property (readonly, retain) CombatProfile *theCombatProfile;
+@property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
 
@@ -259,11 +264,12 @@
 - (void)testRule: (Rule*)rule;
 
 // Input from CombatController
-- (void)playerEnteringCombat;
-- (void)playerLeavingCombat;
 - (void)attackUnit: (Unit*)unit;
 - (void)addingUnit: (Unit*)unit;
-- (void)finishUnit: (Unit*)unit wasInAttackQueue: (BOOL)wasInQueue;
+- (void)finishUnit: (Unit*)unit;
+
+// Input from CombatController
+- (void)actOnUnit: (Unit*)unit;
 
 // Input from MovementController;
 - (void)reachedUnit: (WoWObject*)unit;
@@ -303,7 +309,7 @@
 - (BOOL)interactWithMouseoverGUID: (UInt64) guid;
 - (void)interactWithMob:(UInt32)entryID;
 - (void)interactWithNode:(UInt32)entryID;
-- (NSArray*)availableUnitsToHeal;
+//- (NSArray*)availableUnitsToHeal;
 - (void)logOut;
 
 - (void) updateRunningTimer;

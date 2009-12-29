@@ -2,6 +2,36 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>LootItems2</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script LootSlot(6);
+/script ConfirmLootSlot(6);
+/script LootSlot(7);
+/script ConfirmLootSlot(7);
+/script LootSlot(8);
+/script ConfirmLootSlot(8);
+/script LootSlot(9);
+/script ConfirmLootSlot(9);</string>
+		<key>Description</key>
+		<string>This will loot items if for some reason it&apos;s not done automatically (or is a BoP item)</string>
+	</dict>
+	<key>LootItems1</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script LootSlot(1);
+/script ConfirmLootSlot(1);
+/script LootSlot(2);
+/script ConfirmLootSlot(2);
+/script LootSlot(3);
+/script ConfirmLootSlot(3);
+/script LootSlot(4);
+/script ConfirmLootSlot(4);
+/script LootSlot(5);
+/script ConfirmLootSlot(5);</string>
+		<key>Description</key>
+		<string>This will loot items if for some reason it&apos;s not done automatically (or is a BoP item)</string>
+	</dict>
 	<key>BGMoveToBGTab</key>
 	<dict>
 		<key>Macro</key>

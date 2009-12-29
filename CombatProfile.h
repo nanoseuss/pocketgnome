@@ -17,7 +17,7 @@
     NSMutableArray *_combatEntries;
     
     BOOL combatEnabled, onlyRespond, attackNeutralNPCs, attackHostileNPCs, attackPlayers, attackPets;
-    BOOL attackAnyLevel, ignoreElite, ignoreLevelOne;
+    BOOL attackAnyLevel, ignoreElite, ignoreLevelOne, ignoreFlying, onlyHealInCombat;
 	
 	// Healing
 	BOOL healingEnabled, autoFollowTarget, mountEnabled;
@@ -25,14 +25,14 @@
 	int healthThreshold;
 	UInt64 selectedTankGUID;
     
-    float attackRange;
+    float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
 }
 
 + (id)combatProfile;
 + (id)combatProfileWithName: (NSString*)name;
 
-- (BOOL)unitFitsProfile: (Unit*)unit ignoreDistance: (BOOL)ignoreDistance;
+- (BOOL)unitShouldBeIgnored: (Unit*)unit;
 
 - (unsigned)entryCount;
 - (IgnoreEntry*)entryAtIndex: (unsigned)index;
@@ -53,6 +53,8 @@
 @property (readwrite, assign) BOOL attackAnyLevel;
 @property (readwrite, assign) BOOL ignoreElite;
 @property (readwrite, assign) BOOL ignoreLevelOne;
+@property (readwrite, assign) BOOL ignoreFlying;
+@property (readwrite, assign) BOOL onlyHealInCombat;
 
 @property (readwrite, assign) BOOL healingEnabled;
 @property (readwrite, assign) BOOL autoFollowTarget;
@@ -62,6 +64,7 @@
 @property (readwrite, assign) int healthThreshold;
 
 @property (readwrite, assign) float attackRange;
+@property (readwrite, assign) float engageRange;
 @property (readwrite, assign) int attackLevelMin;
 @property (readwrite, assign) int attackLevelMax;
 

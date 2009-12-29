@@ -10,6 +10,8 @@
 
 #import "WoWObject.h"
 #import "Unit.h"
+#import "Player.h"
+#import "Mob.h"
 
 @interface BlacklistController (Internal)
 
@@ -87,6 +89,8 @@
 	
 	if ( [_blacklist count] ){
 		
+		NSMutableArray *blRemove = [NSMutableArray array];
+		
 		for ( NSDictionary *black in _blacklist ){
 			
 			WoWObject *obj = [black objectForKey: @"Object"];
@@ -95,17 +99,24 @@
 			
 			// time to remove our object if it's been 45 seconds
 			if ( timeSinceBlacklisted > 45.0f ){
-				[self removeFromBlacklist:obj];
+				[blRemove addObject: black];
 				PGLog(@"[Blacklist] Removing object %@ from blacklist after 45 seconds", obj);
 			}
 			
 			// mob/player checks
 			if ( [obj isNPC] || [obj isPlayer] ){
 				if ( ![obj isValid] || [(Unit*)obj isDead] ){
-					[self removeFromBlacklist:obj];
+					[blRemove addObject: black];
 					PGLog(@"[Blacklist] Removing object %@ from blacklist after 45 seconds for being dead(%d) or invalid(%d)", obj, [(Unit*)obj isDead], ![obj isValid]);
 				}
 			}
+		}
+		
+		// TO DO - check ghost aura
+		
+		// remove the objects
+		if ( [blRemove count] ){
+			[_blacklist removeObjectsInArray: blRemove];
 		}
 	}
 }
@@ -116,6 +127,8 @@
 	[self refreshBlacklist];
 	
     int blackCount = [self blacklistCount: obj];
+	if ( blackCount > 0 )
+		PGLog(@"[Blacklist] Count of %d for %@", blackCount, obj);
     if ( blackCount == 0 )  return NO;
     if ( blackCount >= 3 )  return YES;
     
@@ -138,6 +151,26 @@
 
 - (void)removeAllUnits{
 	PGLog(@"[Blacklist] Removing all units...");
+	
+	NSMutableArray *blRemove = [NSMutableArray array];
+	int removedObjects = 0;
+	
+	// loop through + remove objects of type Unit/Mob/Player
+	for ( NSDictionary *black in _blacklist ){
+		WoWObject *blObj = [black objectForKey: @"Object"];
+		
+		if ( [blObj isKindOfClass: [Unit class]] || [blObj isKindOfClass: [Player class]] || [blObj isKindOfClass: [Mob class]] ){
+			[blRemove addObject: blObj];
+			removedObjects++;
+		}
+	}
+	
+	// remove the objects
+	if ( [blRemove count] ){
+		[_blacklist removeObjectsInArray: blRemove];
+	}
+	
+	PGLog(@"[Blacklist] Removed %d objects of type Unit/Mob/Player", removedObjects);
 }
 
 @end

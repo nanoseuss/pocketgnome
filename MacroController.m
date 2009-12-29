@@ -200,7 +200,40 @@
 		}
 	}
 	
-	return 0;
+	return nil;
+}
+
+// check to see if a macro exists with the following command IN it
+- (int)macroIDForCommand: (NSString*)command{
+	
+	// update our internal macro list first!
+	[self reloadMacros];
+	
+	if ( _playerMacros ){
+			
+		// now lets loop through all of our player macros!
+		for ( Macro *macro in _playerMacros ){
+			
+			// match found! yay!
+			if ( [[macro body] isEqualToString:[NSString stringWithFormat:@"%@%c", command, '\n']] ){
+				return [macro.number intValue];
+			}
+			
+			// search for partial match!
+			NSRange range = [[macro body] rangeOfString : command];
+			if ( range.location != NSNotFound ) {
+				PGLog(@"[Macro] Found partial match! '%@'", command);
+				return [macro.number intValue];
+			}
+		}
+	}
+	
+	return -1;	
+}
+
+// complicated i know
+- (void)useMacroByID: (int)macroID{
+	[botController performAction:USE_MACRO_MASK + macroID];
 }
 
 @end

@@ -11,6 +11,7 @@
 #import "MobController.h"
 #import "Mob.h"
 #import "PlayersController.h"
+#import "BotController.h"
 #import "Offsets.h"
 
 @interface CombatProfileEditor ()
@@ -335,6 +336,7 @@ static CombatProfileEditor *sharedEditor = nil;
     [[sender window] makeFirstResponder: [[sender window] contentView]];
     [NSApp endSheet: editorPanel returnCode: NSOKButton];
     [editorPanel orderOut: nil];
+	[botController updateStatus:nil];
 }
 
 #pragma mark -

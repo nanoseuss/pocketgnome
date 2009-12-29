@@ -16,6 +16,7 @@
 @class ChatController;
 @class PlayerDataController;
 @class OffsetController;
+@class MacroController;
 
 @interface LootController : NSObject {
     IBOutlet Controller             *controller;
@@ -23,6 +24,7 @@
 	IBOutlet ChatController			*chatController;
 	IBOutlet PlayerDataController	*playerDataController;
 	IBOutlet OffsetController		*offsetController;
+	IBOutlet MacroController		*macroController;
 	
 	NSMutableDictionary	*_itemsLooted;
 	
