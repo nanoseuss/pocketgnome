@@ -10,6 +10,8 @@
 #import "CombatProfile.h"
 
 @class PlayersController;
+@class BotController;
+
 @class Player;
 
 @interface CombatProfileEditor : NSObject {
@@ -19,6 +21,7 @@
 	IBOutlet NSPopUpButton		*playerList;
 	
 	IBOutlet PlayersController	*playersController;
+	IBOutlet BotController		*botController;
 	
     NSMutableArray				*_combatProfiles;
     CombatProfile				*_currentCombatProfile;

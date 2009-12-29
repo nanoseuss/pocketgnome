@@ -583,3 +583,7 @@ typedef enum MovementFlag {
 - (BOOL)isSitting;
 
 @end
+
+@protocol Unit
+- (Unit*)unit;
+@end

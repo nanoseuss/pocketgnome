@@ -751,8 +751,6 @@ static PlayerDataController* sharedController = nil;
     return [[self player] isSitting];
 }
 
-    
-    
 - (BOOL)isHostileWithFaction: (UInt32)otherFaction {
     UInt32 playerFaction = [self factionTemplate];
     if( !playerFaction || !otherFaction) return YES;
@@ -980,6 +978,10 @@ static PlayerDataController* sharedController = nil;
 	[spellController showCooldownPanel];
 }
 
+- (IBAction)showCombatWindow: (id)sender {
+    [combatController showCombatPanel];
+}
+
 #pragma mark -
 
 
@@ -1149,22 +1151,14 @@ static PlayerDataController* sharedController = nil;
 			[combatController doCombatSearch];
 		}
 		
+		[combatController updateCombatTable];
+		
 		[_combatDataList removeAllObjects];
 		
 		// only resort and display the table if the window is visible
 		if( [[combatTable window] isVisible]) {
 			
-			NSArray *units = [combatController unitsAttackingMe];
-			NSArray *attackQueue = [combatController attackQueue];
-			NSMutableArray *allUnits = [NSMutableArray array];
-			[allUnits addObjectsFromArray:units];
-
-			// Only add new units!
-			for(Unit *unit in attackQueue){
-				if ( ![allUnits containsObject:unit] ){
-					[allUnits addObject:unit];
-				}
-			}
+			NSArray *allUnits = [combatController allValidAndInCombat:YES];
 			
 			for(Unit *unit in allUnits) {
 				if( ![unit isValid] )
@@ -1173,7 +1167,7 @@ static PlayerDataController* sharedController = nil;
 				float distance = [[self position] distanceToPosition: [unit position]];
 				unsigned level = [unit level];
 				if(level > 100) level = 0;
-				int weight = [combatController unitWeight: unit PlayerPosition:[self position]];
+				int weight = [combatController weight: unit];
 				
 				[_combatDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 											 unit,                                                                @"Player",
@@ -1191,9 +1185,12 @@ static PlayerDataController* sharedController = nil;
 			[_combatDataList sortUsingDescriptors: [combatTable sortDescriptors]];
 			[combatTable reloadData];
 			
-			
+		}
+		
+		/*if( [[healingTable window] isVisible]) {
 			// Update healing info!
-			NSArray *unitsToHeal = [botController availableUnitsToHeal];
+			NSArray *unitsToHeal = [combatController availableUnits];
+			PGLog(@"[PlayerData] Units to show: %d", [unitsToHeal count]);
 			for(Unit *unit in unitsToHeal) {
 				if( ![unit isValid] )
 					continue;
@@ -1202,6 +1199,7 @@ static PlayerDataController* sharedController = nil;
 				[_healingDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 											 unit,                                                                @"Player",
 											 [NSString stringWithFormat: @"0x%X", [unit lowGUID]],                @"ID",
+											 [unit name],														  @"Name",
 											 [NSString stringWithFormat: @"%@%@", [unit isPet] ? @"[Pet] " : @"", [Unit stringForClass: [unit unitClass]]],                             @"Class",
 											 [Unit stringForRace: [unit race]],                                   @"Race",
 											 [Unit stringForGender: [unit gender]],                               @"Gender",
@@ -1214,10 +1212,10 @@ static PlayerDataController* sharedController = nil;
 			// Update our combat table!
 			[_healingDataList sortUsingDescriptors: [healingTable sortDescriptors]];
 			[healingTable reloadData];
-			
-			// Update our CD info!
-			[spellController reloadCooldownInfo];
-		}
+		}*/
+		
+		// Update our CD info!
+		[spellController reloadCooldownInfo];
 		
 		// Update our bot timer!
 		[botController updateRunningTimer];
@@ -1317,179 +1315,4 @@ static PlayerDataController* sharedController = nil;
 	return NO;
 }
 
-#pragma mark -
-#pragma mark TableView Delegate & Datasource
-
-- (void)tableView:(NSTableView *)aTableView sortDescriptorsDidChange:(NSArray *)oldDescriptors {
-	[aTableView reloadData];
-}
-
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-	if ( aTableView == combatTable ){
-		return [_combatDataList count];
-	}
-	
-	return [[botController availableUnitsToHeal] count];
-}
-
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
-	if ( aTableView == combatTable ){
-		if(rowIndex == -1 || rowIndex >= [_combatDataList count]) return nil;
-		
-		if([[aTableColumn identifier] isEqualToString: @"Distance"])
-			return [NSString stringWithFormat: @"%.2f", [[[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-		
-		if([[aTableColumn identifier] isEqualToString: @"Status"]) {
-			NSString *status = [[_combatDataList objectAtIndex: rowIndex] objectForKey: @"Status"];
-			if([status isEqualToString: @"1"])  status = @"Combat";
-			if([status isEqualToString: @"2"])  status = @"Hostile";
-			if([status isEqualToString: @"3"])  status = @"Dead";
-			if([status isEqualToString: @"4"])  status = @"Neutral";
-			if([status isEqualToString: @"5"])  status = @"Friendly";
-			return [NSImage imageNamed: status];
-		}
-		
-		return [[_combatDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
-	}
-	else if ( aTableView == healingTable ){
-		if(rowIndex == -1 || rowIndex >= [_healingDataList count]) return nil;
-		
-		if([[aTableColumn identifier] isEqualToString: @"Distance"])
-			return [NSString stringWithFormat: @"%.2f", [[[_healingDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-		
-		return [[_healingDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
-	}
-	
-	return nil;
-}
-
-- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex{
-	
-	if ( aTableView == combatTable ){
-		if( aRowIndex == -1 || aRowIndex >= [_combatDataList count]) return;
-		
-		if ([[aTableColumn identifier] isEqualToString: @"Race"]) {
-			[(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"RaceIcon"]];
-		}
-		if ([[aTableColumn identifier] isEqualToString: @"Class"]) {
-			[(ImageAndTextCell*)aCell setImage: [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"ClassIcon"]];
-		}
-		
-		// do text color
-		if( ![aCell respondsToSelector: @selector(setTextColor:)] ){
-			PGLog(@"can't do color :(");
-			return;
-		}
-		
-		if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
-			[aCell setTextColor: [NSColor redColor]];
-			return;
-		}
-		
-		[aCell setTextColor: [NSColor darkGrayColor]];
-	}
-	else if ( aTableView == healingTable ){
-		// do text color
-		if( ![aCell respondsToSelector: @selector(setTextColor:)] ){
-			PGLog(@"can't do color :(");
-			return;
-		}
-		
-		if ( [[_combatDataList objectAtIndex: aRowIndex] objectForKey: @"Player"] == [combatController attackUnit] ){
-			[aCell setTextColor: [NSColor greenColor]];
-			return;
-		}
-		
-		[aCell setTextColor: [NSColor darkGrayColor]];
-	}
-	
-	return;
-}
-
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
-    return NO;
-}
-
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectTableColumn:(NSTableColumn *)aTableColumn {
-    if( [[aTableColumn identifier] isEqualToString: @"RaceIcon"])
-        return NO;
-    if( [[aTableColumn identifier] isEqualToString: @"ClassIcon"])
-        return NO;
-    return YES;
-}
-
-- (void)combatTableDoubleClick: (id)sender {
-    //if( [sender clickedRow] == -1 || [sender clickedRow] >= [[combatController unitsAttackingMe] count] ) return;
-	
-	//PGLog(@"[Bot] Doublie clicked!");
-    
-    //[memoryViewController showObjectMemory: [[[combatController combatUnits] objectAtIndex: [sender clickedRow]] objectForKey: @"Player"]];
-    //[controller showMemoryView];
-}
-
-/*
- [StructLayout(LayoutKind.Sequential)]
- public struct ClickToMoveInfoStruct
- {
- public float Unknown1F;
- public float TurnScale;
- public float Unknown2F;
- 
- /// <summary>
- /// This can be left alone. There is no need to write to it!!
- /// </summary>
- public float InteractionDistance;
- 
- public float Unknown3F;
- public float Unknown4F;
- public uint Unknown5U;
- 
- /// <summary>
- /// As per the ClickToMoveAction enum members.
- /// </summary>
- public uint ActionType;
- 
- public ulong InteractGuid;
- 
- /// <summary>
- /// Check == 2 (This might be some sort of flag?)
- /// Always 2 when using some form of CTM action. 0 otherwise.
- /// </summary>
- public uint IsClickToMoving;
- 
- [MarshalAs(UnmanagedType.ByValArray, SizeConst = 21)]
- public uint[] Unknown6U;
- 
- /// <summary>
- /// This will change in memory as WoW figures out where exactly we're going to stop. (Also the actual end location)
- /// </summary>
- public Point Dest;
- 
- /// <summary>
- /// This is wherever we actually 'clicked' in game.
- /// </summary>
- public Point Click;
- 
- /// <summary>
- /// Returns the fully qualified type name of this instance.
- /// </summary>
- /// <returns>
- /// A <see cref="T:System.String"/> containing a fully qualified type name.
- /// </returns>
- /// <filterpriority>2</filterpriority>
- public override string ToString()
- {
- string tmp = "";
- for (int i = 0; i < Unknown6U.Length; i++)
- {
- tmp += "Unknown6U_" + i + ": " + Unknown6U[i].ToString("X") + ", ";
- }
- return
- string.Format(
- "TurnScale: {0}, InteractionDistance: {1}, ActionType: {2}, InteractGuid: {3}, IsClickToMoving: {4}, ClickX: {5}, ClickY: {6}, ClickZ: {7}, DestX: {8}, DestY: {9}, DestZ: {10}, Unk4f: {12}, UNK: {11}",
- TurnScale, InteractionDistance, (ClickToMoveType) ActionType, InteractGuid.ToString("X"),
- IsClickToMoving == 2, Click.X, Click.Y, Click.Z, Dest.X, Dest.Y, Dest.Z, tmp, Unknown4F);
- }
- }
-*/ 
 @end

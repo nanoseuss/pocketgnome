@@ -33,4 +33,10 @@
 // this will make us do something!
 - (void)useMacroOrSendCmd: (NSString*)key;
 
+// check to see if the macro exists + will return the key
+- (int)macroIDForCommand: (NSString*)command;
+
+// execute a macro by it's ID
+- (void)useMacroByID: (int)macroID;
+
 @end

@@ -17,6 +17,10 @@
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
 		0350738410CDBA460004636E /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0350738310CDBA460004636E /* SpellCooldown.xib */; };
 		0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0350738810CDBA640004636E /* SpellCooldownConditionController.m */; };
+		03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03567AAC10DDAB52001ACE43 /* CombatController.m */; };
+		038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038709B910D576E100DF5B90 /* BlacklistController.m */; };
+		038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */ = {isa = PBXBuildFile; fileRef = 038A4B4510E9656D00577D8F /* LastSpellCast.xib */; };
+		038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
@@ -176,7 +180,6 @@
 		7D9772750D2DA97A00E6D8F9 /* AuraConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9772740D2DA97A00E6D8F9 /* AuraConditionController.m */; };
 		7D9772A90D2DB2B300E6D8F9 /* BetterTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9772A80D2DB2B300E6D8F9 /* BetterTableView.m */; };
 		7D97730F0D2DBF5400E6D8F9 /* RuleEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D97730E0D2DBF5400E6D8F9 /* RuleEditor.m */; };
-		7DA764100D17BCAB00B6D07E /* CombatController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA7640F0D17BCAB00B6D07E /* CombatController.m */; };
 		7DA7B8C30D1DF92B00F81519 /* Spell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA7B8C20D1DF92B00F81519 /* Spell.m */; };
 		7DA95E340E2302C400AC85E2 /* BannerNeutral.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DA95E310E2302C400AC85E2 /* BannerNeutral.png */; };
 		7DA95E350E2302C400AC85E2 /* BannerHorde.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DA95E320E2302C400AC85E2 /* BannerHorde.png */; };
@@ -333,6 +336,13 @@
 		0350738310CDBA460004636E /* SpellCooldown.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellCooldown.xib; sourceTree = "<group>"; };
 		0350738710CDBA640004636E /* SpellCooldownConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellCooldownConditionController.h; sourceTree = "<group>"; };
 		0350738810CDBA640004636E /* SpellCooldownConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellCooldownConditionController.m; sourceTree = "<group>"; };
+		03567AAB10DDAB52001ACE43 /* CombatController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatController.h; sourceTree = "<group>"; };
+		03567AAC10DDAB52001ACE43 /* CombatController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatController.m; sourceTree = "<group>"; };
+		038709B810D576E100DF5B90 /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
+		038709B910D576E100DF5B90 /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
+		038A4B4510E9656D00577D8F /* LastSpellCast.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LastSpellCast.xib; sourceTree = "<group>"; };
+		038A4B4710E9657900577D8F /* LastSpellCastConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LastSpellCastConditionController.h; sourceTree = "<group>"; };
+		038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LastSpellCastConditionController.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -560,8 +570,6 @@
 		7D9772A80D2DB2B300E6D8F9 /* BetterTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BetterTableView.m; sourceTree = "<group>"; };
 		7D97730D0D2DBF5400E6D8F9 /* RuleEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuleEditor.h; sourceTree = "<group>"; };
 		7D97730E0D2DBF5400E6D8F9 /* RuleEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RuleEditor.m; sourceTree = "<group>"; };
-		7DA7640E0D17BCAB00B6D07E /* CombatController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatController.h; sourceTree = "<group>"; };
-		7DA7640F0D17BCAB00B6D07E /* CombatController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatController.m; sourceTree = "<group>"; };
 		7DA7B8C10D1DF92B00F81519 /* Spell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Spell.h; sourceTree = "<group>"; };
 		7DA7B8C20D1DF92B00F81519 /* Spell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Spell.m; sourceTree = "<group>"; };
 		7DA95E310E2302C400AC85E2 /* BannerNeutral.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BannerNeutral.png; sourceTree = "<group>"; };
@@ -745,8 +753,8 @@
 				7DD3D40A0D1B2FEB0023D097 /* SpellController.m */,
 				7D7A695B0D26F04F0008C3FF /* NodeController.h */,
 				7D7A695C0D26F04F0008C3FF /* NodeController.m */,
-				7DA7640E0D17BCAB00B6D07E /* CombatController.h */,
-				7DA7640F0D17BCAB00B6D07E /* CombatController.m */,
+				03567AAB10DDAB52001ACE43 /* CombatController.h */,
+				03567AAC10DDAB52001ACE43 /* CombatController.m */,
 				7D220E610D1662F70026DF75 /* MovementController.h */,
 				7D220E620D1662F70026DF75 /* MovementController.m */,
 				7D9712970D248ED4005E3BD1 /* InventoryController.h */,
@@ -771,6 +779,8 @@
 				03A01B0C109A2A9600E6098E /* StatisticsController.m */,
 				0313B4D610BAEA0B009E74E4 /* EventController.h */,
 				0313B4D710BAEA0B009E74E4 /* EventController.m */,
+				038709B810D576E100DF5B90 /* BlacklistController.h */,
+				038709B910D576E100DF5B90 /* BlacklistController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1085,6 +1095,7 @@
 		7D54DCB80E08449F00E1B463 /* Condition NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				038A4B4510E9656D00577D8F /* LastSpellCast.xib */,
 				0350738310CDBA460004636E /* SpellCooldown.xib */,
 				7DCE50700E12F05E00C5DF01 /* AuraCondition.xib */,
 				7D5496450E1AA0F5004AA3E9 /* AuraStackCondition.xib */,
@@ -1140,6 +1151,8 @@
 				7D7C67150E58EC79002A6C96 /* ProximityCountConditionController.m */,
 				0350738710CDBA640004636E /* SpellCooldownConditionController.h */,
 				0350738810CDBA640004636E /* SpellCooldownConditionController.m */,
+				038A4B4710E9657900577D8F /* LastSpellCastConditionController.h */,
+				038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1601,6 +1614,7 @@
 				03C42CCA1096839E0085E888 /* Macros.plist in Resources */,
 				03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */,
 				0350738410CDBA460004636E /* SpellCooldown.xib in Resources */,
+				038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1626,7 +1640,6 @@
 				7D220E630D1662F70026DF75 /* MovementController.m in Sources */,
 				7D220F150D1691E90026DF75 /* MobController.m in Sources */,
 				7D8343FB0D17231300853E32 /* Position.m in Sources */,
-				7DA764100D17BCAB00B6D07E /* CombatController.m in Sources */,
 				7DD3D40B0D1B2FEB0023D097 /* SpellController.m in Sources */,
 				7DA7B8C30D1DF92B00F81519 /* Spell.m in Sources */,
 				7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */,
@@ -1708,6 +1721,9 @@
 				03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */,
 				0313B4D810BAEA0B009E74E4 /* EventController.m in Sources */,
 				0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */,
+				038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */,
+				03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */,
+				038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

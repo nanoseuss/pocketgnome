@@ -10,6 +10,7 @@
 #import "Controller.h"
 #import "PlayerDataController.h"
 #import "LootController.h"
+#import "CombatController.h"
 
 @interface StatisticsController (Internal)
 - (void)resetPlayer;
@@ -36,6 +37,10 @@
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(itemLooted:) 
                                                      name: ItemLootedNotification 
+                                                   object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(unitDied:) 
+                                                     name: UnitDiedNotification 
                                                    object: nil];
 		
         [NSBundle loadNibNamed: @"Statistics" owner: self];
@@ -160,6 +165,14 @@
 
 - (void)itemLooted: (NSNotification*)notification {
 	_lootedItems++;
+}
+
+- (void)unitDied: (NSNotification*)notification {
+	
+	id obj = [notification object];
+	PGLog(@"[**********] Unit killed: %@", obj);
+	
+	_mobsKilled++;
 }
 
 

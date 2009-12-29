@@ -293,16 +293,26 @@ static SpellController *sharedSpells = nil;
 
 - (Spell*)spellForName: (NSString*)name {
     if(!name || ![name length]) return nil;
-    // PGLog(@"Searching for spell \"%@\"", name);
+    //PGLog(@"[Spell] Searching for spell \"%@\"", name);
+	
+	// always return the highest one!
+	UInt32 spellID = 0;
+	Spell *tehSpell = nil;
     for(Spell *spell in [_spellBook allValues]) {
         if([spell name]) {
             NSRange range = [[spell name] rangeOfString: name 
                                                 options: NSCaseInsensitiveSearch | NSAnchoredSearch | NSDiacriticInsensitiveSearch];
-            if(range.location != NSNotFound)
-                return spell;
+            if(range.location != NSNotFound){
+				
+				if ( [[spell ID] unsignedIntValue] > spellID ){
+					tehSpell = spell;
+					spellID = [[spell ID] unsignedIntValue];
+				}
+			}
         }
     }
-    return nil;
+	
+    return tehSpell;
 }
 
 - (Spell*)spellForID: (NSNumber*)spellID {

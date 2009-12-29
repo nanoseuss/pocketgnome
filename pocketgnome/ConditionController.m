@@ -22,6 +22,7 @@
 #import "CombatCountConditionController.h"
 #import "ProximityCountConditionController.h"
 #import "SpellCooldownConditionController.h"
+#import "LastSpellCastConditionController.h"
 
 @implementation ConditionController
 
@@ -88,7 +89,10 @@
 	if( [condition variety] == VarietySpellCooldown ) {
         newController = [[SpellCooldownConditionController alloc] init];
     }
-    
+	if( [condition variety] == VarietyLastSpellCast ) {
+        newController = [[LastSpellCastConditionController alloc] init];
+    }
+	
     if(newController) {
         [newController setStateFromCondition: condition];
         return [newController autorelease];

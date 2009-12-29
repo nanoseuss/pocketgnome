@@ -276,7 +276,7 @@ typedef enum MovementType {
     if( !route ) return;
 
     if( [route waypointCount] > 0 ) {
-        [combatController setCombatEnabled: attack];
+        //[combatController setCombatEnabled: attack];
         [self setIsPatrolling: YES];
         _patrolCount = count;
         self.shouldAttack = attack;
@@ -330,7 +330,7 @@ typedef enum MovementType {
     [_route autorelease];
     _route = [route retain];
     
-    if(!_route) [combatController setCombatEnabled: NO];
+    //if(!_route) [combatController setCombatEnabled: NO];
 }
 
 - (void)moveToPosition: (Position*)position {

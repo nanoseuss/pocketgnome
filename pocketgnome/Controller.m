@@ -391,9 +391,9 @@ typedef struct NameObjectStruct{
 			curObjAddress += 0xC;
 			[memory loadDataForObject: self atAddress: curObjAddress Buffer: (Byte*)&nameListStruct BufLength: sizeof(nameListStruct)];
 		}
+		
+		PGLog(@"[Controller] Player names updated after %d memory reads", [memory loadCount]);
 	}
-	
-	PGLog(@"[Controller] Player names updated after %d memory reads", [memory loadCount]);
 }
 
 #pragma mark -

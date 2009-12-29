@@ -95,8 +95,12 @@ typedef enum eCharacterSlot {
 //    UnitBloc_Horde          = 5,
 //} UnitBloc;
 
+@class PlayersController;
+
 @interface Player : Unit {
     UInt32 _nameEntryID;
+	
+	IBOutlet PlayersController *playersController;
 }
 
 + (id)playerWithAddress: (NSNumber*)address inMemory: (MemoryAccess*)memory;
@@ -109,4 +113,6 @@ typedef enum eCharacterSlot {
 - (NSArray*)itemGUIDsInBackpack;
 - (NSArray*)itemGUIDsOfBags;
 - (NSArray*)itemGUIDsPlayerIsWearing;
+
+- (NSString*)name;
 @end

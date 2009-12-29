@@ -13,6 +13,7 @@
 
 @interface SpellCooldownConditionController : ConditionController {
     IBOutlet BetterSegmentedControl *typeSegment;
+	IBOutlet BetterSegmentedControl *comparatorSegment;
     IBOutlet NSTextField *valueText;
 }
 

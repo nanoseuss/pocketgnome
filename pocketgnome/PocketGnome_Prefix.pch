@@ -21,6 +21,7 @@
     
     #define TRUE_FALSE(x)   (x ? @"TRUE" : @"FALSE")
     #define YES_NO(x)       (x ? @"YES" : @"NO")
+
 #endif
 
 //(void)fprintf(stderr, "%s:%i %s: %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, [[NSString stringWithFormat:__VA_ARGS__] UTF8String])

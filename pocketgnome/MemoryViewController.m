@@ -979,11 +979,11 @@ typedef enum SearchType{
 		else{
 			PGLog(@"searching for new values... %d %d", sizeof(float), sizeof(double));
 			
-			NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: 
+			/*NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: 
 								[NSNumber numberWithInt:[signMatrix selectedTag]],		@"Sign",
 								[NSNumber numberWithInt:[signMatrix selectedTag]],		@"Type",
 								[searchText stringValue],								@"Value",				  
-								nil];
+								nil];*/
 			
 			//[NSThread detachNewThreadSelector: @selector(searchPlease:) toTarget: self withObject: dict];
 		}
@@ -1009,8 +1009,8 @@ typedef enum SearchType{
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
 	int searchType	= [[dict objectForKey:@"Type"] intValue];
-	int signage		= [[dict objectForKey:@"Sign"] intValue];
-	NSString *value = [dict objectForKey:@"Value"];
+	//int signage		= [[dict objectForKey:@"Sign"] intValue];
+	//NSString *value = [dict objectForKey:@"Value"];
     NSDate *date = [NSDate date];
 	
 	// determine the size we are searching for

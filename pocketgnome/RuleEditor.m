@@ -32,6 +32,7 @@
 #import "CombatCountConditionController.h"
 #import "ProximityCountConditionController.h"
 #import "SpellCooldownConditionController.h"
+#import "LastSpellCastConditionController.h"
 
 #import "Macro.h"
 #import "Action.h"
@@ -120,7 +121,8 @@
 	[conditionResultTypeSegment selectSegmentWithTag: [rule resultType]];
     [self setResultType: conditionResultTypeSegment];   // this also sets the menu
 
-	[conditionTargetType selectSegmentWithTag: [rule target]];
+	if ( rule != nil )
+		[conditionTargetType selectSegmentWithTag: [rule target]];
     
     if(rule) {
         for(Condition *condition in [rule conditions]) {
@@ -176,7 +178,7 @@
     if(type == 12)   newRule = [[[CombatCountConditionController alloc] init] autorelease];
     if(type == 13)   newRule = [[[ProximityCountConditionController alloc] init] autorelease];
 	if(type == 14)   newRule = [[[SpellCooldownConditionController alloc] init] autorelease];
-	
+	if(type == 15)   newRule = [[[LastSpellCastConditionController alloc] init] autorelease];
     
     if(newRule) {
         [_conditionList addObject: newRule];
@@ -210,13 +212,29 @@
 }
 
 - (IBAction)saveRule:(id)sender {
+	
     [[sender window] makeFirstResponder: [[sender window] contentView]];
+	
+	// check to see if a target is selected! It's now required!
+	BOOL targetSelected = NO;
+	int i;
+	for ( i = 0; i < [conditionTargetType segmentCount]; i++ ){
+		if ( [conditionTargetType isSelectedForSegment:i] ){
+			targetSelected = YES;
+			break;
+		}
+	}
     
-    if( [[ruleNameText stringValue] length]) {
+    if( [[ruleNameText stringValue] length] && targetSelected ) {
+		[labelNoTarget setHidden:YES];
         [NSApp endSheet: [self window] returnCode: RuleEditorSaveRule];
         [[self window] orderOut: nil];
     } else {
         NSBeep();
+		
+		if ( !targetSelected ){
+			[labelNoTarget setHidden:NO];
+		}
     }
 }
 

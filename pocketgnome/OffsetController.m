@@ -226,11 +226,10 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF3C3A0 + 0x28] forKey:@"PLAYER_NAME_LIST"];
 			
 			
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF22FBC] forKey:@"PLAYER_IN_BUILDING_STATIC"];
+			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF231FC] forKey:@"PLAYER_IN_BUILDING_STATIC"];
 			
 			// i'm lazy for 3.3.0a
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE02A78] forKey:@"MOUNT_LIST_POINTER"];
-			
 			
 			
 			// for the mini-map (x,y only) 010B2C60
