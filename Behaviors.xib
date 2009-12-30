@@ -652,7 +652,7 @@
 									</object>
 									<object class="NSTextField" id="320369792">
 										<reference key="NSNextResponder" ref="639202344"/>
-										<int key="NSvFlags">-2147483380</int>
+										<int key="NSvFlags">-2147483356</int>
 										<string key="NSFrame">{{235, 15}, {409, 14}}</string>
 										<reference key="NSSuperview" ref="639202344"/>
 										<bool key="NSEnabled">YES</bool>
@@ -2986,7 +2986,7 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{581, 2}, {749, 477}}</string>
+					<string>{{560, 272}, {749, 477}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{353, 328}, {625, 477}}</string>
