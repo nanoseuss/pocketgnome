@@ -264,7 +264,6 @@
 - (void)testRule: (Rule*)rule;
 
 // Input from CombatController
-- (void)attackUnit: (Unit*)unit;
 - (void)addingUnit: (Unit*)unit;
 - (void)finishUnit: (Unit*)unit;
 

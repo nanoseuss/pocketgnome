@@ -110,6 +110,7 @@
 		_successfulMoves = 0;
 		self.lastTriedWaypoint = nil;
 		_lastResumeCorrection = [[NSDate date] retain];
+		_lastMeleePosition = nil;
 
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
     }
@@ -179,8 +180,10 @@ typedef enum MovementType {
 }
 
 - (BOOL)shouldResume {
+	
+	PGLog(@"[Move] Should we resume? %d %d", self.isPaused, (([playerData movementFlags] & 0x1) == 0x0));
     
-    if(self.isPaused || (([playerData movementFlags] & 0x1) == 0x0)) {
+    if ( self.isPaused || (([playerData movementFlags] & 0x1) == 0x0) ) {
 		
         if(self.unit)
             PGLog(@"[Move] Resume unit movement: %@", self.unit);
@@ -553,6 +556,34 @@ typedef enum MovementType {
 	[self setClickToMove:position andType:ctmWalkTo andGUID:0];
 }
 
+- (void)moveToMelee: (WoWObject*)unit{
+	
+	// tracking a new unit
+	if ( self.unit != unit ){
+		self.unit = unit;
+		[_lastMeleePosition release]; _lastMeleePosition = nil;
+		_lastMeleePosition = [[unit position] retain];
+		
+		[self moveToPosition:[unit position]];
+		
+		PGLog(@"[Move] New melee: %@", unit);
+	}
+	
+	// already moving, check if the unit has moved much
+	else{
+		
+		if ( _lastMeleePosition != nil ){
+			
+			PGLog(@"[Move] %0.2f moved by %@", [_lastMeleePosition distanceToPosition:[self.unit position]], self.unit);
+			
+			if ( [_lastMeleePosition distanceToPosition:[self.unit position]] > 0.1f ){
+				
+				[self moveToPosition:[self.unit position]];
+			}			
+		}
+	}
+}
+
 - (void)moveToObject: (WoWObject*)unit andNotify: (BOOL)notify {
     //if(self.unit == unit) {
     //    return;
@@ -562,8 +593,8 @@ typedef enum MovementType {
 		return;		
 	}
     
-    if(unit && [unit isValid] && [unit conformsToProtocol: @protocol(UnitPosition)]) {		
-        if( ![self.unit isEqualToObject: unit]) {
+    if ( unit && [unit isValid] && [unit conformsToProtocol: @protocol(UnitPosition)] ) {		
+        if ( ![self.unit isEqualToObject: unit] ) {
             PGLog(@"[Move] Moving to: %@", unit);
 			
 			self.unit = unit;

@@ -1105,8 +1105,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if we did any regen, wait 30 seconds before re-evaluating the situation
     if([[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure]) {
         if( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
+			PGLog(@"[Procedure] Starting regen!");
             [self performSelector: @selector(preRegen) withObject: nil afterDelay: 2.0];
         } else {
+			PGLog(@"[Procedure] No regen, back to evaluate!");
             // or if we didn't regen, go back to evaluate
             [self evaluateSituation];
         }
@@ -1869,102 +1871,59 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		PGLog(@"Attempting to attack a blacklisted unit, ruh-roh");
 	}
 	
+	
+	PGLog(@"[Bot] Acting on unit %@", unit);
+	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
-        // stop and attack
-        [self cancelCurrentProcedure];
+
+		
+		
+		BOOL readyToAttack = NO;
         
         // check to see if we are supposed to be in melee range
-        if( self.theBehavior.meleeCombat) {
-			//PGLog(@"[Bot] Should be in melee range!");
+        if ( self.theBehavior.meleeCombat) {
+			float distance = [[playerController position] distanceToPosition2D: [unit position]];
 			
-            // see if we are moving to this unit already
-            if( ![[movementController moveToObject] isEqualToObject: unit]) {
-                float distance = [[playerController position] distanceToPosition2D: [unit position]];
-                
-                if( distance > 5.0f) {
-                    // if we are more than 5 yards away, move to this unit
-                    //PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
-                    [movementController moveToObject: unit andNotify: YES];
-                } else  {
-                    // if we are in melee range, stop
-					//PGLog(@"[Bot] In melee range!");
-                    [movementController pauseMovement];
-                }
-            } else {
-                //PGLog(@"[Bot] Already moving to %@", unit);
-                // if we are already moving to the unit, make sure we keep going
-                [movementController resumeMovement];
-            }
+			// not in range, continue moving!
+			if ( distance > 5.0f ){
+				PGLog(@"[Bot] Still %0.2f away, moving to %@", distance, unit);
+				
+				[movementController moveToMelee:unit];
+			}
+			// we're in range
+			else{
+				PGLog(@"[Bot] In range, attacking!");
+				readyToAttack = YES;
+				[movementController pauseMovement];
+			}
+
         } else {
-			//PGLog(@"[Bot] Don't need to be in melee!");
+			PGLog(@"[Bot] Don't need to be in melee!");
             // if we don't need to be in melee, pause
             [movementController pauseMovement];
+			readyToAttack = YES;
         }
-        
-        // start the combat procedure
-        [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                          CombatProcedure,                  @"Procedure",
-                                          [NSNumber numberWithInt: 0],      @"CompletedRules",
-                                          unit,                             @"Target", nil]];
+		
+		
+		if ( readyToAttack ){
+			PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
+			
+			// cancel current procedure
+			[self cancelCurrentProcedure];
+			
+			// start the combat procedure
+			[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
+											  CombatProcedure,                  @"Procedure",
+											  [NSNumber numberWithInt: 0],      @"CompletedRules",
+											  unit,                             @"Target", nil]];
+		}
+		else{
+			PGLog(@"[Bot] Not ready to start CombatProcedure");
+		}
     } else {
 		
 		PGLog(@"[Bot] Are we stuck doing nothing?  Current procedure: %@", [self procedureInProgress]);
 		
-        // we are currently executing the combat routine;
-        // do nothing
-		
-		//PGLog(@"[Bot] could we be moving toward the target here?");
-    }
-}
-
-
-- (void)attackUnit: (Unit*)unit {
-    if(![self isBotting]) return;
-	
-	if ( [blacklistController isBlacklisted:unit] ){
-		PGLog(@"Attempting to attack a blacklisted unit, ruh-roh");
-	}
-	
-    if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-        PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
-        // stop and attack
-        [self cancelCurrentProcedure];
-        
-        // check to see if we are supposed to be in melee range
-        if( self.theBehavior.meleeCombat) {
-			//PGLog(@"[Bot] Should be in melee range!");
-			
-            // see if we are moving to this unit already
-            if( ![[movementController moveToObject] isEqualToObject: unit]) {
-                float distance = [[playerController position] distanceToPosition2D: [unit position]];
-                
-                if( distance > 5.0f) {
-                    // if we are more than 5 yards away, move to this unit
-                    //PGLog(@"[Bot] Melee range required; moving to %@ at %.2f", unit, distance);
-                    [movementController moveToObject: unit andNotify: YES];
-                } else  {
-                    // if we are in melee range, stop
-					//PGLog(@"[Bot] In melee range!");
-                    [movementController pauseMovement];
-                }
-            } else {
-                //PGLog(@"[Bot] Already moving to %@", unit);
-                // if we are already moving to the unit, make sure we keep going
-                [movementController resumeMovement];
-            }
-        } else {
-			//PGLog(@"[Bot] Don't need to be in melee!");
-            // if we don't need to be in melee, pause
-            [movementController pauseMovement];
-        }
-        
-        // start the combat procedure
-        [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                          CombatProcedure,                  @"Procedure",
-                                          [NSNumber numberWithInt: 0],      @"CompletedRules",
-                                          unit,                             @"Target", nil]];
-    } else {
         // we are currently executing the combat routine;
         // do nothing
 		
@@ -2275,6 +2234,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
         return;
     }
+	
+	PGLog(@"[Bot] Checking regen %d %d", health, mana);
     
     // check to see if we've already spent 30 seconds (2 in pre-regen)
     if([[NSDate date] timeIntervalSinceDate: start] >= 28.0f) {
@@ -2602,10 +2563,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ( [unitToAttack isValid] && (unitToAttackDist < INFINITY) ) {
         if([combatController combatEnabled]) {
             
-            [movementController pauseMovement];
-            
             // if we're not in combat, and haven't done the pre-combat already, do it.
-            if( ![combatController inCombat] && !_didPreCombatProcedure ) {
+            if ( ![combatController inCombat] && !_didPreCombatProcedure ) {
                 
                 // do the pre-combat routine
                 _didPreCombatProcedure = YES;
@@ -2624,11 +2583,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             }
             self.preCombatUnit = nil;
             
-            // turn and attack
-            PGLog(@"[Bot] Found %@ and attacking.", unitToAttack);
-            [movementController turnTowardObject: unitToAttack];
-            [self attackUnit: unitToAttack];
-            return YES;
+            // time to attack!
+			PGLog(@"[Bot] Found %@ and attacking.", unitToAttack);
+			[movementController turnTowardObject: unitToAttack];
+			[self actOnUnit: unitToAttack];
+			
+			return YES;
         } else {
             self.preCombatUnit = nil;
         }
@@ -3081,7 +3041,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             for ( Unit *unit in [combatController combatList] ) {
 				
 				// by calling attackUnit, we're basically just starting a CombatProcedure (which could switch the target!)
-				[self attackUnit:unit];
+				[self actOnUnit:unit];
             }
         }
 

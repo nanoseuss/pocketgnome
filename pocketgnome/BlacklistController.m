@@ -129,8 +129,9 @@
     int blackCount = [self blacklistCount: obj];
 	if ( blackCount > 0 )
 		PGLog(@"[Blacklist] Count of %d for %@", blackCount, obj);
-    if ( blackCount == 0 )  return NO;
-    if ( blackCount >= 3 )  return YES;
+	
+	// only count them as blacklisted if it's happened 5 times!
+    if ( blackCount < 5 )  return NO;
     
     // check the time on the blacklist
 	for ( NSDictionary *black in _blacklist ){
@@ -146,6 +147,12 @@
 				return NO;
 		}		
 	}
+	
+	
+	
+	
+	
+	
     return YES;
 }
 

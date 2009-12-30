@@ -20,6 +20,7 @@
 #import "Unit.h"
 #import "Rule.h"
 #import "CombatProfile.h"
+#import "Behavior.h"
 
 #import "ImageAndTextCell.h"
 
@@ -340,8 +341,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	BOOL isCasting = [playerData isCasting];
 	
 	// check player facing vs. unit position
+	Position *playerPosition = [playerData position];
 	float playerDirection = [playerData directionFacing];
-	float theAngle = [[playerData position] angleTo: [_castingUnit position]];
+	float theAngle = [playerPosition angleTo: [_castingUnit position]];
 	
 	// compensate for the 2pi --> 0 crossover
 	if(fabsf(theAngle - playerDirection) > M_PI) {
@@ -377,6 +379,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			[playerData setPrimaryTarget: _castingUnit];
 			usleep([controller refreshDelay]);
+		}
+		
+		// move toward unit?
+		if ( [botController.theBehavior meleeCombat] ){
+			
+			if ( [playerPosition distanceToPosition: [_castingUnit position]] > 5.0f ){
+				PGLog(@"[Combat] Moving to %@", _castingUnit);
+				
+				[movementController moveToObject:_castingUnit andNotify: NO];
+			}
 		}
 	}
 	

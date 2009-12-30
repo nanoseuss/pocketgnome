@@ -77,6 +77,9 @@
 	float _averageSpeed;
 	float _averageDistance;
 	NSDate *_lastResumeCorrection;					// this is for when we start to fly too far away from our WP!
+	
+	// new melee movement method
+	Position *_lastMeleePosition;
 }
 
 @property BOOL isMoving;
@@ -106,6 +109,8 @@
 - (void)moveNearPosition: (Position*)position andCloseness: (float)closeness;
 - (void)moveToObject: (WoWObject*)unit andNotify: (BOOL)notifyBotController;
 - (void)moveToWaypoint: (Waypoint*)waypoint;
+
+- (void)moveToMelee: (WoWObject*)unit;
 
 - (void)turnTowardObject: (WoWObject*)unit;
 
