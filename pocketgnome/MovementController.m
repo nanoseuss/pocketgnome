@@ -181,7 +181,7 @@ typedef enum MovementType {
 
 - (BOOL)shouldResume {
 	
-	PGLog(@"[Move] Should we resume? %d %d", self.isPaused, (([playerData movementFlags] & 0x1) == 0x0));
+	//PGLog(@"[Move] Should we resume? %d %d", self.isPaused, (([playerData movementFlags] & 0x1) == 0x0));
     
     if ( self.isPaused || (([playerData movementFlags] & 0x1) == 0x0) ) {
 		
@@ -418,6 +418,14 @@ typedef enum MovementType {
 	self.averageDistance = _totalDistance/(float)_movementChecks;
 	self.lastPlayerPosition = playerPosition;
 	
+	
+	// change our check based on the player's max ground/air speed
+	/*float aveSpeed = 0.0f, aveDistance = 0.0f;
+	if ( [playerData isOnGround] ){
+		aveSpeed = [playerData maxGroundSpeed];
+	}*/
+	
+	
 	// Take a sample of our speed over a second or longer
 	if ( _movementChecks > 15 && self.averageSpeed <= 1.0f ){
 		PGLog(@"[Move] We're stuck! Found by speed check! %0.2f", self.averageSpeed);
@@ -430,34 +438,23 @@ typedef enum MovementType {
 		_isStuck++;
 	}
 	
-	// check to see if we're flying off into space?
-	float distance = [self.lastAttemptedPosition distanceToPosition:playerPosition];
-	if ( distance > 250.0f ){
+	// make sure we're focusing the right direction!
+	float horizontalAngleToward = [playerPosition angleTo:self.lastAttemptedPosition];
+	float directionFacing = [playerData directionFacing];
+	float difference = fabs(horizontalAngleToward - directionFacing);
+	
+	// then we have a problem + need to start going back to our waypoint!
+	if ( difference > 0.1f && ![playerData isOnGround] && ( [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] > 15.0f )){
+		[_lastResumeCorrection release]; _lastResumeCorrection = nil;
+		_lastResumeCorrection = [[NSDate date] retain];
 		
+		PGLog(@"[Move] Flying in the wrong direction, correcting.  %0.2f == %0.2f  Time: %0.2f", horizontalAngleToward, directionFacing, [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection]);
 		
-		float horizontalAngleToward = [playerPosition angleTo:self.lastAttemptedPosition];
-		float directionFacing = [playerData directionFacing];
+		[self moveUpStop];
 		
-		//[self setHorizontalDirectionFacing: [ourPosition angleTo: position]];
-        //[self setVerticalDirectionFacing: [ourPosition verticalAngleTo: position]];
-		
-		PGLog(@"[Move] Too far away for my liking! %0.2f == %0.2f near %0.2f %0.2f", distance, horizontalAngleToward, directionFacing, [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
-		
-		float difference = fabs(horizontalAngleToward - directionFacing);
-		
-		// then we have a problem + need to start going back to our waypoint!
-		if ( difference > 0.1f && ( [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] > 15.0f )){
-			[_lastResumeCorrection release]; _lastResumeCorrection = nil;
-			_lastResumeCorrection = [[NSDate date] retain];
-			
-			PGLog(@"[Move] Flying in the wrong direction, correcting");
-			
-			[self moveUpStop];
-			
-			[self moveForwardStop];
-			usleep(10000);
-			[self resumeMovement];
-		}
+		[self moveForwardStop];
+		usleep(10000);
+		[self resumeMovement];
 	}
 	
 	// Crap we're stuck, we need to do something now :(
@@ -561,6 +558,8 @@ typedef enum MovementType {
 	// tracking a new unit
 	if ( self.unit != unit ){
 		self.unit = unit;
+		self.shouldNotify = YES;
+
 		[_lastMeleePosition release]; _lastMeleePosition = nil;
 		_lastMeleePosition = [[unit position] retain];
 		
@@ -576,8 +575,9 @@ typedef enum MovementType {
 			
 			PGLog(@"[Move] %0.2f moved by %@", [_lastMeleePosition distanceToPosition:[self.unit position]], self.unit);
 			
-			if ( [_lastMeleePosition distanceToPosition:[self.unit position]] > 0.1f ){
+			if ( [_lastMeleePosition distanceToPosition:[self.unit position]] > 0.1f || ![self isMoving] ){
 				
+				PGLog(@"[Move] Moving to unit's position");
 				[self moveToPosition:[self.unit position]];
 			}			
 		}
@@ -600,9 +600,29 @@ typedef enum MovementType {
 			self.unit = unit;
             self.shouldNotify = notify;
 
-			Position *position = [unit position];
-			[self moveToPosition: position];
-        } else {
+			_lastMeleePosition = [[unit position] retain];
+			[self moveToPosition: _lastMeleePosition];
+		}
+		
+		// if it's a mob or player, we're going to update based on if they move!
+		else if ( ( [unit isNPC] || [unit isPlayer] ) && ![(Unit*)unit isDead] ){
+			
+			PGLog(@"[Move] %0.2f moved by %@", [_lastMeleePosition distanceToPosition:[self.unit position]], self.unit);
+			
+			if ( [_lastMeleePosition distanceToPosition:[self.unit position]] > 0.1f ){
+				
+				PGLog(@"[Move] moving again to unit %@", unit);
+				
+				[_lastMeleePosition release]; _lastMeleePosition = nil;
+				_lastMeleePosition = [[self.unit position] retain];
+				[self moveToPosition:_lastMeleePosition];
+			}
+			else{
+				[self resumeMovement];
+			}
+        }
+		// resume if needed		
+		else {
             [self resumeMovement];
         }
     } else {

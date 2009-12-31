@@ -259,6 +259,7 @@ typedef enum {
     [self didChangeValueForKey: @"nodeCount"];
 }
 
+/*
 - (BOOL)removeFinishedNode: (Node*)node{
 	if ( [_finishedNodes containsObject:node] ){
 		[_finishedNodes removeObject:node];
@@ -271,7 +272,13 @@ typedef enum {
 	return NO;	
 }
 
-/*- (BOOL)addNode: (Node*)newNode {
+- (void)finishedNode: (Node*)node{
+    if(node && ![_finishedNodes containsObject: node]) {
+        [_finishedNodes addObject: node];
+    }
+}
+
+- (BOOL)addNode: (Node*)newNode {
     if(newNode && ![self trackingNode: newNode] && [newNode isValid]) {
         
         // if(![self nodeName: newNode]) [newNode loadNodeName];
@@ -287,12 +294,6 @@ typedef enum {
 
 - (unsigned)nodeCount {
     return [_nodeList count];
-}
-
-- (void)finishedNode: (Node*)node{
-    if(node && ![_finishedNodes containsObject: node]) {
-        [_finishedNodes addObject: node];
-    }
 }
 
 - (void)resetAllNodes {

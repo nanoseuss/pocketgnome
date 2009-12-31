@@ -156,6 +156,15 @@ enum eNodeNameStructFields {
     return -1;
 }
 
+// 0-255,  0 being not visible
+- (UInt16)alpha{
+	UInt16 value = 0;
+    if([_memory loadDataForObject: self atAddress: ([self baseAddress] + 0xC0) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+        return value;
+    }
+    return 0;
+}
+
 // 1 read
 - (BOOL)validToLoot {
     UInt32 value = 0;
@@ -164,6 +173,36 @@ enum eNodeNameStructFields {
     }
     return NO;
 }
+
+/*
+- (void)monitor{
+	
+	if ( !self || ![self isValid] ){
+		PGLog(@"[Node] Invalid %@", self);
+		return;
+	}
+	
+	UInt16 value, value1, value2, value3, value4;
+	[_memory loadDataForObject: self atAddress: ([self baseAddress] + 0xB6) Buffer: (Byte *)&value BufLength: sizeof(value)];
+	[_memory loadDataForObject: self atAddress: ([self baseAddress] + 0xB0) Buffer: (Byte *)&value1 BufLength: sizeof(value1)];
+	[_memory loadDataForObject: self atAddress: ([self baseAddress] + 0xB2) Buffer: (Byte *)&value2 BufLength: sizeof(value2)];
+	[_memory loadDataForObject: self atAddress: ([self baseAddress] + 0xC0) Buffer: (Byte *)&value3 BufLength: sizeof(value3)];
+	[_memory loadDataForObject: self atAddress: ([self infoAddress] + GAMEOBJECT_BYTES_1) Buffer: (Byte *)&value4 BufLength: sizeof(value4)];
+	
+	
+	PGLog(@"[Node] %d %d %d %d %d 0x%X %@", value, value1, value2, value3, [self validToLoot], value4, self);
+	
+	// before looted
+	//	[Node] 196 20400 11983 255 1 0x301 <Node: "Saronite Deposit" (189980)>
+	// during looting
+	//	[Node] 196 20400 11983 255 1 0x301 <Node: "Saronite Deposit" (189980)>
+	// shortly after looting
+	//	[Node] 212 20400 11983 255 0 0x300 <Node: "Saronite Deposit" (189980)>
+	// next change
+	//	[Node] 197 0 0 0 0 0x300 <Node: "Saronite Deposit" (189980)>
+	
+	[self performSelector:@selector(monitor) withObject:nil afterDelay:0.1f];	
+}*/
 
 
 - (NSImage*)imageForNodeType: (UInt32)typeID {

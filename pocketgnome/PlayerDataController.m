@@ -484,7 +484,7 @@ static PlayerDataController* sharedController = nil;
 - (UInt32)comboPoints {
     UInt32 value = 0;
     if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"COMBO_POINTS_STATIC"]) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
-        return value;
+		return value;
     }
     return 0;
 }

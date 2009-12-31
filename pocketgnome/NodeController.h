@@ -56,9 +56,9 @@ typedef enum {
 - (void)addAddresses: (NSArray*)addresses;
 // - (BOOL)addNode: (Node*)node;
 - (unsigned)nodeCount;
-- (void)finishedNode: (Node*)node;
+//- (void)finishedNode: (Node*)node;
 - (void)resetAllNodes;
-- (BOOL)removeFinishedNode: (Node*)node;
+//- (BOOL)removeFinishedNode: (Node*)node;
 
 - (NSArray*)nodesOfType:(UInt32)nodeType shouldLock:(BOOL)lock;
 - (NSArray*)allMiningNodes;
