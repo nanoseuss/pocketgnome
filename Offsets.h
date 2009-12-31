@@ -33,7 +33,7 @@
                                              // 0x9B1008 : 0x9D8C55) // 2.4.2
                                              // 0x9A8008 : 0x9CDC5D) // 2.4.1
 #define COMBO_POINT_VALUE           0x0   // appears 0xY000000 on PPC, Y on x86
-#define COMBO_POINT_TARGET_UID      0x4   // 64 bit
+#define COMBO_POINT_TARGET_UID      0x8   // 64 bit
 // in 3.0.x, the current time appears globally +0xC after COMBO_POINTS_STATIC
 
 // there's another interesting struct between combo points and targets

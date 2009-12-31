@@ -920,7 +920,7 @@
 																				<integer value="1000"/>
 																				<string>,</string>
 																				<real value="50"/>
-																				<integer value="1"/>
+																				<real value="0.0"/>
 																				<string/>
 																				<string>##0</string>
 																				<boolean value="NO"/>
@@ -938,7 +938,7 @@
 																			<string key="NSString">NaN</string>
 																			<reference key="NSAttributes" ref="113780743"/>
 																		</object>
-																		<integer value="1" key="NS.min"/>
+																		<real value="0.0" key="NS.min"/>
 																		<real value="50" key="NS.max"/>
 																		<nil key="NS.rounding"/>
 																		<string key="NS.decimal">.</string>
@@ -1023,7 +1023,7 @@
 																				<integer value="1000"/>
 																				<string>,</string>
 																				<real value="50"/>
-																				<integer value="1"/>
+																				<real value="5"/>
 																				<string/>
 																				<string>##0</string>
 																				<boolean value="NO"/>
@@ -1041,7 +1041,7 @@
 																			<string key="NSString">NaN</string>
 																			<reference key="NSAttributes" ref="113780743"/>
 																		</object>
-																		<integer value="1" key="NS.min"/>
+																		<real value="5" key="NS.min"/>
 																		<real value="50" key="NS.max"/>
 																		<nil key="NS.rounding"/>
 																		<string key="NS.decimal">.</string>
@@ -1127,7 +1127,7 @@
 																				<integer value="1000"/>
 																				<string>,</string>
 																				<real value="50"/>
-																				<integer value="1"/>
+																				<real value="0.0"/>
 																				<string/>
 																				<string>##0</string>
 																				<boolean value="NO"/>
@@ -1145,7 +1145,7 @@
 																			<string key="NSString">NaN</string>
 																			<reference key="NSAttributes" ref="113780743"/>
 																		</object>
-																		<integer value="1" key="NS.min"/>
+																		<real value="0.0" key="NS.min"/>
 																		<real value="50" key="NS.max"/>
 																		<nil key="NS.rounding"/>
 																		<string key="NS.decimal">.</string>
@@ -3746,12 +3746,12 @@
 							<reference ref="487942819"/>
 							<reference ref="605523358"/>
 							<reference ref="716164412"/>
-							<reference ref="1068337319"/>
 							<reference ref="712653675"/>
 							<reference ref="912021754"/>
 							<reference ref="101704490"/>
 							<reference ref="228211633"/>
 							<reference ref="83736860"/>
+							<reference ref="1068337319"/>
 						</object>
 						<reference key="parent" ref="504623840"/>
 					</object>
@@ -4239,9 +4239,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{573, 268}, {430, 387}}</string>
+					<string>{{714, 261}, {430, 387}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{573, 268}, {430, 387}}</string>
+					<string>{{714, 261}, {430, 387}}</string>
 					<integer value="0"/>
 					<string>{{745, 155}, {429, 399}}</string>
 					<integer value="1"/>

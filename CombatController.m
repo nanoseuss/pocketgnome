@@ -55,6 +55,7 @@
 		
 		_unitsAttackingMe = [[NSMutableArray array] retain];
 		_unitsAllCombat = [[NSMutableArray array] retain];
+		_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
 		
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
@@ -72,6 +73,8 @@
 - (void) dealloc
 {
 	[_unitsAttackingMe release];
+	[_unitsAllCombat release];
+	[_unitLeftCombatCount release];
     [super dealloc];
 }
 
@@ -215,7 +218,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 		// range changes if the unit is friendly or not
 		float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
-		float range = ([playerData isFriendlyWithFaction: [unit factionTemplate]] ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange);
+		float attackRange = ( botController.theCombatProfile.attackRange > botController.theCombatProfile.engageRange ) ? botController.theCombatProfile.attackRange : botController.theCombatProfile.engageRange;
+		float range = ([playerData isFriendlyWithFaction: [unit factionTemplate]] ? botController.theCombatProfile.healingRange : attackRange);
 		if ( distanceToTarget > range ){
 			continue;
 		}
@@ -419,6 +423,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)resetAllCombat{
 	[self cancelAllCombat];
+	[_unitLeftCombatCount removeAllObjects];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 }
 
@@ -631,7 +636,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // health: +(100-percentHealth)
 // distance: 100*(attackRange - distance)/attackRange
 - (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition{
-	float attackRange = botController.theCombatProfile.attackRange;
+	float attackRange = (botController.theCombatProfile.engageRange > botController.theCombatProfile.attackRange) ? botController.theCombatProfile.engageRange : botController.theCombatProfile.attackRange;
 	float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
 	BOOL isFriendly = [playerData isFriendlyWithFaction: [unit factionTemplate]];
 	
@@ -684,10 +689,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
     NSMutableArray *targetsWithinRange = [NSMutableArray array];
 	
 	NSRange range = [self levelRange];
+	
+	
+	
+	// which is larger?
+	float attackRange = ( [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] ) ? [botController.theCombatProfile attackRange] : [botController.theCombatProfile engageRange];
 
 	 // check for mobs?
 	 if ( botController.theCombatProfile.attackNeutralNPCs || botController.theCombatProfile.attackHostileNPCs ) {
-		 [targetsWithinRange addObjectsFromArray: [mobController mobsWithinDistance: [botController.theCombatProfile attackRange]
+		 [targetsWithinRange addObjectsFromArray: [mobController mobsWithinDistance: attackRange
 																		 levelRange: range
 																	   includeElite: !(botController.theCombatProfile.ignoreElite)
 																	includeFriendly: NO
@@ -697,7 +707,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	 // check for players?
 	 if ( botController.theCombatProfile.attackPlayers ) {
-		 [targetsWithinRange addObjectsFromArray: [playersController playersWithinDistance: [botController.theCombatProfile attackRange] 
+		 [targetsWithinRange addObjectsFromArray: [playersController playersWithinDistance: attackRange
 																				levelRange: range
 																		   includeFriendly: NO
 																			includeNeutral: NO
@@ -770,6 +780,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		PGLog(@"[**********] Unit isn't valid! %@", unit);
 		return;
 	}
+	
+	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
+	// unit left combat?
+	if ( ![unit isInCombat] ){
+		PGLog(@"[**********] Unit not in combat! %d", leftCombatCount);
+		leftCombatCount++;
+	}
+	else{
+		//PGLog(@"[**********] Unit in combat! %d", leftCombatCount);
+		leftCombatCount = 0;
+	}
+	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
+	
 	
 	// unit died, fire off notification
 	if ( [unit isDead] ){

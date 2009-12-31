@@ -138,6 +138,8 @@
 
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit;
 
+- (void)executeRegen: (BOOL)delay;
+
 @end
 
 
@@ -209,6 +211,7 @@
         _procedureInProgress = nil;
 		_lastProcedureExecuted = nil;
         _didPreCombatProcedure = NO;
+		_doRegenProcedure = 0;
 		_lastSpellCastGameTime = 0;
 		self.startDate = nil;
 		_unitToLoot = nil;
@@ -756,6 +759,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 if(test) PGLog(@"Doing Combo Points condition...");
                 
                 UInt32 class = [thePlayer unitClass];
+				
                 if( (class != UnitClass_Rogue) && (class != UnitClass_Druid) ) {
                     if(test) PGLog(@" --> You are not a rogue or druid, noob.");
                     goto loopEnd;
@@ -1088,17 +1092,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         return;
     }
     
+	
     // when we finish PostCombat, run regen
     if([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
-        float regenDelay = 0.0f;
-        if( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
-            regenDelay = 1.5f;
-        }
-        [self performSelector: @selector(performProcedureWithState:) 
-                   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                RegenProcedure,                   @"Procedure",
-                                [NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
-                   afterDelay: regenDelay];
+		
+		if ( [playerController isInCombat] ){
+			
+			PGLog(@"[Procedure] Still in combat, waiting for regen!");
+			
+			_doRegenProcedure = 1;
+			
+			[self evaluateSituation];
+		}
+		else{
+			
+			PGLog(@"[Procedure] Not in combat, running regen..");
+			
+			[self executeRegen: ([[state objectForKey: @"ActionsPerformed"] intValue] > 0)];
+		}
         return;
     }
     
@@ -1106,13 +1117,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if([[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure]) {
         if( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
 			PGLog(@"[Procedure] Starting regen!");
-            [self performSelector: @selector(preRegen) withObject: nil afterDelay: 2.0];
+            [self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 2.0];
         } else {
 			PGLog(@"[Procedure] No regen, back to evaluate!");
             // or if we didn't regen, go back to evaluate
             [self evaluateSituation];
         }
     }
+	
+	// after PostCombat, lets evaluate
+	if([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
+		PGLog(@"[Procedure] Evaluating after PostCombat, this a good idea? hmmm");
+        [self evaluateSituation];
+    }
+	
     
     // if we did the Patrolling procdure, go back to evaluate
     if([[state objectForKey: @"Procedure"] isEqualToString: PatrollingProcedure]) {
@@ -1140,7 +1158,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         [self cancelCurrentProcedure];
         PGLog(@"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
     }
-    
+	
+	// reset
+	_doRegenProcedure = 0;
+	
     if(![self procedureInProgress]) {
         [self setProcedureInProgress: [state objectForKey: @"Procedure"]];
         PGLog(@"Setting current procedure: %@", self.procedureInProgress);
@@ -1237,7 +1258,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 					// do something
-					PGLog(@"[Bot] Match for %@ with target %@", rule, target);
+					PGLog(@"[Procedure] Match for %@ with target %@", rule, target);
 					matchFound = YES;
 					
 				}
@@ -1247,7 +1268,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else if ( [rule target] == TargetNone ){
 				if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 					// do something
-					PGLog(@"[Bot] Match for %@", rule);
+					PGLog(@"[Procedure] Match for %@", rule);
 					matchFound = YES;
 				}
 			}
@@ -1260,7 +1281,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					for ( target in adds ){
 						if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 							// do something
-							PGLog(@"[Bot] Match for %@ with add %@", rule, target);
+							PGLog(@"[Procedure] Match for %@ with add %@", rule, target);
 							matchFound = YES;
 							break;
 						}
@@ -1273,9 +1294,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// loop through all units
 			else{
 				for ( target in units ){
+					
+					// special rule if we're NOT pvping
+					if ( !self.isPvPing ){
+						// if we're in combat, and the unit is not, ignore!
+						if ( [playerController isInCombat] && ![target isInCombat] ){
+							PGLog(@"[Procedure] Ignoring %@ since we're in combat and the target isn't!", target);
+							continue;
+						}
+					}
+					
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						PGLog(@"[Bot] Match for %@ with unit %@", rule, target);
+						PGLog(@"[Procedure] Match for %@ with unit %@", rule, target);
 						matchFound = YES;
 						break;
 					}
@@ -1450,7 +1481,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// This will ensure we won't try to loot this node again - /cry
 			if ( [self.unitToLoot isKindOfClass: [Node class]] ){
-				[nodeController finishedNode: (Node*)self.unitToLoot];
+				//[nodeController finishedNode: (Node*)self.unitToLoot];
 			}
 			else{
 				[_mobsToLoot removeObject: self.unitToLoot];
@@ -1507,7 +1538,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Unit was looted, remove from list!
 		if ( [self.unitToLoot isKindOfClass: [Node class]] ){
-			[nodeController finishedNode: (Node*)self.unitToLoot];
+			//[nodeController finishedNode: (Node*)self.unitToLoot];
 			self.mobToSkin = nil;
 			PGLog(@"[Loot] Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s");
 		}
@@ -1660,6 +1691,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if(![self isBotting]) return;
 	
+	_didPreCombatProcedure = NO;
+	
 	if ( [playerController isDead] ){
 		return;
 	}
@@ -1675,12 +1708,31 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	//	To prevent weird shit, lets not move to PostCombat if we're in combat!
 	PGLog(@"[Bot] Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
 	
-	
 	// ignore if the player is flying
 	if ( ![[playerController player] isOnGround] ){
 		PGLog(@"[Bot] Player flying, not switching procedure");
 		return;
 	}
+	
+	
+	
+	
+	
+	
+	/*
+	
+	// start regen?
+	if ( [_lastProcedureExecuted isEqualToString:PostCombatProcedure] && ![self.procedureInProgress isEqualToString: CombatProcedure] ){
+		
+		[self performSelector: @selector(performProcedureWithState:) 
+				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+								RegenProcedure,                   @"Procedure",
+								[NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
+				   afterDelay: 0.1f];
+	}*/
+	
+
+	/*
 	
 	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] && !( [_lastProcedureExecuted isEqualToString: PostCombatProcedure] || [_lastProcedureExecuted isEqualToString: RegenProcedure] ) ){
 		[self performSelector: @selector(performProcedureWithState:) 
@@ -1688,7 +1740,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								PostCombatProcedure,              @"Procedure",
 								[NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
 				   afterDelay: (0.1)];
-	}
+	}*/
 }
 
 /*
@@ -1867,6 +1919,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)actOnUnit: (Unit*)unit {
 	if ( ![self isBotting] )	return;
 	
+	// in theory we should never be here
 	if ( [blacklistController isBlacklisted:unit] ){
 		PGLog(@"Attempting to attack a blacklisted unit, ruh-roh");
 	}
@@ -1876,8 +1929,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 
-		
-		
 		BOOL readyToAttack = NO;
         
         // check to see if we are supposed to be in melee range
@@ -1888,7 +1939,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ( distance > 5.0f ){
 				PGLog(@"[Bot] Still %0.2f away, moving to %@", distance, unit);
 				
-				[movementController moveToMelee:unit];
+				[movementController moveToObject:unit andNotify:YES];
 			}
 			// we're in range
 			else{
@@ -1923,11 +1974,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     } else {
 		
 		PGLog(@"[Bot] Are we stuck doing nothing?  Current procedure: %@", [self procedureInProgress]);
-		
-        // we are currently executing the combat routine;
-        // do nothing
-		
-		//PGLog(@"[Bot] could we be moving toward the target here?");
     }
 }
 
@@ -2070,6 +2116,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark [Input] MovementController
 
 - (void)reachedUnit: (WoWObject*)unit {
+	
+	PGLog(@"[Bot] Reached unit! %@", unit);
     
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: unit];
     [movementController pauseMovement];
@@ -2101,7 +2149,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		else{
 			// This node is "done" - this is a sort of blacklist, we just don't want it anymore!
-			[nodeController finishedNode: (Node*)self.unitToLoot];
+			//[nodeController finishedNode: (Node*)self.unitToLoot];
 			
 			// Resume movement!
 			[movementController resumeMovementToNearestWaypoint];
@@ -2181,6 +2229,79 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 #pragma mark -
 
+- (void)executeRegen: (BOOL)delay{
+	
+	float regenDelay = 0.0f;
+	if( delay ) {
+		regenDelay = 1.5f;
+	}
+	
+	[self performSelector: @selector(performProcedureWithState:) 
+			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+							RegenProcedure,                   @"Procedure",
+							[NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
+			   afterDelay: regenDelay];
+}
+
+
+- (void)monitorRegen: (NSDate*)start{
+	
+	if ( [playerController isInCombat] ){
+		PGLog(@"[Regen] In combat, cancelling regen!");
+		[self evaluateSituation];
+		return;
+	}
+	
+	Unit *player = [playerController player];
+	
+	BOOL eatClear = NO, drinkClear = NO;
+	
+	// check health
+	if ( [playerController health] == [playerController maxHealth] ){
+		eatClear = YES;
+	}
+	else{
+		// no buff for eating anyways
+		if ( ![auraController unit: player hasBuffNamed: @"Food"] ) {
+			eatClear = YES;
+		}
+	}
+	
+	// check mana
+	if ( [playerController mana] == [playerController maxMana] ){
+		drinkClear = YES;
+	}
+	else{
+		// no buff for drinking anyways
+		if ( ![auraController unit: player hasBuffNamed: @"Drink"] ) {
+			drinkClear = YES;
+		}
+	}
+	
+	float timeSinceStart = [[NSDate date] timeIntervalSinceDate: start];
+	
+	// we're done eating/drinking! continue
+	if ( eatClear && drinkClear ){
+	
+		PGLog(@"[Regen] Finished after %0.2f seconds", timeSinceStart);
+		
+		[self evaluateSituation];
+		return;
+	}
+	
+	// should we be done?
+	else if ( timeSinceStart > 30.0f ){
+		
+		PGLog(@"[Regen] Ran for 30, done!");
+		
+		[self evaluateSituation];
+		return;
+	}
+	
+	[self performSelector: _cmd withObject: start afterDelay: 1.0f];
+}
+
+/*
 - (void)preRegen {
     BOOL drink = NO, eat = NO;
     Unit *player = [playerController player];
@@ -2244,7 +2365,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     [self performSelector: _cmd withObject: regenDict afterDelay: 2.0f];
-}
+}*/
 
 - (Mob*)mobToLoot {
     if([_mobsToLoot count]) {
@@ -2490,10 +2611,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}*/
     
     // check to see if we are moving to attack a unit and bail if we are
-    if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
-        // PGLog(@"attackUnit == moveToObject");
+    /*if( combatController.attackUnit && (combatController.attackUnit == [movementController moveToObject])) {
+        PGLog(@"attackUnit == moveToObject");
         return NO;
-    }
+    }*/
 	
 	// player is in combat already! should we do something?
     if ( [combatController inCombat] ) {
@@ -2524,7 +2645,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     //    PGLog(@"CombatProcedure && moveToObject");
     //    return NO;
     //}
-    
+	
+	// do we need to do regen?  Might have missed it as we were in combat before!
+	if ( _doRegenProcedure > 0 ){
+		
+		_doRegenProcedure++;
+		PGLog(@"[Bot] Trying to execute regen procedure %d", _doRegenProcedure);
+		
+		// only try this a few times
+		if ( _doRegenProcedure < 40 ){
+			if ( [playerController isInCombat] ){
+				PGLog(@"[Bot] Still in combat, waiting to execute regen, trying again in 0.1 seconds");
+				[self performSelector:_cmd withObject:nil afterDelay:0.1f];
+				return YES;
+			}
+			
+			_doRegenProcedure = 0;
+			
+			[self executeRegen:NO];
+			
+			return YES;
+		}
+		else{
+			_doRegenProcedure = 0;
+			
+			PGLog(@"[Bot] Ignoring regen procedure, evaluating...");
+		}
+	}
+	
     // get potential units and their distances
     Mob *mobToLoot      = [self mobToLoot];
     Unit *unitToAttack  = [combatController findUnitWithFriendly:NO];
@@ -2609,9 +2757,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             float nodeDist = INFINITY;
             
             for(nodeToLoot in nodes) {
-				
-				if ( [blacklistController isBlacklisted:nodeToLoot] ){
-					PGLog(@"[Bot] Node %@ blacklisted, ignoring", nodeToLoot);
+
+				if ( ![nodeToLoot validToLoot] ){
+					PGLog(@"[Bot] Node %@ is not valid to loot, ignoring...", nodeToLoot );
+					continue;
 				}
 				
                 if(nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot]) {
@@ -2619,37 +2768,38 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     break;
                 }
             }
-			
-			BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
-            
+      
 			// We have a valid node!
-            if([nodeToLoot isValid] && (nodeDist != INFINITY) && !nearbyScaryUnits) {
+            if([nodeToLoot isValid] && (nodeDist != INFINITY) ) {
 				
-				[controller setCurrentStatus: @"Bot: Moving to node"];
+				BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
 				
-				[movementController pauseMovement];
-				PGLog(@"[Loot] Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
-				if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
-					if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
-						PGLog(@"[Loot] Unable to loot %@, blacklisting for 30 seconds", self.lastAttemptedUnitToLoot);
-						[nodeController finishedNode: nodeToLoot];
-						[nodeController performSelector:@selector(removeFinishedNode:) withObject:nodeToLoot afterDelay:30.0f];
+				if ( !nearbyScaryUnits ){
+					[controller setCurrentStatus: @"Bot: Moving to node"];
+					
+					[movementController pauseMovement];
+					PGLog(@"[Loot] Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
+					if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
+						if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
+							
+							PGLog(@"[Loot] Unable to loot %@, should we add this to a blacklist?", self.lastAttemptedUnitToLoot);
+						}
+						else{
+							[self reachedUnit: nodeToLoot];
+							return YES;
+						}
 					}
-					else{
-						[self reachedUnit: nodeToLoot];
+					// Should we be mounted before we move to the node?
+					else if ( [self mountNow] ){
+						[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 						return YES;
 					}
-				}
-				// Should we be mounted before we move to the node?
-				else if ( [self mountNow] ){
-					[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
+					// Safe to move to the node!
+					else{
+						[movementController moveToObject: nodeToLoot andNotify: YES];
+					}
 					return YES;
 				}
-				// Safe to move to the node!
-				else{
-					[movementController moveToObject: nodeToLoot andNotify: YES];
-				}
-				return YES;
             }
         }
     }
@@ -2833,10 +2983,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             NSString *levels = profile.attackAnyLevel ? @"any levels" : [NSString stringWithFormat: @"levels %d-%d", 
                                                                          profile.attackLevelMin,
                                                                          profile.attackLevelMax];
-            bleh = [NSString stringWithFormat: @"Attacking %@ within %.1fy - %.1fy.", 
+            bleh = [NSString stringWithFormat: @"Attacking %@ within %.1fy.", 
                     levels,
-                    profile.engageRange,
-					profile.attackRange];
+                    profile.engageRange];
         }
     }
     

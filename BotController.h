@@ -106,6 +106,7 @@
     float _gatherDist;
     BOOL _isBotting;
     BOOL _didPreCombatProcedure;
+	int _doRegenProcedure;
     NSString *_procedureInProgress;
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
