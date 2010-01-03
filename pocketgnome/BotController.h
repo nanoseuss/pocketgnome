@@ -150,6 +150,10 @@
 	// new flying shit
 	int _jumpAttempt;
 	
+	// mount correction (sometimes we can't mount)
+	int _mountAttempt;
+	NSDate *_mountLastAttempt;
+	
     // pvp shit
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
@@ -266,7 +270,6 @@
 
 // Input from CombatController
 - (void)addingUnit: (Unit*)unit;
-- (void)finishUnit: (Unit*)unit;
 
 // Input from CombatController
 - (void)actOnUnit: (Unit*)unit;
