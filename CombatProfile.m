@@ -33,7 +33,8 @@
         self.ignoreElite = YES;
         self.ignoreLevelOne = YES;
 		self.ignoreFlying = YES;
-		self.onlyHealInCombat = NO;
+		self.assistUnit = NO;
+		self.assistUnitGUID = 0x0;
 		
 		// Healing
 		self.healingEnabled = NO;
@@ -84,7 +85,8 @@
     copy.ignoreElite = self.ignoreElite;
     copy.ignoreLevelOne = self.ignoreLevelOne;
 	copy.ignoreFlying = self.ignoreFlying;
-	copy.onlyHealInCombat = self.onlyHealInCombat;
+	copy.assistUnit = self.assistUnit;
+	copy.assistUnitGUID = self.assistUnitGUID;
 	
 	copy.healingEnabled = self.healingEnabled;
     copy.autoFollowTarget = self.autoFollowTarget;
@@ -119,7 +121,8 @@
         self.ignoreElite = [[decoder decodeObjectForKey: @"IgnoreElite"] boolValue];
         self.ignoreLevelOne = [[decoder decodeObjectForKey: @"IgnoreLevelOne"] boolValue];
 		self.ignoreFlying = [[decoder decodeObjectForKey: @"IgnoreFlying"] boolValue];
-		self.onlyHealInCombat = [[decoder decodeObjectForKey: @"OnlyHealInCombat"] boolValue];
+		self.assistUnit = [[decoder decodeObjectForKey: @"AssistUnit"] boolValue];
+		self.assistUnitGUID = [[decoder decodeObjectForKey: @"AssistUnitGUID"] unsignedLongLongValue];
 
 		self.healingEnabled = [[decoder decodeObjectForKey: @"HealingEnabled"] boolValue];
         self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
@@ -150,7 +153,8 @@
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreElite] forKey: @"IgnoreElite"];
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreLevelOne] forKey: @"IgnoreLevelOne"];
 	[coder encodeObject: [NSNumber numberWithBool: self.ignoreFlying] forKey: @"IgnoreFlying"];
-	[coder encodeObject: [NSNumber numberWithBool: self.onlyHealInCombat] forKey: @"OnlyHealInCombat"];
+	[coder encodeObject: [NSNumber numberWithBool: self.assistUnit] forKey: @"AssistUnit"];
+	[coder encodeObject: [NSNumber numberWithBool: self.assistUnitGUID] forKey: @"AssistUnitGUID"];
 	
 	[coder encodeObject: [NSNumber numberWithBool: self.healingEnabled] forKey: @"HealingEnabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
@@ -187,7 +191,8 @@
 @synthesize ignoreElite;
 @synthesize ignoreLevelOne;
 @synthesize ignoreFlying;
-@synthesize onlyHealInCombat;
+@synthesize assistUnit;
+@synthesize assistUnitGUID;
 
 @synthesize healingEnabled;
 @synthesize autoFollowTarget;

@@ -33,7 +33,6 @@
 - (NSRange)levelRange;
 - (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition;
 - (void)stayWithUnit;
-- (void)finishUnit:(Unit*)unit;
 - (NSArray*)combatListValidated;
 - (void)updateCombatTable;
 - (void)monitorUnit: (Unit*)unit;
@@ -880,6 +879,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	
+	for ( Unit *unit in _unitsAttackingMe ){
+		PGLog(@" [Combat] %@", unit);
+	}
 }
 
 // this will return the level range of mobs we are attacking!

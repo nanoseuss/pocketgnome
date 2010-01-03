@@ -17,13 +17,15 @@
     NSMutableArray *_combatEntries;
     
     BOOL combatEnabled, onlyRespond, attackNeutralNPCs, attackHostileNPCs, attackPlayers, attackPets;
-    BOOL attackAnyLevel, ignoreElite, ignoreLevelOne, ignoreFlying, onlyHealInCombat;
+    BOOL attackAnyLevel, ignoreElite, ignoreLevelOne, ignoreFlying, assistUnit;
 	
 	// Healing
 	BOOL healingEnabled, autoFollowTarget, mountEnabled;
 	float yardsBehindTarget, healingRange;
 	int healthThreshold;
 	UInt64 selectedTankGUID;
+	
+	UInt64 assistUnitGUID;
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
@@ -44,6 +46,7 @@
 @property (readwrite, retain) NSArray *entries;
 @property (readwrite, copy) NSString *name;
 @property (readwrite, assign) UInt64 selectedTankGUID;
+@property (readwrite, assign) UInt64 assistUnitGUID;
 @property (readwrite, assign) BOOL combatEnabled;
 @property (readwrite, assign) BOOL onlyRespond;
 @property (readwrite, assign) BOOL attackNeutralNPCs;
@@ -54,7 +57,8 @@
 @property (readwrite, assign) BOOL ignoreElite;
 @property (readwrite, assign) BOOL ignoreLevelOne;
 @property (readwrite, assign) BOOL ignoreFlying;
-@property (readwrite, assign) BOOL onlyHealInCombat;
+@property (readwrite, assign) BOOL assistUnit;
+
 
 @property (readwrite, assign) BOOL healingEnabled;
 @property (readwrite, assign) BOOL autoFollowTarget;

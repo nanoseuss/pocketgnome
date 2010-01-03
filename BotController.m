@@ -228,7 +228,9 @@
 		_jumpAttempt = 0;
 		_includeFriendly = NO;
 		_lastSpellCast = 0;
-        
+        _mountAttempt = 0;
+		_mountLastAttempt = nil;
+		
         _mobsToLoot = [[NSMutableArray array] retain];
         
         // wipe pvp options
@@ -1190,6 +1192,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     int completed = [[state objectForKey: @"CompletedRules"] intValue];
     int attempts = [[state objectForKey: @"RuleAttempts"] intValue];
     int actions = [[state objectForKey: @"ActionsPerformed"] intValue];
+	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
+	if ( rulesTried == nil ){
+		PGLog(@"[Procedure^^^^^^^^^^^^^] Creating dictionary to track our tried rules!");
+		rulesTried = [[NSMutableDictionary dictionary] retain];
+	}
 	
     // send your pet to attack
     if( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead]) {
@@ -1202,7 +1209,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // have we completed all the rules?
     int ruleCount = [procedure ruleCount];
-    if( !procedure ) {
+    if( !procedure /*|| completed >= ( ruleCount * 2 )*/ ) {
         [self finishCurrentProcedure: state];
         return;
     }
@@ -1251,6 +1258,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			rule = [procedure ruleAtIndex: i];
 			
 			//PGLog(@"[Procedure] Evaluating rule %@", rule);
+			
+			// make sure our rule hasn't continuously failed!
+			NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
+			NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
+			if ( tries ){
+				if ( [tries intValue] > 3 ){
+					PGLog(@"[Procedure^^^^^^^^^^^^^] Rule %d failed after %@ attempts!", i, tries);
+					continue;
+				}
+			}
 			
 			// then set the target to ourself
 			if ( [rule target] == TargetSelf ){
@@ -1392,6 +1409,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						if ( originalTarget == target ){
 							PGLog(@"[Procedure] Same target!");
 						}
+						
+						NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
+						PGLog(@"[Procedure^^^^^^^^^^^^^] Looking for key %@", triedRuleKey);
+						
+						NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
+						
+						if ( tries ){
+							int t = [tries intValue];
+							tries = [NSNumber numberWithInt:t+1];
+						}
+						else{
+							tries = [NSNumber numberWithInt:1];
+						}
+						
+						PGLog(@"[Procedure^^^^^^^^^^^^^] Setting tried %@ with value %@", triedRuleKey, tries);
+
+						[rulesTried setObject:tries forKey:triedRuleKey];
 					}
 					// success!
 					else{
@@ -1418,12 +1452,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt: completed],            @"CompletedRules",
 								[NSNumber numberWithInt: actions],				@"ActionsPerformed",        // but increment attempts
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
+								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
 								target,											@"Target", nil]
 				   afterDelay: 0.1f];
 		PGLog(@"[Procedure] Rule executed, trying for more rules!");
 		return;
 	}
-
 
 	// we're done
 	PGLog(@"[Procedure] Done! Finishing!");
@@ -1684,7 +1718,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [controller setCurrentStatus: @"Bot: Player in Combat"];
 	
 	// should we evaluate?
-	//[self evaluateSituation];
+	PGLog(@"[Bot] Evaluating now, I kind of wish we wouldn't tho :(");
+	[self evaluateSituation];
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
@@ -1708,15 +1743,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	//	To prevent weird shit, lets not move to PostCombat if we're in combat!
 	PGLog(@"[Bot] Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
 	
-	// ignore if the player is flying
-	if ( ![[playerController player] isOnGround] ){
-		PGLog(@"[Bot] Player flying, not switching procedure");
-		return;
-	}
+	//if(self.theRoute) [movementController pauseMovement];
+	[movementController resetUnit];
 	
+	PGLog(@"[Bot] should we evaluate after resetting the unit?");
 	
-	
-	
+	//[self evaluateSituation];
 	
 	
 	/*
@@ -1955,22 +1987,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			readyToAttack = YES;
         }
 		
+		PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
 		
-		if ( readyToAttack ){
-			PGLog(@"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
-			
-			// cancel current procedure
-			[self cancelCurrentProcedure];
-			
-			// start the combat procedure
-			[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
-											  CombatProcedure,                  @"Procedure",
-											  [NSNumber numberWithInt: 0],      @"CompletedRules",
-											  unit,                             @"Target", nil]];
-		}
-		else{
-			PGLog(@"[Bot] Not ready to start CombatProcedure");
-		}
+		// cancel current procedure
+		[self cancelCurrentProcedure];
+		
+		// start the combat procedure
+		[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
+										  CombatProcedure,                  @"Procedure",
+										  [NSNumber numberWithInt: 0],      @"CompletedRules",
+										  unit,                             @"Target", nil]];
     } else {
 		
 		PGLog(@"[Bot] Are we stuck doing nothing?  Current procedure: %@", [self procedureInProgress]);
@@ -2023,7 +2049,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		PGLog(@"[Bot] Flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 	}
 	
-	
 	if ( self.doLooting && [unit isNPC] ) {
 		// make sure this mob is even lootable
 		// sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
@@ -2050,10 +2075,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self cancelCurrentProcedure];*/
 }
 
+/*
 - (void)finishUnit: (Unit*)unit {
 	
 	
-	/*
+
     // we only need to loot this if it's a mob and if was one we were directed to attack
     if( [unit isNPC] ) {
         if(wasInQueue) {
@@ -2093,9 +2119,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     if( [unit isPlayer] ) {
         [self evaluateSituation];
-    }*/
+    }
     
-}
+}*/
 
 /*
 - (void)lootNodeWhenOnGround: (WoWObject*)unit{
@@ -2930,15 +2956,45 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)mountNow{
+	
+	// some error checking
+	if ( _mountAttempt > 8 ){
+		float timeUntilRetry = 15.0f - (-1.0f * [_mountLastAttempt timeIntervalSinceNow]);
+		
+		if ( timeUntilRetry > 0.0f ){
+			PGLog(@"[Bot] Will not mount for another %0.2f seconds", timeUntilRetry );
+			return NO;
+		}
+		else{
+			_mountAttempt = 0;
+		}
+	}
+	
 	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state]) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
 		
-		PGLog(@"[Bot] Mounting!");
+		_mountAttempt++;
+		
+		PGLog(@"[Bot] Mounting attempt %d!", _mountAttempt);
+		
+		[movementController pauseMovement];
+		
 		usleep(100000);
 		
 		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
+		
+		[_mountLastAttempt release]; _mountLastAttempt = nil;
+		_mountLastAttempt = [[NSDate date] retain];
+		
 		// Time to cast!
-		[self performAction:[[mount ID] intValue]];
-		return YES;
+		int errID = [self performAction:[[mount ID] intValue]];
+		if ( errID == ErrNone ){
+		
+			_mountAttempt = 0;
+			
+			return YES;
+		}
+
+		PGLog(@"[Bot] Mounting failed! Error: %d", errID);
 	}
 	
 	return NO;
@@ -2979,7 +3035,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     } else {
         if(profile.onlyRespond) {
             bleh = @"Only attacking back.";
-        } else {
+        }
+		else if ( profile.assistUnit ){
+				
+			bleh = [NSString stringWithFormat:@"Only assisting %@", @""];
+		}
+		else{
             NSString *levels = profile.attackAnyLevel ? @"any levels" : [NSString stringWithFormat: @"levels %d-%d", 
                                                                          profile.attackLevelMin,
                                                                          profile.attackLevelMax];

@@ -11,6 +11,7 @@
 
 @class PlayersController;
 @class BotController;
+@class Controller;
 
 @class Player;
 
@@ -22,6 +23,7 @@
 	
 	IBOutlet PlayersController	*playersController;
 	IBOutlet BotController		*botController;
+	IBOutlet Controller			*controller;
 	
     NSMutableArray				*_combatProfiles;
     CombatProfile				*_currentCombatProfile;

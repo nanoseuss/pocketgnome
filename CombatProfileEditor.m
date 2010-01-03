@@ -7,12 +7,13 @@
 //
 
 #import "CombatProfileEditor.h"
-#import "Controller.h"
-#import "MobController.h"
-#import "Mob.h"
+
 #import "PlayersController.h"
 #import "BotController.h"
+#import "Controller.h"
+
 #import "Offsets.h"
+#import "Mob.h"
 
 @interface CombatProfileEditor ()
 @property (readwrite, retain) CombatProfile *currentCombatProfile;
@@ -74,13 +75,6 @@ static CombatProfileEditor *sharedEditor = nil;
 	[self populatePlayerList];
 }
 
-- (IBAction)tankSelected: (id)sender{
-	UInt64 tankGUID = [_currentCombatProfile selectedTankGUID];
-	Player *tank = [playersController playerWithGUID:tankGUID];
-	
-	PGLog(@"Selected Tank: %@", tank );	
-}
-
 - (void)populatePlayerList{
 	// Generate the menu
     NSMenu *playerMenu = [[[NSMenu alloc] initWithTitle: @"Player List"] autorelease];
@@ -90,8 +84,13 @@ static CombatProfileEditor *sharedEditor = nil;
 	NSArray *friendlyPlayers = [playersController friendlyPlayers];
 	
 	if ( [friendlyPlayers count] > 0 ){
+		
+		[controller traverseNameList];
+		
 		for(Player *player in friendlyPlayers) {
-			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", player] action: nil keyEquivalent: @""] autorelease];
+			NSString *name = [playersController playerNameWithGUID:[player GUID]];
+			
+			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@ %@", name, player] action: nil keyEquivalent: @""] autorelease];
 			[item setIndentationLevel: 1];
 			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:[player GUID]]];
 			[playerMenu addItem: item];
