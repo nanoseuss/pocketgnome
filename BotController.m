@@ -2327,71 +2327,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self performSelector: _cmd withObject: start afterDelay: 1.0f];
 }
 
-/*
-- (void)preRegen {
-    BOOL drink = NO, eat = NO;
-    Unit *player = [playerController player];
-    if([auraController unit: player hasBuffNamed: @"Drink"]) {
-        drink = YES;
-        PGLog(@"[Regen] Player started drinking.");
-    }
-    if([auraController unit: player hasBuffNamed: @"Food"]) {
-        eat = YES;
-        PGLog(@"[Regen] Player started eating.");
-    }
-    NSDictionary *regenDict = [NSDictionary dictionaryWithObjectsAndKeys: 
-                               [NSDate date],                       @"RegenStart",
-                               [NSNumber numberWithBool: eat],      @"WatchHealth",
-                               [NSNumber numberWithBool: drink],    @"WatchMana",
-                               nil];
-    
-    [self evaluateRegen: regenDict];
-}
-
-- (void)evaluateRegen: (NSDictionary*)regenDict {
-    NSDate *start = [regenDict objectForKey: @"RegenStart"];
-    BOOL health   = [[regenDict objectForKey: @"WatchHealth"] boolValue];
-    BOOL mana     = [[regenDict objectForKey: @"WatchMana"] boolValue];
-    
-    if(!health && !mana) {
-        float sinceStart = [[NSDate date] timeIntervalSinceDate: start];
-        [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (28.0f - sinceStart)]; // since we spend 2 seconds in pre-regen
-        return;
-    }
-
-    Unit *player = [playerController player];
-    
-    // check health
-    if( health && ([playerController health] == [playerController maxHealth]))
-        health = NO;
-    if( health && (![auraController unit: player hasBuffNamed: @"Food"]))
-        health = NO;
-    
-    if( mana && ([playerController mana] == [playerController maxMana]))
-        mana = NO;
-    if( mana && (![auraController unit: player hasBuffNamed: @"Drink"]))
-        mana = NO;
-    
-    if(!health && !mana) {
-        // we're done here
-        PGLog(@"[Regen] Finished early after %.2f seconds!", [[NSDate date] timeIntervalSinceDate: start]);
-        if([playerController isSitting] && ![controller isWoWChatBoxOpen]) {
-            [chatController jump];
-        }
-        [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
-        return;
-    }
-	
-	PGLog(@"[Bot] Checking regen %d %d", health, mana);
-    
-    // check to see if we've already spent 30 seconds (2 in pre-regen)
-    if([[NSDate date] timeIntervalSinceDate: start] >= 28.0f) {
-        [self evaluateSituation];
-        return;
-    }
-    
-    [self performSelector: _cmd withObject: regenDict afterDelay: 2.0f];
-}*/
 
 - (Mob*)mobToLoot {
     if([_mobsToLoot count]) {
@@ -2475,7 +2410,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // Order of Operations
     // 1) If we are dead, check to see if we can resurrect.
-	// 2) If healing is on, check to heal or follow a player
+	// 2) Should we follow a player
     // 3) If we are moving to melee range, return.
     // 4) If we are in combat but not already attacking, scan for mobs to attack.
     // ---- Not in Combat after here ----
@@ -2510,19 +2445,75 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 	
 	// Is the player air mounted, and on the ground?  Me no likely - lets jump!
-	//if ( [self.theRoute routeForKey: PrimaryRoute].isFlyingRoute || [self.theRoute routeForKey: CorpseRunRoute].isFlyingRoute ){
-		UInt32 movementFlags = [playerController movementFlags];
-		if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
-			if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
-				usleep(200000);
-				PGLog(@"[Bot] Player on ground, jumping!");
-				[chatController jump];
-				usleep(10000);
+	UInt32 movementFlags = [playerController movementFlags];
+	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
+		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
+			usleep(200000);
+			PGLog(@"[Bot] Player on ground, jumping!");
+			[chatController jump];
+			usleep(10000);
+		}
+		
+		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
+	}
+	
+	
+	// party options
+	// auto-queue button name: LFDDungeonReadyDialogueEnterDungeonButton
+	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && theCombatProfile.followUnitGUID > 0x0 ){
+		
+		Player *followTarget = [playersController playerWithGUID:theCombatProfile.followUnitGUID];
+		
+		// follow
+		if ( followTarget && [followTarget isValid] ){
+			
+			// mount?
+			if ( theCombatProfile.mountEnabled && [followTarget isMounted] && ![[playerController player] isMounted] && ![playerController isCasting] && ![[playerController player] isSwimming] && ![playerController isInCombat] ){
+				
+				int theMountType = 1;	// ground
+				
+				// air
+				if ( ![followTarget isOnGround] ){
+					theMountType = 2;
+				}
+				
+				// time to mount!
+				Spell *mount = [spellController mountSpell:theMountType andFast:YES];
+				if ( mount != nil ){
+					[self performAction:[[mount ID] intValue]];
+				}
+				
+				// Check our position again shortly!
+				[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
+				return YES;
+			}
+				
+			// move?
+			Position *playerPosition = [[playerController player] position];
+			float range = [playerPosition distanceToPosition: [followTarget position]];
+			if ( range >= theCombatProfile.yardsBehindTarget ) {
+				PGLog(@"[Foolow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.yardsBehindTarget, range);
+				
+				if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
+					[movementController followObject: followTarget];
+				}
+				
+				// Check our position again shortly!
+				[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+				
+				return YES;
 			}
 			
-			if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
 		}
-	//}
+		
+		// can't follow
+		else{
+			PGLog(@"[Follow] No valid target found");
+		}
+			
+	}
+	
+	
 	
 	//*** HEALING PROCESS
 	//	1. Find a nearby player
@@ -3188,6 +3179,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_nodeIgnoreHostileDistance		= [nodeIgnoreHostileDistanceText floatValue];
 		_nodeIgnoreMobDistance			= [nodeIgnoreMobDistanceText floatValue];
 		
+		_disableReleasingOnDeath		= [combatDisableRelease state];
+		
 		// friendly shit
 		
 		_includeFriendly = [self includeFriendlyInCombat];
@@ -3542,6 +3535,14 @@ NSMutableDictionary *_diffDict = nil;
 - (void)rePop: (NSNumber *)count{
 	if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
+	
+	
+	if ( _disableReleasingOnDeath ){
+	
+		PGLog(@"[Bot] Ignoring release due to a combat setting");
+		
+		return;
+	}
 
 	PGLog(@"[Bot] Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
 	
@@ -4556,8 +4557,8 @@ NSMutableDictionary *_diffDict = nil;
 - (IBAction)test: (id)sender{
 	
 	
-	self.theBehavior = [[behaviorPopup selectedItem] representedObject];
-	self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+	//self.theBehavior = [[behaviorPopup selectedItem] representedObject];
+	//self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
 	//PGLog(@"[Bot] Found unit: %@", [combatController findUnit] );
 	
 	//PGLog(@"total units: %d", [[combatController allUnitsForCombat:YES] count]);

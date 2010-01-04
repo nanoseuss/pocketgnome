@@ -11,6 +11,7 @@
 #import "PlayersController.h"
 #import "BotController.h"
 #import "Controller.h"
+#import "MobController.h"
 
 #import "Offsets.h"
 #import "Mob.h"
@@ -21,7 +22,6 @@
 
 @interface CombatProfileEditor (Internal)
 - (void)saveCombatProfiles;
-- (void)populatePlayerList;
 @end
 
 @implementation CombatProfileEditor
@@ -42,7 +42,7 @@ static CombatProfileEditor *sharedEditor = nil;
     } if (self != nil) {
 		sharedEditor = self;
         self.currentCombatProfile = nil;
-        
+		
         // load in saved profiles
         id loadedProfiles = [[NSUserDefaults standardUserDefaults] objectForKey: @"CombatProfiles"];
         if(loadedProfiles)
@@ -63,24 +63,16 @@ static CombatProfileEditor *sharedEditor = nil;
         self.currentCombatProfile = [_combatProfiles objectAtIndex: 0];
         [ignoreTable reloadData];
     }
-
-	// Populate the player list!
-	[self populatePlayerList];
 }
 
 @synthesize combatProfiles = _combatProfiles;
 @synthesize currentCombatProfile = _currentCombatProfile;
 
-- (IBAction)playerList: (id)sender{
-	[self populatePlayerList];
-}
-
-- (void)populatePlayerList{
-	// Generate the menu
-    NSMenu *playerMenu = [[[NSMenu alloc] initWithTitle: @"Player List"] autorelease];
-    
+- (void)populatePlayerList: (id)popUpButton withGUID:(UInt64)guid{
+	
+	NSMenu *playerMenu = [[[NSMenu alloc] initWithTitle: @"Player List"] autorelease];
 	NSMenuItem *item;
-
+	
 	NSArray *friendlyPlayers = [playersController friendlyPlayers];
 	
 	if ( [friendlyPlayers count] > 0 ){
@@ -93,6 +85,7 @@ static CombatProfileEditor *sharedEditor = nil;
 			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@ %@", name, player] action: nil keyEquivalent: @""] autorelease];
 			[item setIndentationLevel: 1];
 			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:[player GUID]]];
+			[item setTag:[player GUID]];
 			[playerMenu addItem: item];
 		}
 	}
@@ -104,27 +97,36 @@ static CombatProfileEditor *sharedEditor = nil;
 		[playerMenu addItem: item];
 	}
 	
-	[playerList setMenu: playerMenu];
-    //[playerList selectItemWithTag: tagToSelect];
+	[(NSPopUpButton*)popUpButton setMenu:playerMenu];	
+	[(NSPopUpButton*)popUpButton selectItemWithTag:guid];
 }
 
 #pragma mark -
 
-- (void)showEditorOnWindow: (NSWindow*)window forProfileNamed: (NSString*)profileName {
+// update all 3!
+- (void)populatePlayerLists{
 	
-	PGLog(@"Old: %@", self.currentCombatProfile);
+	// update the list of names!
+	[controller traverseNameList];
+	
+	// update all 3 lists!
+	[self populatePlayerList:tankPopUpButton withGUID:self.currentCombatProfile.tankUnitGUID];
+	[self populatePlayerList:assistPopUpButton withGUID:self.currentCombatProfile.assistUnitGUID];
+	[self populatePlayerList:followPopUpButton withGUID:self.currentCombatProfile.followUnitGUID];
+}
 
-    if([profileName length]) {
+- (void)showEditorOnWindow: (NSWindow*)window forProfileNamed: (NSString*)profileName {
+
+	[self populatePlayerLists];
+	
+	if([profileName length]) {
         for(CombatProfile *profile in [self combatProfiles]) {
             if( [profileName isEqualToString: [profile name]] ) {
                 self.currentCombatProfile = profile;
-				PGLog(@"new: %@", profile);
                 break;
             }
         }
     }
-	
-	
 	
 	[NSApp beginSheet: editorPanel
 	   modalForWindow: window
@@ -300,7 +302,7 @@ static CombatProfileEditor *sharedEditor = nil;
 - (IBAction)addIgnoreFromTarget: (id)sender {
     if(!self.currentCombatProfile) return;
     
-    Mob *mob = [[MobController sharedController] playerTarget];
+    Mob *mob = [mobController playerTarget];
     
     if(!mob) {
         NSBeep();

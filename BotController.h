@@ -118,6 +118,7 @@
 	int _lastActionErrorCode;
 	UInt32 _lastActionTime;
 	int _zoneBeforeHearth;
+	BOOL _disableReleasingOnDeath;
 	
 	// healing shit
 	BOOL _shouldFollow;
@@ -226,6 +227,8 @@
 	
 	IBOutlet NSButton		*autoJoinWG;
 	IBOutlet NSButton		*antiAFKButton;
+	
+	IBOutlet NSButton *combatDisableRelease;
 	
 	IBOutlet NSTextField *nodeIgnoreHostileDistanceText;
 	IBOutlet NSTextField *nodeIgnoreFriendlyDistanceText;

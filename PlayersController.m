@@ -313,7 +313,7 @@ static PlayersController *sharedPlayers = nil;
 	for(Unit *unit in _playerList) {
 		int faction = [unit factionTemplate];
 		BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
-	
+
 		if ( isFriendly){
 			[friendlyUnits addObject: unit];
 		}	

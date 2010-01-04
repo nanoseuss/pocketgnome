@@ -12,6 +12,7 @@
 @class PlayersController;
 @class BotController;
 @class Controller;
+@class MobController;
 
 @class Player;
 
@@ -19,11 +20,15 @@
     IBOutlet NSPanel			*editorPanel;
     IBOutlet NSPanel			*renamePanel;
     IBOutlet NSTableView		*ignoreTable;
-	IBOutlet NSPopUpButton		*playerList;
+	
+	IBOutlet NSPopUpButton		*assistPopUpButton;
+	IBOutlet NSPopUpButton		*tankPopUpButton;
+	IBOutlet NSPopUpButton		*followPopUpButton;
 	
 	IBOutlet PlayersController	*playersController;
 	IBOutlet BotController		*botController;
 	IBOutlet Controller			*controller;
+	IBOutlet MobController		*mobController;
 	
     NSMutableArray				*_combatProfiles;
     CombatProfile				*_currentCombatProfile;
@@ -52,9 +57,5 @@
 - (IBAction)deleteIgnoreEntry: (id)sender;
 
 - (IBAction)closeEditor: (id)sender;
-
-- (IBAction)playerList: (id)sender;
-
-- (IBAction)tankSelected: (id)sender;
 
 @end
