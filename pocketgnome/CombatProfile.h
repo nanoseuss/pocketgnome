@@ -17,15 +17,17 @@
     NSMutableArray *_combatEntries;
     
     BOOL combatEnabled, onlyRespond, attackNeutralNPCs, attackHostileNPCs, attackPlayers, attackPets;
-    BOOL attackAnyLevel, ignoreElite, ignoreLevelOne, ignoreFlying, assistUnit;
+    BOOL attackAnyLevel, ignoreElite, ignoreLevelOne, ignoreFlying;
 	
 	// Healing
 	BOOL healingEnabled, autoFollowTarget, mountEnabled;
 	float yardsBehindTarget, healingRange;
-	int healthThreshold;
-	UInt64 selectedTankGUID;
 	
+	// Party
+	UInt64 tankUnitGUID;
 	UInt64 assistUnitGUID;
+	UInt64 followUnitGUID;
+	BOOL assistUnit, tankUnit, followUnit, partyEnabled;
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
@@ -45,8 +47,9 @@
 
 @property (readwrite, retain) NSArray *entries;
 @property (readwrite, copy) NSString *name;
-@property (readwrite, assign) UInt64 selectedTankGUID;
+@property (readwrite, assign) UInt64 tankUnitGUID;
 @property (readwrite, assign) UInt64 assistUnitGUID;
+@property (readwrite, assign) UInt64 followUnitGUID;
 @property (readwrite, assign) BOOL combatEnabled;
 @property (readwrite, assign) BOOL onlyRespond;
 @property (readwrite, assign) BOOL attackNeutralNPCs;
@@ -58,14 +61,15 @@
 @property (readwrite, assign) BOOL ignoreLevelOne;
 @property (readwrite, assign) BOOL ignoreFlying;
 @property (readwrite, assign) BOOL assistUnit;
-
+@property (readwrite, assign) BOOL tankUnit;
+@property (readwrite, assign) BOOL followUnit;
+@property (readwrite, assign) BOOL partyEnabled;
 
 @property (readwrite, assign) BOOL healingEnabled;
 @property (readwrite, assign) BOOL autoFollowTarget;
 @property (readwrite, assign) float yardsBehindTarget;
 @property (readwrite, assign) float healingRange;
 @property (readwrite, assign) BOOL mountEnabled;
-@property (readwrite, assign) int healthThreshold;
 
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) float engageRange;

@@ -25,6 +25,7 @@
 - (void)reloadMacros;
 - (BOOL)executeMacro: (NSString*)key;
 - (Macro*)findMacro: (NSString*)key;
+- (BOOL)overwriteMacro: (NSString*)key;
 @end
 
 @implementation MacroController
@@ -63,9 +64,9 @@
 // actually will take an action (macro or send command)
 - (void)useMacroOrSendCmd: (NSString*)key{
 	
-	BOOL macroExecuted = [self executeMacro:key];
+	BOOL macroExecuted = [self overwriteMacro:key];
 	
-	// if we didnt' find a macro, lets send the command!
+	// if we didn't find a macro, lets send the command!
 	if ( !macroExecuted ){
 
 		// hit escape to close the chat window if it's open
@@ -234,6 +235,94 @@
 // complicated i know
 - (void)useMacroByID: (int)macroID{
 	[botController performAction:USE_MACRO_MASK + macroID];
+}
+
+// this function will over-write the first macro found, use it, then set it back!
+- (BOOL)overwriteMacro: (NSString*)key{
+	
+	// + 0x10 from this ptr is a ptr to the macro object list (but we don't need this)
+	UInt32 offset = [offsetController offset:@"MACRO_LIST_PTR"];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return NO;
+	
+	UInt32 objectPtr = 0;
+	[memory loadDataForObject:self atAddress:offset Buffer:(Byte *)&objectPtr BufLength:sizeof(objectPtr)];
+	
+	// just use the first found macro
+	if ( ( objectPtr & 0x1 ) == 0 && _macroDictionary ){
+		
+		NSDictionary *macroData = [_macroDictionary valueForKey:key];
+		NSString *macroCommand = [macroData valueForKey:@"Macro"];
+		
+		if ( macroCommand ){
+			
+			UInt32 macroID = 0;
+			char macroName[17], macroBody[256];
+			macroName[16] = 0;
+			macroBody[255] = 0;
+			NSString *newMacroName = nil;
+			NSString *oldMacroBody = nil;
+			
+			// get the macro ID
+			[memory loadDataForObject:self atAddress:objectPtr Buffer:(Byte *)&macroID BufLength:sizeof(macroID)];
+			
+			// get the macro name
+			if ( [memory loadDataForObject: self atAddress: objectPtr+0x20 Buffer: (Byte *)&macroName BufLength: sizeof(macroName)-1] ) {
+				newMacroName = [NSString stringWithUTF8String: macroName];
+			}
+
+			// get the macro text
+			if ( [memory loadDataForObject: self atAddress: objectPtr+0x160 Buffer: (Byte *)&macroBody BufLength: sizeof(macroBody)-1] ) {
+				oldMacroBody = [NSString stringWithUTF8String: macroBody];
+			}
+			
+			// over-write the text
+			char newMacroBody[255];
+			const char *body = [macroCommand UTF8String];
+			
+			// no reason it shouldn't be less than, but just in case some1 tries to buffer overflow our asses
+			if ( strlen(body) < 255 ){
+				strcpy( newMacroBody, body ); 
+				
+				// null-terminate our string
+				newMacroBody[strlen(body)] = '\0';
+			}
+			else{
+				newMacroBody[0] = '\0';
+			}
+			
+			// write the new command
+			[memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacroBody BufLength:sizeof(newMacroBody)];
+			
+			// probably not necessary
+			usleep(100000);
+			
+			// execute macro
+			[botController performAction:macroID + USE_MACRO_MASK];
+			
+			// probably not necessary
+			usleep(100000);
+			
+			// set the text back
+			const char *oldBody = [oldMacroBody UTF8String];
+			strcpy( newMacroBody, oldBody );
+			newMacroBody[strlen(oldBody)] = '\0';
+			[memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacroBody BufLength:sizeof(newMacroBody)];
+			
+			PGLog(@"[Macro] Completed execution of %@", key);
+			
+			return YES;
+		}
+		else{
+			PGLog(@"[Macro] Error, unable to find '%@' in the macro dictionary file!", key);
+		}
+		
+		
+	}
+	
+	return NO;
 }
 
 @end

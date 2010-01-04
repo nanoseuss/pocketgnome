@@ -435,8 +435,32 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
 	
+	// only want to add the assist unit
+	if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.assistUnit && botController.theCombatProfile.assistUnitGUID > 0x0 ){
+		
+		Player *player = [playersController playerWithGUID:botController.theCombatProfile.assistUnitGUID];
+		
+		if ( player && [player isValid] ){
+			
+			UInt64 targetGUID = [player targetID];
+			
+			if ( targetGUID > 0x0 ){
+				Mob *mob = [mobController mobWithGUID:targetGUID];
+				
+				[allPotentialUnits addObject:mob];
+			}
+			else{
+				PGLog(@"[Combat] Player not targeting unit, ignoring assist");
+			}
+			
+		}
+		else{
+			PGLog(@"[Combat] Player not found for assisting with GUID: 0x%qX", botController.theCombatProfile.assistUnitGUID);
+		}
+	}
+	
 	// add new units w/in range
-	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] ){
+	else if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] ){
 		[allPotentialUnits addObjectsFromArray:[self findNearbyEnemies]];
 	}
 	
@@ -662,6 +686,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// friendly?
 	if ( isFriendly ){
 		weight *= 1.5;
+		
+		// tank gets a pretty big weight @ all times
+		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit GUID] ){
+			PGLog(@"[Combat] Tank is getting an increase in weight! From %d to %0.2f", weight, weight * 1.2);
+			weight *= 1.2;
+		}
 	}
 	
 	return weight;	

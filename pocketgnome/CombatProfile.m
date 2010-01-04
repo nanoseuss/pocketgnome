@@ -33,8 +33,15 @@
         self.ignoreElite = YES;
         self.ignoreLevelOne = YES;
 		self.ignoreFlying = YES;
+		
+		// Party mode
+		self.partyEnabled = NO;
 		self.assistUnit = NO;
+		self.tankUnit = NO;
 		self.assistUnitGUID = 0x0;
+		self.tankUnitGUID = 0x0;
+		self.followUnitGUID = 0x0;
+		self.followUnit = NO;
 		
 		// Healing
 		self.healingEnabled = NO;
@@ -42,8 +49,6 @@
 		self.yardsBehindTarget = 10.0f;
 		self.healingRange = 40.0f;
 		self.mountEnabled = NO;
-		self.selectedTankGUID = 0x0;
-		self.healthThreshold = 95;
 
         self.attackRange = 20.0f;
 		self.engageRange = 30.0f;
@@ -87,14 +92,17 @@
 	copy.ignoreFlying = self.ignoreFlying;
 	copy.assistUnit = self.assistUnit;
 	copy.assistUnitGUID = self.assistUnitGUID;
+	copy.tankUnit = self.tankUnit;
+	copy.tankUnitGUID = self.tankUnitGUID;
+	copy.partyEnabled = self.partyEnabled;
+	copy.followUnit = self.followUnit;
+	copy.followUnitGUID = self.followUnitGUID;
 	
 	copy.healingEnabled = self.healingEnabled;
     copy.autoFollowTarget = self.autoFollowTarget;
     copy.yardsBehindTarget = self.yardsBehindTarget;
 	copy.healingRange = self.healingRange;
 	copy.mountEnabled = self.mountEnabled;
-	copy.selectedTankGUID = self.selectedTankGUID;
-	copy.healthThreshold = self.healthThreshold;
 	
     copy.attackRange = self.attackRange;
 	copy.engageRange = self.engageRange;
@@ -123,14 +131,17 @@
 		self.ignoreFlying = [[decoder decodeObjectForKey: @"IgnoreFlying"] boolValue];
 		self.assistUnit = [[decoder decodeObjectForKey: @"AssistUnit"] boolValue];
 		self.assistUnitGUID = [[decoder decodeObjectForKey: @"AssistUnitGUID"] unsignedLongLongValue];
+		self.tankUnit = [[decoder decodeObjectForKey: @"TankUnit"] boolValue];
+		self.tankUnitGUID = [[decoder decodeObjectForKey: @"TankUnitGUID"] unsignedLongLongValue];
+		self.followUnit = [[decoder decodeObjectForKey: @"FollowUnit"] boolValue];
+		self.followUnitGUID = [[decoder decodeObjectForKey: @"FollowUnitGUID"] unsignedLongLongValue];
+		self.partyEnabled = [[decoder decodeObjectForKey: @"PartyEnabled"] boolValue];
 
 		self.healingEnabled = [[decoder decodeObjectForKey: @"HealingEnabled"] boolValue];
         self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
 		self.yardsBehindTarget = [[decoder decodeObjectForKey: @"YardsBehindTarget"] floatValue];
 		self.healingRange = [[decoder decodeObjectForKey: @"HealingRange"] floatValue];
 		self.mountEnabled = [[decoder decodeObjectForKey: @"MountEnabled"] boolValue];
-		self.selectedTankGUID = [[decoder decodeObjectForKey: @"selectedTankGUID"] unsignedLongLongValue];
-		self.healthThreshold = [[decoder decodeObjectForKey: @"HealthThreshold"] intValue];
 		
 		self.engageRange = [[decoder decodeObjectForKey: @"EngageRange"] floatValue];
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
@@ -154,15 +165,18 @@
     [coder encodeObject: [NSNumber numberWithBool: self.ignoreLevelOne] forKey: @"IgnoreLevelOne"];
 	[coder encodeObject: [NSNumber numberWithBool: self.ignoreFlying] forKey: @"IgnoreFlying"];
 	[coder encodeObject: [NSNumber numberWithBool: self.assistUnit] forKey: @"AssistUnit"];
-	[coder encodeObject: [NSNumber numberWithBool: self.assistUnitGUID] forKey: @"AssistUnitGUID"];
+	[coder encodeObject: [NSNumber numberWithUnsignedLongLong: self.assistUnitGUID] forKey: @"AssistUnitGUID"];
+	[coder encodeObject: [NSNumber numberWithBool: self.tankUnit] forKey: @"TankUnit"];
+	[coder encodeObject: [NSNumber numberWithUnsignedLongLong: self.tankUnitGUID] forKey: @"TankUnitGUID"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followUnit] forKey: @"FollowUnit"];
+	[coder encodeObject: [NSNumber numberWithUnsignedLongLong: self.followUnitGUID] forKey: @"FollowUnitGUID"];
+	[coder encodeObject: [NSNumber numberWithBool: self.partyEnabled] forKey: @"PartyEnabled"];
 	
 	[coder encodeObject: [NSNumber numberWithBool: self.healingEnabled] forKey: @"HealingEnabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
     [coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTarget] forKey: @"YardsBehindTarget"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.healingRange] forKey: @"HealingRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.mountEnabled] forKey: @"MountEnabled"];
-	[coder encodeObject: [NSNumber numberWithUnsignedLongLong: self.selectedTankGUID]forKey: @"selectedTankGUID"];
-	[coder encodeObject: [NSNumber numberWithInt: self.healthThreshold] forKey: @"HealthThreshold"];
 	
 	[coder encodeObject: [NSNumber numberWithFloat: self.engageRange] forKey: @"EngageRange"];
     [coder encodeObject: [NSNumber numberWithFloat: self.attackRange] forKey: @"AttackRange"];
@@ -193,14 +207,17 @@
 @synthesize ignoreFlying;
 @synthesize assistUnit;
 @synthesize assistUnitGUID;
+@synthesize tankUnit;
+@synthesize tankUnitGUID;
+@synthesize followUnit;
+@synthesize followUnitGUID;
+@synthesize partyEnabled;
 
 @synthesize healingEnabled;
 @synthesize autoFollowTarget;
 @synthesize yardsBehindTarget;
 @synthesize healingRange;
 @synthesize mountEnabled;
-@synthesize selectedTankGUID;
-@synthesize healthThreshold;
 
 @synthesize engageRange;
 @synthesize attackRange;
