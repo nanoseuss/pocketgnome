@@ -1751,7 +1751,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	PGLog(@"[Bot] should we evaluate after resetting the unit?");
 	
-	//[self evaluateSituation];
+	[self evaluateSituation];
 	
 	
 	/*
