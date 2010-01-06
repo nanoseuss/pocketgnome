@@ -444,6 +444,7 @@ typedef enum MovementType {
 	float difference = fabs(horizontalAngleToward - directionFacing);
 	
 	// then we have a problem + need to start going back to our waypoint!
+	PGLog(@"[Move] Facing difference: %0.2f Flying: %d Interval since last correct: %0.2f", difference, ![playerData isOnGround], [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
 	if ( difference > 0.1f && ![playerData isOnGround] && ( [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] > 15.0f )){
 		[_lastResumeCorrection release]; _lastResumeCorrection = nil;
 		_lastResumeCorrection = [[NSDate date] retain];
@@ -1403,36 +1404,29 @@ typedef enum MovementType {
 }
 
 - (BOOL)dismount{
-	
-	[macroController useMacroOrSendCmd:@"Dismount"];
-	return YES;
-	
-	
-	// get memory
-	MemoryAccess *memory = [controller wowMemoryAccess];
-	if ( !memory )
-		return NO;
-	
+
 	// do they have a standard mount?
 	UInt32 mountID = [[playerData player] mountID];
 	
 	// check for druids
 	if ( mountID == 0 ){
-		if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] )
-			mountID = 40120;
-		else if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] )
-			mountID = 33943;
+		
+		// swift flight form
+		if ( [auraController unit: [playerData player] hasAuraNamed: @"Swift Flight Form"] ){
+			[macroController useMacroOrSendCmd:@"CancelSwiftFlightForm"];
+			return YES;
+		}
+		
+		// flight form
+		else if ( [auraController unit: [playerData player] hasAuraNamed: @"Flight Form"] ){
+			[macroController useMacroOrSendCmd:@"CancelFlightForm"];
+			return YES;
+		}
 	}
 	
-	// mount found! "use" it!
-	if ( mountID > 0 ){
-		
-		PGLog(@"[Movement] Dismounting from %d", mountID);
-		
-		[botController performAction: mountID];
-		
-		usleep(100000);
-		
+	// normal mount
+	else{
+		[macroController useMacroOrSendCmd:@"Dismount"];
 		return YES;
 	}
 	

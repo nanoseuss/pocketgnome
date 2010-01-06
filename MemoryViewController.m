@@ -30,6 +30,7 @@ typedef enum ViewTypes {
 - (void)setBaseAddress: (NSNumber*)address withCount: (int)count;
 - (NSString*)formatNumber:(NSNumber *)num WithAddress:(UInt32)addr DisplayFormat:(int)displayFormat;
 - (NSDictionary*)valuesForObject: (id)object withAddressSize:(int)addressSize;
+- (void)findPointersToAddress: (NSNumber*)address;
 @end
 
 @implementation MemoryViewController
@@ -46,6 +47,7 @@ typedef enum ViewTypes {
 		_pointerList = [[NSMutableDictionary dictionary] retain];
 		_formatOfSavedValues = 0;
 		_searchArray = nil;
+		_pointerScanThread = nil;
     }
     return self;
 }
@@ -256,20 +258,6 @@ typedef enum ViewTypes {
 	}
 }
 
-- (IBAction)findPointers: (id)sender{
-	int numAddresses = [numAddressesToScan intValue];
-	if ( numAddresses > 0 && numAddresses < 5000 ){
-		int i = 0;
-		UInt32 currentAddress = [self.currentAddress unsignedIntValue];
-		for ( ; i < numAddresses; i++ ){
-			
-			NSNumber *address = [NSNumber numberWithInt:currentAddress + i*4];
-			PGLog(@"[Memory] Searching for pointers to 0x%X", [address intValue]);
-			[NSThread detachNewThreadSelector: @selector(findAllPointers:) toTarget: self withObject: address];	
-		}
-	}
-}
-
 - (NSString*)formatNumber:(NSNumber *)num WithAddress:(UInt32)addr DisplayFormat:(int)displayFormat{
 	
 	// Then we need to read the value!
@@ -388,131 +376,6 @@ typedef enum ViewTypes {
 - (IBAction)clearValues: (id)sender{
 	[_lastValues removeAllObjects];
 }
-
-- (void)findAllPointers: (NSNumber*)address {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	
-	UInt32 addressToFind = [address unsignedIntValue];
-	NSMutableArray *addressesFound = [[NSMutableArray array] retain];
-    NSDate *date = [NSDate date];
-	
-    // get the WoW PID
-    pid_t wowPID = 0;
-    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
-    OSStatus err = GetProcessPID(&wowPSN, &wowPID);
-    
-    if((err == noErr) && (wowPID > 0)) {
-        
-        // now we need a Task for this PID
-        mach_port_t MySlaveTask;
-        kern_return_t KernelResult = task_for_pid(current_task(), wowPID, &MySlaveTask);
-        if(KernelResult == KERN_SUCCESS) {
-            // Cool! we have a task...
-            // Now we need to start grabbing blocks of memory from our slave task and copying it into our memory space for analysis
-            vm_address_t SourceAddress = 0;
-            vm_size_t SourceSize = 0;
-            vm_region_basic_info_data_t SourceInfo;
-            mach_msg_type_number_t SourceInfoSize = VM_REGION_BASIC_INFO_COUNT;
-            mach_port_t ObjectName = MACH_PORT_NULL;
-            
-			// this will always be 4, as the address space will only be 32-bit!
-            int MemSize = sizeof(UInt32);
-            int x;
-            vm_size_t ReturnedBufferContentSize;
-            Byte *ReturnedBuffer = nil;
-            
-            while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
-                // If we get here then we have a block of memory and we know how big it is... let's copy readable blocks and see what we've got!
-				//PGLog(@"we have a block of memory!");
-				
-                // ensure we have access to this block
-                if ((SourceInfo.protection & VM_PROT_READ)) {
-                    NS_DURING {
-                        ReturnedBuffer = malloc(SourceSize);
-                        ReturnedBufferContentSize = SourceSize;
-                        if ( (KERN_SUCCESS == vm_read_overwrite(MySlaveTask,SourceAddress,SourceSize,(vm_address_t)ReturnedBuffer,&ReturnedBufferContentSize)) &&
-                            (ReturnedBufferContentSize > 0) )
-                        {
-                            // the last address we check must be far enough from the end of the buffer to check all the bytes of our sought value
-                            if((ReturnedBufferContentSize % MemSize) != 0) {
-                                ReturnedBufferContentSize -= (ReturnedBufferContentSize % MemSize);
-                            }
-                            
-                            // Note: We can assume memory alignment because... well, it's always aligned.
-                            for (x=0; x<ReturnedBufferContentSize; x+=4) // x++
-                            {
-                                UInt32 *checkVal = (UInt32*)&ReturnedBuffer[x];
-								
-								// compare each one, clearly this will take a long time!
-								/*for ( NSNumber *address in addresses ){
-									if ( [address unsignedIntValue] == *checkVal ){
-										
-										UInt32 foundAddress = SourceAddress + x;
-										PGLog(@"Match for 0x%X found at 0x%X", [address unsignedIntValue], foundAddress);
-									}
-								}*/
-								// is this our address?
-								if ( *checkVal == addressToFind ){
-									UInt32 foundAddress = SourceAddress + x;
-									PGLog(@"Match for 0x%X found at 0x%X", addressToFind, foundAddress);
-									[addressesFound addObject:[NSNumber numberWithUnsignedInt:foundAddress]];
-								}
-                            }
-                        }
-                    } NS_HANDLER {
-                    } NS_ENDHANDLER
-                    
-                    if (ReturnedBuffer != nil)
-                    {
-                        free(ReturnedBuffer);
-                        ReturnedBuffer = nil;
-                    }
-                }
-                
-                // reset some values to search some more
-                SourceAddress += SourceSize;
-            }
-            //[pBar setHidden:true];
-        }
-    }
-    
-    PGLog(@"[Memory] Pointer scan took %.4f seconds and found %d pointers.", 0.0f-[date timeIntervalSinceNow], [addressesFound count]);
-    
-	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-								   address,				@"Address",
-                                   addressesFound,      @"Addresses",
-                                   nil];
-	
-	
-    // tell the main thread we are done
-	[self performSelectorOnMainThread: @selector(findPointerAddresses:)
-						   withObject: dict
-                        waitUntilDone: NO];
-    
-    [pool release];
-}
-
-- (void)findPointerAddresses: (NSDictionary*)dict {
-	
-	NSNumber *address = [dict objectForKey:@"Address"];
-	NSArray *addresses = [dict objectForKey:@"Addresses"];
-	
-	// add them to our mutable dictionary!
-	if ( [addresses count] ){
-		[_pointerList setObject:addresses forKey:[NSString stringWithFormat:@"%d", [address unsignedIntValue]]];
-	}
-	// we need to realize we searched for this!
-	else{
-		[_pointerList setObject:[NSNumber numberWithInt:0] forKey:[NSString stringWithFormat:@"%d", [address unsignedIntValue]]];
-	}
-
-	// since we retained it in the detached thread!
-	[addresses release];
-	
-	// reload our table
-	[memoryTable reloadData];
-}
-
 
 #pragma mark -
 
@@ -1128,5 +991,257 @@ typedef enum SearchType{
     [pool release];
 }
 
+#pragma mark OFfset Scanner UI
+
+- (IBAction)openOffsetPanel: (id)sender {
+
+        [NSApp beginSheet: offsetScanPanel
+           modalForWindow: [self.view window]
+            modalDelegate: self
+           didEndSelector: @selector(offsetSheetDidEnd: returnCode: contextInfo:)
+              contextInfo: nil];
+}
+
+- (void)offsetSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
+    [offsetScanPanel orderOut: nil];
+}
+
+// when we click any button (scan or cancel)
+- (IBAction)offsetSelectAction: (id)sender {
+	
+	if ( [sender tag] == NSCancelButton ){
+		[NSApp endSheet: offsetScanPanel returnCode: [sender tag]];
+		return;
+	}
+	
+	NSString *mask = [maskTextField stringValue];
+	NSString *signature = [signatureTextField stringValue];
+	
+	// do we have a mask and signature?
+	if ( [mask length] > 0 && [signature length] > 0 ){
+		[resultsTextField setStringValue:@""];
+		
+		NSArray *offsetList = [offsetController offsetWithByteSignature:signature 
+															  withMask:mask 
+														 withEmulation:[emulatePPCButton state]];
+		
+		// do we have any offsets?
+		if ( [offsetList count] > 0 ){
+			
+			NSString *offsets = [[NSString alloc] init];
+			
+			for ( NSNumber *offset in offsetList ){
+				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"0x%X\n", [offset intValue]]];	
+			}
+			
+			[resultsTextField setStringValue:offsets];
+			
+		}
+		// none :(
+		else{
+			[resultsTextField setStringValue:@"None found :("];
+		}
+	}
+}
+
+#pragma mark Pointer Scanner
+
+- (IBAction)openPointerPanel: (id)sender{
+	
+	[NSApp beginSheet: pointerScanPanel
+	   modalForWindow: [self.view window]
+		modalDelegate: self
+	   didEndSelector: @selector(pointerSheetDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
+}
+
+- (void)pointerSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
+    [pointerScanPanel orderOut: nil];
+}
+
+- (IBAction)pointerSelectAction: (id)sender{
+	if ( [sender tag] == NSCancelButton ){
+		
+		if ( _pointerScanThread != nil ){
+			PGLog(@"[Memory] Cancelling pointer scan thread");
+			[_pointerScanThread cancel];
+			// we can safely release since the pointer will still have a retainCount of 1 (as it's in use)
+			[_pointerScanThread release]; _pointerScanThread = nil;
+		}
+		
+		[NSApp endSheet: pointerScanPanel returnCode: [sender tag]];
+		return;
+	}
+	
+	// otherwise they clicked find!
+	
+	// cancel UI interactions since we will be running in another thread
+	[pointerScanFindButton setEnabled:NO];
+	[pointerScanNumTextField setEnabled:NO];
+	//[pointerScanVariationButton setEnabled:NO];
+	//[pointerScanVariationTextField setEnabled:NO];
+	
+	// set up the progress indicator
+	[pointerScanProgressIndicator setHidden: NO];
+	[pointerScanProgressIndicator setMaxValue: [pointerScanNumTextField intValue]];
+	[pointerScanProgressIndicator setDoubleValue: 0];
+	[pointerScanProgressIndicator setUsesThreadedAnimation: YES];
+	
+	
+	// detach a thread since this will take a while!
+	UInt32 currentAddress = [self.currentAddress unsignedIntValue];
+	
+	_pointerScanThread = [[NSThread alloc] initWithTarget:self
+												selector:@selector(pointerScan:)
+												   object:[NSNumber numberWithUnsignedInt:currentAddress]];
+	[_pointerScanThread start];
+}
+
+- (void)pointerScan:(NSNumber*)startAddress{
+	
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	
+	int numPointers = [pointerScanNumTextField intValue];
+	
+	int i = 0;
+	for ( ; i < numPointers; i++ ){
+		if ( [[NSThread currentThread] isCancelled] ){
+			break;		
+		}
+		
+		// find pointers
+		NSNumber *address = [NSNumber numberWithInt:[startAddress intValue] + i*4];
+		PGLog(@"[Memory] Searching for pointers at 0x%X", [address unsignedIntValue]);
+		[self findPointersToAddress:address];
+		
+		// increment progress indicator
+		[pointerScanProgressIndicator incrementBy: 1.0];
+		[pointerScanProgressIndicator displayIfNeeded];
+	}
+	
+	// reset the UI
+	[pointerScanCancelButton setEnabled:YES];
+	[pointerScanFindButton setEnabled:YES];
+	[pointerScanNumTextField setEnabled:YES];
+	//[pointerScanVariationButton setEnabled:YES];
+	//[pointerScanVariationTextField setEnabled:YES];
+	[pointerScanProgressIndicator setHidden: YES];
+	
+    [pool release];
+}
+
+- (void)findPointersToAddress: (NSNumber*)address {
+    
+	UInt32 addressToFind = [address unsignedIntValue];
+	NSMutableArray *addressesFound = [[NSMutableArray array] retain];
+    NSDate *date = [NSDate date];
+	
+    // get the WoW PID
+    pid_t wowPID = 0;
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    OSStatus err = GetProcessPID(&wowPSN, &wowPID);
+    
+    if((err == noErr) && (wowPID > 0)) {
+        
+        // now we need a Task for this PID
+        mach_port_t MySlaveTask;
+        kern_return_t KernelResult = task_for_pid(current_task(), wowPID, &MySlaveTask);
+        if(KernelResult == KERN_SUCCESS) {
+            // Cool! we have a task...
+            // Now we need to start grabbing blocks of memory from our slave task and copying it into our memory space for analysis
+            vm_address_t SourceAddress = 0;
+            vm_size_t SourceSize = 0;
+            vm_region_basic_info_data_t SourceInfo;
+            mach_msg_type_number_t SourceInfoSize = VM_REGION_BASIC_INFO_COUNT;
+            mach_port_t ObjectName = MACH_PORT_NULL;
+            
+			// this will always be 4, as the address space will only be 32-bit!
+            int MemSize = sizeof(UInt32);
+            int x;
+            vm_size_t ReturnedBufferContentSize;
+            Byte *ReturnedBuffer = nil;
+            
+            while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
+				
+				// check for thread cancellation
+				if ( [[NSThread currentThread] isCancelled] ){
+					break;		
+				}
+
+                // ensure we have access to this block
+                if ((SourceInfo.protection & VM_PROT_READ)) {
+                    NS_DURING {
+                        ReturnedBuffer = malloc(SourceSize);
+                        ReturnedBufferContentSize = SourceSize;
+                        if ( (KERN_SUCCESS == vm_read_overwrite(MySlaveTask,SourceAddress,SourceSize,(vm_address_t)ReturnedBuffer,&ReturnedBufferContentSize)) &&
+                            (ReturnedBufferContentSize > 0) )
+                        {
+                            // the last address we check must be far enough from the end of the buffer to check all the bytes of our sought value
+                            if((ReturnedBufferContentSize % MemSize) != 0) {
+                                ReturnedBufferContentSize -= (ReturnedBufferContentSize % MemSize);
+                            }
+                            
+							// search our buffer
+                            for ( x=0; x<ReturnedBufferContentSize; x+=4 ) {
+                                UInt32 *checkVal = (UInt32*)&ReturnedBuffer[x];
+								
+								// is this our address?
+								if ( *checkVal == addressToFind ){
+									UInt32 foundAddress = SourceAddress + x;
+									PGLog(@"Match for 0x%X found at 0x%X", addressToFind, foundAddress);
+									[addressesFound addObject:[NSNumber numberWithUnsignedInt:foundAddress]];
+								}
+                            }
+                        }
+                    } NS_HANDLER {
+                    } NS_ENDHANDLER
+                    
+                    if (ReturnedBuffer != nil)
+                    {
+                        free(ReturnedBuffer);
+                        ReturnedBuffer = nil;
+                    }
+                }
+                
+                // reset some values to search some more
+                SourceAddress += SourceSize;
+            }
+        }
+    }
+    
+    PGLog(@"[Memory] Pointer scan took %.4f seconds and found %d pointers.", 0.0f-[date timeIntervalSinceNow], [addressesFound count]);
+    
+	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+						  address,				@"Address",
+						  addressesFound,      @"Addresses",
+						  nil];
+	
+    // update our memory list
+	[self performSelectorOnMainThread: @selector(foundPointersToAddress:)
+						   withObject: dict
+                        waitUntilDone: NO];
+}
+
+
+- (void)foundPointersToAddress: (NSDictionary*)dict {
+	
+	NSNumber *address = [dict objectForKey:@"Address"];
+	NSArray *addresses = [dict objectForKey:@"Addresses"];
+	
+	// add them to our mutable dictionary!
+	if ( [addresses count] ){
+		[_pointerList setObject:addresses forKey:[NSString stringWithFormat:@"%d", [address unsignedIntValue]]];
+	}
+	// we need to realize we searched for this!
+	else{
+		[_pointerList setObject:[NSNumber numberWithInt:0] forKey:[NSString stringWithFormat:@"%d", [address unsignedIntValue]]];
+	}
+	
+	// since we retained it in the detached thread!
+	[addresses release];
+	
+	// reload our table
+	[memoryTable reloadData];
+}
 
 @end

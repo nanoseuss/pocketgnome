@@ -55,7 +55,6 @@
         self.attackLevelMin = 2;
         self.attackLevelMax = PLAYER_LEVEL_CAP;
     }
-	PGLog(@"CombatProfile created with name %@", self.name);
     return self;
 }
 

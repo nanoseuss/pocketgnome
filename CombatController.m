@@ -677,7 +677,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		weight += 25;
 	
 	// health left
-	weight += (100-[unit percentHealth]);
+	int healthLeft = (100-[unit percentHealth]);
+	weight += healthLeft;
 	
 	// distance to target
 	if ( !isFriendly && attackRange > 0 )
@@ -685,13 +686,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// friendly?
 	if ( isFriendly ){
-		weight *= 1.5;
-		
+
 		// tank gets a pretty big weight @ all times
 		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit GUID] ){
-			PGLog(@"[Combat] Tank is getting an increase in weight! From %d to %0.2f", weight, weight * 1.2);
-			weight *= 1.2;
+			PGLog(@"[Combat] Tank is getting an increase in weight! From %d to %0.2f", 1.5*weight, 1.5*(weight + healthLeft));
+			weight += healthLeft;
 		}
+		
+		weight *= 1.5;
 	}
 	
 	return weight;	

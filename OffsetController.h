@@ -22,6 +22,8 @@
 
 - (unsigned long) offset: (NSString*)key;
 
-- (unsigned long) offsetWithByteSignatre: (NSString*)signature withMask:(NSString*)mask;
+- (NSArray*) offsetWithByteSignature: (NSString*)signature 
+							withMask:(NSString*)mask 
+					   withEmulation:(BOOL)emulatePPC;
 
 @end

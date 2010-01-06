@@ -159,6 +159,7 @@
 								   [NSNumber numberWithInt:0],			@"MovementType",
 								   [NSNumber numberWithInt: NSOffState],@"DoLogOutCheck",
 								   [NSNumber numberWithInt:20],		    @"LogOutOnBrokenItemsPercentage",
+								   [NSNumber numberWithBool:NO],		@"DisableReleasingOnDeath",
                                    nil];
     
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
@@ -1361,6 +1362,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 			[combatController stayWithUnit:target withType:[rule target]];
 		}
+		
+		// /cleartarget /targetlasttarget
 		
 		if ( [rule resultType] > 0 ){
 			
