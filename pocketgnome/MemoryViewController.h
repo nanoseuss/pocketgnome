@@ -25,7 +25,6 @@
 	
 	IBOutlet NSTableView	*bitTableView;
 	IBOutlet NSPanel		*bitPanel;
-	IBOutlet NSTextField	*numAddressesToScan;
 	
 	// search options
 	IBOutlet NSPanel		*searchPanel;
@@ -38,6 +37,23 @@
 	IBOutlet NSButton		*clearButton;
 	IBOutlet NSTableView	*searchTableView;
 	NSArray					*_searchArray;
+	
+	// offset scanning
+	IBOutlet NSPanel		*offsetScanPanel;
+	IBOutlet NSTextField	*resultsTextField;
+	IBOutlet NSTextField	*maskTextField;
+	IBOutlet NSTextField	*signatureTextField;
+	IBOutlet NSButton		*emulatePPCButton;
+	
+	// pointer scanning
+	IBOutlet NSPanel				*pointerScanPanel;
+	IBOutlet NSProgressIndicator	*pointerScanProgressIndicator;
+	IBOutlet NSTextField			*pointerScanNumTextField;
+	IBOutlet NSTextField			*pointerScanVariationTextField;
+	IBOutlet NSButton				*pointerScanVariationButton;
+	IBOutlet NSButton				*pointerScanCancelButton;
+	IBOutlet NSButton				*pointerScanFindButton;
+	NSThread *_pointerScanThread;
     
     float refreshFrequency;
     int _displayFormat;
@@ -74,8 +90,6 @@
 // menu options
 - (IBAction)menuAction: (id)sender;
 
-- (IBAction)findPointers: (id)sender;
-
 - (int)displayFormat;
 - (void)setDisplayFormat: (int)displayFormat;
 
@@ -84,4 +98,13 @@
 - (IBAction)startSearch: (id)sender;
 - (IBAction)clearSearch: (id)sender;
 - (IBAction)typeSelected: (id)sender;
+
+// offset scanning
+- (IBAction)openOffsetPanel: (id)sender;
+- (IBAction)offsetSelectAction: (id)sender;
+
+// pointer scanning
+- (IBAction)openPointerPanel: (id)sender;
+- (IBAction)pointerSelectAction: (id)sender;
+
 @end

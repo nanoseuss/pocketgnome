@@ -607,7 +607,7 @@ static InventoryController *sharedInventory = nil;
 }
 
 - (BOOL)arePlayerBagsFull{
-	//PGLog(@"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
+	PGLog(@"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
 	return [self bagSpacesAvailable] == 0;
 }
 
