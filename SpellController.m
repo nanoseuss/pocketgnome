@@ -187,10 +187,17 @@ static SpellController *sharedSpells = nil;
 	if( [playerController playerIsValid:self] ){
 		UInt32 mountAddress = 0;
 		
+		// grab the total number of mounts
+		UInt32 mountListNum = [offsetController offset:@"MOUNT_LIST_NUM"];
+		UInt32 totalMounts = 0;
+		[memory loadDataForObject: self atAddress: mountListNum Buffer: (Byte *)&totalMounts BufLength: sizeof(totalMounts)];
+		
+		//PGLog(@"[Mount] You have %d mounts, starting to load!", totalMounts);
+		
 		// grab the pointer to the list
-		if([memory loadDataForObject: self atAddress: [offsetController offset:@"MOUNT_LIST_POINTER"] Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
+		if([memory loadDataForObject: self atAddress: mountListNum + 0x4 Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
 			
-			for(i=0; ; i++) {
+			for(i=0; i < totalMounts ; i++) {
 				// load all known spells into a temp array
 				if([memory loadDataForObject: self atAddress: mountAddress + (i*0x4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value < 100000 && value > 0) {
 					Spell *spell = [self spellForID: [NSNumber numberWithUnsignedInt: value]];
@@ -208,8 +215,9 @@ static SpellController *sharedSpells = nil;
 					break;
 				}
 			}
-			
 		}
+		
+		//PGLog(@"[Mount] Broke after search of %d mounts", i);
 	}
     
     // update list of known spells

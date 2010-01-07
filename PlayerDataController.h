@@ -43,6 +43,13 @@
 #define BGWaiting		2
 #define BGActive		3
 
+enum ePlayer_RuneTypes {
+	RuneType_Blood 		= 0,
+	RuneType_Unholy		= 1,
+	RuneType_Frost		= 2,
+	RuneType_Death		= 3,	
+};
+
 @interface PlayerDataController : NSObject <UnitPosition> {
     IBOutlet Controller				*controller;
     IBOutlet BotController			*botController;
@@ -117,6 +124,7 @@
 - (UInt32)percentHealth;
 - (UInt32)percentMana;
 - (UInt32)comboPoints;
+- (int)runesAvailable:(int)type;
 
 @property (readwrite, retain) Unit *pet;
 
@@ -165,7 +173,6 @@
 - (UInt32)factionTemplate;
 
 - (int)haste;
-//- (int)GCD;	// returned in milliseconds
 
 - (IBAction)setPlayerDirectionInMemory: (id)sender;
 - (IBAction)showPlayerStructure: (id)sender;

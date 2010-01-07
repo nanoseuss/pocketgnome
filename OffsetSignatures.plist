@@ -2,6 +2,46 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>RUNE_STATE_START</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x31\xC0\xC7\x45\xAC\x00\x00\x00\x00\xC7\x45\xB0\x00\x00\x00\x00\xC7\x45\x94\xC0\x99\xFC\x00\xC7\x45\xA4\x00\x00\x00\x00</string>
+			<key>Mask</key>
+			<string>xxxxxxxxxxxxxxxxxxx????xxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_6571E0</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
+	<key>RUNE_STATUS</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x31\xC0\x89\xE5\x8B\x55\x08\x83\xFA\x07\x77\x11\xA1\x00\x9A\xFC\x00</string>
+			<key>Mask</key>
+			<string>xxxxxxxxxxxxxx????</string>
+			<key>AdditionalOffset</key>
+			<string>0x4</string>
+			<key>Comment</key>
+			<string>From 3.3.0: sub_655FE0</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>PARTY_LEADER_PTR</key>
 	<dict>
 		<key>Intel</key>
@@ -167,18 +207,18 @@
 			<string>xx??xxxxxxxxxx??xxxxxxxxxxxx</string>
 		</dict>
 	</dict>
-	<key>MOUNT_LIST_POINTER</key>
+	<key>MOUNT_LIST_NUM</key>
 	<dict>
 		<key>Intel</key>
 		<dict>
-			<key>Count</key>
-			<string>100</string>
-			<key>Signature</key>
-			<string>\x89\x4C\x24\x04\xC7\x04\x24\xC8\x9B\xFC\x00\xE8\x33\x86\x00\x00</string>
-			<key>Mask</key>
-			<string>xxxxxxx????x????</string>
 			<key>Comment</key>
-			<string></string>
+			<string>For 3.3.0: sub_65CA80</string>
+			<key>Signature</key>
+			<string>\x53\xBB\xBC\x9B\xFC\x00\x83\xEC\x10\x8B</string>
+			<key>Mask</key>
+			<string>xx????xx%x</string>
+			<key>Count</key>
+			<string>24</string>
 		</dict>
 		<key>ppc</key>
 		<dict>

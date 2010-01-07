@@ -16,6 +16,7 @@
 #import "MovementController.h"
 #import "Controller.h"
 #import "AuraController.h"
+#import "MacroController.h"
 
 #import "Unit.h"
 #import "Rule.h"
@@ -26,10 +27,7 @@
 
 
 @interface CombatController (Internal)
--(NSArray*)allValidUnitsForCombat:(BOOL)includeFriendly;
-- (NSArray*)availableUnits:(BOOL)includeFriendly;
 - (NSArray*)friendlyUnits;
-- (NSArray*)findNearbyEnemies;
 - (NSRange)levelRange;
 - (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition;
 - (void)stayWithUnit;
@@ -148,8 +146,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// blacklist?
 	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
-		PGLog(@"[Combat] Out of range, blacklisting %@", _castingUnit);
-		[blacklistController blacklistObject: _castingUnit];
+		
+		// don't blacklist if melee + moving to!
+		if ( ! ([botController.theBehavior meleeCombat] && [movementController moveToObject] == _castingUnit ) ){
+			PGLog(@"[Combat] Out of range, blacklisting %@", _castingUnit);
+			[blacklistController blacklistObject: _castingUnit];
+		}
+		else{
+			PGLog(@"BLACKLIST [Combat] Moving to unit, not blacklisting");
+		}
 	}
 }
 
@@ -237,6 +242,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	return botController.theCombatProfile.combatEnabled;
 }
 
+
 // from: BOTCONTOLLER
 /*
 - (void)startOnUnit:(Unit*)unit{
@@ -291,6 +297,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[_castingUnit release];
 		_castingUnit = nil;
 	}
+	
+	// send a macro to correctly target
+	/*if ( unit == oldTarget && ( type == TargetEnemy || type == TargetAdd || type == TargetFriend || type == TargetPet ) ){
+		// target the new one!
+		PGLog(@"KJSDFHLKJSDFHKSDFHKSJDFHSKDJF TARGETING %@", unit);
+		[macroController useMacro:@"SelectTarget"];
+	}*/
 	
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
 	if ( oldTarget && [botController isPvPing] ){
@@ -426,12 +439,23 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 }
 
-- (NSArray*)availableUnits:(BOOL)includeFriendly{
+// units here will meet all conditions! Combat Profile WILL be checked
+- (NSArray*)validUnitsWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat{
+	
+	
+	// *************************************************
+	//	Find all available units!
+	//		Add friendly units
+	//		Add Assist unit if we're assisting!
+	//		Add hostile/neutral units if we should
+	//		Add units attacking us
+	// *************************************************
 	
 	NSMutableArray *allPotentialUnits = [NSMutableArray array];
 	
 	// add friendly units w/in range
 	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) ){
+		//PGLog(@" [Combat] Adding friendly units");
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
 	
@@ -448,93 +472,63 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				Mob *mob = [mobController mobWithGUID:targetGUID];
 				
 				[allPotentialUnits addObject:mob];
+				PGLog(@" [Combat] Found assist unit %@", mob);
 			}
 			else{
-				PGLog(@"[Combat] Player not targeting unit, ignoring assist");
+				PGLog(@" [Combat] Player not targeting unit, ignoring assist");
 			}
-			
 		}
 		else{
-			PGLog(@"[Combat] Player not found for assisting with GUID: 0x%qX", botController.theCombatProfile.assistUnitGUID);
+			PGLog(@" [Combat] Player not found for assisting with GUID: 0x%qX", botController.theCombatProfile.assistUnitGUID);
 		}
 	}
 	
 	// add new units w/in range
-	else if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] ){
-		[allPotentialUnits addObjectsFromArray:[self findNearbyEnemies]];
+	else if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat ){
+		//PGLog(@" [Combat] Adding ALL available combat units");
+		
+		// determine attack range
+		float attackRange = [botController.theCombatProfile engageRange];
+		if ( botController.isPvPing && [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] ){
+			attackRange = [botController.theCombatProfile attackRange];
+		}
+		
+		[allPotentialUnits addObjectsFromArray:[self enemiesWithinRange:attackRange]];
 	}
 	
-	// add units attacking me
-	//_unitsAttackingMe
+	// remove units attacking us from the list
 	if ( [_unitsAttackingMe count] ){
-		
-		for ( Unit *target in _unitsAttackingMe ){
-			if ( ![allPotentialUnits containsObject:target] ){
-				[allPotentialUnits addObject:target];
-			}
-		}
+		//PGLog(@" [Combat] Removing in combat units Before: %d", [allPotentialUnits count]);
+		[allPotentialUnits removeObjectsInArray:_unitsAttackingMe];
+		//PGLog(@" [Combat] Removing in combat units After: %d", [allPotentialUnits count]);
 	}
 	
-	return [[allPotentialUnits retain] autorelease];
-}
-
-// used by performProcedureWithState
--(NSArray*)allValidAndInCombat:(BOOL)includeFriendly{
-	
-	NSMutableArray *units = [NSMutableArray arrayWithArray:[self allValidUnitsForCombat:includeFriendly]];
-	
-	// add combat units
-	NSArray *combatUnits = [self combatListValidated];
-	for ( Unit *unit in combatUnits ){
-		if ( ![units containsObject:unit] ){
-			[units addObject:unit];
-		}
-	}
-	
-	// TO DO: THE ADD CHECK SHOULD ONLY LOOK @ UNITS WE ARE IN COMBAT WITH!
-	
-	
-	// should we remove the add unit from the list? (should only happen if one hostile is left!)
-	if ( _addUnit != nil ){
-		
-		// we have more than 1!
-		if ( [combatUnits count] > 1 ){
-			
-			// get the number of hostiles, if more than 1, we will remove the add unit
-			int hostiles = 0;
-			for ( Unit *unit in combatUnits ){
-				BOOL isHostile = [playerData isHostileWithFaction: [unit factionTemplate]];
-
-				if ( isHostile ){
-					hostiles++;
-				}
-			}
-			
-			// this means we have at least 2 hostiles, so we can ignore the add for now!
-			if ( hostiles > 1 ){
-				[units removeObject:_addUnit];
-				PGLog(@"[Combat] Removing the add %@ from our valid unit list!", _addUnit);
+	// add combat units that have been validated!
+	NSArray *inCombatUnits = [self combatListValidated];
+	if ( [inCombatUnits count] ){
+		//PGLog(@" [Combat] Adding %d validated in combat units Before: %d", [inCombatUnits count], [allPotentialUnits count]);
+		// loop through
+		for ( Unit *unit in inCombatUnits ){
+			if ( ![allPotentialUnits containsObject:unit] ){
+				[allPotentialUnits addObject:unit];
 			}
 		}
-		
-		// we have an add unit, but no combat units (makes sense if they are cc:ed + not selecting us)
-		if ( [combatUnits count] == 0 ){
-			PGLog(@"[Combat] Adding add to our list! The count before add is %d", [units count]);
-			[units addObject:_addUnit];
-		}
+
+		//PGLog(@" [Combat] Adding %d validated in combat units After: %d", [inCombatUnits count], [allPotentialUnits count]);
 	}
 	
-	[units sortUsingFunction: WeightCompare context: self];
+	//PGLog(@"*[Combat] Found %d potential units", [allPotentialUnits count]);
 	
-	return [[units retain] autorelease];	
-}
+	// *************************************************
+	//	Validate all potential units - check for:
+	//		Blacklisted
+	//		Dead, evading, invalid
+	//		Vertical distance
+	//		Distance to target
+	//		Ghost
+	// *************************************************
 
-// units here will meet all conditions! Combat Profile WILL be checked
--(NSArray*)allValidUnitsForCombat:(BOOL)includeFriendly{
-	
-	NSArray *allPotentialUnits = [NSMutableArray arrayWithArray:[self availableUnits:includeFriendly]];
 	NSMutableArray *validUnits = [NSMutableArray array];
-	
 	Position *playerPosition = [playerData position];
 	
 	if ( [allPotentialUnits count] ){
@@ -546,7 +540,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			// ignore blacklisted units
 			if ( [blacklistController isBlacklisted:unit] ){
-				PGLog(@"[Combat] Unit %@ is blacklisted, ignoring in best unit selection", unit);
 				continue;
 			}
 			
@@ -587,11 +580,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//PGLog(@"[Combat] Actually considered units: %d", [validUnits count]);
 	}
 	
+	//PGLog(@"*[Combat] Found %d valid units", [validUnits count]);
+	
+	[validUnits sortUsingFunction: WeightCompare context: self];
+	
 	return [[validUnits retain] autorelease];
 }
 
 // find a unit to attack, CC, or heal
--(Unit*)findUnitWithFriendly:(BOOL)includeFriendly{
+- (Unit*)findUnitWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat{
 	
 	// flying check?
 	if ( [botController.theCombatProfile ignoreFlying] ){
@@ -601,7 +598,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 	}
 
-	NSArray *validUnits = [NSArray arrayWithArray:[self allValidUnitsForCombat:includeFriendly]];
+	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
 	Position *playerPosition = [playerData position];
 	
 	if ( [validUnits count] ){
@@ -612,7 +609,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			// begin weight calculation
 			int weight = [self weight:unit PlayerPosition:playerPosition];
 
-			PGLog(@"[Combat] Valid target %@ found with weight %d", unit, weight);
+			//PGLog(@"[Combat] Valid target %@ found with weight %d", unit, weight);
 			
 			// best weight
 			if ( weight > highestWeight ){
@@ -633,16 +630,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// loop through units that are attacking us!
 	for ( Unit *unit in _unitsAttackingMe ){
-		
-		if ( unit != _attackUnit ){
+		if ( unit != _attackUnit && ![unit isDead] ){
 			[allAdds addObject:unit];
 		}
 	}
 	
 	return [[allAdds retain] autorelease];
 }
-
-#pragma mark Enemy
 
 // so, in a perfect world
 // -) players before pets
@@ -672,21 +666,28 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	else if ([unit isPet])
 		weight -= 25;
 	
-	// current target
-	if ( [playerData targetID] == [unit GUID] )
-		weight += 25;
-	
 	// health left
 	int healthLeft = (100-[unit percentHealth]);
 	weight += healthLeft;
 	
-	// distance to target
-	if ( !isFriendly && attackRange > 0 )
-		weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
+	// our add?
+	if ( unit == _addUnit )
+		weight -= 100;
+	
+	// non-friendly checks only
+	if ( !isFriendly ){
+		
+		if ( attackRange > 0 )
+			weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
+		
+		// current target
+		if ( [playerData targetID] == [unit GUID] )
+			weight += 25;
+	}
 	
 	// friendly?
 	if ( isFriendly ){
-
+		
 		// tank gets a pretty big weight @ all times
 		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit GUID] ){
 			PGLog(@"[Combat] Tank is getting an increase in weight! From %d to %0.2f", 1.5*weight, 1.5*(weight + healthLeft));
@@ -699,37 +700,22 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	return weight;	
 }
 
+#pragma mark Enemy
+
 - (int)weight: (Unit*)unit{
 	return [self weight:unit PlayerPosition:[playerData position]];
 }
 
-// scan for targets that are in range (generally not in combat)
-- (NSArray*)findNearbyEnemies {
-    // scan for valid, in-range targets to attack
-    
-    // determine level range
-    //int min, range, level = [playerData level];
-    //if(_minLevel == 100)    min = 1;
-    //else                    min = level - _minLevel;
-    //if(min < 1) min = 1;
-    //range = (level + _maxLevel) - min;  // set max level
+// find available hostile targets
+- (NSArray*)enemiesWithinRange:(float)range {
 	
-    /*if ( !botController.theCombatProfile.combatEnabled )
-        return nil;*/
-    
     NSMutableArray *targetsWithinRange = [NSMutableArray array];
-	
-	NSRange range = [self levelRange];
-	
-	
-	
-	// which is larger?
-	float attackRange = ( [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] ) ? [botController.theCombatProfile attackRange] : [botController.theCombatProfile engageRange];
+	NSRange levelRange = [self levelRange];
 
 	 // check for mobs?
 	 if ( botController.theCombatProfile.attackNeutralNPCs || botController.theCombatProfile.attackHostileNPCs ) {
-		 [targetsWithinRange addObjectsFromArray: [mobController mobsWithinDistance: attackRange
-																		 levelRange: range
+		 [targetsWithinRange addObjectsFromArray: [mobController mobsWithinDistance: range
+																		 levelRange: levelRange
 																	   includeElite: !(botController.theCombatProfile.ignoreElite)
 																	includeFriendly: NO
 																	 includeNeutral: botController.theCombatProfile.attackNeutralNPCs
@@ -738,8 +724,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	 // check for players?
 	 if ( botController.theCombatProfile.attackPlayers ) {
-		 [targetsWithinRange addObjectsFromArray: [playersController playersWithinDistance: attackRange
-																				levelRange: range
+		 [targetsWithinRange addObjectsFromArray: [playersController playersWithinDistance: range
+																				levelRange: levelRange
 																		   includeFriendly: NO
 																			includeNeutral: NO
 																			includeHostile: YES]];
@@ -817,6 +803,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( ![unit isInCombat] ){
 		PGLog(@"[**********] Unit not in combat! %d", leftCombatCount);
 		leftCombatCount++;
+		
+		// after a minute stop monitoring
+		if ( leftCombatCount > 600 ){
+			PGLog(@"[**********]  No longer monitoring %@, unit didn't enter combat after a minute!", unit);
+			return;
+		}
 	}
 	else{
 		//PGLog(@"[**********] Unit in combat! %d", leftCombatCount);
@@ -910,11 +902,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 	}
 	
-	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
-	
+	// loop through to double check!
 	for ( Unit *unit in _unitsAttackingMe ){
-		PGLog(@" [Combat] %@", unit);
+		if ( !unit || ![unit isValid] || [unit isDead] || ![unit isInCombat] || ![unit isSelectable] || ![unit isAttackable] ){
+			PGLog(@"[Combat] Removing unit: %@", unit);
+			[_unitsAttackingMe removeObject:unit];
+		}
 	}
+	
+	//PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	
+	/*for ( Unit *unit in _unitsAttackingMe ){
+		PGLog(@" [Combat] %@", unit);
+	}*/
 }
 
 // this will return the level range of mobs we are attacking!
@@ -956,7 +956,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		[_unitsAllCombat removeAllObjects];
 		
-		NSArray *allUnits = [self allValidAndInCombat:YES];
+		NSArray *allUnits = [self validUnitsWithFriendly:YES onlyHostilesInCombat:NO];
 		NSMutableArray *allAndSelf = [NSMutableArray array];
 		
 		if ( [allUnits count] ){

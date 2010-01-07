@@ -40,7 +40,7 @@
 	
 	// offset scanning
 	IBOutlet NSPanel		*offsetScanPanel;
-	IBOutlet NSTextField	*resultsTextField;
+	IBOutlet NSTextView		*resultsTextView;
 	IBOutlet NSTextField	*maskTextField;
 	IBOutlet NSTextField	*signatureTextField;
 	IBOutlet NSButton		*emulatePPCButton;

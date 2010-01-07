@@ -141,18 +141,19 @@
 			int count = [[black objectForKey: @"Count"] intValue];
 			if ( count < 1 ) count = 1;
 			
-			PGLog(@"[Blacklist] %0.2f > %0.2f", [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0, (15.0*count) );
+			float blacklistTime = 15.0f;
+			if ( count < 3 )
+				blacklistTime *= count;
+			else 
+				blacklistTime = 45.0f;
 			
-			if ( [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0 > (15.0*count) ) 
+			PGLog(@"[Blacklist] %0.2f > %0.2f", [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0, blacklistTime );
+			
+			if ( [[black objectForKey: @"Date"] timeIntervalSinceNow]*-1.0 > blacklistTime ) 
 				return NO;
 		}		
 	}
-	
-	
-	
-	
-	
-	
+
     return YES;
 }
 

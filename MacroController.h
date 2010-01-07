@@ -39,4 +39,9 @@
 // execute a macro by it's ID
 - (void)useMacroByID: (int)macroID;
 
+- (BOOL)useMacro: (NSString*)key;
+/*
+ "Swift Flight Form" >>> "Forme de vol rapide"
+ "Flight Form" >>> "Forme de vol"
+ */
 @end

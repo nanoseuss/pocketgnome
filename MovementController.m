@@ -484,6 +484,7 @@ typedef enum MovementType {
 		
 		self.unit = nil;
 		
+		PGLog(@"[Eval] Unsticking!");
 		[botController evaluateSituation];		// we either want to do this or resume to the next WP, not sure which, will test this out :-)
 		//[self resumeMovementToNearestWaypoint];
 		//[self finishAlt];
@@ -872,10 +873,13 @@ typedef enum MovementType {
     
     // poll the bot controller
     if([botController isBotting]) {
-        if( [self isPatrolling] && [botController evaluateSituation]) {
-			PGLog(@"[Move] Action taken, we don't need to check anything");
-            // there was an action taken
-            return;
+        if( [self isPatrolling] ) {
+			
+			PGLog(@"[Eval] checkCurrentPosition");
+			if ( [botController evaluateSituation] ){
+				PGLog(@"[Move] Action taken, we don't need to check anything");
+				return;
+			}
         }
     }
 	

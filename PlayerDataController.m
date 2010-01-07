@@ -489,6 +489,34 @@ static PlayerDataController* sharedController = nil;
     return 0;
 }
 
+- (int)runesAvailable:(int)type{
+	
+	// start CD: [offsetController offset:@"RUNE_STATUS"] + 0x1C
+	// end CD: [offsetController offset:@"RUNE_STATUS"] + 0x1C + 0x20
+
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 runeState = 0, runeType = 0;
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"RUNE_STATUS"] Buffer: (Byte*)&runeState BufLength: sizeof(runeState)];
+	
+	if ( runeState ){
+		int i, runesAvailable = 0;
+		for ( i = 0; i < 6; i++ ){
+			[memory loadDataForObject: self atAddress: [offsetController offset:@"RUNE_STATE_START"] + (i*4) Buffer: (Byte*)&runeType BufLength: sizeof(runeType)];
+			BOOL unavailable = ( runeState & (1 << i ) ) == 0;
+			
+			if ( runeType == type && !unavailable ){
+				runesAvailable++;
+			}
+		}
+		
+		return runesAvailable;
+	}
+
+	PGLog(@"[Rune] No rune state found");
+	
+	return 0;	
+}
+
 #pragma mark Player Bearings
 
 - (Position*)position {
@@ -1158,7 +1186,7 @@ static PlayerDataController* sharedController = nil;
 		// only resort and display the table if the window is visible
 		if( [[combatTable window] isVisible]) {
 			
-			NSArray *allUnits = [combatController allValidAndInCombat:YES];
+			NSArray *allUnits = [combatController validUnitsWithFriendly:YES onlyHostilesInCombat:NO];
 			
 			for(Unit *unit in allUnits) {
 				if( ![unit isValid] )
@@ -1186,33 +1214,6 @@ static PlayerDataController* sharedController = nil;
 			[combatTable reloadData];
 			
 		}
-		
-		/*if( [[healingTable window] isVisible]) {
-			// Update healing info!
-			NSArray *unitsToHeal = [combatController availableUnits];
-			PGLog(@"[PlayerData] Units to show: %d", [unitsToHeal count]);
-			for(Unit *unit in unitsToHeal) {
-				if( ![unit isValid] )
-					continue;
-				
-				float distance = [[self position] distanceToPosition: [unit position]];
-				[_healingDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-											 unit,                                                                @"Player",
-											 [NSString stringWithFormat: @"0x%X", [unit lowGUID]],                @"ID",
-											 [unit name],														  @"Name",
-											 [NSString stringWithFormat: @"%@%@", [unit isPet] ? @"[Pet] " : @"", [Unit stringForClass: [unit unitClass]]],                             @"Class",
-											 [Unit stringForRace: [unit race]],                                   @"Race",
-											 [Unit stringForGender: [unit gender]],                               @"Gender",
-											 [NSString stringWithFormat: @"%d%%", [unit percentHealth]],          @"Health",
-											 [NSNumber numberWithUnsignedInt: [unit level]],                      @"Level",
-											 [NSNumber numberWithFloat: distance],                                @"Distance", 
-											 nil]];
-			}
-			
-			// Update our combat table!
-			[_healingDataList sortUsingDescriptors: [healingTable sortDescriptors]];
-			[healingTable reloadData];
-		}*/
 		
 		// Update our CD info!
 		[spellController reloadCooldownInfo];

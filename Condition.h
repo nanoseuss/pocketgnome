@@ -25,6 +25,7 @@ typedef enum Variety {
     VarietyProximityCount   = 13,
 	VarietySpellCooldown	= 14,
 	VarietyLastSpellCast	= 15,
+	VarietyRune				= 16,
 } ConditionVariety;
 
 typedef enum UnitComponents {
@@ -65,6 +66,12 @@ typedef enum QualityComponents {
     QualityNPC          = 18,
     QualityPlayer       = 19,
     // QualityRunicPower = 20
+	
+	QualityRuneBlood	= 21,
+	QualityRuneUnholy	= 22,
+	QualityRuneFrost	= 23,
+	QualityRuneDeath	= 24,
+	
 } ConditionQuality;
 
 typedef enum ComparatorComponents {

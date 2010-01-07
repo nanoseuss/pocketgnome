@@ -4,6 +4,20 @@
 <dict>
 	<key>Herbalism</key>
 	<dict>
+		<key>Fleur-de-liche</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>425</integer>
+		</dict>
+		<key>Glacépine</key>
+		<dict>
+			<key>Type</key>
+			<string>Herbalism</string>
+			<key>Skill</key>
+			<integer>435</integer>
+		</dict>
 		<key>Lotus pourpre</key>
 		<dict>
 			<key>Type</key>
