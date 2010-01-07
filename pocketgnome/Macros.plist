@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>SelectTarget</key>
+	<dict>
+		<key>Macro</key>
+		<string>/cleartarget
+/targetlasttarget</string>
+		<key>Description</key>
+		<string>This will correctly target the mob</string>
+	</dict>
 	<key>LootItems2</key>
 	<dict>
 		<key>Macro</key>

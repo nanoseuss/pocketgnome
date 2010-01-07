@@ -1019,7 +1019,7 @@ typedef enum SearchType{
 	
 	// do we have a mask and signature?
 	if ( [mask length] > 0 && [signature length] > 0 ){
-		[resultsTextField setStringValue:@""];
+		[resultsTextView setString: @""];
 		
 		NSArray *offsetList = [offsetController offsetWithByteSignature:signature 
 															  withMask:mask 
@@ -1030,16 +1030,17 @@ typedef enum SearchType{
 			
 			NSString *offsets = [[NSString alloc] init];
 			
+			int loc = 1;
 			for ( NSNumber *offset in offsetList ){
-				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"0x%X\n", [offset intValue]]];	
+				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"%d: 0x%X\n", loc++, [offset intValue]]];	
 			}
 			
-			[resultsTextField setStringValue:offsets];
+			[resultsTextView setString: offsets];
 			
 		}
 		// none :(
 		else{
-			[resultsTextField setStringValue:@"None found :("];
+			[resultsTextView setString: @"None found :("];
 		}
 	}
 }

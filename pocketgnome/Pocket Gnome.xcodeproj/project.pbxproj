@@ -24,6 +24,8 @@
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
+		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
+		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
 		03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
 		03C42CCA1096839E0085E888 /* Macros.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03C42CC91096839E0085E888 /* Macros.plist */; };
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
@@ -347,6 +349,9 @@
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
 		03A4047B0FE148C60087BC0D /* mbobbleicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mbobbleicon.png; sourceTree = "<group>"; };
+		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
+		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
+		03B6D26110F626EA00EC6EFF /* RuneConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RuneConditionController.m; sourceTree = "<group>"; };
 		03C42CC91096839E0085E888 /* Macros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Macros.plist; sourceTree = "<group>"; };
 		03CEF7840FCCD93100B47336 /* Corpse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Corpse.h; sourceTree = "<group>"; };
 		03CEF7850FCCD93100B47336 /* Corpse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Corpse.m; sourceTree = "<group>"; };
@@ -1095,6 +1100,7 @@
 		7D54DCB80E08449F00E1B463 /* Condition NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				03B6D25D10F626C500EC6EFF /* RuneCondition.xib */,
 				038A4B4510E9656D00577D8F /* LastSpellCast.xib */,
 				0350738310CDBA460004636E /* SpellCooldown.xib */,
 				7DCE50700E12F05E00C5DF01 /* AuraCondition.xib */,
@@ -1153,6 +1159,8 @@
 				0350738810CDBA640004636E /* SpellCooldownConditionController.m */,
 				038A4B4710E9657900577D8F /* LastSpellCastConditionController.h */,
 				038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */,
+				03B6D26010F626EA00EC6EFF /* RuneConditionController.h */,
+				03B6D26110F626EA00EC6EFF /* RuneConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1615,6 +1623,7 @@
 				03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */,
 				0350738410CDBA460004636E /* SpellCooldown.xib in Resources */,
 				038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */,
+				03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1724,6 +1733,7 @@
 				038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */,
 				03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */,
 				038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */,
+				03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

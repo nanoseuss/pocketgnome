@@ -315,7 +315,6 @@
 - (BOOL)interactWithMouseoverGUID: (UInt64) guid;
 - (void)interactWithMob:(UInt32)entryID;
 - (void)interactWithNode:(UInt32)entryID;
-//- (NSArray*)availableUnitsToHeal;
 - (void)logOut;
 
 - (void) updateRunningTimer;

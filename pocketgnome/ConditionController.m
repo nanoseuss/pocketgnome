@@ -23,6 +23,7 @@
 #import "ProximityCountConditionController.h"
 #import "SpellCooldownConditionController.h"
 #import "LastSpellCastConditionController.h"
+#import "RuneConditionController.h"
 
 @implementation ConditionController
 
@@ -91,6 +92,9 @@
     }
 	if( [condition variety] == VarietyLastSpellCast ) {
         newController = [[LastSpellCastConditionController alloc] init];
+    }
+	if( [condition variety] == VarietyRune ) {
+        newController = [[RuneConditionController alloc] init];
     }
 	
     if(newController) {

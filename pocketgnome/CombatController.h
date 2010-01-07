@@ -17,6 +17,7 @@
 @class PlayersController;
 @class BlacklistController;
 @class AuraController;
+@class MacroController;
 
 @class Position;
 @class Unit;
@@ -34,6 +35,7 @@
     IBOutlet MovementController		*movementController;
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet AuraController			*auraController;
+	IBOutlet MacroController		*macroController;
 	
 	// three different types of units to be tracked at all times
 	Unit *_attackUnit;
@@ -63,13 +65,13 @@
 
 // OUTPUT: PerformProcedureWithState - used to determine which unit to act on!
 //	Also used for Proximity Count check
-- (NSArray*)allValidAndInCombat:(BOOL)includeFriendly;
+- (NSArray*)validUnitsWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat;
 
 // OUTPUT: return all adds
 - (NSArray*)allAdds;
 
 // OUTPUT: find a unit to attack, or heal
--(Unit*)findUnitWithFriendly:(BOOL)includeFriendly;
+-(Unit*)findUnitWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat;
 
 // INPUT: from CombatProcedure within PerformProcedureWithState
 - (void)stayWithUnit:(Unit*)unit withType:(int)type;
@@ -89,6 +91,8 @@
 // OUPUT: returns the weight of a unit
 - (int)weight: (Unit*)unit;
 
+// OUTPUT: valid targets in range based on combat profile
+- (NSArray*)enemiesWithinRange:(float)range;
 
 // UI
 - (void)showCombatPanel;

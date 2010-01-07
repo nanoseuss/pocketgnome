@@ -203,6 +203,7 @@
 		
 		[self stopFishing];
 		
+		PGLog(@"[Eval] Fishing - school gone");
 		[botController evaluateSituation];
 		return;
 	}

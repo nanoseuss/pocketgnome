@@ -46,6 +46,7 @@ typedef enum CastError {
 #define TARGET_DEAD			@"Your target is dead"
 #define CANT_ATTACK_MOUNTED	@"Can't attack while mounted."
 #define YOU_ARE_MOUNTED		@"You are mounted."
+#define CANT_ATTACK_TARGET	@"You cannot attack that target."
 
 
 //Must have a Fishing Pole equipped

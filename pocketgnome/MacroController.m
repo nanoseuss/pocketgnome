@@ -61,6 +61,12 @@
 	[self reloadMacros];
 }
 
+- (BOOL)useMacro: (NSString*)key;{
+	BOOL success = [self overwriteMacro:key];
+	
+	return success;
+}
+
 // actually will take an action (macro or send command)
 - (void)useMacroOrSendCmd: (NSString*)key{
 	
@@ -311,7 +317,7 @@
 			newMacroBody[strlen(oldBody)] = '\0';
 			[memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacroBody BufLength:sizeof(newMacroBody)];
 			
-			PGLog(@"[Macro] Completed execution of %@", key);
+			PGLog(@"[Macro] Completed execution of %@ using macro ID %d", key, macroID);
 			
 			return YES;
 		}

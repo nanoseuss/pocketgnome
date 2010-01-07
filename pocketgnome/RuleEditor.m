@@ -33,6 +33,7 @@
 #import "ProximityCountConditionController.h"
 #import "SpellCooldownConditionController.h"
 #import "LastSpellCastConditionController.h"
+#import "RuneConditionController.h"
 
 #import "Macro.h"
 #import "Action.h"
@@ -179,6 +180,7 @@
     if(type == 13)   newRule = [[[ProximityCountConditionController alloc] init] autorelease];
 	if(type == 14)   newRule = [[[SpellCooldownConditionController alloc] init] autorelease];
 	if(type == 15)   newRule = [[[LastSpellCastConditionController alloc] init] autorelease];
+	if(type == 16)   newRule = [[[RuneConditionController alloc] init] autorelease];
     
     if(newRule) {
         [_conditionList addObject: newRule];
