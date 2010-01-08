@@ -24,6 +24,7 @@
 @class AuraController;
 @class MacroController;
 @class BlacklistController;
+@class BotController;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
@@ -35,9 +36,10 @@
 @interface MovementController : NSObject {
     IBOutlet id controller;
     IBOutlet id mobController;
-    IBOutlet id botController;
     IBOutlet id chatController;
     IBOutlet id combatController;
+	
+	IBOutlet BotController			*botController;
 	IBOutlet AuraController			*auraController;
     IBOutlet PlayerDataController	*playerData;
 	IBOutlet OffsetController		*offsetController;

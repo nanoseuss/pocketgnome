@@ -204,8 +204,6 @@ static InventoryController *sharedInventory = nil;
     
     [self willChangeValueForKey: @"itemCount"];
 	
-	PGLog(@"[Inventory] Sent %d objects. %d objects exist", [addresses count], [dataList count]);
-	
     // enumerate current object addresses
     // determine which objects need to be removed
     for(WoWObject *obj in dataList) {

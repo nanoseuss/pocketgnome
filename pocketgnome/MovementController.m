@@ -31,6 +31,7 @@
 #import "Action.h"
 #import "Node.h"
 #import "Player.h"
+#import "CombatProfile.h"
 
 #define STUCK_THRESHOLD		5
 
@@ -444,7 +445,7 @@ typedef enum MovementType {
 	float difference = fabs(horizontalAngleToward - directionFacing);
 	
 	// then we have a problem + need to start going back to our waypoint!
-	PGLog(@"[Move] Facing difference: %0.2f Flying: %d Interval since last correct: %0.2f", difference, ![playerData isOnGround], [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
+	//PGLog(@"[Move] Facing difference: %0.2f Flying: %d Interval since last correct: %0.2f", difference, ![playerData isOnGround], [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] );
 	if ( difference > 0.1f && ![playerData isOnGround] && ( [[NSDate date] timeIntervalSinceDate:_lastResumeCorrection] > 15.0f )){
 		[_lastResumeCorrection release]; _lastResumeCorrection = nil;
 		_lastResumeCorrection = [[NSDate date] retain];
@@ -875,7 +876,7 @@ typedef enum MovementType {
     if([botController isBotting]) {
         if( [self isPatrolling] ) {
 			
-			PGLog(@"[Eval] checkCurrentPosition");
+			//PGLog(@"[Eval] checkCurrentPosition");
 			if ( [botController evaluateSituation] ){
 				PGLog(@"[Move] Action taken, we don't need to check anything");
 				return;
@@ -922,7 +923,6 @@ typedef enum MovementType {
             [self correctDirection: NO];
         }
     }
-    
 	
     // if we're not moving forward for some reason, start moving again
     if( (([movementType selectedTag] == MOVE_CTM && ![self isCTMActive]) || [movementType selectedTag] != MOVE_CTM ) && !self.isPaused && (([playerData movementFlags] & 0x1) != 0x1)) {   // [self isPatrolling] && 
@@ -1404,7 +1404,16 @@ typedef enum MovementType {
 }
 
 - (void)followObject: (WoWObject*)unit{
-	[self setClickToMove: [unit position] andType:ctmWalkTo andGUID:[unit GUID]];
+	
+	// not moving directly to the unit's position! Within a range from it
+	float start = botController.theCombatProfile.yardsBehindTargetStart;
+	float stop = botController.theCombatProfile.yardsBehindTargetStop;
+	float randomDistance = SSRandomFloatBetween( start, stop );
+	
+	Position *positionToMove = [[unit position] positionAtDistance:randomDistance withDestination:[playerData position]];
+	PGLog(@"[Follow] Moving to %@", positionToMove);
+	[self moveToPosition:positionToMove];
+	//[self setClickToMove: positionToMove andType:ctmWalkTo andGUID:0x0];
 }
 
 - (BOOL)dismount{

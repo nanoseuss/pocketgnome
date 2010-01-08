@@ -2362,7 +2362,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
 	}
 	
-	
 	// party options
 	// auto-queue button name: LFDDungeonReadyDialogueEnterDungeonButton
 	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && theCombatProfile.followUnitGUID > 0x0 ){
@@ -2385,19 +2384,29 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				// time to mount!
 				Spell *mount = [spellController mountSpell:theMountType andFast:YES];
 				if ( mount != nil ){
+					PGLog(@"[Follow] Mounting...");
+					
 					[self performAction:[[mount ID] intValue]];
+					
+					// Check our position again shortly!
+					[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
+					return YES;
 				}
-				
-				// Check our position again shortly!
-				[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
-				return YES;
+				else{
+					// does this player have any mounts?
+					if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ){
+						PGLog(@"[Bot] Attempting to load mounts...");
+						
+					}					
+				}
 			}
-				
+			
 			// move?
 			Position *playerPosition = [[playerController player] position];
 			float range = [playerPosition distanceToPosition: [followTarget position]];
-			if ( range >= theCombatProfile.yardsBehindTarget ) {
-				PGLog(@"[Foolow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.yardsBehindTarget, range);
+
+			if ( range >= theCombatProfile.followDistanceToMove ) {
+				PGLog(@"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
 				
 				if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
 					[movementController followObject: followTarget];
@@ -2408,7 +2417,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				return YES;
 			}
-			
 		}
 		
 		// can't follow
@@ -2789,21 +2797,32 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		usleep(100000);
 		
-		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
-		
+		// record our last attempt
 		[_mountLastAttempt release]; _mountLastAttempt = nil;
 		_mountLastAttempt = [[NSDate date] retain];
 		
-		// Time to cast!
-		int errID = [self performAction:[[mount ID] intValue]];
-		if ( errID == ErrNone ){
-		
-			_mountAttempt = 0;
-			
-			return YES;
+		// actually mount
+		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
+		if ( mount ){
+			// Time to cast!
+			int errID = [self performAction:[[mount ID] intValue]];
+			if ( errID == ErrNone ){
+				
+				_mountAttempt = 0;
+				
+				return YES;
+			}
+			PGLog(@"[Bot] Mounting failed! Error: %d", errID);
 		}
-
-		PGLog(@"[Bot] Mounting failed! Error: %d", errID);
+		else{
+			PGLog(@"[Bot] No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
+			
+			// should we load any mounts
+			if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ){
+				PGLog(@"[Bot] Attempting to load mounts...");
+				[spellController reloadPlayerSpells];				
+			}	
+		}
 	}
 	
 	return NO;
@@ -2835,8 +2854,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	PGLog(@"Updating status... %@", profile);
 	
     NSString *status = [NSString stringWithFormat: @"%@ (%@). ", 
-                        [[behaviorPopup selectedItem] representedObject],    // behavior
-                        [[routePopup selectedItem] representedObject]];       // route
+                        [[[behaviorPopup selectedItem] representedObject] name],    // behavior
+                        [[[routePopup selectedItem] representedObject] name]];       // route
     
     NSString *bleh = nil;
     if(!profile || !profile.combatEnabled) {
@@ -3008,8 +3027,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_nodeIgnoreFriendlyDistance		= [nodeIgnoreFriendlyDistanceText floatValue];
 		_nodeIgnoreHostileDistance		= [nodeIgnoreHostileDistanceText floatValue];
 		_nodeIgnoreMobDistance			= [nodeIgnoreMobDistanceText floatValue];
-		
-		_disableReleasingOnDeath		= [combatDisableRelease state];
 		
 		// friendly shit
 		
@@ -3370,11 +3387,8 @@ NSMutableDictionary *_diffDict = nil;
 	if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
 	
-	
-	if ( _disableReleasingOnDeath ){
-	
+	if ( theCombatProfile.disableRelease ){
 		PGLog(@"[Bot] Ignoring release due to a combat setting");
-		
 		return;
 	}
 
@@ -4387,14 +4401,29 @@ NSMutableDictionary *_diffDict = nil;
 	return string;
 }
 
+
+- (IBAction)test2: (id)sender{
+	Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
+	Position *playerPosition = [playerController position];
+	
+	PGLog(@"Distance: %0.2f", [pos distanceToPosition:playerPosition]);
+	
+	Position *newPos = [pos positionAtDistance:10.0f withDestination:playerPosition];
+	
+	PGLog(@"New pos: %@", newPos);
+	
+	[movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
+
+}
+
 //0x1555BE0
 - (IBAction)test: (id)sender{
-	
+/*
 	
 	int i = RuneType_Blood;
 	for ( ; i <= RuneType_Death ; i++ ){
 		PGLog(@"%d: %d", i, [playerController runesAvailable:i]);
-	}
+	}*/
 	
 	
 
@@ -4525,25 +4554,18 @@ LABEL_19:
 	
 	
 	
+
+	Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
+	Position *playerPosition = [playerController position];
 	
+	// this is where we want to face!
+	float direction = [playerPosition angleTo:pos];
 	
-	
-	
-	
-	
-	
-	
-	return;
-	
-	
-	
-	
-	
-	
+	PGLog(@"Angle to target: %0.2f", direction);
+	[playerController setDirectionFacing:direction];
 	
 	//0-2pi. North is 0, west is pi/2, south is pi, east is 3pi/2.
-	
-	float direction = [playerController directionFacing];
+	/*
 	int quadrant = 0;
 	
 	if ( 0.0f < direction && direction <= M_PI/2.0f ){
@@ -4557,36 +4579,35 @@ LABEL_19:
 	}
 	else if ( (3.0f*M_PI)/2.0f < direction && direction <= 2*M_PI ){
 		quadrant = 4;
+	}*/
+	
+	float x, y;
+	float closeness = 10.0f;
+	
+	// negative x
+	if ( [pos xPosition] < 0.0f ){
+		x = -1.0f * (cosf(direction) * closeness);
+	}
+	// positive x
+	else{
+		x = (cosf(direction) * closeness);
 	}
 	
-	Node *nearbySchool = [fishController nearbySchool];
-	float x,y;
-	
-	if ( nearbySchool ){
-		//Position *schoolPos = [nearbySchool position];
-		float closeness = 10.0f;
-
-		if ( quadrant == 1 ){
-			x = - (sinf(direction) * closeness);
-			y = cosf(direction) * closeness;
-		}
-		else if ( quadrant == 2 ){
-			x = - (sinf(direction) * closeness);
-			y = cosf(direction) * closeness;	
-		}
-		else if ( quadrant == 3 ){
-			x = - (sinf(direction) * closeness);
-			y = cosf(direction) * closeness;
-		}
-		else if ( quadrant == 4 ){
-			x = - (sinf(direction) * closeness);
-			y = cosf(direction) * closeness;
-		}
-		
-		PGLog(@"Change in position: {%0.2f, %0.2f} Quadrant %d", x, y, quadrant);
-		
+	// negative y
+	if ( [pos yPosition] < 0.0f ){
+		y = -1.0f * (sinf(direction) * closeness);
+	}
+	// positive y
+	else{
+		y = (sinf(direction) * closeness);
 	}
 	
+	Position *newPos = [[Position alloc] initWithX:([pos xPosition] + x) Y:([pos yPosition] + y) Z:[pos zPosition]];
+	PGLog(@"Change in position: {%0.2f, %0.2f}", x, y);
+	
+	[movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
+	
+		
 	//[controller traverseNameList];
 	/*
 
@@ -4597,23 +4618,7 @@ LABEL_19:
 	
 	//(BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
 	
-	/*
-	CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
-	PGLog(@"Currently selected object: %@  %@", profile, [profile name]);
-	PGLog(@"Attack range: %0.2f", [profile attackRange]);
-	
-	if([[profile name] length]) {
-        for(CombatProfile *prof in [combatProfileEditor combatProfiles]) {
-            if( [[profile name] isEqualToString: [prof name]] ) {
-				PGLog(@"LOOPED: %@ with %0.2f" , prof, [prof attackRange]);
-                break;
-            }
-        }
-    }
-	
-	PGLog(@"CURRENT PROFILE: %@ %0.2f", self.theCombatProfile, [self.theCombatProfile  attackRange]);
-	
-	
+/*
 	
 	Position *playerPosition = [playerController position];
 	Position *destination = [Position positionWithX:5486.823f Y:297.879f Z:147.4111];

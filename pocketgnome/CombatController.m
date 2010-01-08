@@ -322,7 +322,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	PGLog(@"[Combat] Now staying with %@", unit);
 	
-	[self stayWithUnit];
+	// we don't need to monitor friendlies!
+	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] )
+		[self stayWithUnit];
 }
 
 - (void)stayWithUnit{
@@ -351,6 +353,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	if ( [playerData isDead] ){
 		PGLog(@"[Combat] You died, stopping attack.");
+		return;
+	}
+	
+	// no longer in combat procedure
+	if ( ![[botController procedureInProgress] isEqualToString:CombatProcedure] ){
+		PGLog(@"[Combat] No longer in combat procedure, no longer staying with unit");
 		return;
 	}
 	
@@ -596,6 +604,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ( ![[playerData player] isOnGround] ){
 			return nil;
 		}
+	}
+	
+	// no combat or healing?
+	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ){
+		return nil;
 	}
 
 	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
@@ -909,12 +922,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 	}
 	
-	// loop through to double check!
+	// double check to see if we should remove any!
+	NSMutableArray *unitsToRemove = [NSMutableArray array];
 	for ( Unit *unit in _unitsAttackingMe ){
 		if ( !unit || ![unit isValid] || [unit isDead] || ![unit isInCombat] || ![unit isSelectable] || ![unit isAttackable] ){
 			PGLog(@"[Combat] Removing unit: %@", unit);
-			[_unitsAttackingMe removeObject:unit];
+			[unitsToRemove addObject:unit];
 		}
+	}
+	if ( [unitsToRemove count] ){
+		[_unitsAttackingMe removeObjectsInArray:unitsToRemove];
 	}
 	
 	//PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
