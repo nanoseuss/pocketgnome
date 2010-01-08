@@ -204,14 +204,16 @@ static InventoryController *sharedInventory = nil;
     
     [self willChangeValueForKey: @"itemCount"];
 	
+	PGLog(@"[Inventory] Sent %d objects. %d objects exist", [addresses count], [dataList count]);
+	
     // enumerate current object addresses
     // determine which objects need to be removed
     for(WoWObject *obj in dataList) {
 		
-		NSNumber *address = [NSNumber numberWithInt:[obj baseAddress]];
+		NSNumber *address = [NSNumber numberWithUnsignedLong:[obj baseAddress]];
 		
-		// update our object on if it's in the master list
-		if ( ![addresses containsObject:address] ){
+		// if our object is in the list, update it!
+		if ( [addresses containsObject:address] ){
 			obj.notInObjectListCounter = 0;
 		}
 		else{
@@ -323,6 +325,7 @@ static InventoryController *sharedInventory = nil;
                                    durString,                                           @"Durability",
                                    durPercent,                                          @"DurabilityPercent",
 								   location,											@"Location",
+								   [NSNumber numberWithInt:[item notInObjectListCounter]],	@"Invalid",
                                    nil]];
     }
     [_itemDataList sortUsingDescriptors: [itemTable sortDescriptors]];
