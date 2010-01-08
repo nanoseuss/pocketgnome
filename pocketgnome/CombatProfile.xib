@@ -328,7 +328,7 @@
 								<object class="NSTabViewItem" id="572805253">
 									<string key="NSIdentifier">2</string>
 									<object class="NSView" key="NSView" id="41599456">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="157860499"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -759,7 +759,7 @@
 																<reference key="NSSuperview" ref="595533346"/>
 																<bool key="NSEnabled">YES</bool>
 																<object class="NSButtonCell" key="NSCell" id="985770192">
-																	<int key="NSCellFlags">604110336</int>
+																	<int key="NSCellFlags">67239424</int>
 																	<int key="NSCellFlags2">0</int>
 																	<string key="NSContents">Attack Pets</string>
 																	<reference key="NSSupport" ref="300528464"/>
@@ -845,6 +845,7 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {384, 211}}</string>
+										<reference key="NSSuperview" ref="157860499"/>
 									</object>
 									<string key="NSLabel">Combat</string>
 									<reference key="NSColor" ref="920079583"/>
@@ -1552,7 +1553,7 @@
 								<object class="NSTabViewItem" id="1015543877">
 									<string key="NSIdentifier">Item 3</string>
 									<object class="NSView" key="NSView" id="1064626453">
-										<reference key="NSNextResponder" ref="157860499"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2052,21 +2053,20 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {384, 211}}</string>
-										<reference key="NSSuperview" ref="157860499"/>
 									</object>
 									<string key="NSLabel">Party</string>
 									<reference key="NSColor" ref="920079583"/>
 									<reference key="NSTabView" ref="157860499"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="1015543877"/>
+							<reference key="NSSelectedTabViewItem" ref="572805253"/>
 							<reference key="NSFont" ref="300528464"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="1064626453"/>
+								<reference ref="41599456"/>
 							</object>
 						</object>
 						<object class="NSButton" id="583623619">
@@ -5725,9 +5725,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{652, 449}, {430, 405}}</string>
+					<string>{{588, 449}, {430, 405}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{652, 449}, {430, 405}}</string>
+					<string>{{588, 449}, {430, 405}}</string>
 					<integer value="0"/>
 					<string>{{745, 155}, {429, 399}}</string>
 					<integer value="1"/>
@@ -6224,6 +6224,7 @@
 							<string>combatPanel</string>
 							<string>combatTable</string>
 							<string>controller</string>
+							<string>macroController</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
@@ -6238,6 +6239,7 @@
 							<string>NSPanel</string>
 							<string>NSTableView</string>
 							<string>Controller</string>
+							<string>MacroController</string>
 							<string>MobController</string>
 							<string>MovementController</string>
 							<string>PlayerDataController</string>
