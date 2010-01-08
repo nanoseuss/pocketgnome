@@ -481,6 +481,14 @@ static PlayerDataController* sharedController = nil;
     return _playerMaxMana;
 }
 
+- (UInt32)mounts {	
+    UInt32 value = 0;
+    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"MOUNT_LIST_NUM"] Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+		return value;
+    }
+    return 0;
+}
+
 - (UInt32)comboPoints {
     UInt32 value = 0;
     if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"COMBO_POINTS_STATIC"]) Buffer: (Byte *)&value BufLength: sizeof(value)]) {

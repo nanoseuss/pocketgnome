@@ -125,6 +125,7 @@ enum ePlayer_RuneTypes {
 - (UInt32)percentMana;
 - (UInt32)comboPoints;
 - (int)runesAvailable:(int)type;
+- (UInt32)mounts;
 
 @property (readwrite, retain) Unit *pet;
 

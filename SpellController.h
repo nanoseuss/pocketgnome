@@ -54,6 +54,7 @@
 - (Spell*)highestRankOfSpell: (Spell*)spell;
 - (Spell*)playerSpellForName: (NSString*)spellName;
 - (Spell*)mountSpell: (int)type andFast:(BOOL)isFast;
+- (int)mountsLoaded;
 - (BOOL)addSpellAsRecognized: (Spell*)spell;
 
 // For spell cooldowns (no longer needed as of 3.1.3 due to CD code)

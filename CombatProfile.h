@@ -21,13 +21,15 @@
 	
 	// Healing
 	BOOL healingEnabled, autoFollowTarget, mountEnabled;
-	float yardsBehindTarget, healingRange;
+	float healingRange;
 	
 	// Party
 	UInt64 tankUnitGUID;
 	UInt64 assistUnitGUID;
 	UInt64 followUnitGUID;
+	float followDistanceToMove, yardsBehindTargetStart, yardsBehindTargetStop;
 	BOOL assistUnit, tankUnit, followUnit, partyEnabled;
+	BOOL disableRelease;
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
@@ -67,9 +69,12 @@
 
 @property (readwrite, assign) BOOL healingEnabled;
 @property (readwrite, assign) BOOL autoFollowTarget;
-@property (readwrite, assign) float yardsBehindTarget;
+@property (readwrite, assign) float followDistanceToMove;
+@property (readwrite, assign) float yardsBehindTargetStart;
+@property (readwrite, assign) float yardsBehindTargetStop;
 @property (readwrite, assign) float healingRange;
 @property (readwrite, assign) BOOL mountEnabled;
+@property (readwrite, assign) BOOL disableRelease;
 
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) float engageRange;

@@ -356,6 +356,16 @@ static SpellController *sharedSpells = nil;
 	return nil;	
 }
 
+- (int)mountsLoaded{
+	int total = 0;
+	for ( Spell *spell in _playerSpells ) {
+		if ( [spell isMount] ){
+			total++;
+		}
+	}
+	return total;
+}
+
 // I really don't like how ugly this function is, if only it was elegant :(
 - (Spell*)mountSpell: (int)type andFast:(BOOL)isFast{
 	

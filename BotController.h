@@ -118,7 +118,6 @@
 	int _lastActionErrorCode;
 	UInt32 _lastActionTime;
 	int _zoneBeforeHearth;
-	BOOL _disableReleasingOnDeath;
 	
 	// healing shit
 	BOOL _shouldFollow;
@@ -305,7 +304,10 @@
 - (IBAction)pvpStartStop: (id)sender;
 - (IBAction)pvpBMSelectAction: (id)sender;
 - (IBAction)pvpTestWarning: (id)sender;
+
+// test stuff
 - (IBAction)test: (id)sender;
+- (IBAction)test2: (id)sender;
 - (IBAction)login: (id)sender;
 - (IBAction)doTheRelicEmanation: (id)sender;
 
