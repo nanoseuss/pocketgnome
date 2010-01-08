@@ -1593,8 +1593,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// fire off notification (sometimes needed if the mob only had $$, or the loot failed)
 	if ( self.unitToLoot ){
-
-		PGLog(@"[Loot] Firing off loot success, is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );
+		
+		PGLog(@"[Loot] Firing off loot success");
+		
+		// is it a mob?
+		if ( [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC] ){
+			PGLog(@"[Loot] Is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );
+		}
+		
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
 	}
 }

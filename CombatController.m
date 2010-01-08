@@ -327,7 +327,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)stayWithUnit{
 	
-	//PGLog(@"[Combat] Staying with %@", _castingUnit);
+	PGLog(@"[Combat] Staying with %@", _castingUnit);
 	
 	// cancel other requests
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
@@ -663,8 +663,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// player or pet?
 	if ([unit isPlayer])
 		weight += 100;
-	else if ([unit isPet])
+	
+	if ( [unit isPet] ){
 		weight -= 25;
+		
+		// we hate pets!
+		if ( !botController.theCombatProfile.attackPets ){
+			weight -= 300;
+		}
+	}
 	
 	// health left
 	int healthLeft = (100-[unit percentHealth]);
