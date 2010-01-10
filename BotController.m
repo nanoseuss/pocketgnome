@@ -3964,7 +3964,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// sleep a bit before we update our status
 	usleep(500000);
-	[self updateStatus: [NSString stringWithFormat:@"Bot: %@", logMessage]];
+	[self updateStatus: [NSString stringWithFormat:@"Bot: %@", message]];
 }
 
 #pragma mark Timers
@@ -4174,7 +4174,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		 _lastActionErrorCode = lastErrorMessage;
-		 PGLog(@"[Bot] Spell didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
+		 PGLog(@"[Bot] Spell %d didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
 
 		 // do something?
 		 if ( lastErrorMessage == ErrSpellNot_Ready){
