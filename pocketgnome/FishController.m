@@ -380,7 +380,7 @@
 		PGLog(@"[Fishing] Our bobber is invalid :(");
 		
 		// make sure we don't try to watch this node next
-		[nodeController finishedNode:bobber];
+		//[nodeController finishedNode:bobber];
 		
 		// fish again
 		_ignoreIsFishing = YES;		// probably not necessary, but just in case it goes invalid while we're casting (probably not possible)?
@@ -414,8 +414,10 @@
 			// click our bobber!
 			[botController interactWithMouseoverGUID: [bobber GUID]];
 			
+			
+			// TO DO: replace finished??
 			// make sure we don't try to watch this node next
-			[nodeController finishedNode:bobber];
+			//[nodeController finishedNode:bobber];
 			
 			// make sure the fish was looted!
 			_lootAttempt = 0;
