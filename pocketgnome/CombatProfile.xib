@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="44"/>
+			<integer value="426"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -328,7 +328,7 @@
 								<object class="NSTabViewItem" id="572805253">
 									<string key="NSIdentifier">2</string>
 									<object class="NSView" key="NSView" id="41599456">
-										<reference key="NSNextResponder" ref="157860499"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -889,7 +889,6 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {384, 232}}</string>
-										<reference key="NSSuperview" ref="157860499"/>
 									</object>
 									<string key="NSLabel">Combat</string>
 									<reference key="NSColor" ref="920079583"/>
@@ -898,7 +897,7 @@
 								<object class="NSTabViewItem" id="1015065574">
 									<string key="NSIdentifier">Item 2</string>
 									<object class="NSView" key="NSView" id="504623840">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="157860499"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1250,6 +1249,7 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {384, 232}}</string>
+										<reference key="NSSuperview" ref="157860499"/>
 									</object>
 									<string key="NSLabel">Ranges</string>
 									<reference key="NSColor" ref="920079583"/>
@@ -2298,14 +2298,14 @@
 									<reference key="NSTabView" ref="157860499"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="572805253"/>
+							<reference key="NSSelectedTabViewItem" ref="1015065574"/>
 							<reference key="NSFont" ref="300528464"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="41599456"/>
+								<reference ref="504623840"/>
 							</object>
 						</object>
 						<object class="NSButton" id="583623619">
@@ -6322,7 +6322,7 @@
 						<object class="IBToolTipAttribute" key="NS.object.0">
 							<string key="name">ToolTip</string>
 							<reference key="object" ref="1068337319"/>
-							<string key="toolTip">This is the MAXIMUM distance for you to be able to attack a unit. (melee should but 30)</string>
+							<string key="toolTip">This is the MAXIMUM distance for you to be able to attack a unit. (melee should put 30)</string>
 						</object>
 					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

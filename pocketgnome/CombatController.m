@@ -58,6 +58,7 @@
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorOutOfRange object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorTargetNotInLOS object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInFront:) name: ErrorTargetNotInFront object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(unitDied:) 
@@ -149,7 +150,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 		// don't blacklist if melee + moving to!
 		if ( ! ([botController.theBehavior meleeCombat] && [movementController moveToObject] == _castingUnit ) ){
-			PGLog(@"[Combat] Out of range, blacklisting %@", _castingUnit);
+			PGLog(@"[Combat] Out of range/LOS, blacklisting %@", _castingUnit);
 			[blacklistController blacklistObject: _castingUnit];
 		}
 		else{
@@ -479,8 +480,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( targetGUID > 0x0 ){
 				Mob *mob = [mobController mobWithGUID:targetGUID];
 				
-				[allPotentialUnits addObject:mob];
-				PGLog(@" [Combat] Found assist unit %@", mob);
+				if ( mob ){
+					[allPotentialUnits addObject:mob];
+					PGLog(@" [Combat] Found assist unit %@", mob);
+				}
 			}
 			else{
 				PGLog(@" [Combat] Player not targeting unit, ignoring assist");

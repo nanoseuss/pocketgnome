@@ -92,7 +92,7 @@
 	}
 	// positive x
 	else{
-		x = (cosf(direction) * distance);
+		x = -1.0f * (cosf(direction) * distance);
 	}
 	
 	// negative y
@@ -101,7 +101,7 @@
 	}
 	// positive y
 	else{
-		y = (sinf(direction) * distance);
+		y = -1.0f * (sinf(direction) * distance);
 	}
 	
 	Position *newPos = [[Position alloc] initWithX:([self xPosition] + x) Y:([self yPosition] + y) Z:[self zPosition]];

@@ -127,6 +127,7 @@
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;
 	int _lootAttempt;
+	int _lootMacroAttempt;
 	WoWObject *_unitToLoot;
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;

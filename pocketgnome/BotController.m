@@ -223,6 +223,7 @@
 		self.lootStartTime = nil;
 		self.skinStartTime = nil;
 		_lootAttempt = 0;
+		_lootMacroAttempt = 0;
 		_zoneBeforeHearth = -1;
 		_attackingInStrand = NO;
 		_strandDelay = NO;
@@ -1582,13 +1583,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// Is the loot window stuck being open?
-	if ( [lootController isLootWindowOpen] ){
+	if ( [lootController isLootWindowOpen] && _lootMacroAttempt < 3 ){
 		PGLog(@"[Loot] Loot window open? ZOMG lets close it!");
+		
+		_lootMacroAttempt++;
 		
 		[lootController acceptLoot];
 		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];
 		
 		return;
+	}
+	else if ( _lootMacroAttempt >= 3 ){
+		PGLog(@"[Loot] Attempted to loot %d times, moving on...", _lootMacroAttempt);
 	}
 	
 	// fire off notification (sometimes needed if the mob only had $$, or the loot failed)
@@ -1689,6 +1695,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Reset our attempt variables!
 		_lootAttempt = 0;
+		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 		
 		// Mount?  Or just evaluate
@@ -2527,6 +2534,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
 					PGLog(@"[Loot] Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
 					[_mobsToLoot removeObject: self.unitToLoot];
+					
+					// potential fix to just stopping?  thanks wowpew
+					[movementController resetUnit];
 				}
 				else{
 					PGLog(@"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
@@ -2793,7 +2803,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		PGLog(@"[Bot] Mounting attempt %d!", _mountAttempt);
 		
-		[movementController pauseMovement];
+		//[movementController pauseMovement];
 		
 		usleep(100000);
 		
@@ -3947,6 +3957,16 @@ NSMutableDictionary *_diffDict = nil;
     [[NSSound soundNamed: @"alarm"] play];
 }
 
+- (void)logOutWithMessage:(NSString*)message{
+	
+	PGLog(@"[Bot] %@", message);
+	[self logOut];
+	
+	// sleep a bit before we update our status
+	usleep(500000);
+	[self updateStatus: [NSString stringWithFormat:@"Bot: %@", logMessage]];
+}
+
 #pragma mark Timers
 
 - (void)logOutTimer: (NSTimer*)timer {
@@ -3987,9 +4007,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// time to stop botting + log!
 	if ( logOutNow ){
-		PGLog(@"[Bot] %@", logMessage);
-		[self logOut];
-		[self updateStatus: [NSString stringWithFormat:@"Bot: %@", logMessage]];
+		[self logOutWithMessage:logMessage];
 	}
 }
 
@@ -4148,7 +4166,6 @@ NSMutableDictionary *_diffDict = nil;
 	
 	BOOL errorFound = NO;
 	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
-		PGLog(@"ZOMG THERE IS AN ERROR! AHHHHHH! %@", [playerController lastErrorMessage]);
 		errorFound = YES;
 	}
 	
@@ -4157,7 +4174,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		 _lastActionErrorCode = lastErrorMessage;
-		 PGLog(@"[Bot] Spell (%d) didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
+		 PGLog(@"[Bot] Spell didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
 
 		 // do something?
 		 if ( lastErrorMessage == ErrSpellNot_Ready){
@@ -4176,6 +4193,11 @@ NSMutableDictionary *_diffDict = nil;
 			 if ( ![playerController isOnGround] ){
 				 [movementController dismount];
 			 }
+		 }
+		 // do we need to log out?
+		 else if ( lastErrorMessage == ErrInventoryFull ){
+			 if ( [logOutOnFullInventoryCheckbox state] )
+				 [self logOutWithMessage:@"Inventory full, closing game"];
 		 }
 		 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ){
 			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
