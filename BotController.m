@@ -190,6 +190,10 @@
                                                      name: AllItemsLootedNotification 
                                                    object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(itemLooted:) 
+                                                     name: ItemLootedNotification 
+                                                   object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(whisperReceived:) 
                                                      name: WhisperReceived 
                                                    object: nil];
@@ -1653,6 +1657,37 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	self.unitToLoot = nil;
 }
 
+// called when ONE item is looted
+- (void)itemLooted: (NSNotification*)notification {
+	
+	PGLog(@"[Loot] Looted %@", [notification object]);
+	
+	// should we try to use the item?
+	if ( _lootUseItems ){
+		
+		PGLog(@"[Loot] Check enabled...");
+		
+		int itemID = [[notification object] intValue];
+		
+		// crystallized <air|earth|fire|shadow|life|water> or mote of <air|earth|fire|life|mana|shadow|water>
+		if ( ( itemID >= 37700 && itemID <= 37705 ) || ( itemID >= 22572 && itemID <= 22578 ) ){
+			PGLog(@"[Loot] Useable item looted, checking to see if we have > 10 of %d", itemID);
+			
+			Item *item = [itemController itemForID:[notification object]];
+			if ( item ){
+				int collectiveCount = [itemController collectiveCountForItem:item];
+				
+				if ( collectiveCount >= 10 ){
+					
+					PGLog(@"[Loot] We have more than 10 of %@, using!", item);
+					
+					[self performAction:itemID + USE_ITEM_MASK];					
+				}				
+			}
+		}
+	}
+}
+
 - (void)skinOrFinish{
 	
 	if ( [fishController isFishing] )
@@ -2846,18 +2881,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                            forProfileNamed: [[NSUserDefaults standardUserDefaults] objectForKey: @"CombatProfile"]];
 }
 
-- (IBAction)autoJoinWG: (id)sender{
-	if ( [autoJoinWG state] ){
-		[autoJoinWG setTitle:@"Don't forget to set up your macro on the settings tab!"];
-		[NSObject cancelPreviousPerformRequestsWithTarget:self selector: @selector(resetAutoJoinWGText) object:nil];
-		[self performSelector:@selector(resetAutoJoinWGText) withObject:nil afterDelay:3.5f];
-	}
-}
-
-- (void)resetAutoJoinWGText{
-	[autoJoinWG setTitle:@"Stay in Wintergrasp (this will persist if the bot isn't running)"];
-}
-
 - (IBAction)updateStatus: (id)sender {
     CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
 	
@@ -3037,6 +3060,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_nodeIgnoreFriendlyDistance		= [nodeIgnoreFriendlyDistanceText floatValue];
 		_nodeIgnoreHostileDistance		= [nodeIgnoreHostileDistanceText floatValue];
 		_nodeIgnoreMobDistance			= [nodeIgnoreMobDistanceText floatValue];
+		
+		_lootUseItems					= [lootUseItemsCheckbox state];
 		
 		// friendly shit
 		

@@ -131,6 +131,7 @@
 	WoWObject *_unitToLoot;
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;
+	BOOL _lootUseItems;
 	
 	// fishing shit
 	float _fishingGatherDistance;
@@ -236,6 +237,8 @@
 	IBOutlet NSButton *nodeIgnoreHostileCheckbox;
 	IBOutlet NSButton *nodeIgnoreFriendlyCheckbox;
 	IBOutlet NSButton *nodeIgnoreMobCheckbox;
+	
+	IBOutlet NSButton *lootUseItemsCheckbox;
     
     IBOutlet NSPanel *hotkeyHelpPanel;
     IBOutlet NSPanel *lootHotkeyHelpPanel;
@@ -287,8 +290,6 @@
 - (IBAction)stopBot: (id)sender;
 - (IBAction)startStopBot: (id)sender;
 - (IBAction)testHotkey: (id)sender;
-
-- (IBAction)autoJoinWG: (id)sender;
 
 - (void)updateRunningTimer;
 

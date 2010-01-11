@@ -166,8 +166,10 @@ static InventoryController *sharedInventory = nil;
 - (int)collectiveCountForItem: (Item*)refItem {
     if(![refItem isValid]) return 0;
     int count = 0;
-    for(Item* item in _itemList) {
-        if([item entryID] == [refItem entryID]) { // they are the same type of item
+	int itemEntryID = [refItem entryID];	// cache this, saves on memory reads
+    for ( Item *item in _itemList ) {
+		// same type
+        if ( [item entryID] == itemEntryID ) {
             count += [item count];
         }
     }
@@ -178,8 +180,9 @@ static InventoryController *sharedInventory = nil;
 - (int)collectiveCountForItemInBags: (Item*)refItem{
 	if(![refItem isValid]) return 0;
     int count = 0;
-    for(Item* item in [self itemsInBags]) {
-        if([item entryID] == [refItem entryID]) { // they are the same type of item
+	int itemEntryID = [refItem entryID];	// cache this, saves on memory reads
+    for ( Item* item in [self itemsInBags] ) {
+        if ( [item entryID] == itemEntryID ) {
             count += [item count];
         }
     }
@@ -555,7 +558,7 @@ static InventoryController *sharedInventory = nil;
 	return [[items retain] autorelease];	
 }
 
-// will return an array of type Item
+// will return an array of Item objects
 - (NSArray*)itemsInBags{
 	
 	// will store all of our items
@@ -608,7 +611,7 @@ static InventoryController *sharedInventory = nil;
 }
 
 - (BOOL)arePlayerBagsFull{
-	PGLog(@"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
+	//PGLog(@"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
 	return [self bagSpacesAvailable] == 0;
 }
 
