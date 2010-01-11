@@ -347,7 +347,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)stayWithUnit{
 	
-	PGLog(@"[Combat] Staying with %@", _castingUnit);
+	PGLog(@"[Combat] Staying with %@ in procedure %@", _castingUnit, [botController procedureInProgress]);
 	
 	// cancel other requests
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
