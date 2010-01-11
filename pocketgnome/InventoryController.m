@@ -261,9 +261,10 @@ static InventoryController *sharedInventory = nil;
 
 - (void)reloadItemData {
 
-	// why do we only update on every 20th write?
+	// why do we only update on every 20th read?
 	//	to save memory reads of course!
-	if ( _updateDurabilityCounter == 20 ){
+	int freq = _updateDurabilityCounter / (int)updateFrequency;
+	if ( _updateDurabilityCounter > freq ){
 
 		// release the old arrays
 		_itemsPlayerIsWearing = nil;
