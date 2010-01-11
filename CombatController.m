@@ -100,10 +100,17 @@ int DistFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2, vo
 
 int WeightCompare(id unit1, id unit2, void *context) {
 	
-	CombatController *combat = (CombatController*)context;
+	NSDictionary *dict = (NSDictionary*)context;
+
+	NSNumber *w1 = [dict objectForKey:[NSNumber numberWithLongLong:[unit1 GUID]]];
+	NSNumber *w2 = [dict objectForKey:[NSNumber numberWithLongLong:[unit2 GUID]]];
 	
-	int weight1 = [combat weight:unit1];
-	int weight2 = [combat weight:unit2];
+	int weight1=0, weight2=0;
+	
+	if ( w1 )
+		weight1 = [w1 intValue];
+	if ( w2 )
+		weight2 = [w2 intValue];
 	
 	//PGLog(@"(%@)%d vs. (%@)%d", unit1, weight1, unit2, weight2);
     if (weight1 > weight2)
@@ -193,7 +200,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[units addObject:_addUnit];
 	}
 	
-	[units sortUsingFunction: WeightCompare context: self];
+	// sort
+	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
+	Position *playerPosition = [playerData position];
+	for ( Unit *unit in units ){
+		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
+	}
+	[units sortUsingFunction: WeightCompare context: dictOfWeights];
 	
 	return [[units retain] autorelease];
 }
@@ -232,8 +245,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[validUnits addObject:unit];		
 	}	
 	
-	// sort by weight!
-	[validUnits sortUsingFunction: WeightCompare context: self];
+	// sort
+	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
+	for ( Unit *unit in validUnits ){
+		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
+	}
+	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];
 	
 	return [[validUnits retain] autorelease];
 }
