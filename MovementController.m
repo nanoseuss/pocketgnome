@@ -168,7 +168,7 @@ typedef enum MovementType {
     // stop timers
     [self resetMovementTimer];
 	[self resetSpeedDistanceCheck];
-    
+
     if(!self.isPaused || (([playerData movementFlags] & 0x1) == 0x1)) {
         // stop movement if we haven't already
         PGLog(@"[Move] Pause movement.");
