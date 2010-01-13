@@ -2521,7 +2521,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		PGLog(@"[Bot] Trying to execute regen procedure %d", _doRegenProcedure);
 		
 		// only try this a few times
-		if ( _doRegenProcedure < 40 ){
+		if ( _doRegenProcedure < 10 ){
 			if ( [playerController isInCombat] ){
 				PGLog(@"[Bot] Still in combat, waiting to execute regen, trying again in 0.1 seconds");
 				[self performSelector:_cmd withObject:nil afterDelay:0.1f];
@@ -2543,14 +2543,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     // get potential units and their distances
     Mob *mobToLoot      = [self mobToLoot];
-    Unit *unitToAttack  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
+    Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
     
     float mobToLootDist     = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
-    float unitToAttackDist  = unitToAttack ? [[unitToAttack position] distanceToPosition: playerPosition] : INFINITY;
+    float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
     
     // if the mob to loot is closer to us, loot it first
-    if ( mobToLoot && (mobToLootDist < unitToAttackDist ) ) {
-		PGLog(@"[Bot] Mob is closer to loot! %0.2f < %0.2f", mobToLootDist, unitToAttackDist);
+    if ( mobToLoot && (mobToLootDist < unitToActOnDist ) ) {
+		PGLog(@"[Bot] Mob is closer to loot! %0.2f < %0.2f", mobToLootDist, unitToActOnDist);
 		
 		
 		// if the mob is close, just loot it!
@@ -2591,37 +2591,43 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     // otherwise, attack the unit
-    if ( [unitToAttack isValid] && (unitToAttackDist < INFINITY) && [self combatProcedureValidForUnit:unitToAttack] ) {
+    if ( [unitToActOn isValid] && (unitToActOnDist < INFINITY) && [self combatProcedureValidForUnit:unitToActOn] ) {
 		
-		PGLog(@"[Bot] Valid unit to act on: %@", unitToAttack);
+		PGLog(@"[Bot] Valid unit to act on: %@", unitToActOn);
 		
-        if([combatController combatEnabled]) {
+        if ( [combatController combatEnabled] || theCombatProfile.healingEnabled ) {
             
-            // if we're not in combat, and haven't done the pre-combat already, do it.
-            if ( ![combatController inCombat] && !_didPreCombatProcedure ) {
-                
-                // do the pre-combat routine
-                _didPreCombatProcedure = YES;
-                self.preCombatUnit = unitToAttack;
-                
-				PGLog(@"[Bot] Starting PreCombat procedure");
-                
-                [self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                                  PreCombatProcedure,               @"Procedure",
-                                                  [NSNumber numberWithInt: 0],      @"CompletedRules",
-                                                  unitToAttack,                     @"Target",  nil]];
-                return YES;
-            }
-            
-            if(unitToAttack != self.preCombatUnit) {
-                PGLog(@"[Bot] Attacking unit other than pre-combat unit.");
-            }
-            self.preCombatUnit = nil;
-            
-            // time to attack!
-			PGLog(@"[Bot] Found %@ and attacking.", unitToAttack);
-			[movementController turnTowardObject: unitToAttack];
-			[self actOnUnit: unitToAttack];
+
+			// hostile only
+			if ( [playerController isHostileWithFaction: [unitToActOn factionTemplate]] ) {
+				
+				// should we do pre-combat?
+				if ( ![combatController inCombat] && !_didPreCombatProcedure ) {
+					
+					_didPreCombatProcedure = YES;
+					self.preCombatUnit = unitToActOn;
+					
+					PGLog(@"[Bot] Starting PreCombat procedure");
+					
+					[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
+													  PreCombatProcedure,               @"Procedure",
+													  [NSNumber numberWithInt: 0],      @"CompletedRules",
+													  unitToActOn,                     @"Target",  nil]];
+					return YES;
+				}
+				
+				if ( unitToActOn != self.preCombatUnit ) {
+					PGLog(@"[Bot] Attacking unit other than pre-combat unit.");
+				}
+				
+				self.preCombatUnit = nil;
+				
+				// time to attack!
+				PGLog(@"[Bot] Found %@ and attacking.", unitToActOn);
+				[movementController turnTowardObject: unitToActOn];
+			}
+			
+			[self actOnUnit: unitToActOn];
 			
 			return YES;
         } else {
@@ -2678,6 +2684,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 					// Should we be mounted before we move to the node?
 					else if ( [self mountNow] ){
+						PGLog(@"mounting...");
 						[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 						return YES;
 					}
@@ -2795,7 +2802,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// Should we be mounted?
-	if ( [self mountNow] && ![movementController moveToObject] ){
+	if ( ![movementController moveToObject] && [self mountNow] ){
+		PGLog(@"mounting.....");
 		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 		return YES;
 	}
@@ -4450,6 +4458,7 @@ NSMutableDictionary *_diffDict = nil;
 
 
 - (IBAction)test2: (id)sender{
+	/*
 	Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
 	Position *playerPosition = [playerController position];
 	
@@ -4460,29 +4469,138 @@ NSMutableDictionary *_diffDict = nil;
 	PGLog(@"New pos: %@", newPos);
 	
 	[movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
-
+*/
 }
 
-//0x1555BE0
+- (int)CompareFactionHash: (int)hash1 withHash2:(int)hash2{	
+	if ( hash1 == 0 || hash2 == 0 )
+		return -1;
+	
+	UInt32 hashCheck1 = 0, hashCheck2 = 0;
+	UInt32 check1 = 0, check2 = 0;
+	int hashCompare = 0, hashIndex = 0, i = 0;
+	//Byte *bHash1[0x40];
+	//Byte *bHash2[0x40];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	//[memory loadDataForObject: self atAddress: hash1 Buffer: (Byte*)&bHash1 BufLength: sizeof(bHash1)];
+	//[memory loadDataForObject: self atAddress: hash2 Buffer: (Byte*)&bHash2 BufLength: sizeof(bHash2)];
+	
+	// get the hash checks
+	[memory loadDataForObject: self atAddress: hash1 + 0x4 Buffer: (Byte*)&hashCheck1 BufLength: sizeof(hashCheck1)];
+	[memory loadDataForObject: self atAddress: hash2 + 0x4 Buffer: (Byte*)&hashCheck2 BufLength: sizeof(hashCheck2)];
+	
+	//bitwise compare of [bHash1+0x14] and [bHash2+0x0C]
+	[memory loadDataForObject: self atAddress: hash1 + 0x14 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
+	[memory loadDataForObject: self atAddress: hash2 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
+	if ( ( check1 & check2 ) != 0 )
+		return 1;	// hostile
+	
+	hashIndex = 0x18;
+	[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+	if ( hashCompare != 0 ){
+		for ( i = 0; i < 4; i++ ){
+			if ( hashCompare == hashCheck2 )
+				return 1; // hostile
+			
+			hashIndex += 4;
+			[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+			
+			if ( hashCompare == 0 )
+				break;
+		}
+	}
+	
+	//bitwise compare of [bHash1+0x10] and [bHash2+0x0C]
+	[memory loadDataForObject: self atAddress: hash1 + 0x10 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
+	[memory loadDataForObject: self atAddress: hash2 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
+	if ( ( check1 & check2 ) != 0 ){
+		PGLog(@"friendly");
+		return 4;	// friendly
+	}
+	
+	hashIndex = 0x28;
+	[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+	if ( hashCompare != 0 ){
+		for ( i = 0; i < 4; i++ ){
+			if ( hashCompare == hashCheck2 ){
+				PGLog(@"friendly2");
+				return 4;	// friendly
+			}
+			
+			hashIndex += 4;
+			[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+			
+			if ( hashCompare == 0 )
+				break;
+		}
+	}
+	
+	 //bitwise compare of [bHash2+0x10] and [bHash1+0x0C]
+	[memory loadDataForObject: self atAddress: hash2 + 0x10 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
+	[memory loadDataForObject: self atAddress: hash1 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
+	if ( ( check1 & check2 ) != 0 ){
+		PGLog(@"friendly3");
+		return 4;	// friendly
+	}
+	
+	hashIndex = 0x28;
+	[memory loadDataForObject: self atAddress: hash2 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+	if ( hashCompare != 0 ){
+		for ( i = 0; i < 4; i++ ){
+			if ( hashCompare == hashCheck1 ){
+				PGLog(@"friendly4");
+				return 4;	// friendly
+			}
+				
+			hashIndex += 4;
+			[memory loadDataForObject: self atAddress: hash2 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+			
+			if ( hashCompare == 0 )
+				break;
+		}
+	}
+	
+	return 3;	//neutral
+}
+
 - (IBAction)test: (id)sender{
-/*
-	
-	int i = RuneType_Blood;
-	for ( ; i <= RuneType_Death ; i++ ){
-		PGLog(@"%d: %d", i, [playerController runesAvailable:i]);
-	}*/
 	
 	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
+	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
+	[memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];
+	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x20 Buffer: (Byte*)&factionPointer BufLength: sizeof(factionPointer)];
+	
+	
+	UInt32 hash1, hash2;
+	int faction1 = [[playerController player] factionTemplate];
+	int faction2 = 3;
+	
+	
+	GUID guid = [playerController targetID];
+	
+	Unit *unit = [mobController mobWithGUID:guid];
+	if ( !unit ){
+		// player?
+		unit = [playersController playerWithGUID:guid];
+	}
+	
+	if ( unit ){
+		PGLog(@"We have a unit %@ with faction %d", unit, [unit factionTemplate]);
+		faction2 = [unit factionTemplate];
+	}
+	
+	if ( faction1 >= startIndex && faction1 < totalFactions && faction2 >= startIndex && faction2 < totalFactions ){
+		hash1 = (factionPointer + ((faction1 - startIndex)*4));
+		hash2 = (factionPointer + ((faction2 - startIndex)*4));
+		
+		PGLog(@"Hashes: 0x%X  0x%X", hash1, hash2);
+		
+		PGLog(@"Result of compare: %d", [self CompareFactionHash:hash1 withHash2:hash2]);
+	}
 
-	
-
-	
-	//self.theBehavior = [[behaviorPopup selectedItem] representedObject];
-	//self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
-	//PGLog(@"[Bot] Found unit: %@", [combatController findUnit] );
-	
-	//PGLog(@"total units: %d", [[combatController allUnitsForCombat:YES] count]);
-	
 	
 	/*
 	//[playerController isOnRightBoatInStrand];
@@ -4601,7 +4719,7 @@ LABEL_19:
 	
 	
 	
-
+/*
 	Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
 	Position *playerPosition = [playerController position];
 	
@@ -4610,7 +4728,7 @@ LABEL_19:
 	
 	PGLog(@"Angle to target: %0.2f", direction);
 	[playerController setDirectionFacing:direction];
-	
+	*/
 	//0-2pi. North is 0, west is pi/2, south is pi, east is 3pi/2.
 	/*
 	int quadrant = 0;
@@ -4627,6 +4745,8 @@ LABEL_19:
 	else if ( (3.0f*M_PI)/2.0f < direction && direction <= 2*M_PI ){
 		quadrant = 4;
 	}*/
+	
+	/*
 	
 	float x, y;
 	float closeness = 10.0f;
@@ -4653,7 +4773,7 @@ LABEL_19:
 	PGLog(@"Change in position: {%0.2f, %0.2f}", x, y);
 	
 	[movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
-	
+	*/
 		
 	//[controller traverseNameList];
 	/*
