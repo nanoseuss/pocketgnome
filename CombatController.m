@@ -609,8 +609,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	//PGLog(@"*[Combat] Found %d valid units", [validUnits count]);
-	
-	[validUnits sortUsingFunction: WeightCompare context: self];
+	// sort
+	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
+	for ( Unit *unit in validUnits ){
+		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
+	}
+	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];
 	
 	return [[validUnits retain] autorelease];
 }
