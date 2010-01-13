@@ -719,7 +719,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 
                 if( [condition unit] == UnitTarget && [condition quality] == QualityDistance && target) {
                     float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
-                    // PGLog(@"-- Checking distance condition --");
+                    //PGLog(@"-- Checking distance condition --");
                     
                     if( [condition comparator] == CompareMore) {
                         conditionEval = ( distanceToTarget > [[condition value] floatValue] ) ? YES : NO;
@@ -1221,15 +1221,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//PGLog(@"[Procedure^^^^^^^^^^^^^] Creating dictionary to track our tried rules!");
 		rulesTried = [[NSMutableDictionary dictionary] retain];
 	}
-	
-    // send your pet to attack
-    if( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead]) {
-        if( [[self procedureInProgress] isEqualToString: PreCombatProcedure] || [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-            if(![controller isWoWChatBoxOpen] && (_currentPetAttackHotkey >= 0)) {
-                [chatController pressHotkey: _currentPetAttackHotkey withModifier: _currentPetAttackHotkeyModifier];
-            }
-        }
-    }
     
     // have we completed all the rules?
     int ruleCount = [procedure ruleCount];
@@ -1350,10 +1341,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 				}
 				
+				// pet
+				else if ( [rule target] == TargetPet ){
+					target = [playerController pet];
+					
+					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
+						// do something
+						PGLog(@"[Procedure] Pet match for %@", rule);
+						matchFound = YES;
+					}
+				}
+				
 				// TO DO: we need pet in here?
 				
 				// loop through all units
 				else{
+					
+					//Unit *notInCombatUnit = nil;
 					for ( target in units ){
 						
 						// special rule if we're NOT pvping
@@ -1361,6 +1365,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							// if we're in combat, and the unit is not, ignore!
 							if ( [playerController isInCombat] && ![target isInCombat] ){
 								PGLog(@"[Procedure] Ignoring %@ since we're in combat and the target isn't!", target);
+								
+								// special condition (helps hunters!)
+								/*if ( notInCombatUnit == nil && [self evaluateRule: rule withTarget: target asTest: NO] ){
+									notInCombatUnit = target;
+								}*/
+								
 								continue;
 							}
 						}
@@ -1373,6 +1383,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							break;
 						}
 					}
+					
+					// "special condition"
+					/*if ( !matchFound && notInCombatUnit ){
+						PGLog(@"[Bot] No match found, but %@ isn't in combat, using!", notInCombatUnit);
+						target = notInCombatUnit;
+					}*/
 				}
 				
 				if ( matchFound ){
@@ -1406,6 +1422,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// target if needed!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 			[combatController stayWithUnit:target withType:[rule target]];
+		}
+		
+		// send in pet if needed
+		if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] && [rule target] == TargetEnemy ) {
+			if ( [[self procedureInProgress] isEqualToString: PreCombatProcedure] || [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
+				if ( ![controller isWoWChatBoxOpen] && (_currentPetAttackHotkey >= 0 ) ) {
+					PGLog(@"[Bot] Sending in pet to attack!");
+					[chatController pressHotkey: _currentPetAttackHotkey withModifier: _currentPetAttackHotkeyModifier];
+				}
+			}
 		}
 		
 		if ( [rule resultType] > 0 ){
@@ -1446,7 +1472,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// do it!
 					int actionResult = [self performAction:actionID];
-					PGLog(@"[Procedure] Action taken with result: %d", actionResult);
+					PGLog(@"[Procedure] Action %d taken with result: %d", actionID, actionResult);
 					
 					// error of some kind :/
 					if ( actionResult != ErrNone ){
@@ -1926,7 +1952,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 
         } else {
-			PGLog(@"[Bot] Don't need to be in melee!");
+			PGLog(@"[Bot] Don't need to be in melee, pausing movement!");
             // if we don't need to be in melee, pause
             [movementController pauseMovement];
 			readyToAttack = YES;
