@@ -12,6 +12,8 @@
 @class Controller;
 @class BotController;
 
+@class BetterSegmentedControl;
+
 #define RuleEditorSaveRule      1
 #define RuleEditorCancelRule    0
 
@@ -23,7 +25,7 @@
 
     IBOutlet id conditionMatchingSegment;
     IBOutlet id conditionResultTypeSegment;
-	IBOutlet id conditionTargetType;
+	IBOutlet BetterSegmentedControl *conditionTargetType;
     
     IBOutlet id spellRuleTableView;
     IBOutlet id spellRuleTypeDropdown;

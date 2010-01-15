@@ -13,4 +13,6 @@
 
 }
 - (int)selectedTag;
+- (void)unselectAllSegments;
+
 @end
