@@ -313,7 +313,6 @@
 }
 
 - (BOOL)tableView:(NSTableView *)tableView shouldTypeSelectForEvent:(NSEvent *)event withCurrentSearchString:(NSString *)searchString {
-    PGLog(@"shouldTypeSelectForEvent: %@", event);
     return NO;
 }
 

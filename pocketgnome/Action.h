@@ -9,32 +9,45 @@
 #import <Cocoa/Cocoa.h>
 
 typedef enum ActionType {
-    ActionType_None     = 0,
-    ActionType_Spell    = 1,
-    ActionType_Item     = 2,
-    ActionType_Macro    = 3,
-    ActionType_Delay    = 4,
-    ActionType_Interact = 5,
-	ActionType_Jump = 6,
+    ActionType_None			= 0,
+    ActionType_Spell		= 1,
+    ActionType_Item			= 2,
+    ActionType_Macro		= 3,
+    ActionType_Delay		= 4,
+    ActionType_Interact		= 5,
+	ActionType_Jump			= 6,
+	ActionType_SwitchRoute	= 7,
+	ActionType_QuestTurnIn	= 8,
+	ActionType_QuestGrab	= 9,
+	ActionType_Vendor		= 10,
+	ActionType_Mail			= 11,
+	ActionType_Repair		= 12,
+	ActionType_ReverseRoute	= 13,
     ActionType_Max,
 } ActionType;
 
+@class RouteSet;
+
 @interface Action : NSObject <NSCoding, NSCopying>  {
-    ActionType _type;
-    NSNumber *_value;
+    ActionType	_type;
+    id			_value;
+	BOOL        _enabled;
 }
 
-- (id)initWithType: (ActionType)type value: (NSNumber*)value;
-+ (id)actionWithType: (ActionType)type value: (NSNumber*)value;
+- (id)initWithType: (ActionType)type value: (id)value;
++ (id)actionWithType: (ActionType)type value: (id)value;
 + (id)action;
 
 @property (readwrite, assign) ActionType type;
-@property (readwrite, copy) NSNumber *value;
+@property (readwrite, copy) id value;
 
+@property BOOL enabled;
 @property (readonly) BOOL       isPerform;
 
 // in order to play nice with old code
 @property (readonly) float      delay;
 @property (readonly) UInt32     actionID;
+
+- (RouteSet*)route;
 
 @end

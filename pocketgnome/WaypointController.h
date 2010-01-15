@@ -70,6 +70,10 @@
     BOOL changeWasMade;
 	BOOL isAutomatorRunning, disableGrowl;
     NSSize minSectionSize, maxSectionSize;
+	
+	IBOutlet NSPanel *descriptionPanel;
+	NSString *_descriptionMultiRows;
+	NSIndexSet *_selectedRows;
 }
 
 - (void)saveRoutes;
@@ -86,8 +90,7 @@
 @property BOOL disableGrowl;
 @property (readonly) Route *currentRoute;
 @property (readwrite, retain) RouteSet *currentRouteSet;
-
-
+@property (readwrite, retain) NSString *descriptionMultiRows;
 
 // route actions
 - (IBAction)setRouteType: (id)sender;
@@ -99,8 +102,9 @@
 - (IBAction)duplicateRoute: (id)sender;
 - (IBAction)openExportPanel: (id)sender;
 - (IBAction)closeExportPanel: (id)sender;
-
 - (IBAction)optionSelected: (id)sender;
+- (IBAction)waypointMenuAction: (id)sender;
+- (IBAction)closeDescription: (id)sender;
 
 // importing/exporting
 - (void)importRouteAtPath: (NSString*)path;
@@ -128,5 +132,7 @@
 - (IBAction)changeWaypointAction: (id)sender;
 - (IBAction)cancelWaypointAction: (id)sender;
 
+// new action/conditions
+- (IBAction)doneWaypointAction: (id)sender;
 
 @end

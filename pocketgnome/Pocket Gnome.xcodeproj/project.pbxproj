@@ -12,6 +12,27 @@
 		0306057C10881CAE00C57D77 /* MacroController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0306057B10881CAE00C57D77 /* MacroController.m */; };
 		030C2E4D0FDC09B300E80F7E /* LootController.m in Sources */ = {isa = PBXBuildFile; fileRef = 030C2E4C0FDC09B300E80F7E /* LootController.m */; };
 		0313B4D810BAEA0B009E74E4 /* EventController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0313B4D710BAEA0B009E74E4 /* EventController.m */; };
+		03168C7110FE6CCD00EF241B /* WaypointActionEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168C7010FE6CCD00EF241B /* WaypointActionEditor.m */; };
+		03168C8C10FE6D2000EF241B /* WaypointActionEditor.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */; };
+		03168DC810FE8BA900EF241B /* DurabilityConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168DC710FE8BA900EF241B /* DurabilityConditionController.m */; };
+		03168DDD10FE90B600EF241B /* DurabilityCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DD610FE90B600EF241B /* DurabilityCondition.xib */; };
+		03168DDE10FE90B600EF241B /* InventoryFreeCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DD710FE90B600EF241B /* InventoryFreeCondition.xib */; };
+		03168DDF10FE90B600EF241B /* PlayerLevelCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DD810FE90B600EF241B /* PlayerLevelCondition.xib */; };
+		03168DE010FE90B600EF241B /* PlayerZoneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DD910FE90B600EF241B /* PlayerZoneCondition.xib */; };
+		03168DE110FE90B600EF241B /* QuestCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DDA10FE90B600EF241B /* QuestCondition.xib */; };
+		03168DE210FE90B600EF241B /* RouteRunCountCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DDB10FE90B600EF241B /* RouteRunCountCondition.xib */; };
+		03168DE310FE90B600EF241B /* RouteRunTimeCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168DDC10FE90B600EF241B /* RouteRunTimeCondition.xib */; };
+		03168E1B10FE972300EF241B /* PlayerLevelConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168E1A10FE972300EF241B /* PlayerLevelConditionController.m */; };
+		03168E1E10FE972B00EF241B /* PlayerZoneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168E1D10FE972B00EF241B /* PlayerZoneConditionController.m */; };
+		03168E2110FE973900EF241B /* QuestConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168E2010FE973900EF241B /* QuestConditionController.m */; };
+		03168E2410FE974800EF241B /* RouteRunCountConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168E2310FE974800EF241B /* RouteRunCountConditionController.m */; };
+		03168E2710FE975300EF241B /* RouteRunTimeConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168E2610FE975300EF241B /* RouteRunTimeConditionController.m */; };
+		03168E2A10FE975E00EF241B /* InventoryFreeConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168E2910FE975E00EF241B /* InventoryFreeConditionController.m */; };
+		03168EDE10FF70C600EF241B /* RepairAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03168EDC10FF70C600EF241B /* RepairAction.xib */; };
+		03168EE410FF713000EF241B /* ActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168EE310FF713000EF241B /* ActionController.m */; };
+		03168EFE10FF72DF00EF241B /* RepairActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168EFD10FF72DF00EF241B /* RepairActionController.m */; };
+		0316901010FF84AB00EF241B /* SwitchRouteAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */; };
+		0316904710FF89FC00EF241B /* SwitchRouteActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0316904610FF89FC00EF241B /* SwitchRouteActionController.m */; };
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
@@ -328,6 +349,38 @@
 		030C2E4C0FDC09B300E80F7E /* LootController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LootController.m; sourceTree = "<group>"; };
 		0313B4D610BAEA0B009E74E4 /* EventController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventController.h; sourceTree = "<group>"; };
 		0313B4D710BAEA0B009E74E4 /* EventController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EventController.m; sourceTree = "<group>"; };
+		03168C6F10FE6CCD00EF241B /* WaypointActionEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaypointActionEditor.h; sourceTree = "<group>"; };
+		03168C7010FE6CCD00EF241B /* WaypointActionEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WaypointActionEditor.m; sourceTree = "<group>"; };
+		03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = WaypointActionEditor.xib; sourceTree = "<group>"; };
+		03168DC610FE8BA900EF241B /* DurabilityConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DurabilityConditionController.h; sourceTree = "<group>"; };
+		03168DC710FE8BA900EF241B /* DurabilityConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DurabilityConditionController.m; sourceTree = "<group>"; };
+		03168DD610FE90B600EF241B /* DurabilityCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DurabilityCondition.xib; sourceTree = "<group>"; };
+		03168DD710FE90B600EF241B /* InventoryFreeCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InventoryFreeCondition.xib; sourceTree = "<group>"; };
+		03168DD810FE90B600EF241B /* PlayerLevelCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PlayerLevelCondition.xib; sourceTree = "<group>"; };
+		03168DD910FE90B600EF241B /* PlayerZoneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PlayerZoneCondition.xib; sourceTree = "<group>"; };
+		03168DDA10FE90B600EF241B /* QuestCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = QuestCondition.xib; sourceTree = "<group>"; };
+		03168DDB10FE90B600EF241B /* RouteRunCountCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RouteRunCountCondition.xib; sourceTree = "<group>"; };
+		03168DDC10FE90B600EF241B /* RouteRunTimeCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RouteRunTimeCondition.xib; sourceTree = "<group>"; };
+		03168E1910FE972300EF241B /* PlayerLevelConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerLevelConditionController.h; sourceTree = "<group>"; };
+		03168E1A10FE972300EF241B /* PlayerLevelConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerLevelConditionController.m; sourceTree = "<group>"; };
+		03168E1C10FE972B00EF241B /* PlayerZoneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlayerZoneConditionController.h; sourceTree = "<group>"; };
+		03168E1D10FE972B00EF241B /* PlayerZoneConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayerZoneConditionController.m; sourceTree = "<group>"; };
+		03168E1F10FE973900EF241B /* QuestConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestConditionController.h; sourceTree = "<group>"; };
+		03168E2010FE973900EF241B /* QuestConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestConditionController.m; sourceTree = "<group>"; };
+		03168E2210FE974800EF241B /* RouteRunCountConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteRunCountConditionController.h; sourceTree = "<group>"; };
+		03168E2310FE974800EF241B /* RouteRunCountConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteRunCountConditionController.m; sourceTree = "<group>"; };
+		03168E2510FE975300EF241B /* RouteRunTimeConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteRunTimeConditionController.h; sourceTree = "<group>"; };
+		03168E2610FE975300EF241B /* RouteRunTimeConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteRunTimeConditionController.m; sourceTree = "<group>"; };
+		03168E2810FE975E00EF241B /* InventoryFreeConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InventoryFreeConditionController.h; sourceTree = "<group>"; };
+		03168E2910FE975E00EF241B /* InventoryFreeConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InventoryFreeConditionController.m; sourceTree = "<group>"; };
+		03168EDC10FF70C600EF241B /* RepairAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RepairAction.xib; sourceTree = "<group>"; };
+		03168EE210FF713000EF241B /* ActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionController.h; sourceTree = "<group>"; };
+		03168EE310FF713000EF241B /* ActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ActionController.m; sourceTree = "<group>"; };
+		03168EFC10FF72DF00EF241B /* RepairActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RepairActionController.h; sourceTree = "<group>"; };
+		03168EFD10FF72DF00EF241B /* RepairActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RepairActionController.m; sourceTree = "<group>"; };
+		0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SwitchRouteAction.xib; sourceTree = "<group>"; };
+		0316904510FF89FC00EF241B /* SwitchRouteActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchRouteActionController.h; sourceTree = "<group>"; };
+		0316904610FF89FC00EF241B /* SwitchRouteActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SwitchRouteActionController.m; sourceTree = "<group>"; };
 		032B8C030FDEE37900807DD0 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		034429B60FAA3E1800E9DE03 /* Quest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quest.h; sourceTree = "<group>"; };
 		034429B70FAA3E1800E9DE03 /* Quest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Quest.m; sourceTree = "<group>"; };
@@ -735,6 +788,44 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		03168DCA10FE8D0B00EF241B /* Waypoint Actions */ = {
+			isa = PBXGroup;
+			children = (
+				03168DD610FE90B600EF241B /* DurabilityCondition.xib */,
+				03168DD710FE90B600EF241B /* InventoryFreeCondition.xib */,
+				03168DD810FE90B600EF241B /* PlayerLevelCondition.xib */,
+				03168DD910FE90B600EF241B /* PlayerZoneCondition.xib */,
+				03168DDA10FE90B600EF241B /* QuestCondition.xib */,
+				03168DDB10FE90B600EF241B /* RouteRunCountCondition.xib */,
+				03168DDC10FE90B600EF241B /* RouteRunTimeCondition.xib */,
+			);
+			name = "Waypoint Actions";
+			sourceTree = "<group>";
+		};
+		03168ED410FF705A00EF241B /* Waypoint Action NIBs */ = {
+			isa = PBXGroup;
+			children = (
+				0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */,
+				03168EDC10FF70C600EF241B /* RepairAction.xib */,
+			);
+			name = "Waypoint Action NIBs";
+			sourceTree = "<group>";
+		};
+		03168EE110FF70E900EF241B /* WaypointActions */ = {
+			isa = PBXGroup;
+			children = (
+				7D370B0B0E7350DD002FE3A4 /* Action.h */,
+				7D370B0C0E7350DD002FE3A4 /* Action.m */,
+				03168EE210FF713000EF241B /* ActionController.h */,
+				03168EE310FF713000EF241B /* ActionController.m */,
+				03168EFC10FF72DF00EF241B /* RepairActionController.h */,
+				03168EFD10FF72DF00EF241B /* RepairActionController.m */,
+				0316904510FF89FC00EF241B /* SwitchRouteActionController.h */,
+				0316904610FF89FC00EF241B /* SwitchRouteActionController.m */,
+			);
+			name = WaypointActions;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -902,6 +993,7 @@
 				7DD803970D515142005C2F01 /* Spells.xib */,
 				7D60434D0D5FCAA6001501AF /* Items.xib */,
 				7DD804270D516185005C2F01 /* Nodes.xib */,
+				03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */,
 				7DD803A10D5151CA005C2F01 /* Routes.xib */,
 				7DD803A30D5153E5005C2F01 /* Behaviors.xib */,
 				7DCB5A3F0D540647001678BC /* Memory.xib */,
@@ -916,6 +1008,7 @@
 				03C42CC91096839E0085E888 /* Macros.plist */,
 				03D65A581090EC0D00537E9C /* OffsetSignatures.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+				03168ED410FF705A00EF241B /* Waypoint Action NIBs */,
 				7D54DCB80E08449F00E1B463 /* Condition NIBs */,
 			);
 			name = Resources;
@@ -1100,6 +1193,7 @@
 		7D54DCB80E08449F00E1B463 /* Condition NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				03168DCA10FE8D0B00EF241B /* Waypoint Actions */,
 				03B6D25D10F626C500EC6EFF /* RuneCondition.xib */,
 				038A4B4510E9656D00577D8F /* LastSpellCast.xib */,
 				0350738310CDBA460004636E /* SpellCooldown.xib */,
@@ -1161,6 +1255,20 @@
 				038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */,
 				03B6D26010F626EA00EC6EFF /* RuneConditionController.h */,
 				03B6D26110F626EA00EC6EFF /* RuneConditionController.m */,
+				03168DC610FE8BA900EF241B /* DurabilityConditionController.h */,
+				03168DC710FE8BA900EF241B /* DurabilityConditionController.m */,
+				03168E1910FE972300EF241B /* PlayerLevelConditionController.h */,
+				03168E1A10FE972300EF241B /* PlayerLevelConditionController.m */,
+				03168E1C10FE972B00EF241B /* PlayerZoneConditionController.h */,
+				03168E1D10FE972B00EF241B /* PlayerZoneConditionController.m */,
+				03168E1F10FE973900EF241B /* QuestConditionController.h */,
+				03168E2010FE973900EF241B /* QuestConditionController.m */,
+				03168E2210FE974800EF241B /* RouteRunCountConditionController.h */,
+				03168E2310FE974800EF241B /* RouteRunCountConditionController.m */,
+				03168E2510FE975300EF241B /* RouteRunTimeConditionController.h */,
+				03168E2610FE975300EF241B /* RouteRunTimeConditionController.m */,
+				03168E2810FE975E00EF241B /* InventoryFreeConditionController.h */,
+				03168E2910FE975E00EF241B /* InventoryFreeConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1246,8 +1354,7 @@
 		7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */ = {
 			isa = PBXGroup;
 			children = (
-				7D370B0B0E7350DD002FE3A4 /* Action.h */,
-				7D370B0C0E7350DD002FE3A4 /* Action.m */,
+				03168EE110FF70E900EF241B /* WaypointActions */,
 				7D65C8F70D2EE14500C50DF7 /* Rule.h */,
 				7D65C8F80D2EE14500C50DF7 /* Rule.m */,
 				7D65CA460D2F04D200C50DF7 /* Procedure.h */,
@@ -1274,6 +1381,8 @@
 				7D65C9DA0D2EF93100C50DF7 /* ProcedureController.m */,
 				7DD03F0A0D163F44000CC1A6 /* WaypointController.h */,
 				7DD03F0B0D163F44000CC1A6 /* WaypointController.m */,
+				03168C6F10FE6CCD00EF241B /* WaypointActionEditor.h */,
+				03168C7010FE6CCD00EF241B /* WaypointActionEditor.m */,
 				7DD03DE00D160075000CC1A6 /* MemoryViewController.h */,
 				7DD03DE10D160075000CC1A6 /* MemoryViewController.m */,
 				7DE53E690E32BEDD00C59033 /* CombatProfileEditor.h */,
@@ -1429,6 +1538,9 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "Savory Software, LLC";
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Pocket Gnome" */;
 			compatibilityVersion = "Xcode 3.0";
 			hasScannedForEncodings = 1;
@@ -1624,6 +1736,16 @@
 				0350738410CDBA460004636E /* SpellCooldown.xib in Resources */,
 				038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */,
 				03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */,
+				03168C8C10FE6D2000EF241B /* WaypointActionEditor.xib in Resources */,
+				03168DDD10FE90B600EF241B /* DurabilityCondition.xib in Resources */,
+				03168DDE10FE90B600EF241B /* InventoryFreeCondition.xib in Resources */,
+				03168DDF10FE90B600EF241B /* PlayerLevelCondition.xib in Resources */,
+				03168DE010FE90B600EF241B /* PlayerZoneCondition.xib in Resources */,
+				03168DE110FE90B600EF241B /* QuestCondition.xib in Resources */,
+				03168DE210FE90B600EF241B /* RouteRunCountCondition.xib in Resources */,
+				03168DE310FE90B600EF241B /* RouteRunTimeCondition.xib in Resources */,
+				03168EDE10FF70C600EF241B /* RepairAction.xib in Resources */,
+				0316901010FF84AB00EF241B /* SwitchRouteAction.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1734,6 +1856,17 @@
 				03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */,
 				038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */,
 				03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */,
+				03168C7110FE6CCD00EF241B /* WaypointActionEditor.m in Sources */,
+				03168DC810FE8BA900EF241B /* DurabilityConditionController.m in Sources */,
+				03168E1B10FE972300EF241B /* PlayerLevelConditionController.m in Sources */,
+				03168E1E10FE972B00EF241B /* PlayerZoneConditionController.m in Sources */,
+				03168E2110FE973900EF241B /* QuestConditionController.m in Sources */,
+				03168E2410FE974800EF241B /* RouteRunCountConditionController.m in Sources */,
+				03168E2710FE975300EF241B /* RouteRunTimeConditionController.m in Sources */,
+				03168E2A10FE975E00EF241B /* InventoryFreeConditionController.m in Sources */,
+				03168EE410FF713000EF241B /* ActionController.m in Sources */,
+				03168EFE10FF72DF00EF241B /* RepairActionController.m in Sources */,
+				0316904710FF89FC00EF241B /* SwitchRouteActionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

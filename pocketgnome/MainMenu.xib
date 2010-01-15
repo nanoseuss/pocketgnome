@@ -12,7 +12,6 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2690"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2559,7 +2558,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="754616829">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5125,7 +5124,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{740, 413}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
@@ -5909,6 +5907,9 @@
 			</object>
 			<object class="NSCustomObject" id="531846807">
 				<string key="NSClassName">Player</string>
+			</object>
+			<object class="NSCustomObject" id="1040147007">
+				<string key="NSClassName">WaypointActionEditor</string>
 			</object>
 			<object class="NSWindowTemplate" id="802853365">
 				<int key="NSWindowStyleMask">31</int>
@@ -10395,6 +10396,14 @@
 					</object>
 					<int key="connectionID">4118</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">waypointController</string>
+						<reference key="source" ref="1040147007"/>
+						<reference key="destination" ref="980198522"/>
+					</object>
+					<int key="connectionID">4163</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -14012,6 +14021,11 @@
 						<reference key="object" ref="106060749"/>
 						<reference key="parent" ref="789242150"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4156</int>
+						<reference key="object" ref="1040147007"/>
+						<reference key="parent" ref="0"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -15131,9 +15145,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{681, 582}, {662, 245}}</string>
+					<string>{{493, 582}, {662, 245}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{681, 582}, {662, 245}}</string>
+					<string>{{493, 582}, {662, 245}}</string>
 					<integer value="0"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15200,7 +15214,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4155</int>
+			<int key="maxID">4163</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15323,7 +15337,6 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>autoJoinWG:</string>
 							<string>closeHotkeyHelp:</string>
 							<string>closeLootHotkeyHelp:</string>
 							<string>doTheRelicEmanation:</string>
@@ -15346,7 +15359,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -15411,6 +15423,7 @@
 							<string>lootCheckbox</string>
 							<string>lootController</string>
 							<string>lootHotkeyHelpPanel</string>
+							<string>lootUseItemsCheckbox</string>
 							<string>macroController</string>
 							<string>maxLevelPopup</string>
 							<string>maxLevelText</string>
@@ -15499,6 +15512,7 @@
 							<string>NSButton</string>
 							<string>LootController</string>
 							<string>NSPanel</string>
+							<string>NSButton</string>
 							<string>MacroController</string>
 							<string>id</string>
 							<string>NSTextField</string>
@@ -16222,7 +16236,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
 							<string>BlacklistController</string>
-							<string>id</string>
+							<string>BotController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -16758,6 +16772,50 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">WaypointActionEditor</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addAction:</string>
+							<string>addCondition:</string>
+							<string>closeEditor:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>actionTableView</string>
+							<string>addActionDropDown</string>
+							<string>addConditionDropDown</string>
+							<string>conditionTableView</string>
+							<string>editorPanel</string>
+							<string>waypointController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSTableView</string>
+							<string>NSPopUpButton</string>
+							<string>NSPopUpButton</string>
+							<string>NSTableView</string>
+							<string>NSPanel</string>
+							<string>WaypointController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">WaypointActionEditor.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WaypointController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -16768,12 +16826,14 @@
 							<string>cancelWaypointAction:</string>
 							<string>changeWaypointAction:</string>
 							<string>closeAutomatorPanel:</string>
+							<string>closeDescription:</string>
 							<string>closeExportPanel:</string>
 							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closeWaypointAction:</string>
 							<string>closestWaypoint:</string>
 							<string>createRoute:</string>
+							<string>doneWaypointAction:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
 							<string>exportRoute:</string>
@@ -16782,6 +16842,7 @@
 							<string>moveToWaypoint:</string>
 							<string>openAutomatorPanel:</string>
 							<string>openExportPanel:</string>
+							<string>openWaypointAction:</string>
 							<string>optionSelected:</string>
 							<string>removeRoute:</string>
 							<string>removeWaypoint:</string>
@@ -16792,9 +16853,14 @@
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
 							<string>visualize:</string>
+							<string>waypointMenuAction:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -16839,6 +16905,7 @@
 							<string>botController</string>
 							<string>combatController</string>
 							<string>controller</string>
+							<string>descriptionPanel</string>
 							<string>exportPanel</string>
 							<string>isFlyingRouteButton</string>
 							<string>mobController</string>
@@ -16870,6 +16937,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>Controller</string>
+							<string>NSPanel</string>
 							<string>NSPanel</string>
 							<string>NSButton</string>
 							<string>id</string>

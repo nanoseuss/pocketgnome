@@ -24,7 +24,6 @@
     return self;
 }
 
-
 - (id)initWithName: (NSString*)name {
     self = [self init];
     if (self != nil) {
@@ -32,7 +31,6 @@
     }
     return self;
 }
-
 
 + (id)procedureWithName: (NSString*)name {
     return [[[[self class] alloc] initWithName: name] autorelease];

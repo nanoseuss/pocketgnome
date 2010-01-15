@@ -3,7 +3,7 @@
 //  Pocket Gnome
 //
 //  Created by Josh on 5/25/09.
-//  Copyright 2009 __MyCompanyName__. All rights reserved.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
 //
 
 #import "Corpse.h"
