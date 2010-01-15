@@ -38,6 +38,8 @@
 #import "Macro.h"
 #import "Action.h"
 
+#import "BetterSegmentedControl.h"
+
 
 @interface RuleEditor (Internal)
 @end
@@ -124,6 +126,9 @@
 
 	if ( rule != nil )
 		[conditionTargetType selectSegmentWithTag: [rule target]];
+	else
+		[conditionTargetType unselectAllSegments];
+
     
     if(rule) {
         for(Condition *condition in [rule conditions]) {

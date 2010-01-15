@@ -17,6 +17,21 @@
     return [[self cell] tagForSegment: [self selectedSegment]];
 }
 
+- (void) unselectAllSegments{
+    NSSegmentSwitchTracking current;
+    current = [[self cell] trackingMode];
+	
+    [[self cell] setTrackingMode: NSSegmentSwitchTrackingMomentary];
+	
+    int i;
+    for (i = 0; i < [self segmentCount]; i++) {
+        [self setSelected: NO  forSegment: i];
+    }
+	
+    [[self cell] setTrackingMode: current];
+	
+} // unselectAllSegments
+
 
 // **** sizing infoz ****
 //
