@@ -15,6 +15,8 @@
 #import "SpellController.h"
 #import "InventoryController.h"
 
+#import "WaypointActionEditor.h"
+
 #import "RouteSet.h"
 #import "Route.h"
 #import "Waypoint.h"
@@ -56,6 +58,8 @@ enum AutomatorIntervalType {
 {
     self = [super init];
     if (self != nil) {
+
+		_selectedRows = nil;
         changeWasMade = NO;
         id loadedRoutes = [[NSUserDefaults standardUserDefaults] objectForKey: @"Routes"];
         if(loadedRoutes) {
@@ -85,7 +89,6 @@ enum AutomatorIntervalType {
                                                  selector: @selector(checkHotkeys:) 
                                                      name: DidLoadViewInMainWindowNotification 
                                                    object: nil];
-        
         [NSBundle loadNibNamed: @"Routes" owner: self];
     }
     return self;
@@ -131,6 +134,7 @@ enum AutomatorIntervalType {
 
 - (void)saveRoutes {
     if(changeWasMade) {
+		PGLog(@"SAVING routes");
         [[NSUserDefaults standardUserDefaults] setObject: [NSKeyedArchiver archivedDataWithRootObject: _routes] forKey: @"Routes"];
         [[NSUserDefaults standardUserDefaults] synchronize];
         changeWasMade = NO;
@@ -157,6 +161,7 @@ enum AutomatorIntervalType {
 @synthesize maxSectionSize;
 @synthesize currentRoute = _currentRoute;
 @synthesize currentRouteSet = _currentRouteSet;
+@synthesize descriptionMultiRows = _descriptionMultiRows;
 
 @synthesize disableGrowl;
 @synthesize validSelection;
@@ -496,6 +501,24 @@ enum AutomatorIntervalType {
 }
 
 - (IBAction)editWaypointAction: (id)sender {
+	
+    // make sure the clicked row is valid
+    if ( [waypointTable clickedRow] < 0 || [waypointTable clickedRow] >= [[self currentRoute] waypointCount] ) {
+        NSBeep();
+        PGLog(@"Error: invalid row (%d), cannot change action.", [waypointTable clickedRow]);
+        return;
+    }
+    
+    // get our waypoint
+    Waypoint *wp = [[[self currentRoute] waypointAtIndex: [waypointTable clickedRow]] retain];
+	
+	// open?
+	[[WaypointActionEditor sharedEditor] showEditorOnWindow: [self.view window] 
+											   withWaypoint: wp
+												 withAction: [sender tag]];
+	
+    changeWasMade = YES;
+	/*
     // make sure the clicked row is valid
     if([waypointTable clickedRow] < 0 || [waypointTable clickedRow] >= [[self currentRoute] waypointCount]) {
         NSBeep();
@@ -551,6 +574,7 @@ enum AutomatorIntervalType {
         _editWaypoint = nil;
         [waypointTable reloadData];
     }
+	 */
     changeWasMade = YES;
 }
 
@@ -790,36 +814,24 @@ enum AutomatorIntervalType {
     }
     
     if( [[aTableColumn identifier] isEqualToString: @"Type"] ) {
-        int type = 0;
-        if((wp.action.type <= ActionType_None) || (wp.action.type >= ActionType_Max))
-            type = 0;
-		else
-			type = wp.action.type;
+		
+		int type = 0;
+		
+		// now we have a list of actions, choose the first one
+		if ( [wp.actions count] > 0 ){
+			
+			Action *action = [wp.actions objectAtIndex:0];
+			
+			if ( action.type > ActionType_None && action.type < ActionType_Max ){
+				type = action.type;
+			}
+		}
+		
         return [NSNumber numberWithInt: type];
     }
     
     
     if([[aTableColumn identifier] isEqualToString: @"Coordinates"]) {
-        if(wp.action.type == ActionType_Delay)
-            return [NSString stringWithFormat: @"Delay for %.2f seconds.", [wp.action.value floatValue]];
-        if(wp.action.type == ActionType_Spell) {
-            if([[[SpellController sharedSpells] spellForID: [NSNumber numberWithUnsignedInt: wp.action.actionID]] fullName])
-                return [NSString stringWithFormat: @"Ability: %@", [[[SpellController sharedSpells] spellForID: [NSNumber numberWithUnsignedInt: wp.action.actionID]] fullName]];
-            else
-                return [NSString stringWithFormat: @"Ability: %@", wp.action.value];
-        }
-        if(wp.action.type == ActionType_Item) {
-            return [NSString stringWithFormat: @"Item: %@", [[InventoryController sharedInventory] nameForID: [NSNumber numberWithUnsignedInt: wp.action.actionID]]];
-        }
-        if(wp.action.type == ActionType_Macro) {
-            return [NSString stringWithFormat: @"Macro: %@", wp.action.value];
-        }
-		if(wp.action.type == ActionType_Interact) {
-			return [NSString stringWithFormat: @"Interact: %@", wp.action.value];
-		}
-		if(wp.action.type == ActionType_Jump) {
-			return [NSString stringWithFormat: @"Jump"];
-		}
         return [NSString stringWithFormat: @"X: %.1f; Y: %.1f; Z: %.1f", [[wp position] xPosition], [[wp position] yPosition], [[wp position] zPosition]];
     }
     
@@ -828,18 +840,34 @@ enum AutomatorIntervalType {
         float distance = [[wp position] distanceToPosition: [prevWP position]];
         return [NSString stringWithFormat: @"%.2f yards", distance];
     }
+	
+	if([[aTableColumn identifier] isEqualToString: @"Description"]) {
+		return wp.title;
+	}
     
     return nil;
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
+	if(rowIndex == -1) return;
+	
 
+	if ( [[aTableColumn identifier] isEqualToString:@"Description"] ){
+		Waypoint *wp = [[self currentRoute] waypointAtIndex: rowIndex];
+		if ( wp.title != anObject ){
+			wp.title = anObject;
+			changeWasMade = YES;
+		}
+	}
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
-    if([[aTableColumn identifier] isEqualToString: @"Type"] ) {
+	
+	if([[aTableColumn identifier] isEqualToString: @"Type"] )
         return YES;
-    }
+	else if([[aTableColumn identifier] isEqualToString: @"Description"] )
+        return YES;
+	
     return NO;
 }
 
@@ -1101,6 +1129,77 @@ enum AutomatorIntervalType {
 	
     // register this hotkey globally
     [self toggleGlobalHotKey: recorder];
+}
+
+#pragma mark Waypoint Condition/Actions - New!
+
+- (IBAction)waypointMenuAction: (id)sender{
+	
+	//int clickedRow = [waypointTable clickedRow];
+	
+	// set description
+	if ( [sender tag] == 0 ){
+
+		[_selectedRows release]; _selectedRows = nil;
+		_selectedRows = [[waypointTable selectedRowIndexes] retain];
+		
+		// only one row, so ezmode to set the title
+		if ( [_selectedRows count] == 1 ){
+			Waypoint *wp = [[self currentRoute] waypointAtIndex: [_selectedRows firstIndex]];
+			self.descriptionMultiRows = wp.title;
+		}
+		// multiple rows, select the first value
+		else {
+			Waypoint *wp = nil;
+			int i = [_selectedRows firstIndex];
+			for ( ; i <= [_selectedRows lastIndex]; i++ ){
+				wp = [[self currentRoute] waypointAtIndex: i];
+				
+				if ( wp && [wp.title length] > 0 ){
+					self.descriptionMultiRows = wp.title;
+					break;
+				}
+			}
+		}
+
+		// open up the screen!
+		[NSApp beginSheet: descriptionPanel
+		   modalForWindow: [self.view window]
+			modalDelegate: nil
+		   didEndSelector: nil
+			  contextInfo: nil];
+	}
+}
+
+- (IBAction)closeDescription: (id)sender {
+    [[sender window] makeFirstResponder: [[sender window] contentView]];
+    [NSApp endSheet: descriptionPanel returnCode: 1];
+    [descriptionPanel orderOut: nil];
+	
+	// save the new description
+	// only one row, so ezmode to set the title
+	if ( [_selectedRows count] == 1 ){
+		Waypoint *wp = [[self currentRoute] waypointAtIndex: [_selectedRows firstIndex]];
+		wp.title = _descriptionMultiRows;
+	}
+	// multiple rows
+	else{
+		Waypoint *wp = nil;
+		int i = [_selectedRows firstIndex];
+		for ( ; i <= [_selectedRows lastIndex]; i++ ){
+			wp = [[self currentRoute] waypointAtIndex: i];
+			
+			if ( wp ){
+				wp.title = _descriptionMultiRows;;
+			}
+		}
+	}
+
+    changeWasMade = YES;
+}
+
+- (IBAction)doneWaypointAction: (id)sender {
+	PGLog(@"done?");
 }
 
 @end

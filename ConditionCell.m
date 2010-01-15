@@ -1,5 +1,5 @@
 //
-//  RuleCell.m
+//  ConditionCell.m
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 1/3/08.

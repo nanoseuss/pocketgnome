@@ -1543,11 +1543,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Loot if we're on the ground!
 	if ( [playerController isOnGround] ){
+		PGLog(@"[Loot] Player on ground, looting %@", unit);
 		[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:0.5f];	
 	}
 	
 	// Try again shortly
 	else {
+		// macro failed for me once, so adding this here just in case
+		if ( [[playerController player] isMounted] )
+			[movementController dismount];
+		
+		PGLog(@"[Loot] Player sill in air, waiting to reach the ground");
+		
 		[self performSelector: @selector(lootNode:) withObject: unit afterDelay:0.1f];	
 	}
 	
@@ -2014,6 +2021,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Unit *unit = [notification object];
 	
 	PGLog(@"[Bot] Unit %@ killed %@", unit, [unit class]);
+	
+	// unit dead, reset!
+	[movementController resetUnit];
 	
 	if ( [unit isNPC] ){
 		PGLog(@"[Bot] Flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
@@ -2870,12 +2880,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		_mountAttempt++;
 		
-		PGLog(@"[Bot] Mounting attempt %d!", _mountAttempt);
-		
-		//[movementController pauseMovement];
-		
-		usleep(100000);
-		
+		PGLog(@"[Bot] Mounting attempt %d! Movement flags: 0x%X", _mountAttempt, [playerController movementFlags]);
+
 		// record our last attempt
 		[_mountLastAttempt release]; _mountLastAttempt = nil;
 		_mountLastAttempt = [[NSDate date] retain];
@@ -2883,9 +2889,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// actually mount
 		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
 		if ( mount ){
+			
+			// stop moving if we need to!
+			[movementController pauseMovement];
+			usleep(100000);
+			
 			// Time to cast!
 			int errID = [self performAction:[[mount ID] intValue]];
 			if ( errID == ErrNone ){
+				
+				PGLog(@"[Bot] Mounting started! No errors!");
 				
 				_mountAttempt = 0;
 				
@@ -2917,8 +2930,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (IBAction)updateStatus: (id)sender {
     CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
-	
-	PGLog(@"Updating status... %@", profile);
 	
     NSString *status = [NSString stringWithFormat: @"%@ (%@). ", 
                         [[[behaviorPopup selectedItem] representedObject] name],    // behavior

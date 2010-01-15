@@ -7,7 +7,8 @@
 //
 
 #import "Action.h"
-
+#import "RouteSet.h"
+#import "Route.h"
 
 @implementation Action
 
@@ -16,18 +17,19 @@
     return [self initWithType: ActionType_None value: nil];
 }
 
-- (id)initWithType: (ActionType)type value: (NSNumber*)value {
+- (id)initWithType: (ActionType)type value: (id)value {
     self = [super init];
     if (self != nil) {
         self.type = type;
         self.value = value;
+		self.enabled = YES;
         //self.delay = delay;
         //self.actionID = actionID;
     }
     return self;
 }
 
-+ (id)actionWithType: (ActionType)type value: (NSNumber*)value {
++ (id)actionWithType: (ActionType)type value: (id)value {
     return [[[[self class] alloc] initWithType: type value: value] autorelease];
 }
 
@@ -41,6 +43,7 @@
 	if(self) {
         self.type = [[decoder decodeObjectForKey: @"Type"] unsignedIntValue];
         self.value = ([decoder decodeObjectForKey: @"Value"] ? [decoder decodeObjectForKey: @"Value"] : nil);
+		self.enabled = [decoder decodeObjectForKey: @"Enabled"] ? [[decoder decodeObjectForKey: @"Enabled"] boolValue] : YES;
 	}
 	return self;
 }
@@ -48,8 +51,10 @@
 -(void)encodeWithCoder:(NSCoder *)coder
 {
     [coder encodeObject: [NSNumber numberWithUnsignedInt: self.type]    forKey: @"Type"];
-    if(self.type > ActionType_None) 
+    if(self.type > ActionType_None){
         [coder encodeObject: self.value                                 forKey: @"Value"];
+		[coder encodeObject: [NSNumber numberWithBool: self.enabled] forKey: @"Enabled"];
+	}
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -68,6 +73,7 @@
 
 @synthesize type = _type;
 @synthesize value = _value;
+@synthesize enabled = _enabled;
 
 - (void)setType: (ActionType)type {
     if(type < ActionType_None || (type >= ActionType_Max)) {
@@ -97,6 +103,15 @@
         return [self.value unsignedIntValue];
     }
     return 0;
+}
+
+- (RouteSet*)route{
+	
+	if ( self.type == ActionType_SwitchRoute ){
+		return (RouteSet*)self.value;
+	}
+	
+	return nil;
 }
 
 /*- (void)setDelay: (float)delay {

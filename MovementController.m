@@ -734,6 +734,12 @@ typedef enum MovementType {
 }
 
 - (void)moveToNextWaypoint {
+	
+	
+	[self realMoveToNextWaypoint];
+	
+	
+	/*
 	if( [[self destination] action].type != ActionType_Interact ) {
 		self.lastInteraction = -1;
 	}
@@ -825,7 +831,7 @@ typedef enum MovementType {
 				   withObject: nil
 				   afterDelay: 2.0];
         return;
-    }
+    }*/
 }
 
 - (void)jump {

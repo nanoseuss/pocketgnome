@@ -1,5 +1,5 @@
 //
-//  RuleController.m
+//  ConditionController.m
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 1/3/08.

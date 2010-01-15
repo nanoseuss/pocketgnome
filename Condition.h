@@ -26,6 +26,16 @@ typedef enum Variety {
 	VarietySpellCooldown	= 14,
 	VarietyLastSpellCast	= 15,
 	VarietyRune				= 16,
+	
+	// waypoint actions
+	VarietyPlayerLevel		= 17,
+	VarietyZone				= 18,
+	VarietyQuestCompletion	= 19,
+	VarietyRouteRunCount	= 20,
+	VarietyRouteRunTime		= 21,
+	VarietyInventoryFree	= 22,
+	VarietyDurability		= 23,
+	
 } ConditionVariety;
 
 typedef enum UnitComponents {
