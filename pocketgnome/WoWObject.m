@@ -180,6 +180,15 @@
     return cachedEntryID;
 }
 
+- (UInt32)cachedEntryID{
+	
+	if ( cachedEntryID == 0 ){
+		return [self entryID];
+	}
+	
+	return cachedEntryID;		
+}
+
 // 2 reads (object type, GUID)
 - (BOOL)isValid {
     // is the item stale?

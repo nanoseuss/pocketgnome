@@ -22,4 +22,6 @@
 @property (readwrite, retain) NSNumber *number;
 @property BOOL isCharacter;
 
+- (NSString*)nameWithType;
+
 @end

@@ -24,6 +24,13 @@
 #import "SpellCooldownConditionController.h"
 #import "LastSpellCastConditionController.h"
 #import "RuneConditionController.h"
+#import "DurabilityConditionController.h"
+#import "PlayerLevelConditionController.h"
+#import "PlayerZoneConditionController.h"
+#import "QuestConditionController.h"
+#import "RouteRunCountConditionController.h"
+#import "RouteRunTimeConditionController.h"
+#import "InventoryFreeConditionController.h"
 
 @implementation ConditionController
 
@@ -49,53 +56,69 @@
     if( [condition variety] == VarietyHealth ) {
         newController = [[HealthConditionController alloc] init];
     }
-    if( [condition variety] == VarietyStatus ) {
+    else if( [condition variety] == VarietyStatus ) {
         newController = [[StatusConditionController alloc] init];
     }
-    if( [condition variety] == VarietyAura ) {
+    else if( [condition variety] == VarietyAura ) {
         newController = [[AuraConditionController alloc] init];
     }
-    if( [condition variety] == VarietyDistance ) {
+    else if( [condition variety] == VarietyDistance ) {
         newController = [[DistanceConditionController alloc] init];
     }
-    if( [condition variety] == VarietyInventory ) {
+    else if( [condition variety] == VarietyInventory ) {
         newController = [[InventoryConditionController alloc] init];
     }
-    if( [condition variety] == VarietyComboPoints ) {
+    else if( [condition variety] == VarietyComboPoints ) {
         newController = [[ComboPointConditionController alloc] init];
     }
-    if( [condition variety] == VarietyAuraStack ) {
+    else if( [condition variety] == VarietyAuraStack ) {
         newController = [[AuraStackConditionController alloc] init];
     }
-    if( [condition variety] == VarietyTotem ) {
+    else if( [condition variety] == VarietyTotem ) {
         newController = [[TotemConditionController alloc] init];
     }
-    if( [condition variety] == VarietyTempEnchant ) {
+    else if( [condition variety] == VarietyTempEnchant ) {
         newController = [[TempEnchantConditionController alloc] init];
     }
-    
-    
-    if( [condition variety] == VarietyTargetType ) {
+    else if( [condition variety] == VarietyTargetType ) {
         newController = [[TargetTypeConditionController alloc] init];
     }
-    if( [condition variety] == VarietyTargetClass ) {
+    else if( [condition variety] == VarietyTargetClass ) {
         newController = [[TargetClassConditionController alloc] init];
     }
-    if( [condition variety] == VarietyCombatCount ) {
+    else if( [condition variety] == VarietyCombatCount ) {
         newController = [[CombatCountConditionController alloc] init];
     }
-    if( [condition variety] == VarietyProximityCount ) {
+    else if( [condition variety] == VarietyProximityCount ) {
         newController = [[ProximityCountConditionController alloc] init];
     }
-	if( [condition variety] == VarietySpellCooldown ) {
+	else if( [condition variety] == VarietySpellCooldown ) {
         newController = [[SpellCooldownConditionController alloc] init];
     }
-	if( [condition variety] == VarietyLastSpellCast ) {
+	else if( [condition variety] == VarietyLastSpellCast ) {
         newController = [[LastSpellCastConditionController alloc] init];
     }
-	if( [condition variety] == VarietyRune ) {
+	else if( [condition variety] == VarietyRune ) {
         newController = [[RuneConditionController alloc] init];
     }
+	
+	// for waypoint actions
+	else if ( [condition variety] == VarietyDurability )
+		newController = [[DurabilityConditionController alloc] init];
+	else if ( [condition variety] == VarietyPlayerLevel )
+		newController = [[PlayerLevelConditionController alloc] init];
+	else if ( [condition variety] == VarietyPlayerZone )
+		newController = [[PlayerZoneConditionController alloc] init];
+	else if ( [condition variety] == VarietyQuest  )
+		newController = [[QuestConditionController alloc] init];
+	else if ( [condition variety] == VarietyRouteRunCount )
+		newController = [[RouteRunCountConditionController alloc] init];
+	else if ( [condition variety] == VarietyRouteRunTime )
+		newController = [[RouteRunTimeConditionController alloc] init];
+	else if ( [condition variety] == VarietyInventory )
+		newController = [[InventoryFreeConditionController alloc] init];
+	
+	
 	
     if(newController) {
         [newController setStateFromCondition: condition];

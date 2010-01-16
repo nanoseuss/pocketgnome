@@ -11,6 +11,11 @@
 
 #import "RepairActionController.h"
 #import "SwitchRouteActionController.h"
+#import "SpellActionController.h"
+#import "ItemActionController.h"
+#import "MacroActionController.h"
+#import "DelayActionController.h"
+#import "JumpActionController.h"
 
 @implementation ActionController
 
@@ -36,7 +41,16 @@
 		newController = [[RepairActionController alloc] init];
 	else if ( [action type] == ActionType_SwitchRoute )
 		newController = [[SwitchRouteActionController alloc] init];
-	
+	else if ( [action type] == ActionType_Spell )
+		newController = [[SpellActionController alloc] init];
+	else if ( [action type] == ActionType_Item )
+		newController = [[ItemActionController alloc] init];
+	else if ( [action type] == ActionType_Macro )
+		newController = [[MacroActionController alloc] init];
+	else if ( [action type] == ActionType_Delay )
+		newController = [[DelayActionController alloc] init];
+	else if ( [action type] == ActionType_Jump )
+		newController = [[JumpActionController alloc] init];
 	
     if(newController) {
         [newController setStateFromAction: action];

@@ -10,7 +10,7 @@
 #import "Position.h"
 
 @class Action;
-@class Procedure;
+@class Rule;
 
 @interface Waypoint : NSObject <UnitPosition, NSCoding, NSCopying>  {
     Position *_position;
@@ -21,7 +21,7 @@
 	// list of conditions (procedure?)
 	// name for the WP Actions (i.e. repair)
 	NSMutableArray *_actions;
-	Procedure *_procedure;
+	Rule *_rule;
 }
 
 - (id)initWithPosition: (Position*)position;
@@ -32,7 +32,7 @@
 @property (readwrite, copy) NSString *title;
 
 @property (readonly, retain) NSArray *actions;
-@property (readwrite, retain) Procedure *procedure;
+@property (readwrite, retain) Rule *rule;
 
 // actions
 - (void)addAction: (Action*)action;

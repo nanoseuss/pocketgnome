@@ -29,4 +29,25 @@
 	
 }
 
+- (Condition*)condition {
+    [self validateState: nil];
+    
+    Condition *condition = [Condition conditionWithVariety: VarietyQuest 
+                                                      unit: UnitNone
+                                                   quality: QualityNone
+                                                comparator: CompareNone
+                                                     state: StateNone
+                                                      type: TypeValue
+                                                     value: nil];
+    [condition setEnabled: self.enabled];
+    
+    return condition;
+}
+
+- (void)setStateFromCondition: (Condition*)condition {
+    [super setStateFromCondition: condition];
+    if( [condition variety] != VarietyQuest) return;
+
+}
+
 @end

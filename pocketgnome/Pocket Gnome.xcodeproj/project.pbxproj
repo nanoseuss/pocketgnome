@@ -33,12 +33,22 @@
 		03168EFE10FF72DF00EF241B /* RepairActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03168EFD10FF72DF00EF241B /* RepairActionController.m */; };
 		0316901010FF84AB00EF241B /* SwitchRouteAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */; };
 		0316904710FF89FC00EF241B /* SwitchRouteActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0316904610FF89FC00EF241B /* SwitchRouteActionController.m */; };
+		031694CD110103C000EF241B /* SpellActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 031694CC110103C000EF241B /* SpellActionController.m */; };
+		031694D0110103CC00EF241B /* ItemActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 031694CF110103CC00EF241B /* ItemActionController.m */; };
+		031694D3110103DA00EF241B /* MacroActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 031694D2110103DA00EF241B /* MacroActionController.m */; };
+		031694D6110103E000EF241B /* DelayActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 031694D5110103E000EF241B /* DelayActionController.m */; };
+		031694D9110103E900EF241B /* JumpActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 031694D8110103E900EF241B /* JumpActionController.m */; };
+		031695191101314B00EF241B /* ItemAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 031695161101314B00EF241B /* ItemAction.xib */; };
+		0316951A1101314B00EF241B /* MacroAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 031695171101314B00EF241B /* MacroAction.xib */; };
+		0316951B1101314B00EF241B /* SpellAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 031695181101314B00EF241B /* SpellAction.xib */; };
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
 		0350738410CDBA460004636E /* SpellCooldown.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0350738310CDBA460004636E /* SpellCooldown.xib */; };
 		0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0350738810CDBA640004636E /* SpellCooldownConditionController.m */; };
 		03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03567AAC10DDAB52001ACE43 /* CombatController.m */; };
+		03685DC6110266FC001CE552 /* DelayAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685DC5110266FC001CE552 /* DelayAction.xib */; };
+		03685DDA11026831001CE552 /* JumpAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685DD911026831001CE552 /* JumpAction.xib */; };
 		038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038709B910D576E100DF5B90 /* BlacklistController.m */; };
 		038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */ = {isa = PBXBuildFile; fileRef = 038A4B4510E9656D00577D8F /* LastSpellCast.xib */; };
 		038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */; };
@@ -381,6 +391,19 @@
 		0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SwitchRouteAction.xib; sourceTree = "<group>"; };
 		0316904510FF89FC00EF241B /* SwitchRouteActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchRouteActionController.h; sourceTree = "<group>"; };
 		0316904610FF89FC00EF241B /* SwitchRouteActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SwitchRouteActionController.m; sourceTree = "<group>"; };
+		031694CB110103C000EF241B /* SpellActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpellActionController.h; sourceTree = "<group>"; };
+		031694CC110103C000EF241B /* SpellActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellActionController.m; sourceTree = "<group>"; };
+		031694CE110103CC00EF241B /* ItemActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ItemActionController.h; sourceTree = "<group>"; };
+		031694CF110103CC00EF241B /* ItemActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ItemActionController.m; sourceTree = "<group>"; };
+		031694D1110103DA00EF241B /* MacroActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MacroActionController.h; sourceTree = "<group>"; };
+		031694D2110103DA00EF241B /* MacroActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MacroActionController.m; sourceTree = "<group>"; };
+		031694D4110103E000EF241B /* DelayActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DelayActionController.h; sourceTree = "<group>"; };
+		031694D5110103E000EF241B /* DelayActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DelayActionController.m; sourceTree = "<group>"; };
+		031694D7110103E900EF241B /* JumpActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JumpActionController.h; sourceTree = "<group>"; };
+		031694D8110103E900EF241B /* JumpActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JumpActionController.m; sourceTree = "<group>"; };
+		031695161101314B00EF241B /* ItemAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ItemAction.xib; sourceTree = "<group>"; };
+		031695171101314B00EF241B /* MacroAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MacroAction.xib; sourceTree = "<group>"; };
+		031695181101314B00EF241B /* SpellAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellAction.xib; sourceTree = "<group>"; };
 		032B8C030FDEE37900807DD0 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		034429B60FAA3E1800E9DE03 /* Quest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quest.h; sourceTree = "<group>"; };
 		034429B70FAA3E1800E9DE03 /* Quest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Quest.m; sourceTree = "<group>"; };
@@ -393,6 +416,8 @@
 		0350738810CDBA640004636E /* SpellCooldownConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SpellCooldownConditionController.m; sourceTree = "<group>"; };
 		03567AAB10DDAB52001ACE43 /* CombatController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatController.h; sourceTree = "<group>"; };
 		03567AAC10DDAB52001ACE43 /* CombatController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatController.m; sourceTree = "<group>"; };
+		03685DC5110266FC001CE552 /* DelayAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DelayAction.xib; sourceTree = "<group>"; };
+		03685DD911026831001CE552 /* JumpAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JumpAction.xib; sourceTree = "<group>"; };
 		038709B810D576E100DF5B90 /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
 		038709B910D576E100DF5B90 /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
 		038A4B4510E9656D00577D8F /* LastSpellCast.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LastSpellCast.xib; sourceTree = "<group>"; };
@@ -805,6 +830,11 @@
 		03168ED410FF705A00EF241B /* Waypoint Action NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				03685DD911026831001CE552 /* JumpAction.xib */,
+				03685DC5110266FC001CE552 /* DelayAction.xib */,
+				031695161101314B00EF241B /* ItemAction.xib */,
+				031695171101314B00EF241B /* MacroAction.xib */,
+				031695181101314B00EF241B /* SpellAction.xib */,
 				0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */,
 				03168EDC10FF70C600EF241B /* RepairAction.xib */,
 			);
@@ -822,6 +852,16 @@
 				03168EFD10FF72DF00EF241B /* RepairActionController.m */,
 				0316904510FF89FC00EF241B /* SwitchRouteActionController.h */,
 				0316904610FF89FC00EF241B /* SwitchRouteActionController.m */,
+				031694CB110103C000EF241B /* SpellActionController.h */,
+				031694CC110103C000EF241B /* SpellActionController.m */,
+				031694CE110103CC00EF241B /* ItemActionController.h */,
+				031694CF110103CC00EF241B /* ItemActionController.m */,
+				031694D1110103DA00EF241B /* MacroActionController.h */,
+				031694D2110103DA00EF241B /* MacroActionController.m */,
+				031694D4110103E000EF241B /* DelayActionController.h */,
+				031694D5110103E000EF241B /* DelayActionController.m */,
+				031694D7110103E900EF241B /* JumpActionController.h */,
+				031694D8110103E900EF241B /* JumpActionController.m */,
 			);
 			name = WaypointActions;
 			sourceTree = "<group>";
@@ -1746,6 +1786,11 @@
 				03168DE310FE90B600EF241B /* RouteRunTimeCondition.xib in Resources */,
 				03168EDE10FF70C600EF241B /* RepairAction.xib in Resources */,
 				0316901010FF84AB00EF241B /* SwitchRouteAction.xib in Resources */,
+				031695191101314B00EF241B /* ItemAction.xib in Resources */,
+				0316951A1101314B00EF241B /* MacroAction.xib in Resources */,
+				0316951B1101314B00EF241B /* SpellAction.xib in Resources */,
+				03685DC6110266FC001CE552 /* DelayAction.xib in Resources */,
+				03685DDA11026831001CE552 /* JumpAction.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1867,6 +1912,11 @@
 				03168EE410FF713000EF241B /* ActionController.m in Sources */,
 				03168EFE10FF72DF00EF241B /* RepairActionController.m in Sources */,
 				0316904710FF89FC00EF241B /* SwitchRouteActionController.m in Sources */,
+				031694CD110103C000EF241B /* SpellActionController.m in Sources */,
+				031694D0110103CC00EF241B /* ItemActionController.m in Sources */,
+				031694D3110103DA00EF241B /* MacroActionController.m in Sources */,
+				031694D6110103E000EF241B /* DelayActionController.m in Sources */,
+				031694D9110103E900EF241B /* JumpActionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
