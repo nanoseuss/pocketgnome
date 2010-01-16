@@ -32,7 +32,7 @@
 - (Condition*)condition {
 	[self validateState: nil];
 	
-	Condition *condition = [Condition conditionWithVariety: VarietyDurability 
+	Condition *condition = [Condition conditionWithVariety: VarietyPlayerZone 
 													  unit: UnitNone
 												   quality: QualityNone
 												comparator: [comparatorSegment selectedTag]
@@ -46,7 +46,7 @@
 
 - (void)setStateFromCondition: (Condition*)condition {
 	[super setStateFromCondition: condition];
-	if( [condition variety] != VarietyDurability) return;
+	if( [condition variety] != VarietyPlayerZone) return;
 	
 	[comparatorSegment selectSegmentWithTag: [condition comparator]];
 	[typeSegment selectSegmentWithTag: [condition type]];

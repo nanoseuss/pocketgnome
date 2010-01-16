@@ -11,17 +11,25 @@
 @class Waypoint;
 
 @class WaypointController;
+@class SpellController;
+@class InventoryController;
+@class MacroController;
 
 @interface WaypointActionEditor : NSObject {
 
-	IBOutlet WaypointController	*waypointController;
+	IBOutlet WaypointController		*waypointController;
+	IBOutlet SpellController		*spellController;
+	IBOutlet InventoryController	*inventoryController;
+	IBOutlet MacroController		*macroController;
 	
-	IBOutlet NSPanel *editorPanel;
-	IBOutlet NSPopUpButton	*addConditionDropDown;
-	IBOutlet NSPopUpButton	*addActionDropDown;
-	IBOutlet NSTableView	*conditionTableView;
-	IBOutlet NSTableView	*actionTableView;
-	IBOutlet NSTextField	*waypointDescription;
+	IBOutlet NSPanel			*editorPanel;
+	IBOutlet NSPopUpButton		*addConditionDropDown;
+	IBOutlet NSPopUpButton		*addActionDropDown;
+	IBOutlet NSTableView		*conditionTableView;
+	IBOutlet NSTableView		*actionTableView;
+	IBOutlet NSTextField		*waypointDescription;
+	IBOutlet NSSegmentedControl	*conditionMatchingSegment;
+	
 	
 	NSMutableArray *_conditionList;
 	NSMutableArray *_actionList;

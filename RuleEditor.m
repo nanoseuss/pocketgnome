@@ -237,7 +237,10 @@
         [NSApp endSheet: [self window] returnCode: RuleEditorSaveRule];
         [[self window] orderOut: nil];
     } else {
-        NSBeep();
+		
+		NSBeep();
+
+		NSRunAlertPanel(@"Select a target", @"You must choose a valid target, or your character will never attack or heal.", @"Okay", NULL, NULL);
 		
 		if ( !targetSelected ){
 			[labelNoTarget setHidden:NO];

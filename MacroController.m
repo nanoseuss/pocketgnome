@@ -331,4 +331,8 @@
 	return NO;
 }
 
+- (NSArray*)macros{
+	return [[_playerMacros retain] autorelease];
+}
+
 @end

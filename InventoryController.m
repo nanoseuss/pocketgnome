@@ -421,10 +421,25 @@ static InventoryController *sharedInventory = nil;
     return menu;
 }
 
+// returns all (unique) useable items
+- (NSArray*)useableItems{
+	
+	NSMutableDictionary *useableItems = [NSMutableDictionary dictionary];
+    for ( Item *item in _itemList ) {
+		NSNumber *entryID = [NSNumber numberWithUnsignedInt: [item cachedEntryID]];
+		
+        if ( ![useableItems objectForKey:entryID] && [item charges] > 0 ) {
+			[useableItems setObject: item forKey: entryID];
+		}
+	}
+	
+	NSArray *uniqueItems = [useableItems allValues];
+	return [[uniqueItems retain] autorelease];
+}
 
 - (NSMenu*)usableInventoryItemsMenu {
     
-    // first, coalesce items
+    // first,  items
     NSMutableDictionary *coalescedItems = [NSMutableDictionary dictionary];
     for(Item *item in _itemList) {
         if( [item charges] > 0) {

@@ -72,6 +72,7 @@ enum HighGuid {
 - (NSNumber*)ID;    // NSNumber version of [self entryID]
 - (UInt32)typeMask;
 - (UInt32)entryID;
+- (UInt32)cachedEntryID;
 
 - (BOOL)isValid;
 - (BOOL)isStale;

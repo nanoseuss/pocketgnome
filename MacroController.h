@@ -40,6 +40,8 @@
 - (void)useMacroByID: (int)macroID;
 
 - (BOOL)useMacro: (NSString*)key;
+
+- (NSArray*)macros;
 /*
  "Swift Flight Form" >>> "Forme de vol rapide"
  "Flight Form" >>> "Forme de vol"

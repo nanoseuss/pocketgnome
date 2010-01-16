@@ -63,10 +63,8 @@
 
 - (void)setStateFromAction: (Action*)action{
 	
-	PGLog(@"selecting route? %@", action.value);
 	for ( NSMenuItem *item in [routePopUp itemArray] ){
 		if ( [[(RouteSet*)[item representedObject] name] isEqualToString:[(RouteSet*)action.value name]] ){
-			PGLog(@"selecting %@!!!!", item);
 			[routePopUp selectItem:item];
 			break;
 		}

@@ -24,7 +24,7 @@
         self.position = position;
         self.action = [Action action];
 		self.title = @"";
-		self.procedure = [[Procedure alloc] init];
+		self.rule = nil;
 		self.actions = [NSArray array];
     }
     return self;
@@ -45,18 +45,8 @@
         self.position = [decoder decodeObjectForKey: @"Position"];
         self.action = [decoder decodeObjectForKey: @"Action"] ? [decoder decodeObjectForKey: @"Action"] : [Action action];
 		self.title = [decoder decodeObjectForKey: @"Title"];
-		self.procedure = [decoder decodeObjectForKey: @"Procedure"] ? [decoder decodeObjectForKey: @"Procedure"] : [[Procedure alloc] init];
+		self.rule = [decoder decodeObjectForKey: @"Rule"];
 		self.actions = [decoder decodeObjectForKey: @"Actions"] ? [decoder decodeObjectForKey: @"Actions"] : [NSArray array];
-
-		
-		// set actions
-		/*NSArray *actionsTemp = [decoder decodeObjectForKey: @"Actions"];
-		[_actions autorelease];
-		if ( actionsTemp ) {
-			_actions = [[NSMutableArray alloc] initWithArray: actionsTemp copyItems: YES];
-		} else {
-			_actions = nil;
-		}*/
 	}
 	return self;
 }
@@ -65,7 +55,7 @@
 {
     [coder encodeObject: self.position forKey: @"Position"];
     [coder encodeObject: self.title forKey: @"Title"];
-	[coder encodeObject: self.procedure forKey: @"Procedure"];
+	[coder encodeObject: self.rule forKey: @"Rule"];
 	[coder encodeObject: self.actions forKey: @"Actions"];
 
     // only encode the action if it is something other than normal
@@ -79,7 +69,7 @@
     Waypoint *copy = [[[self class] allocWithZone: zone] initWithPosition: self.position];
     copy.action = self.action;
 	copy.title = self.title;
-	copy.procedure = self.procedure;
+	copy.rule = self.rule;
 	copy.actions = self.actions;
     
     return copy;
@@ -91,7 +81,7 @@
     self.action = nil;
 	self.title = nil;
 	self.actions = nil;
-	self.procedure = nil;
+	self.rule = nil;
     [super dealloc];
 }
 
@@ -102,7 +92,7 @@
 @synthesize position = _position;
 @synthesize action = _action;
 @synthesize title = _title;
-@synthesize procedure = _procedure;
+@synthesize rule = _rule;
 @synthesize actions = _actions;
 
 

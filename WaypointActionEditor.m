@@ -9,8 +9,8 @@
 #import "WaypointActionEditor.h"
 
 #import "Waypoint.h"
-#import "Procedure.h"
 #import "Rule.h"
+#import "Spell.h"
 
 #import "Action.h"
 #import "Condition.h"
@@ -28,8 +28,16 @@
 
 #import "SwitchRouteActionController.h"
 #import "RepairActionController.h"
+#import "SpellActionController.h"
+#import "ItemActionController.h"
+#import "MacroActionController.h"
+#import "DelayActionController.h"
+#import "JumpActionController.h"
 
 #import "WaypointController.h"
+#import "SpellController.h"
+#import "InventoryController.h"
+#import "MacroController.h"
 
 @implementation WaypointActionEditor
 
@@ -77,19 +85,19 @@ static WaypointActionEditor *sharedEditor = nil;
 	
 	int type = [[addConditionDropDown selectedItem] tag];
 	
-    ConditionController *newRule = nil;
+    ConditionController *newCondition = nil;
 
-	if ( type == VarietyInventory )				newRule = [[[InventoryConditionController alloc] init] autorelease];
-	else if ( type == VarietyDurability )		newRule = [[[DurabilityConditionController alloc] init] autorelease];
-	else if ( type == VarietyPlayerLevel )		newRule = [[[PlayerLevelConditionController alloc] init] autorelease];
-	else if ( type == VarietyZone )				newRule = [[[PlayerZoneConditionController alloc] init] autorelease];
-	else if ( type == VarietyQuestCompletion )	newRule = [[[QuestConditionController alloc] init] autorelease];
-	else if ( type == VarietyRouteRunTime )		newRule = [[[RouteRunTimeConditionController alloc] init] autorelease];
-	else if ( type == VarietyRouteRunCount )	newRule = [[[RouteRunCountConditionController alloc] init] autorelease];
-	else if ( type == VarietyInventoryFree )	newRule = [[[InventoryFreeConditionController alloc] init] autorelease];
+	if ( type == VarietyInventory )				newCondition = [[[InventoryConditionController alloc] init] autorelease];
+	else if ( type == VarietyDurability )		newCondition = [[[DurabilityConditionController alloc] init] autorelease];
+	else if ( type == VarietyPlayerLevel )		newCondition = [[[PlayerLevelConditionController alloc] init] autorelease];
+	else if ( type == VarietyPlayerZone )		newCondition = [[[PlayerZoneConditionController alloc] init] autorelease];
+	else if ( type == VarietyQuest )			newCondition = [[[QuestConditionController alloc] init] autorelease];
+	else if ( type == VarietyRouteRunTime )		newCondition = [[[RouteRunTimeConditionController alloc] init] autorelease];
+	else if ( type == VarietyRouteRunCount )	newCondition = [[[RouteRunCountConditionController alloc] init] autorelease];
+	else if ( type == VarietyInventoryFree )	newCondition = [[[InventoryFreeConditionController alloc] init] autorelease];
 	
-    if ( newRule ) {
-        [_conditionList addObject: newRule];
+    if ( newCondition ) {
+        [_conditionList addObject: newCondition];
         [conditionTableView reloadData];
         [conditionTableView selectRowIndexes: [NSIndexSet indexSetWithIndex: [_conditionList count] - 1] byExtendingSelection: NO];
         
@@ -98,12 +106,20 @@ static WaypointActionEditor *sharedEditor = nil;
 	
 }
 
-- (void)addActionWithType:(int)type{
+- (void)addActionWithType:(int)type andAction:(Action*)action{
 	ActionController *newAction = nil;
 	
 	if ( type == ActionType_Repair )				newAction = [[[RepairActionController alloc] init] autorelease];
 	else if ( type == ActionType_SwitchRoute )		newAction = [SwitchRouteActionController switchRouteActionControllerWithRoutes:[waypointController routes]];
-	//else if ( type == ActionType_SwitchRoute )		newAction = [[[SwitchRouteActionController alloc] init] autorelease];
+	else if ( type == ActionType_Spell )			newAction = [SpellActionController spellActionControllerWithSpells:[spellController playerSpells]];
+	else if ( type == ActionType_Item )				newAction = [ItemActionController itemActionControllerWithItems:[inventoryController useableItems]];
+	else if ( type == ActionType_Macro)				newAction = [MacroActionController macroActionControllerWithMacros:[macroController macros]];
+	else if ( type == ActionType_Delay)				newAction = [[[DelayActionController alloc] init] autorelease];
+	else if ( type == ActionType_Jump)				newAction = [[[JumpActionController alloc] init] autorelease];
+
+	if ( action != nil ){
+		[newAction setStateFromAction:action];
+	}
 	
     if ( newAction ) {
         [_actionList addObject: newAction];
@@ -114,24 +130,8 @@ static WaypointActionEditor *sharedEditor = nil;
     }
 }
 
-- (void)addActionWithAction:(Action*)action{
-	
-	if ( [action type] == ActionType_SwitchRoute ){
-		ActionController *newAction = [SwitchRouteActionController switchRouteActionControllerWithRoutes:[waypointController routes]];
-		[newAction setStateFromAction:action];
-		[_actionList addObject:newAction];
-	}
-	else{
-		[_actionList addObject: [ActionController actionControllerWithAction: action]];
-	}
-	
-	// responsible for reloading outside of this function!
-}
-
-
-
 - (IBAction)addAction:(id)sender{
-	[self addActionWithType:[[addActionDropDown selectedItem] tag]];
+	[self addActionWithType:[[addActionDropDown selectedItem] tag] andAction:nil];
 }
 
 - (void)clearTables{
@@ -164,43 +164,37 @@ static WaypointActionEditor *sharedEditor = nil;
 		// add any actions
 		if ( [wp.actions count] > 0 ){
 			for ( Action *action in wp.actions ) {
-				[self addActionWithAction:action];
+				[self addActionWithType:[action type] andAction:action];
+			}
+			
+			// do we need to add another? (i.e. if they chose item when spell was selected, lets add an item!)
+			BOOL found = NO;
+			for ( id actionController in _actionList ){
+				if ( [[(ActionController*)actionController action] type] == type )
+					found = YES;
+			}
+			if ( !found ){
+				[self addActionWithType:type andAction:nil];
 			}
 		}
 		// add a default
 		else if ( type > ActionType_None && type <= ActionType_Max ){
-			[self addActionWithType:type];
+			[self addActionWithType:type andAction:nil];
 		}
 		
-		
-		// add any conditions
-		/*			
-		 if( [rule isMatchAll] )
-		 [conditionMatchingSegment selectSegmentWithTag: 0];
-		 else
-		 [conditionMatchingSegment selectSegmentWithTag: 1];
-		 
-		 */
-		
-		
-		
-		// get any conditions
-		
-		// get any actions
-		/*if ( [wp.actions count] > 0 ){
-			// add them
-			PGLog(@"total actions: %d", [wp.actions count]);
+		// add our conditions!
+		if ( wp.rule ){
 			
+			for ( Condition *condition in [wp.rule conditions] ) {
+				PGLog(@"Adding condition %@", condition);
+				[_conditionList addObject: [ConditionController conditionControllerWithCondition: condition]];
+			}
+			
+			if( [wp.rule isMatchAll] )
+				[conditionMatchingSegment selectSegmentWithTag: 0];
+			else
+				[conditionMatchingSegment selectSegmentWithTag: 1];
 		}
-		// add a default
-		else if ( type > ActionType_None && type <= ActionType_Max ){
-			[self addNewAction:type];
-		}
-		
-		// add rules
-		if ( [wp.procedure.rules count] > 0 ){
-			PGLog(@"we have rules! %d", [wp.procedure.rules count]);
-		}*/
 	}
 	
 	// reload tables
@@ -233,18 +227,31 @@ static WaypointActionEditor *sharedEditor = nil;
 		PGLog(@"Saved action %@ with value %@", [(ActionController*)actionController action], [(ActionController*)actionController action].value);
 	}
 	
-	/*
-	
-	
-	PGLog(@"actions  title");
-	
-	Procedure *procedure = [Procedure procedureWithName:_waypoint.title];
-	
-	for ( Rule *rule in _conditionList ){
-		[procedure addRule:rule];
+	// add the conditions to an array
+	NSMutableArray *conditions = [NSMutableArray array];
+	for ( id conditionController in _conditionList ){
+		Condition *condition = [(ConditionController*)conditionController condition];
+		if ( condition ){
+			PGLog(@"saving condition %@", condition);
+			[conditions addObject: condition];
+		}	
 	}
 	
-	_waypoint.procedure = procedure;*/
+	// create a rule
+	Rule *newRule = nil;
+	if([conditions count]) {
+		newRule = [[Rule alloc] init];
+		
+		[newRule setName:_waypoint.title];
+		[newRule setConditions:conditions];
+		[newRule setIsMatchAll: [conditionMatchingSegment isSelectedForSegment: 0]];
+		[newRule setTarget: TargetNone];
+		[newRule setAction:nil];		// we can have multiple actions, we'll ignore this
+	}
+	
+	_waypoint.rule = newRule;
+	
+	PGLog(@"saved rule %@", newRule);
 	
 	[self closeEditor:sender];	
 }

@@ -36,4 +36,14 @@
 @synthesize number;
 @synthesize isCharacter;
 
+- (NSString*)nameWithType{
+	
+	if ( self.isCharacter ){
+		return [NSString stringWithFormat:@"Character - %@", self.name];
+	}
+	else{
+		return [NSString stringWithFormat:@"Account - %@", self.name];
+	}
+}
+
 @end

@@ -29,8 +29,8 @@ typedef enum Variety {
 	
 	// waypoint actions
 	VarietyPlayerLevel		= 17,
-	VarietyZone				= 18,
-	VarietyQuestCompletion	= 19,
+	VarietyPlayerZone		= 18,
+	VarietyQuest			= 19,
 	VarietyRouteRunCount	= 20,
 	VarietyRouteRunTime		= 21,
 	VarietyInventoryFree	= 22,

@@ -68,6 +68,7 @@
 - (NSMenu*)prettyInventoryItemsMenu;
 - (NSArray*)itemsPlayerIsWearing;
 - (NSArray*)itemsInBags;
+- (NSArray*)useableItems;
 
 - (int)bagSpacesAvailable;
 - (int)bagSpacesTotal;
