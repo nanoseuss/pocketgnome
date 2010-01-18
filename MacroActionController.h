@@ -10,7 +10,8 @@
 #import "ActionController.h"
 
 @interface MacroActionController : ActionController {
-	IBOutlet NSPopUpButton *macroPopUp;
+	IBOutlet NSPopUpButton	*macroPopUp;
+	IBOutlet NSButton		*instantButton;
 	
 	NSArray *_macros;
 }

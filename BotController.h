@@ -264,7 +264,7 @@
 @property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
 
-@property (readonly, retain) RouteSet *theRoute;
+@property (readwrite, retain) RouteSet *theRoute;
 @property (readonly, retain) Behavior *theBehavior;
 @property (readonly, retain) CombatProfile *theCombatProfile;
 @property (readonly, retain) Unit *preCombatUnit;
@@ -310,6 +310,7 @@
 // test stuff
 - (IBAction)test: (id)sender;
 - (IBAction)test2: (id)sender;
+- (IBAction)maltby: (id)sender;
 - (IBAction)login: (id)sender;
 - (IBAction)doTheRelicEmanation: (id)sender;
 
@@ -320,6 +321,9 @@
 - (void)interactWithMob:(UInt32)entryID;
 - (void)interactWithNode:(UInt32)entryID;
 - (void)logOut;
+
+// for new action/conditions
+- (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
 
 - (void) updateRunningTimer;
 

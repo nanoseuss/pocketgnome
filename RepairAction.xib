@@ -46,13 +46,13 @@
 					<object class="NSTextField" id="867616341">
 						<reference key="NSNextResponder" ref="897934020"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{32, 7}, {102, 17}}</string>
+						<string key="NSFrame">{{32, 7}, {289, 17}}</string>
 						<reference key="NSSuperview" ref="897934020"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="708912579">
 							<int key="NSCellFlags">67239488</int>
 							<int key="NSCellFlags2">272630784</int>
-							<string key="NSContents">Repair all items</string>
+							<string key="NSContents">Repair all items (NPC must be within 5 yards)</string>
 							<object class="NSFont" key="NSSupport">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">13</double>
@@ -108,7 +108,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{151, 33}</string>
+				<string key="NSFrameSize">{338, 33}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -230,7 +230,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{934, 572}, {151, 33}}</string>
+					<string>{{934, 572}, {338, 33}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{478, 384}, {635, 36}}</string>

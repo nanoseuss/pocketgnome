@@ -49,7 +49,6 @@
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementType;
 
-    BOOL _shouldAttack;
     BOOL _shouldJump;
     BOOL _isMoving;
     BOOL _isPaused;
@@ -80,6 +79,9 @@
 	float _averageDistance;
 	NSDate *_lastResumeCorrection;					// this is for when we start to fly too far away from our WP!
 	
+	// new waypoint action/conditions
+	Waypoint *_lastWaypointToTakeAction;
+	
 	// new melee movement method
 	Position *_lastMeleePosition;
 }
@@ -103,7 +105,7 @@
 
 - (Route*)patrolRoute;
 - (void)setPatrolRoute: (Route*)route;
-- (void)beginPatrol: (unsigned)count andAttack: (BOOL)attack;
+- (void)beginPatrol: (unsigned)count;
 - (void)beginPatrolAndStopAtLastPoint;
 - (void)establishPosition;
 - (void)backEstablishPosition;

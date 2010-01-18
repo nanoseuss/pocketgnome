@@ -33,6 +33,8 @@
 #import "MacroActionController.h"
 #import "DelayActionController.h"
 #import "JumpActionController.h"
+#import "QuestTurnInActionController.h"
+#import "QuestGrabActionController.h"
 
 #import "WaypointController.h"
 #import "SpellController.h"
@@ -116,7 +118,9 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_Macro)				newAction = [MacroActionController macroActionControllerWithMacros:[macroController macros]];
 	else if ( type == ActionType_Delay)				newAction = [[[DelayActionController alloc] init] autorelease];
 	else if ( type == ActionType_Jump)				newAction = [[[JumpActionController alloc] init] autorelease];
-
+	else if ( type == ActionType_QuestTurnIn)		newAction = [[[QuestTurnInActionController alloc] init] autorelease];
+	else if ( type == ActionType_QuestGrab)			newAction = [[[QuestGrabActionController alloc] init] autorelease];
+	
 	if ( action != nil ){
 		[newAction setStateFromAction:action];
 	}

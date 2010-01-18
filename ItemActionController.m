@@ -57,12 +57,17 @@
 
 - (void)setStateFromAction: (Action*)action{
 	
+	NSNumber *itemID = [[action value] objectForKey:@"ItemID"];
+	NSNumber *instant = [[action value] objectForKey:@"Instant"];
+	
 	for ( NSMenuItem *item in [itemPopUp itemArray] ){
-		if ( [[(Item*)[item representedObject] ID] intValue] == [(NSNumber*)action.value intValue] ){
+		if ( [[(Item*)[item representedObject] ID] intValue] == [itemID intValue] ){
 			[itemPopUp selectItem:item];
 			break;
 		}
 	}
+	
+	[itemInstantButton setState:[instant boolValue]];
 	
 	[super setStateFromAction:action];
 }
@@ -73,8 +78,13 @@
     Action *action = [Action actionWithType:ActionType_Item value:nil];
 	
 	[action setEnabled: self.enabled];
-	NSNumber *itemID = [[[itemPopUp selectedItem] representedObject] ID];
-	[action setValue: itemID];
+	
+	NSNumber *spellID = [[[itemPopUp selectedItem] representedObject] ID];
+	NSNumber *instant = [NSNumber numberWithBool:[itemInstantButton state]];
+	NSDictionary *values = [NSDictionary dictionaryWithObjectsAndKeys:
+							spellID,		@"ItemID",
+							instant,		@"Instant", nil];
+	[action setValue: values];
     
     return action;
 }

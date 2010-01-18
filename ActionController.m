@@ -16,6 +16,8 @@
 #import "MacroActionController.h"
 #import "DelayActionController.h"
 #import "JumpActionController.h"
+#import "QuestTurnInActionController.h"
+#import "QuestGrabActionController.h"
 
 @implementation ActionController
 
@@ -51,6 +53,10 @@
 		newController = [[DelayActionController alloc] init];
 	else if ( [action type] == ActionType_Jump )
 		newController = [[JumpActionController alloc] init];
+	else if ( [action type] == ActionType_QuestTurnIn )
+		newController = [[QuestTurnInActionController alloc] init];
+	else if ( [action type] == ActionType_QuestGrab )
+		newController = [[QuestGrabActionController alloc] init];
 	
     if(newController) {
         [newController setStateFromAction: action];

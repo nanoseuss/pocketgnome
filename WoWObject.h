@@ -44,7 +44,7 @@ enum HighGuid {
 	
 	int _notInObjectListCounter;
     
-    int cachedEntryID;
+    UInt32 cachedEntryID;
     GUID cachedGUID;
 }
 
@@ -54,7 +54,7 @@ enum HighGuid {
 @property (readwrite, retain) MemoryAccess *memoryAccess;
 @property (readwrite, retain) NSDate *refreshDate;
 @property (readwrite) int notInObjectListCounter;
-@property (readonly) int cachedEntryID;
+@property (readonly) UInt32 cachedEntryID;
 @property (readonly) GUID cachedGUID;
 
 - (BOOL)isEqualToObject: (WoWObject*)object;

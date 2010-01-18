@@ -11,7 +11,8 @@
 #import "ActionController.h"
 
 @interface ItemActionController : ActionController {
-	IBOutlet NSPopUpButton *itemPopUp;
+	IBOutlet NSPopUpButton	*itemPopUp;
+	IBOutlet NSButton		*itemInstantButton;
 	
 	NSArray *_items;
 }

@@ -487,6 +487,7 @@
 										</object>
 										<object class="NSMenuItem" id="465664775">
 											<reference key="NSMenu" ref="623131397"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Questing</string>
 											<string key="NSKeyEquiv"/>
@@ -512,6 +513,7 @@
 										</object>
 										<object class="NSMenuItem" id="624657598">
 											<reference key="NSMenu" ref="623131397"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Run Count</string>
 											<string key="NSKeyEquiv"/>
@@ -525,6 +527,7 @@
 										</object>
 										<object class="NSMenuItem" id="703223862">
 											<reference key="NSMenu" ref="623131397"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Run Time</string>
 											<string key="NSKeyEquiv"/>
@@ -590,6 +593,7 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
+								<int key="NSSelectedIndex">4</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -920,7 +924,6 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">15</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1861,7 +1864,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{951, 566}, {196, 243}}</string>
+					<string>{{958, 323}, {196, 243}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1991,6 +1994,7 @@
 							<string>hotkeyHelp:</string>
 							<string>login:</string>
 							<string>lootHotkeyHelp:</string>
+							<string>maltby:</string>
 							<string>pvpBMSelectAction:</string>
 							<string>pvpStartStop:</string>
 							<string>pvpTestWarning:</string>
@@ -2004,6 +2008,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3326,6 +3331,9 @@
 							<string>conditionMatchingSegment</string>
 							<string>conditionTableView</string>
 							<string>editorPanel</string>
+							<string>inventoryController</string>
+							<string>macroController</string>
+							<string>spellController</string>
 							<string>waypointController</string>
 							<string>waypointDescription</string>
 						</object>
@@ -3337,6 +3345,9 @@
 							<string>NSSegmentedControl</string>
 							<string>NSTableView</string>
 							<string>NSPanel</string>
+							<string>InventoryController</string>
+							<string>MacroController</string>
+							<string>SpellController</string>
 							<string>WaypointController</string>
 							<string>NSTextField</string>
 						</object>
