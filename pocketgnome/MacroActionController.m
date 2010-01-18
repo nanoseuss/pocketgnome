@@ -55,13 +55,18 @@
 @synthesize macros = _macros;
 
 - (void)setStateFromAction: (Action*)action{
+
+	NSNumber *macroID = [[action value] objectForKey:@"MacroID"];
+	NSNumber *instant = [[action value] objectForKey:@"Instant"];
 	
 	for ( NSMenuItem *item in [macroPopUp itemArray] ){
-		if ( [[(Macro*)[item representedObject] number] intValue] == [(NSNumber*)action.value intValue] ){
+		if ( [[(Macro*)[item representedObject] number] intValue] == [macroID intValue] ){
 			[macroPopUp selectItem:item];
 			break;
 		}
 	}
+	
+	[instantButton setState:[instant boolValue]];
 	
 	[super setStateFromAction:action];
 }
@@ -72,8 +77,13 @@
     Action *action = [Action actionWithType:ActionType_Macro value:nil];
 	
 	[action setEnabled: self.enabled];
+	
 	NSNumber *macroID = [[[macroPopUp selectedItem] representedObject] number];
-	[action setValue: macroID];
+	NSNumber *instant = [NSNumber numberWithBool:[instantButton state]];
+	NSDictionary *values = [NSDictionary dictionaryWithObjectsAndKeys:
+							macroID,		@"MacroID",
+							instant,		@"Instant", nil];
+	[action setValue: values];
     
     return action;
 }

@@ -63,12 +63,17 @@ NSInteger alphabeticSort(id spell1, id spell2, void *context){
 
 - (void)setStateFromAction: (Action*)action{
 	
+	NSNumber *spellID = [[action value] objectForKey:@"SpellID"];
+	NSNumber *instant = [[action value] objectForKey:@"Instant"];
+	
 	for ( NSMenuItem *item in [spellPopUp itemArray] ){
-		if ( [[(Spell*)[item representedObject] ID] intValue] == [(NSNumber*)action.value intValue] ){
+		if ( [[(Spell*)[item representedObject] ID] intValue] == [spellID intValue] ){
 			[spellPopUp selectItem:item];
 			break;
 		}
 	}
+	
+	[spellInstantButton setState:[instant boolValue]];
 	
 	[super setStateFromAction:action];
 }
@@ -81,7 +86,13 @@ NSInteger alphabeticSort(id spell1, id spell2, void *context){
 	[action setEnabled: self.enabled];
 	
 	NSNumber *spellID = [[[spellPopUp selectedItem] representedObject] ID];
-	[action setValue: spellID];
+	NSNumber *instant = [NSNumber numberWithBool:[spellInstantButton state]];
+	
+	NSDictionary *values = [NSDictionary dictionaryWithObjectsAndKeys:
+							spellID,		@"SpellID",
+							instant,		@"Instant", nil];
+
+	[action setValue: values];
     
     return action;
 }

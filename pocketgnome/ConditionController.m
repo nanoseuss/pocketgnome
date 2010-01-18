@@ -115,7 +115,7 @@
 		newController = [[RouteRunCountConditionController alloc] init];
 	else if ( [condition variety] == VarietyRouteRunTime )
 		newController = [[RouteRunTimeConditionController alloc] init];
-	else if ( [condition variety] == VarietyInventory )
+	else if ( [condition variety] == VarietyInventoryFree )
 		newController = [[InventoryFreeConditionController alloc] init];
 	
 	

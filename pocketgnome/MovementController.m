@@ -25,6 +25,7 @@
 #import "WoWObject.h"
 #import "Offsets.h"
 
+#import "Rule.h"
 #import "Route.h"
 #import "RouteSet.h"
 #import "Waypoint.h"
@@ -46,7 +47,6 @@
 @property (readwrite, retain) Position *lastPlayerPosition;
 @property (readwrite, retain) Position *lastAttemptedPosition;
 @property (readwrite, assign) int jumpCooldown;
-@property BOOL shouldAttack;
 @property BOOL isPaused;
 @property BOOL stopAtEnd;
 @property BOOL shouldNotify;
@@ -112,6 +112,7 @@
 		self.lastTriedWaypoint = nil;
 		_lastResumeCorrection = [[NSDate date] retain];
 		_lastMeleePosition = nil;
+		_lastWaypointToTakeAction = nil;
 
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
     }
@@ -133,7 +134,6 @@
 @synthesize jumpCooldown = _jumpCooldown;
 
 @synthesize lastDirectionCorrection = _lastDirectionCorrection;
-@synthesize shouldAttack = _shouldAttack;
 @synthesize isPaused = _isPaused;
 @synthesize lastSavedPosition;
 @synthesize lastPlayerPosition;
@@ -275,7 +275,7 @@ typedef enum MovementType {
 
 #pragma mark -
 
-- (void)beginPatrol: (unsigned)count andAttack: (BOOL)attack {
+- (void)beginPatrol: (unsigned)count {
     Route *route = [self patrolRoute];
     if( !route ) return;
 
@@ -283,8 +283,7 @@ typedef enum MovementType {
         //[combatController setCombatEnabled: attack];
         [self setIsPatrolling: YES];
         _patrolCount = count;
-        self.shouldAttack = attack;
-        
+
         // determine at which waypoint to start the patrol
         Waypoint *startWaypoint = [self closestWaypoint];
         
@@ -322,7 +321,7 @@ typedef enum MovementType {
 
 - (void)beginPatrolAndStopAtLastPoint {
     self.stopAtEnd = YES;
-    [self beginPatrol: 1 andAttack: NO];
+    [self beginPatrol: 1];
 }
 
 - (Route*)patrolRoute {
@@ -350,7 +349,7 @@ typedef enum MovementType {
         return;
     }
     
-    if(!self.unit && (distance < ([playerData speedMax]/2.0f))) {
+    if(!self.unit && !self.destination.actions && (distance < ([playerData speedMax]/2.0f))) {
         PGLog(@"[Move] Waypoint is too close. Moving to the next one.");
         [self moveToNextWaypoint];
         return;
@@ -638,6 +637,7 @@ typedef enum MovementType {
 }
 
 - (void)resetUnit{
+	PGLog(@"[Move] Resetting unit %@", self.unit);
 	self.unit = nil;
 	self.shouldNotify = NO;
 }
@@ -730,12 +730,254 @@ typedef enum MovementType {
         PGLog(@"[Move] Patrol route or waypoints invalid. Ending patrol.");
         [self finishRoute];
     }
+}
 
+- (void)performActions:(NSDictionary*)dict{
+
+	// player cast?  try again shortly
+	if ( [playerData isCasting] ){
+		float delayTime = [playerData castTimeRemaining];
+        if ( delayTime < 0.2f) delayTime = 0.2f;
+        PGLog(@"  Player casting. Waiting %.2f to perform next action.", delayTime);
+        
+        [self performSelector: _cmd
+                   withObject: dict 
+                   afterDelay: delayTime];
+		
+		return;
+	}
+	
+	int actionToExecute = [[dict objectForKey:@"CurrentAction"] intValue];
+	NSArray *actions = [dict objectForKey:@"Actions"];
+	float delay = 0.1f;
+	
+	PGLog(@"[Waypoint] Executing action %d", actionToExecute);
+	
+	// are we done?
+	if ( actionToExecute >= [actions count] ){
+		PGLog(@"[Waypoint] Action complete, resuming route");
+		[self realMoveToNextWaypoint];
+		return;
+	}
+	
+	// execute our action
+	else {
+
+		Action *action = [actions objectAtIndex:actionToExecute];
+		
+		// spell
+		if ( [action type] == ActionType_Spell ){
+			
+			UInt32 spell = [[[action value] objectForKey:@"SpellID"] unsignedIntValue];
+			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
+			PGLog(@"[Waypoint] Casting spell %d", spell);
+			
+			// only pause movement if we have to!
+			if ( !instant )
+				[self pauseMovement];
+			
+			[botController performAction:spell];
+		}
+		
+		// item
+		else if ( [action type] == ActionType_Item ){
+			
+			UInt32 itemID = [[[action value] objectForKey:@"ItemID"] unsignedIntValue];
+			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
+			UInt32 actionID = (USE_ITEM_MASK + itemID);
+			
+			PGLog(@"[Waypoint] Using item %d", itemID);
+			 
+			// only pause movement if we have to!
+			if ( !instant )
+				[self pauseMovement];
+			
+			[botController performAction:actionID];
+		}
+		
+		// macro
+		else if ( [action type] == ActionType_Macro ){
+			
+			UInt32 macroID = [[[action value] objectForKey:@"MacroID"] unsignedIntValue];
+			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
+			UInt32 actionID = (USE_MACRO_MASK + macroID);
+			
+			PGLog(@"[Waypoint] Using macro %d", macroID);
+			
+			// only pause movement if we have to!
+			if ( !instant )
+				[self pauseMovement];
+			
+			[botController performAction:actionID];
+		}
+		
+		// delay
+		else if ( [action type] == ActionType_Delay ){
+			
+			delay = [[action value] floatValue];
+			
+			[self pauseMovement];
+			
+			PGLog(@"[Waypoint] Delaying for %0.2f seconds", delay);
+		}
+		
+		// jump
+		else if ( [action type] == ActionType_Jump ){
+			
+			// send escape to close chat box if it's open!
+			if ( [controller isWoWChatBoxOpen] ){
+				[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
+				usleep(100000);
+			}
+			
+			[chatController jump];
+			PGLog(@"[Waypoint] Jumping!");
+		}
+		
+		// switch route
+		else if ( [action type] == ActionType_SwitchRoute ){
+			
+			RouteSet *route = [action value];
+			
+			PGLog(@"[Waypoint] Switching route to %@", route);
+			
+			// switch the botController's route!
+			botController.theRoute = route;
+			
+			// ghost check
+			if ( [playerData isGhost] ) {
+				Position *playerPosition = [playerData position];
+				Route *primaryRoute  = [route routeForKey: PrimaryRoute];
+				Route *corpseRunRoute = [route routeForKey: CorpseRunRoute];
+				
+				PGLog(@"[Bot] Started the bot, but we're a ghost!");
+				
+				float primaryDist = primaryRoute ? [[[primaryRoute waypointClosestToPosition: playerPosition] position] distanceToPosition: playerPosition] : INFINITY;
+				float corpseDist = corpseRunRoute ? [[[corpseRunRoute waypointClosestToPosition: playerPosition] position] distanceToPosition: playerPosition] : INFINITY;
+				
+				if(primaryDist < corpseDist)
+					[self setPatrolRoute: primaryRoute];
+				else
+					[self setPatrolRoute: corpseRunRoute];
+				
+				[self beginPatrol: 1];
+				return;
+			}
+			// alive, switch routes!
+			else{
+				[self setPatrolRoute: [route routeForKey: PrimaryRoute]];
+				[self beginPatrol: 0];
+			}
+		}
+		
+		// quest turn in
+		else if ( [action type] == ActionType_QuestTurnIn ){
+			
+		}
+		
+		// quest grab
+		else if ( [action type] == ActionType_QuestGrab ){
+			
+			// get all nearby mobs
+			NSArray *nearbyMobs = [mobController mobsWithinDistance:5.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+			Mob *questNPC = nil;
+			for ( questNPC in nearbyMobs ){
+				
+				if ( [questNPC isQuestGiver] ){
+					PGLog(@"[Waypoint] Grabbing quests from %@", questNPC);
+					
+					[self pauseMovement];
+					
+					if ( [botController interactWithMouseoverGUID:[questNPC GUID]] ){
+						
+						// to be safe we're going to loop like 10 times
+						int i = 0;
+						for ( ; i < 10; i++ ){
+							usleep(500000);
+							[macroController useMacro:@"Questing"];
+						}
+					}
+				}
+			}
+		}
+		
+		// repair
+		else if ( [action type] == ActionType_Repair ){
+			
+			// get all nearby mobs
+			NSArray *nearbyMobs = [mobController mobsWithinDistance:5.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+			Mob *repairNPC = nil;
+			for ( repairNPC in nearbyMobs ){
+				
+				if ( [repairNPC canRepair] ){
+					PGLog(@"[Waypoint] Repairing with %@", repairNPC);
+					break;
+				}
+			}
+			
+			// repair
+			if ( repairNPC ){
+				[self pauseMovement];
+				if ( [botController interactWithMouseoverGUID:[repairNPC GUID]] ){
+					
+					// sleep some to allow the window to open!
+					usleep(500000);
+					
+					// now send the repair macro
+					[macroController useMacro:@"RepairAll"];	
+					
+					PGLog(@"[Waypoint] All items repaired");
+				}
+			}
+			else{
+				PGLog(@"[Waypoint] Unable to repair, no repair NPC found!");
+			}
+		}
+	}
+
+	[self performSelector: _cmd
+			   withObject: [NSDictionary dictionaryWithObjectsAndKeys:
+							actions,									@"Actions",
+							[NSNumber numberWithInt:++actionToExecute],	@"CurrentAction",
+							nil]
+			   afterDelay: delay];
 }
 
 - (void)moveToNextWaypoint {
 	
+	// make sure we didn't just execute this WP
+	if ( _destination != _lastWaypointToTakeAction ){
 	
+		// check for a WP action
+		NSArray *actions = _destination.actions;
+		if ( actions && [actions count] ){
+			
+			// check if conditions are met
+			Rule *rule = _destination.rule;
+			if ( rule == nil || [botController evaluateRule: rule withTarget: TargetNone asTest: NO] ){
+				
+				// time to perform actions!
+				
+				PGLog(@"[Waypoint] Performing %d actions", [actions count] );
+				
+				_lastWaypointToTakeAction = [_destination retain];
+				
+				NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+									  actions,						@"Actions",
+									  [NSNumber numberWithInt:0],	@"CurrentAction",
+									  nil];
+				
+				[self performActions:dict];
+				
+				return;
+			}
+		}
+	}
+	else{
+		PGLog(@"[Waypoint] Just took action, ignoring");
+	}
+	
+
 	[self realMoveToNextWaypoint];
 	
 	
@@ -963,7 +1205,6 @@ typedef enum MovementType {
     self.stopAtEnd = NO;
     _patrolCount = 0;
     self.waypointDoneCount = 0;
-    self.shouldAttack = NO;
     self.lastSavedPosition = nil;
     self.movementExpiration = nil;
 }

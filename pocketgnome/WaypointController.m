@@ -668,7 +668,7 @@ enum AutomatorIntervalType {
     if(![self currentRoute] || ![[self currentRoute] waypointCount])    return;
     
     [movementController setPatrolRoute: [self currentRoute]];
-    [movementController beginPatrol: 1 andAttack: NO];
+    [movementController beginPatrol: 1];
 }
 
 - (IBAction)stopMovement: (id)sender {

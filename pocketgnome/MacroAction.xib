@@ -43,6 +43,37 @@
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSButton" id="741041819">
+						<reference key="NSNextResponder" ref="897934020"/>
+						<int key="NSvFlags">268</int>
+						<string key="NSFrame">{{311, 6}, {101, 18}}</string>
+						<reference key="NSSuperview" ref="897934020"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="276822850">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">0</int>
+							<string key="NSContents">Instant use?</string>
+							<object class="NSFont" key="NSSupport" id="567458509">
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">13</double>
+								<int key="NSfFlags">1044</int>
+							</object>
+							<reference key="NSControlView" ref="741041819"/>
+							<int key="NSButtonFlags">1211912703</int>
+							<int key="NSButtonFlags2">2</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">NSSwitch</string>
+							</object>
+							<object class="NSButtonImageSource" key="NSAlternateImage">
+								<string key="NSImageName">NSSwitch</string>
+							</object>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">200</int>
+							<int key="NSPeriodicInterval">25</int>
+						</object>
+					</object>
 					<object class="NSPopUpButton" id="852672986">
 						<reference key="NSNextResponder" ref="897934020"/>
 						<int key="NSvFlags">268</int>
@@ -52,11 +83,7 @@
 						<object class="NSPopUpButtonCell" key="NSCell" id="545539660">
 							<int key="NSCellFlags">-2076049856</int>
 							<int key="NSCellFlags2">2048</int>
-							<object class="NSFont" key="NSSupport" id="567458509">
-								<string key="NSName">LucidaGrande</string>
-								<double key="NSSize">13</double>
-								<int key="NSfFlags">1044</int>
-							</object>
+							<reference key="NSSupport" ref="567458509"/>
 							<reference key="NSControlView" ref="852672986"/>
 							<int key="NSButtonFlags">109199615</int>
 							<int key="NSButtonFlags2">129</int>
@@ -180,7 +207,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{325, 33}</string>
+				<string key="NSFrameSize">{490, 33}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -273,6 +300,14 @@
 					</object>
 					<int key="connectionID">163</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">instantButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="741041819"/>
+					</object>
+					<int key="connectionID">166</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -309,6 +344,7 @@
 							<reference ref="652240429"/>
 							<reference ref="867616341"/>
 							<reference ref="852672986"/>
+							<reference ref="741041819"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -389,6 +425,20 @@
 						<reference key="object" ref="81054269"/>
 						<reference key="parent" ref="1049699681"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">164</int>
+						<reference key="object" ref="741041819"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="276822850"/>
+						</object>
+						<reference key="parent" ref="897934020"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">165</int>
+						<reference key="object" ref="276822850"/>
+						<reference key="parent" ref="741041819"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -404,6 +454,8 @@
 					<string>123.IBPluginDependency</string>
 					<string>124.IBPluginDependency</string>
 					<string>125.IBPluginDependency</string>
+					<string>164.IBPluginDependency</string>
+					<string>165.IBPluginDependency</string>
 					<string>2.IBEditorWindowLastContentRect</string>
 					<string>2.IBPluginDependency</string>
 					<string>2.WindowOrigin</string>
@@ -425,7 +477,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{791, 698}, {325, 33}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{791, 698}, {490, 33}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{478, 384}, {635, 36}}</string>
@@ -459,7 +513,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">163</int>
+			<int key="maxID">166</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -504,8 +558,17 @@
 					<string key="className">MacroActionController</string>
 					<string key="superclassName">ActionController</string>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">macroPopUp</string>
-						<string key="NS.object.0">NSPopUpButton</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>instantButton</string>
+							<string>macroPopUp</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSButton</string>
+							<string>NSPopUpButton</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>

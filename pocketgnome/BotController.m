@@ -84,7 +84,6 @@
 
 @interface BotController ()
 
-@property (readwrite, retain) RouteSet *theRoute;
 @property (readwrite, retain) Behavior *theBehavior;
 @property (readwrite, retain) CombatProfile *theCombatProfile;
 @property (readwrite, retain) NSDate *lootStartTime;
@@ -114,7 +113,6 @@
 - (void)preRegen;
 - (void)evaluateRegen: (NSDictionary*)regenDict;
 
-- (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
 - (void)performProcedureWithState: (NSDictionary*)state;
 - (void)playerHasDied: (NSNotification*)noti;
 
@@ -428,11 +426,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         //PGLog(@"Checking condition: %@", condition);
         
         if(![condition enabled]) continue;  // skip disabled conditions
-        
+		
         BOOL conditionEval = NO;
-        if([condition unit] == UnitNone && [condition variety] != VarietySpellCooldown && [condition variety] != VarietyLastSpellCast ) goto loopEnd;
-        if([condition unit] == UnitTarget && !target) goto loopEnd;
+		if([condition unit] == UnitTarget && !target) goto loopEnd;
 		if([condition unit] == UnitFriend && !target) goto loopEnd;
+        if([condition unit] == UnitNone && 
+		   [condition variety] != VarietySpellCooldown && 
+		   [condition variety] != VarietyLastSpellCast && 
+		   [condition variety] != VarietyPlayerLevel && 
+		   [condition variety] != VarietyPlayerZone && 
+		   [condition variety] != VarietyQuest && 
+		   [condition variety] != VarietyRouteRunCount && 
+		   [condition variety] != VarietyRouteRunTime && 
+		   [condition variety] != VarietyInventoryFree && 
+		   [condition variety] != VarietyDurability 
+		   ) goto loopEnd;
+
         
         switch([condition variety]) {
             case VarietyNone:;
@@ -1018,7 +1027,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				break;
 				
 				/* ******************************** */
-                /* Rune Condition        */
+                /* Rune Condition					*/
                 /* ******************************** */
             case VarietyRune:;
                 if(test) PGLog(@"Doing Rune condition...");
@@ -1044,7 +1053,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     //PGLog(@"  %d = %@ is %d", runesAvailable, [condition value], conditionEval);
                 } else if([condition comparator] == CompareLess) {
                     conditionEval = ( runesAvailable < [[condition value] unsignedIntValue] ) ? YES : NO;
-                    //PGLog(@"  %d > %@ is %d", runesAvailable, [condition value], conditionEval);
+                    //PGLog(@"  %d < %@ is %d", runesAvailable, [condition value], conditionEval);
                 } else goto loopEnd;
 	
 				
@@ -1052,7 +1061,102 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				break;
 				
+				/* ******************************** */
+                /* Player Level Condition			*/
+                /* ******************************** */
+            case VarietyPlayerLevel:;
+				if(test) PGLog(@"Doing Player level condition...");
+				
+				int level = [[condition value] intValue];
+				int playerLevel = [playerController level];
+				
+				// check level
+                if( [condition comparator] == CompareMore) {
+                    conditionEval = ( playerLevel > level ) ? YES : NO;
+					 //PGLog(@"  %d > %d is %d", playerLevel, level, conditionEval);
+                } else if([condition comparator] == CompareEqual) {
+                    conditionEval = ( playerLevel == level ) ? YES : NO;
+					//PGLog(@"  %d = %d is %d", playerLevel, level, conditionEval);
+                } else if([condition comparator] == CompareLess) {
+                    conditionEval = ( playerLevel < level ) ? YES : NO;
+                    //PGLog(@"  %d < %d is %d", playerLevel, level, conditionEval);
+                } else goto loopEnd;
+				
+				break;
+				
+				/* ******************************** */
+                /* Player Zone Condition			*/
+                /* ******************************** */
+            case VarietyPlayerZone:;
+				if(test) PGLog(@"Doing Player zone condition...");
+				
+				int zone = [[condition value] intValue];
+				int playerZone = [playerController zone];
+				
+				// check zone
+                if( [condition comparator] == CompareIs) {
+                    conditionEval = ( zone == playerZone ) ? YES : NO;
+					PGLog(@"  %d = %d is %d", zone, playerZone, conditionEval);
+                } else if([condition comparator] == CompareIsNot) {
+                    conditionEval = ( zone != playerZone ) ? YES : NO;
+					PGLog(@"  %d != %d is %d", zone, playerZone, conditionEval);
+                } else goto loopEnd;
+				
+				break;
+				
+				/* ******************************** */
+                /* Free Inventory Condition			*/
+                /* ******************************** */
+            case VarietyInventoryFree:;
+				if(test) PGLog(@"Doing free inventory condition...");
+				
+				int freeSpaces = [[condition value] intValue];
+				int totalFree = [itemController bagSpacesAvailable];
+				
+				// check free spaces
+                if( [condition comparator] == CompareMore) {
+                    conditionEval = ( totalFree > freeSpaces ) ? YES : NO;
+					//PGLog(@"  %d > %d is %d", totalFree, freeSpaces, conditionEval);
+                } else if([condition comparator] == CompareEqual) {
+                    conditionEval = ( totalFree == freeSpaces ) ? YES : NO;
+					//PGLog(@"  %d = %d is %d", totalFree, freeSpaces, conditionEval);
+                } else if([condition comparator] == CompareLess) {
+                    conditionEval = ( totalFree < freeSpaces ) ? YES : NO;
+                    //PGLog(@"  %d < %d is %d", totalFree, freeSpaces, conditionEval);
+                } else goto loopEnd;
+				
+				break;
+				
+				/* ******************************** */
+                /* Durability Condition				*/
+                /* ******************************** */
+            case VarietyDurability:;
+				if(test) PGLog(@"Doing durability condition...");
+				
+				float averageDurability = [itemController averageWearableDurability];
+				float durabilityPercentage = [[condition value] floatValue];
+				
+				PGLog(@"%0.2f %0.2f", averageDurability, durabilityPercentage);
+				
+				// generally means we haven't updated our arrays yet in inventoryController
+				if ( averageDurability == 0 ) goto loopEnd;
+				
+				// check free spaces
+                if( [condition comparator] == CompareMore) {
+                    conditionEval = ( averageDurability > durabilityPercentage ) ? YES : NO;
+					PGLog(@"  %0.2f > %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+                } else if([condition comparator] == CompareEqual) {
+                    conditionEval = ( averageDurability == durabilityPercentage ) ? YES : NO;
+					PGLog(@"  %0.2f = %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+                } else if([condition comparator] == CompareLess) {
+                    conditionEval = ( averageDurability < durabilityPercentage ) ? YES : NO;
+                    PGLog(@"  %0.2f < %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+                } else goto loopEnd;
+				
+				break;
+				
             default:;
+				PGLog(@"checking for %d", [condition variety]);
                 break;
         }
         
@@ -2180,7 +2284,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             PGLog(@"Finished Corpse Run. Begin search for body...");
             [controller setCurrentStatus: @"Bot: Searching for body..."];
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
-            [movementController beginPatrol: 1 andAttack: NO];
+            [movementController beginPatrol: 1];
         } else {
             //PGLog(@"Finished something else...");
         }
@@ -2851,7 +2955,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             [movementController resumeMovementToNearestWaypoint];
         } else {
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
-            [movementController beginPatrol: 0 andAttack: self.theCombatProfile.combatEnabled];
+            [movementController beginPatrol: 0];
         }
         [controller setCurrentStatus: @"Bot: Patrolling"];
     } else {
@@ -3150,7 +3254,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             else
                 [movementController setPatrolRoute: corpseRunRoute];
             
-            [movementController beginPatrol: 1 andAttack: NO];
+            [movementController beginPatrol: 1];
             return;
         }
         
@@ -3414,7 +3518,7 @@ NSMutableDictionary *_diffDict = nil;
     // reset our route and then pause again
     if(self.theRoute) {
         [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
-        [movementController beginPatrol: 0 andAttack: self.theCombatProfile.combatEnabled];
+        [movementController beginPatrol: 0];
         [movementController pauseMovement];
     }
     
@@ -4601,7 +4705,22 @@ NSMutableDictionary *_diffDict = nil;
 	return 3;	//neutral
 }
 
+- (void)startClick{
+
+	[macroController useMacro:@"AuctioneerClick"];
+	
+	[self performSelector:@selector(startClick) withObject:nil afterDelay:1.0f];	
+}
+
+- (IBAction)maltby: (id)sender{
+	
+	[self startClick];
+}
+
 - (IBAction)test: (id)sender{
+
+	
+	
 	
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];

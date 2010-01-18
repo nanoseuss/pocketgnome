@@ -11,7 +11,8 @@
 #import "ActionController.h"
 
 @interface SpellActionController : ActionController {
-	IBOutlet NSPopUpButton *spellPopUp;
+	IBOutlet NSPopUpButton	*spellPopUp;
+	IBOutlet NSButton		*spellInstantButton;
 	
 	NSArray *_spells;
 }

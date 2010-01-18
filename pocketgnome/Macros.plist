@@ -2,6 +2,38 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Questing</key>
+	<dict>
+		<key>Macro</key>
+		<string>/script SelectGossipAvailableQuest(1)
+/script SelectGossipActiveQuest(1)
+/script CompleteQuest()
+/script SelectGossipOption(1)
+/script AcceptQuest() </string>
+		<key>Description</key>
+		<string>This will turn in and grab quests!</string>
+	</dict>
+	<key>RepairAllGuild</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click MerchantGuildBankRepairButton;</string>
+		<key>Description</key>
+		<string>This will repair everything</string>
+	</dict>
+	<key>RepairAll</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click MerchantRepairAllButton;</string>
+		<key>Description</key>
+		<string>This will repair everything</string>
+	</dict>
+	<key>AuctioneerClick</key>
+	<dict>
+		<key>Macro</key>
+		<string>/run if (AucAdvancedBuyPromptYes) then AucAdvancedBuyPromptYes:Click() end</string>
+		<key>Description</key>
+		<string>This will confirm purchase!</string>
+	</dict>
 	<key>SelectTarget</key>
 	<dict>
 		<key>Macro</key>

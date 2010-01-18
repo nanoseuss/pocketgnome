@@ -49,6 +49,10 @@
 		03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03567AAC10DDAB52001ACE43 /* CombatController.m */; };
 		03685DC6110266FC001CE552 /* DelayAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685DC5110266FC001CE552 /* DelayAction.xib */; };
 		03685DDA11026831001CE552 /* JumpAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685DD911026831001CE552 /* JumpAction.xib */; };
+		03685FA81103D73B001CE552 /* QuestGrabAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685FA61103D73B001CE552 /* QuestGrabAction.xib */; };
+		03685FA91103D73B001CE552 /* QuestTurnInAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685FA71103D73B001CE552 /* QuestTurnInAction.xib */; };
+		03685FAD1103D768001CE552 /* QuestGrabActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03685FAC1103D768001CE552 /* QuestGrabActionController.m */; };
+		03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */; };
 		038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038709B910D576E100DF5B90 /* BlacklistController.m */; };
 		038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */ = {isa = PBXBuildFile; fileRef = 038A4B4510E9656D00577D8F /* LastSpellCast.xib */; };
 		038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */; };
@@ -418,6 +422,12 @@
 		03567AAC10DDAB52001ACE43 /* CombatController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatController.m; sourceTree = "<group>"; };
 		03685DC5110266FC001CE552 /* DelayAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DelayAction.xib; sourceTree = "<group>"; };
 		03685DD911026831001CE552 /* JumpAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JumpAction.xib; sourceTree = "<group>"; };
+		03685FA61103D73B001CE552 /* QuestGrabAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = QuestGrabAction.xib; sourceTree = "<group>"; };
+		03685FA71103D73B001CE552 /* QuestTurnInAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = QuestTurnInAction.xib; sourceTree = "<group>"; };
+		03685FAB1103D768001CE552 /* QuestGrabActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestGrabActionController.h; sourceTree = "<group>"; };
+		03685FAC1103D768001CE552 /* QuestGrabActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestGrabActionController.m; sourceTree = "<group>"; };
+		03685FAE1103D77A001CE552 /* QuestTurnInActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestTurnInActionController.h; sourceTree = "<group>"; };
+		03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestTurnInActionController.m; sourceTree = "<group>"; };
 		038709B810D576E100DF5B90 /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
 		038709B910D576E100DF5B90 /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
 		038A4B4510E9656D00577D8F /* LastSpellCast.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LastSpellCast.xib; sourceTree = "<group>"; };
@@ -830,6 +840,8 @@
 		03168ED410FF705A00EF241B /* Waypoint Action NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				03685FA61103D73B001CE552 /* QuestGrabAction.xib */,
+				03685FA71103D73B001CE552 /* QuestTurnInAction.xib */,
 				03685DD911026831001CE552 /* JumpAction.xib */,
 				03685DC5110266FC001CE552 /* DelayAction.xib */,
 				031695161101314B00EF241B /* ItemAction.xib */,
@@ -862,6 +874,10 @@
 				031694D5110103E000EF241B /* DelayActionController.m */,
 				031694D7110103E900EF241B /* JumpActionController.h */,
 				031694D8110103E900EF241B /* JumpActionController.m */,
+				03685FAB1103D768001CE552 /* QuestGrabActionController.h */,
+				03685FAC1103D768001CE552 /* QuestGrabActionController.m */,
+				03685FAE1103D77A001CE552 /* QuestTurnInActionController.h */,
+				03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */,
 			);
 			name = WaypointActions;
 			sourceTree = "<group>";
@@ -1791,6 +1807,8 @@
 				0316951B1101314B00EF241B /* SpellAction.xib in Resources */,
 				03685DC6110266FC001CE552 /* DelayAction.xib in Resources */,
 				03685DDA11026831001CE552 /* JumpAction.xib in Resources */,
+				03685FA81103D73B001CE552 /* QuestGrabAction.xib in Resources */,
+				03685FA91103D73B001CE552 /* QuestTurnInAction.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1917,6 +1935,8 @@
 				031694D3110103DA00EF241B /* MacroActionController.m in Sources */,
 				031694D6110103E000EF241B /* DelayActionController.m in Sources */,
 				031694D9110103E900EF241B /* JumpActionController.m in Sources */,
+				03685FAD1103D768001CE552 /* QuestGrabActionController.m in Sources */,
+				03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
