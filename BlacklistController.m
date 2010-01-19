@@ -60,6 +60,15 @@
     return 0;
 }
 
+- (void)blacklistObject: (WoWObject*)obj withCount:(int)count{
+	
+	// i'm lazy right now
+	while ( count-- > 0 ){
+		[self blacklistObject:obj];
+	}
+}
+
+
 // simply add an object to our blacklist!
 - (void)blacklistObject: (WoWObject*)obj{
 

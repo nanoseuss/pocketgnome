@@ -732,6 +732,8 @@ typedef enum MovementType {
     }
 }
 
+#define INTERACT_RANGE		8.0f
+
 - (void)performActions:(NSDictionary*)dict{
 
 	// player cast?  try again shortly
@@ -879,7 +881,7 @@ typedef enum MovementType {
 		else if ( [action type] == ActionType_QuestGrab ){
 			
 			// get all nearby mobs
-			NSArray *nearbyMobs = [mobController mobsWithinDistance:5.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+			NSArray *nearbyMobs = [mobController mobsWithinDistance:INTERACT_RANGE levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
 			Mob *questNPC = nil;
 			for ( questNPC in nearbyMobs ){
 				
@@ -905,10 +907,9 @@ typedef enum MovementType {
 		else if ( [action type] == ActionType_Repair ){
 			
 			// get all nearby mobs
-			NSArray *nearbyMobs = [mobController mobsWithinDistance:5.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+			NSArray *nearbyMobs = [mobController mobsWithinDistance:INTERACT_RANGE levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
 			Mob *repairNPC = nil;
 			for ( repairNPC in nearbyMobs ){
-				
 				if ( [repairNPC canRepair] ){
 					PGLog(@"[Waypoint] Repairing with %@", repairNPC);
 					break;

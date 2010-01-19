@@ -1300,7 +1300,6 @@
 												<int key="NSvFlags">-2147483392</int>
 												<string key="NSFrame">{{1, 106}, {666, 15}}</string>
 												<reference key="NSSuperview" ref="919554175"/>
-												<bool key="NSEnabled">YES</bool>
 												<int key="NSsFlags">1</int>
 												<reference key="NSTarget" ref="919554175"/>
 												<string key="NSAction">_doScroller:</string>
@@ -1325,7 +1324,7 @@
 										<string key="NSFrame">{{18, 42}, {668, 122}}</string>
 										<reference key="NSSuperview" ref="15451263"/>
 										<reference key="NSNextKeyView" ref="934496357"/>
-										<int key="NSsFlags">690</int>
+										<int key="NSsFlags">562</int>
 										<reference key="NSVScroller" ref="818423228"/>
 										<reference key="NSHScroller" ref="1017712693"/>
 										<reference key="NSContentView" ref="934496357"/>
@@ -6725,7 +6724,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{698, 298}, {740, 338}}</string>
+					<string>{{392, 298}, {740, 338}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{575, 480}, {600, 335}}</string>
@@ -7135,6 +7134,7 @@
 							<string>hotkeyHelp:</string>
 							<string>login:</string>
 							<string>lootHotkeyHelp:</string>
+							<string>maltby:</string>
 							<string>pvpBMSelectAction:</string>
 							<string>pvpStartStop:</string>
 							<string>pvpTestWarning:</string>
@@ -7148,6 +7148,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

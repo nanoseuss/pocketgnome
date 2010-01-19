@@ -18,6 +18,7 @@
 
 }
 
+- (void)blacklistObject: (WoWObject*)obj withCount:(int)count;
 - (void)blacklistObject: (WoWObject*)obj;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;

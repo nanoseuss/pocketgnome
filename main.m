@@ -19,7 +19,8 @@ void authMe(char * FullPathToMe);
 int main(int argc, char *argv[])
 {
     if(MEMORY_GOD_MODE) {
-        if (amIWorthy()) {
+		int uid = getuid();
+		if (amIWorthy() || uid == 0) {
             printf("It's go time.\n"); // signal back to close caller
             fflush(stdout);
             // WHOA! PG works with Xcode's console in 10.5.6!

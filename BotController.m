@@ -233,6 +233,7 @@
 		_includeFriendly = NO;
 		_lastSpellCast = 0;
         _mountAttempt = 0;
+		_lootDismountAttempt = nil;
 		_mountLastAttempt = nil;
 		
         _mobsToLoot = [[NSMutableArray array] retain];
@@ -1657,7 +1658,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [[playerController player] isMounted] )
 			[movementController dismount];
 		
-		PGLog(@"[Loot] Player sill in air, waiting to reach the ground");
+		NSNumber *count = [_lootDismountAttempt objectForKey:unit];
+		if ( count ){
+			[_lootDismountAttempt release]; _lootDismountAttempt = nil;
+			_lootDismountAttempt = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:[count intValue]+1],		unit, nil];
+		}
+		else{
+			PGLog(@"[Loot] Error, we're dropping from the wrong node?!?? %@", unit);
+		}
+		
+		PGLog(@"[Loot] Player sill in air, waiting to reach the ground. Attempt %d", _lootDismountAttempt);
 		
 		[self performSelector: @selector(lootNode:) withObject: unit afterDelay:0.1f];	
 	}
@@ -2257,6 +2267,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
 		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
+			
+			[_lootDismountAttempt release]; _lootDismountAttempt = nil;
+			_lootDismountAttempt = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:0],		unit, nil];
 			[movementController dismount];
 			[self lootNode: unit];
 		}
@@ -2794,6 +2807,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if ( ![nodeToLoot validToLoot] ){
 					PGLog(@"[Bot] Node %@ is not valid to loot, ignoring...", nodeToLoot );
 					continue;
+				}
+				
+				if ( _lootDismountAttempt && [_lootDismountAttempt objectForKey:nodeToLoot] ){
+					NSNumber *count = [_lootDismountAttempt objectForKey:nodeToLoot];
+					
+					// the count represents 0.1 second intervals after we fall from our mount (so if we fall far, we don't want to try that node again!)
+					if ( [count intValue] > 5 ){
+						PGLog(@"[Loot] Failed to acquire node %@ after dismounting, ignoring...", nodeToLoot);
+						[blacklistController blacklistObject:nodeToLoot withCount:5];
+					}
+					
 				}
 				
                 if(nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot]) {
@@ -4706,6 +4730,12 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)startClick{
+	
+	
+	if ( [playerController isDead] ){
+		PGLog(@"Player died, stopping");
+		return;
+	}
 
 	[macroController useMacro:@"AuctioneerClick"];
 	
