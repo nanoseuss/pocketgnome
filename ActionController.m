@@ -18,6 +18,8 @@
 #import "JumpActionController.h"
 #import "QuestTurnInActionController.h"
 #import "QuestGrabActionController.h"
+#import "InteractActionController.h"
+#import "CombatProfileActionController.h"
 
 @implementation ActionController
 
@@ -57,6 +59,10 @@
 		newController = [[QuestTurnInActionController alloc] init];
 	else if ( [action type] == ActionType_QuestGrab )
 		newController = [[QuestGrabActionController alloc] init];
+	else if ( [action type] == ActionType_Interact )
+		newController = [[InteractActionController alloc] init];
+	else if ( [action type] == ActionType_CombatProfile )
+		newController = [[CombatProfileActionController alloc] init];
 	
     if(newController) {
         [newController setStateFromAction: action];

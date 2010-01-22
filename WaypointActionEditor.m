@@ -35,11 +35,14 @@
 #import "JumpActionController.h"
 #import "QuestTurnInActionController.h"
 #import "QuestGrabActionController.h"
+#import "InteractActionController.h"
+#import "CombatProfileActionController.h"
 
 #import "WaypointController.h"
 #import "SpellController.h"
 #import "InventoryController.h"
 #import "MacroController.h"
+#import "CombatProfileEditor.h"
 
 @implementation WaypointActionEditor
 
@@ -120,6 +123,9 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_Jump)				newAction = [[[JumpActionController alloc] init] autorelease];
 	else if ( type == ActionType_QuestTurnIn)		newAction = [[[QuestTurnInActionController alloc] init] autorelease];
 	else if ( type == ActionType_QuestGrab)			newAction = [[[QuestGrabActionController alloc] init] autorelease];
+	else if ( type == ActionType_Interact)			newAction = [[[InteractActionController alloc] init] autorelease];
+	else if ( type == ActionType_CombatProfile)		newAction = [CombatProfileActionController combatProfileActionControllerWithProfiles:[combatProfileEditor combatProfiles]];
+	
 	
 	if ( action != nil ){
 		[newAction setStateFromAction:action];
@@ -190,7 +196,6 @@ static WaypointActionEditor *sharedEditor = nil;
 		if ( wp.rule ){
 			
 			for ( Condition *condition in [wp.rule conditions] ) {
-				PGLog(@"Adding condition %@", condition);
 				[_conditionList addObject: [ConditionController conditionControllerWithCondition: condition]];
 			}
 			
@@ -216,8 +221,9 @@ static WaypointActionEditor *sharedEditor = nil;
     [[sender window] makeFirstResponder: [[sender window] contentView]];
     [NSApp endSheet: editorPanel returnCode: NSOKButton];
     [editorPanel orderOut: nil];
-
-	// pass the new wp back to waypoint controller? or do we need to since it was a pointer + not a copy?
+	
+	// let our controller know if a change was made
+	[waypointController waypointActionEditorClosed:(sender==nil)];
 }
 
 - (IBAction)saveWaypoint: (id)sender{
@@ -228,7 +234,6 @@ static WaypointActionEditor *sharedEditor = nil;
 	[_waypoint setActions:nil];
 	for ( id actionController in _actionList ){
 		[_waypoint addAction:[(ActionController*)actionController action]];
-		PGLog(@"Saved action %@ with value %@", [(ActionController*)actionController action], [(ActionController*)actionController action].value);
 	}
 	
 	// add the conditions to an array
@@ -236,7 +241,6 @@ static WaypointActionEditor *sharedEditor = nil;
 	for ( id conditionController in _conditionList ){
 		Condition *condition = [(ConditionController*)conditionController condition];
 		if ( condition ){
-			PGLog(@"saving condition %@", condition);
 			[conditions addObject: condition];
 		}	
 	}
@@ -254,10 +258,8 @@ static WaypointActionEditor *sharedEditor = nil;
 	}
 	
 	_waypoint.rule = newRule;
-	
-	PGLog(@"saved rule %@", newRule);
-	
-	[self closeEditor:sender];	
+
+	[self closeEditor:nil];	
 }
 
 - (NSArray*)routes{

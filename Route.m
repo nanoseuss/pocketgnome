@@ -19,7 +19,6 @@
     self = [super init];
     if (self != nil) {
         self.waypoints = [NSArray array];
-		_isFlyingRoute = NO;
     }
     return self;
 }
@@ -35,7 +34,6 @@
 	self = [super init];
 	if(self) {
         self.waypoints = [decoder decodeObjectForKey: @"Waypoints"] ? [decoder decodeObjectForKey: @"Waypoints"] : [NSArray array];
-		_isFlyingRoute = [decoder decodeObjectForKey: @"IsFlyingRoute"] ? [[decoder decodeObjectForKey: @"IsFlyingRoute"] boolValue] : NO;
 	}
 	return self;
 }
@@ -43,14 +41,12 @@
 -(void)encodeWithCoder:(NSCoder *)coder
 {
     [coder encodeObject: self.waypoints forKey: @"Waypoints"];
-	[coder encodeObject: [NSNumber numberWithBool:_isFlyingRoute] forKey: @"IsFlyingRoute"];
 }
 
 - (id)copyWithZone:(NSZone *)zone
 {
     Route *copy = [[[self class] allocWithZone: zone] init];
     copy.waypoints = self.waypoints;
-	copy.isFlyingRoute = self.isFlyingRoute;
     
     // PGLog(@"Old route: %@", self.waypoints);
     // PGLog(@"New route: %@", copy.waypoints);
@@ -67,11 +63,10 @@
 #pragma mark -
 
 - (NSString*)description {
-    return [NSString stringWithFormat: @"<0x%X Route: %d waypoints Flying:%d>", self, [self waypointCount], _isFlyingRoute];
+    return [NSString stringWithFormat: @"<0x%X Route: %d waypoints>", self, [self waypointCount]];
 }
 
 @synthesize waypoints = _waypoints;
-@synthesize isFlyingRoute = _isFlyingRoute;
 
 - (void)setWaypoints: (NSArray*)waypoints {
     [_waypoints autorelease];

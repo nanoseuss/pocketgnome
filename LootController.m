@@ -154,17 +154,10 @@
 - (void)lootItem:(int)slotNum{
 	NSString *lootSlot = [NSString stringWithFormat: @"/script LootSlot(%d);%c", slotNum, '\n'];
 	NSString *lootBoP = [NSString stringWithFormat: @"/script ConfirmLootSlot(%d);%c", slotNum, '\n'];
-	int macroID = 0;
 	
 	// use macro to loot
-	macroID = [macroController macroIDForCommand:lootSlot];
-	PGLog(@"[Loot] Macro ID: %d", macroID);
-	if ( macroID > 0 ){
-		[macroController useMacroByID:macroID];
-		PGLog(@"[Loot] Executing loot macro %d", macroID);
-	}
-	// send the command
-	else{
+	BOOL success = [macroController useMacroWithCommand:lootSlot];
+	if ( !success ){
 		
 		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){
@@ -179,14 +172,8 @@
 		usleep(500000);
 	}
 	
-	// use macro to loot
-	macroID = [macroController macroIDForCommand:lootBoP];
-	if ( macroID > 0 ){
-		[macroController useMacroByID:macroID];
-		PGLog(@"[Loot] Executing loot macro %d", macroID);
-	}
-	// send the command
-	else{
+	success = [macroController useMacroWithCommand:lootBoP];
+	if ( !success ){
 		
 		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){

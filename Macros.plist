@@ -2,6 +2,48 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>QuestCancel</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click QuestFrameGoodbyeButton</string>
+		<key>Description</key>
+		<string>Click cancel</string>
+	</dict>
+	<key>QuestComplete</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click QuestFrameCompleteQuestButton</string>
+		<key>Description</key>
+		<string>Complete quest</string>
+	</dict>
+	<key>QuestContinue</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click QuestFrameCompleteButton</string>
+		<key>Description</key>
+		<string>Complete a quest when you are viewing the turn in panel</string>
+	</dict>
+	<key>QuestAccept</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click QuestFrameAcceptButton</string>
+		<key>Description</key>
+		<string>Accept a quest once you&apos;re viewing it</string>
+	</dict>
+	<key>QuestClickGossip</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click GossipTitleButton</string>
+		<key>Description</key>
+		<string>Clicks an initial gossip (we need to add an int to it)</string>
+	</dict>
+	<key>CompleteQuest</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click QuestFrameCompleteQuestButton</string>
+		<key>Description</key>
+		<string>Complete quest</string>
+	</dict>
 	<key>Questing</key>
 	<dict>
 		<key>Macro</key>

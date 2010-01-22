@@ -25,7 +25,7 @@
 - (void)reloadMacros;
 - (BOOL)executeMacro: (NSString*)key;
 - (Macro*)findMacro: (NSString*)key;
-- (BOOL)overwriteMacro: (NSString*)key;
+- (BOOL)overwriteMacro: (NSString*)macroCommand;
 @end
 
 @implementation MacroController
@@ -61,16 +61,38 @@
 	[self reloadMacros];
 }
 
+- (BOOL)useMacroWithCommand: (NSString*)macroCommand{
+	return [self overwriteMacro:macroCommand];
+}
+
 - (BOOL)useMacro: (NSString*)key;{
-	BOOL success = [self overwriteMacro:key];
 	
-	return success;
+	if ( _macroDictionary ){
+		NSDictionary *macroData = [_macroDictionary valueForKey:key];
+		NSString *macroCommand = [macroData valueForKey:@"Macro"];
+	
+		return [self overwriteMacro:macroCommand];
+	}
+	
+	return NO;
+}
+
+- (BOOL)useMacroWithKey: (NSString*)key andInt:(int)param{
+	
+	// set up the command
+	NSDictionary *macroData = [_macroDictionary valueForKey:key];
+	NSString *macroCommand = [macroData valueForKey:@"Macro"];
+	macroCommand = [NSString stringWithFormat:@"%@%d", macroCommand, param];
+
+	return [self overwriteMacro:macroCommand];
 }
 
 // actually will take an action (macro or send command)
 - (void)useMacroOrSendCmd: (NSString*)key{
 	
-	BOOL macroExecuted = [self overwriteMacro:key];
+	NSDictionary *macroData = [_macroDictionary valueForKey:key];
+	NSString *macroCommand = [macroData valueForKey:@"Macro"];
+	BOOL macroExecuted = [self overwriteMacro:macroCommand];
 	
 	// if we didn't find a macro, lets send the command!
 	if ( !macroExecuted ){
@@ -244,7 +266,7 @@
 }
 
 // this function will over-write the first macro found, use it, then set it back!
-- (BOOL)overwriteMacro: (NSString*)key{
+- (BOOL)overwriteMacro: (NSString*)macroCommand{
 	
 	// + 0x10 from this ptr is a ptr to the macro object list (but we don't need this)
 	UInt32 offset = [offsetController offset:@"MACRO_LIST_PTR"];
@@ -258,9 +280,6 @@
 	
 	// just use the first found macro
 	if ( ( objectPtr & 0x1 ) == 0 && _macroDictionary ){
-		
-		NSDictionary *macroData = [_macroDictionary valueForKey:key];
-		NSString *macroCommand = [macroData valueForKey:@"Macro"];
 		
 		if ( macroCommand ){
 			
@@ -317,15 +336,13 @@
 			newMacroBody[strlen(oldBody)] = '\0';
 			[memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacroBody BufLength:sizeof(newMacroBody)];
 			
-			PGLog(@"[Macro] Completed execution of %@ using macro ID %d", key, macroID);
+			PGLog(@"[Macro] Completed execution of %@ using macro ID %d", macroCommand, macroID);
 			
 			return YES;
 		}
 		else{
-			PGLog(@"[Macro] Error, unable to find '%@' in the macro dictionary file!", key);
+			PGLog(@"[Macro] Error, unable to find execute a null macro command!");
 		}
-		
-		
 	}
 	
 	return NO;
