@@ -85,7 +85,6 @@
 @interface BotController ()
 
 @property (readwrite, retain) Behavior *theBehavior;
-@property (readwrite, retain) CombatProfile *theCombatProfile;
 @property (readwrite, retain) NSDate *lootStartTime;
 @property (readwrite, retain) NSDate *skinStartTime;
     
@@ -1373,10 +1372,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// priority system for combat
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 		
+		
+		
 		// kind of a hack right now, but it *should* work
 		//	I'm running into a problem where PG will not loot after death, but instead move onto a hostile NOT in combat
 		//	So lets add a check here, this isn't how I want it to operate, but it will work for now
 		BOOL doCombatProcedure = YES;
+		/*
 		if ( self.doLooting && [_mobsToLoot count] ){
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 			
@@ -1388,7 +1390,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else{
 				PGLog(@"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
 			}
-		}
+		}*/
 		
 		// temp fix for looting
 		if ( doCombatProcedure ){
@@ -2453,7 +2455,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(![self isBotting])						return NO;
     if(![playerController playerIsValid:self])  return NO;
 	
-	PGLog(@"[Bot] Evaluate Situation");
+	//PGLog(@"[Bot] Evaluate Situation");
     
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 	
@@ -2975,7 +2977,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if there's nothing to do, make sure we keep moving if we aren't
     if(self.theRoute) {
         if([movementController isPatrolling] && ([movementController patrolRoute] == [self.theRoute routeForKey: PrimaryRoute])) {
-			PGLog(@"[Bot] Eval: resuming movement");
+			//PGLog(@"[Bot] Eval: resuming movement");
             [movementController resumeMovementToNearestWaypoint];
         } else {
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
@@ -3198,7 +3200,52 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         NSRunAlertPanel(@"Combat Profile is not valid", @"You must select a valid combat profile before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
         return;
     }
-
+	
+	// behavior check - friendly
+	if ( self.theCombatProfile.healingEnabled ){
+		BOOL validFound = NO;
+		
+		Procedure *procedure = [self.theBehavior procedureForKey: CombatProcedure];
+		int i;
+		for ( i = 0; i < [procedure ruleCount]; i++ ) {
+			Rule *rule = [procedure ruleAtIndex: i];
+			
+			if ( [rule target] == TargetFriend ){
+				validFound = YES;
+				break;
+			}
+		}
+		
+		if ( !validFound ){
+			PGLog(@"[Bot] You have healing selected, but no rules heal friendlies!");
+			NSBeep();
+			NSRunAlertPanel(@"Behavior is not set up correctly", @"Your combat profile states you should be healing. But no targets are selected as friendly in your behavior! So how can I heal anyone?", @"Okay", NULL, NULL);
+			return;
+		}
+	}
+	
+	// behavior check - hostile
+	if ( self.theCombatProfile.combatEnabled ){
+		BOOL validFound = NO;
+		
+		Procedure *procedure = [self.theBehavior procedureForKey: CombatProcedure];
+		int i;
+		for ( i = 0; i < [procedure ruleCount]; i++ ) {
+			Rule *rule = [procedure ruleAtIndex: i];
+			
+			if ( [rule target] == TargetEnemy || [rule target] == TargetAdd ){
+				validFound = YES;
+				break;
+			}
+		}
+		
+		if ( !validFound ){
+			PGLog(@"[Bot] You have combat selected, but no rules attack enemies!");
+			NSBeep();
+			NSRunAlertPanel(@"Behavior is not set up correctly", @"Your combat profile states you should be attacking. But no targets are selected as enemies in your behavior! So how can I kill anyone?", @"Okay", NULL, NULL);
+			return;
+		}
+	}
     
     if( [self isBotting])
         [self stopBot: nil];
@@ -4621,6 +4668,33 @@ NSMutableDictionary *_diffDict = nil;
 	return string;
 }
 
+#pragma mark Waypoint Action stuff
+
+// set the new combat profile + select it in the dropdown!
+- (void)changeCombatProfile:(CombatProfile*)profile{
+	self.theCombatProfile = profile;
+	
+	for ( NSMenuItem *item in [combatProfilePopup itemArray] ){
+		if ( [[(CombatProfile*)[item representedObject] name] isEqualToString:[profile name]] ){
+			[combatProfilePopup selectItem:item];
+			break;
+		}
+	}
+}
+
+// set the new route + select it in the dropdown!
+- (void)changeRouteSet:(RouteSet*)route{
+	self.theRoute = route;
+	
+	for ( NSMenuItem *item in [routePopup itemArray] ){
+		if ( [[(RouteSet*)[item representedObject] name] isEqualToString:[route name]] ){
+			[routePopup selectItem:item];
+			break;
+		}
+	}
+}
+
+#pragma mark Testing Shit
 
 - (IBAction)test2: (id)sender{
 	/*
@@ -4749,9 +4823,6 @@ NSMutableDictionary *_diffDict = nil;
 
 - (IBAction)test: (id)sender{
 
-	
-	
-	
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
@@ -5259,6 +5330,8 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 	}
 	
 }
+
+
 
 @end
 

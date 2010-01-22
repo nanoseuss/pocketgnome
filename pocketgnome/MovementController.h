@@ -25,6 +25,8 @@
 @class MacroController;
 @class BlacklistController;
 @class BotController;
+@class WaypointController;
+@class CombatProfileEditor;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
@@ -45,6 +47,8 @@
 	IBOutlet OffsetController		*offsetController;
     IBOutlet MacroController		*macroController;
 	IBOutlet BlacklistController	*blacklistController;
+	IBOutlet WaypointController		*waypointController;
+	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementType;

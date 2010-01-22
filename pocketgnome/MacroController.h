@@ -39,7 +39,14 @@
 // execute a macro by it's ID
 - (void)useMacroByID: (int)macroID;
 
+// only use the macro (it won't send the command)
 - (BOOL)useMacro: (NSString*)key;
+
+// use a macro with a parameter
+- (BOOL)useMacroWithKey: (NSString*)key andInt:(int)param;
+
+// use a macro
+- (BOOL)useMacroWithCommand: (NSString*)macroCommand;
 
 - (NSArray*)macros;
 /*

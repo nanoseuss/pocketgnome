@@ -21,6 +21,8 @@
 #import "AuraController.h"
 #import "MacroController.h"
 #import "BlacklistController.h"
+#import "WaypointController.h"
+#import "CombatProfileEditor.h"
 
 #import "WoWObject.h"
 #import "Offsets.h"
@@ -247,14 +249,29 @@ typedef enum MovementType {
 			Position *playerPosition = [playerData position];
 			Waypoint *waypoint = [[self patrolRoute] waypointClosestToPosition: playerPosition];
 			
-			int newIndex = [[[self patrolRoute] waypoints] indexOfObject: waypoint];
-			int oldIndex = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
+						
+			// make sure we don't have an action to take that we'll miss
+			id actions = [self destination].actions;
+			if ( actions && [actions count] > 0 && _lastWaypointToTakeAction != [self destination] ){
+				PGLog(@"[Move] Action to take, moving to waypoint %@", [self destination] );
+				
+				[self moveToNextWaypoint];
+				//[self moveToWaypoint: [self destination]];
+			}
 			
-			if(newIndex > oldIndex && (newIndex < (oldIndex + 10))) {
-				PGLog(@"[Move] Found new, closer waypoint.");
-				[self moveToWaypoint: waypoint];
-			} else {
-				[self moveToWaypoint: [self destination]];
+			// old check
+			else {
+				int oldIndex = [[[self patrolRoute] waypoints] indexOfObject: [self destination]];
+				int newIndex = [[[self patrolRoute] waypoints] indexOfObject: waypoint];
+				
+				PGLog(@"$$$$$$$$$$$$$$$$$$$$ Old: %d, New: %d", oldIndex, newIndex );
+				
+				if(newIndex > oldIndex && (newIndex < (oldIndex + 10))) {
+					PGLog(@"[Move] Found new, closer waypoint.");
+					[self moveToWaypoint: waypoint];
+				} else {
+					[self moveToWaypoint: [self destination]];
+				}
 			}
 		}
     }
@@ -278,6 +295,8 @@ typedef enum MovementType {
 - (void)beginPatrol: (unsigned)count {
     Route *route = [self patrolRoute];
     if( !route ) return;
+	
+	_lastWaypointToTakeAction = nil;
 
     if( [route waypointCount] > 0 ) {
         //[combatController setCombatEnabled: attack];
@@ -376,7 +395,7 @@ typedef enum MovementType {
 	
 	// END - new stuck check
 	
-	//PGLog(@"[Move] Moving to %@ %@", position, checkPosition);
+	PGLog(@"[Move] Moving to %@ %@", position, checkPosition);
 
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
@@ -545,6 +564,11 @@ typedef enum MovementType {
 		return;		
 	}
 	
+	// select the WP in UI
+	int index = [[[self patrolRoute] waypoints] indexOfObject: waypoint];
+	[waypointController selectCurrentWaypoint:index];
+	
+	// move
     [self setDestination: waypoint];
     [self moveToPosition: [waypoint position]];
 	
@@ -753,8 +777,6 @@ typedef enum MovementType {
 	NSArray *actions = [dict objectForKey:@"Actions"];
 	float delay = 0.1f;
 	
-	PGLog(@"[Waypoint] Executing action %d", actionToExecute);
-	
 	// are we done?
 	if ( actionToExecute >= [actions count] ){
 		PGLog(@"[Waypoint] Action complete, resuming route");
@@ -764,6 +786,8 @@ typedef enum MovementType {
 	
 	// execute our action
 	else {
+		
+		PGLog(@"[Waypoint] Executing action %d", actionToExecute);
 
 		Action *action = [actions objectAtIndex:actionToExecute];
 		
@@ -840,11 +864,17 @@ typedef enum MovementType {
 		else if ( [action type] == ActionType_SwitchRoute ){
 			
 			RouteSet *route = [action value];
+			for ( RouteSet *otherRoute in [waypointController routes] ){
+				if ( [[route name] isEqualToString:[otherRoute name]] ){
+					route = otherRoute;
+					break;
+				}
+			}
 			
-			PGLog(@"[Waypoint] Switching route to %@", route);
+			PGLog(@"[Waypoint] Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
 			
 			// switch the botController's route!
-			botController.theRoute = route;
+			[botController changeRouteSet:route];
 			
 			// ghost check
 			if ( [playerData isGhost] ) {
@@ -868,35 +898,53 @@ typedef enum MovementType {
 			// alive, switch routes!
 			else{
 				[self setPatrolRoute: [route routeForKey: PrimaryRoute]];
-				[self beginPatrol: 0];
+				[self beginPatrol: 1];
 			}
 		}
 		
-		// quest turn in
-		else if ( [action type] == ActionType_QuestTurnIn ){
-			
-		}
-		
-		// quest grab
-		else if ( [action type] == ActionType_QuestGrab ){
-			
+		else if ( [action type] == ActionType_QuestGrab || [action type] == ActionType_QuestTurnIn ){
+
 			// get all nearby mobs
 			NSArray *nearbyMobs = [mobController mobsWithinDistance:INTERACT_RANGE levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
 			Mob *questNPC = nil;
 			for ( questNPC in nearbyMobs ){
 				
 				if ( [questNPC isQuestGiver] ){
-					PGLog(@"[Waypoint] Grabbing quests from %@", questNPC);
 					
 					[self pauseMovement];
 					
-					if ( [botController interactWithMouseoverGUID:[questNPC GUID]] ){
-						
-						// to be safe we're going to loop like 10 times
-						int i = 0;
-						for ( ; i < 10; i++ ){
-							usleep(500000);
-							[macroController useMacro:@"Questing"];
+					// might want to make k 3 (but will take longer)
+					
+					PGLog(@"[Waypoint] Turning in/grabbing quests to/from %@", questNPC);
+					
+					int i = 0, k = 1;
+					for ( ; i < 2; i++ ){
+						for ( ; k < 5; k++ ){
+							
+							// interact
+							if ( [botController interactWithMouseoverGUID:[questNPC GUID]] ){
+								usleep(200000);
+								
+								// click the gossip button
+								[macroController useMacroWithKey:@"QuestClickGossip" andInt:k];
+								usleep(10000);
+								
+								// click "continue" (not all quests need this)
+								[macroController useMacro:@"QuestContinue"];
+								usleep(10000);
+								
+								// click "Accept" (this is ONLY needed if we're accepting a quest)
+								[macroController useMacro:@"QuestAccept"];
+								usleep(10000);
+								
+								// click "complete quest"
+								[macroController useMacro:@"QuestComplete"];
+								usleep(10000);
+								
+								// click "cancel" (sometimes we have to in case we just went into a quest we already have!)
+								[macroController useMacro:@"QuestCancel"];
+								usleep(10000);
+							}
 						}
 					}
 				}
@@ -933,6 +981,22 @@ typedef enum MovementType {
 			else{
 				PGLog(@"[Waypoint] Unable to repair, no repair NPC found!");
 			}
+		}
+		
+		// switch combat profile
+		else if ( [action type] == ActionType_CombatProfile ){
+			PGLog(@"[Waypoint] Switching from combat profile %@ to %@", botController.theCombatProfile, [action value]);
+			
+			CombatProfile *profile = [action value];
+			for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
+				if ( [[profile name] isEqualToString:[otherProfile name]] ){
+					PGLog(@"found combat profile %@", otherProfile);
+					profile = otherProfile;
+					break;
+				}
+			}
+			
+			[botController changeCombatProfile:profile];
 		}
 	}
 

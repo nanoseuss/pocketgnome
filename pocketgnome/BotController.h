@@ -267,7 +267,7 @@
 
 @property (readwrite, retain) RouteSet *theRoute;
 @property (readonly, retain) Behavior *theBehavior;
-@property (readonly, retain) CombatProfile *theCombatProfile;
+@property (readwrite, retain) CombatProfile *theCombatProfile;
 @property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
@@ -329,5 +329,9 @@
 - (void) updateRunningTimer;
 
 - (UInt8)isHotKeyInvalid;
+
+// from movement controller (for new WP actions!)
+- (void)changeCombatProfile:(CombatProfile*)profile;
+- (void)changeRouteSet:(RouteSet*)route;
 
 @end

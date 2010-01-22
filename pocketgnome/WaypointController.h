@@ -13,6 +13,7 @@
 @class Waypoint;
 @class Controller;
 @class PlayerDataController;
+@class BotController;
 
 @class BetterTableView;
 @class PTHotKey;
@@ -26,7 +27,7 @@
     IBOutlet Controller *controller;
     IBOutlet PlayerDataController *playerData;
     IBOutlet id mobController;
-    IBOutlet id botController;
+    IBOutlet BotController *botController;
     IBOutlet id movementController;
     IBOutlet id combatController;
 
@@ -47,8 +48,6 @@
     IBOutlet BetterSegmentedControl *wpActionTypeSegments;
     IBOutlet NSPopUpButton *wpActionIDPopUp;
     Waypoint *_editWaypoint;
-    
-	IBOutlet NSButton *isFlyingRouteButton;
 	
     // waypoint recording
     IBOutlet NSButton *automatorStartStopButton;
@@ -67,13 +66,16 @@
 	PTHotKey *automatorGlobalHotkey;
     NSMutableArray *_routes;
     BOOL validSelection, validWaypointCount;
-    BOOL changeWasMade;
 	BOOL isAutomatorRunning, disableGrowl;
     NSSize minSectionSize, maxSectionSize;
 	
 	IBOutlet NSPanel *descriptionPanel;
 	NSString *_descriptionMultiRows;
 	NSIndexSet *_selectedRows;
+	
+	NSString *_nameBeforeRename;
+	
+	IBOutlet NSButton		*scrollWithRoute;
 }
 
 - (void)saveRoutes;
@@ -102,7 +104,6 @@
 - (IBAction)duplicateRoute: (id)sender;
 - (IBAction)openExportPanel: (id)sender;
 - (IBAction)closeExportPanel: (id)sender;
-- (IBAction)optionSelected: (id)sender;
 - (IBAction)waypointMenuAction: (id)sender;
 - (IBAction)closeDescription: (id)sender;
 
@@ -128,11 +129,10 @@
 - (IBAction)addWaypoint: (id)sender;
 - (IBAction)removeWaypoint: (id)sender;
 - (IBAction)editWaypointAction: (id)sender;
-- (IBAction)closeWaypointAction: (id)sender;
-- (IBAction)changeWaypointAction: (id)sender;
-- (IBAction)cancelWaypointAction: (id)sender;
+- (void)waypointActionEditorClosed: (BOOL)change;
 
 // new action/conditions
 - (IBAction)doneWaypointAction: (id)sender;
+- (void)selectCurrentWaypoint:(int)index;
 
 @end

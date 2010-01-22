@@ -14,6 +14,7 @@
 @class SpellController;
 @class InventoryController;
 @class MacroController;
+@class CombatProfileEditor;
 
 @interface WaypointActionEditor : NSObject {
 
@@ -21,6 +22,7 @@
 	IBOutlet SpellController		*spellController;
 	IBOutlet InventoryController	*inventoryController;
 	IBOutlet MacroController		*macroController;
+	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	
 	IBOutlet NSPanel			*editorPanel;
 	IBOutlet NSPopUpButton		*addConditionDropDown;

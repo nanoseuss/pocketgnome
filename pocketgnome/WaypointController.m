@@ -11,6 +11,7 @@
 #import "PlayerDataController.h"
 #import "MovementController.h"
 #import "MobController.h"
+#import "BotController.h"
 #import "CombatController.h"
 #import "SpellController.h"
 #import "InventoryController.h"
@@ -31,7 +32,7 @@
 #import "PTHeader.h"
 #import <Growl/GrowlApplicationBridge.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
-
+ 
 #define AddWaypointHotkeyIdentifier @"AddWaypoint"
 #define AutomatorHotkeyIdentifier @"AutomatorStartStop"
 
@@ -43,6 +44,14 @@ enum AutomatorIntervalType {
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
 - (void)automatorPulse;
+
+- (void)deleteRoute:(RouteSet*)route;
+- (void)deleteRouteWithName:(NSString*)routeName;
+- (NSString *)pathForRouteFile:(RouteSet*)route;
+- (NSString *)pathForRouteFileWithName:(NSString*)routeFileName;
+- (void)saveRouteToDisk: (RouteSet*)route;
+- (RouteSet*)loadRouteFromDisk: (NSString*)name; 
+- (void)loadAllRoutes;
 @end
 
 @implementation WaypointController
@@ -60,29 +69,47 @@ enum AutomatorIntervalType {
     if (self != nil) {
 
 		_selectedRows = nil;
-        changeWasMade = NO;
-        id loadedRoutes = [[NSUserDefaults standardUserDefaults] objectForKey: @"Routes"];
-        if(loadedRoutes) {
-            _routes = [[NSKeyedUnarchiver unarchiveObjectWithData: loadedRoutes] mutableCopy];
-            
-            NSMutableArray *_newRoutes = [NSMutableArray array];
-            for(id route in _routes) {
-                if( [route isKindOfClass: [Route class]] ) {
-                    RouteSet *newSet = [RouteSet routeSetWithName: [route name]];
-                    [newSet setRoute: route forKey: PrimaryRoute];
-                    [_newRoutes addObject: newSet];
-                }
-            }
-            
-            if([_newRoutes count]) {
-                PGLog(@"Updated %d routes to routesets.", [_newRoutes count]);
-                [_routes removeAllObjects];
-                [_routes addObjectsFromArray: _newRoutes];
-            }
-            
-        } else
-            _routes = [[NSMutableArray array] retain];
-        
+		_nameBeforeRename = nil;
+		
+		_routes = [[NSMutableArray array] retain];
+		
+		BOOL newStyle = YES;
+		
+		// load the routes
+		id loadedRoutes = [[NSUserDefaults standardUserDefaults] objectForKey: @"Routes"];
+		
+		if ( loadedRoutes ){
+			
+			NSArray *routeData = [NSKeyedUnarchiver unarchiveObjectWithData: loadedRoutes];
+			
+			// do a check to see if this is old-style information (not stored in files)
+			if ( routeData != nil && [routeData count] > 0 ){
+				
+				id object = [routeData objectAtIndex:0];
+				
+				// old style!!
+				if ( [object isKindOfClass:[RouteSet class]] ){
+					newStyle = NO;
+					for ( RouteSet *route in routeData ){
+						
+						route.changed = YES;
+						
+						[_routes addObject:route];
+					}
+					
+					PGLog(@"[Routes] Loaded %d routes from the old method!", [_routes count]);
+				}
+			}
+		}
+		
+		// load routes via the new method!
+		if ( newStyle ){
+			
+			[self loadAllRoutes];
+			
+			PGLog(@"[Routes] Loaded %d routes from the new method!", [_routes count]);
+		}
+		
         // listen for notification
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self
@@ -133,12 +160,17 @@ enum AutomatorIntervalType {
 }
 
 - (void)saveRoutes {
-    if(changeWasMade) {
-		PGLog(@"SAVING routes");
-        [[NSUserDefaults standardUserDefaults] setObject: [NSKeyedArchiver archivedDataWithRootObject: _routes] forKey: @"Routes"];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-        changeWasMade = NO;
-    }
+	
+	// lets save our routes if they've changed!
+	for ( RouteSet *route in _routes ){
+		if ( route.changed ){
+			[self saveRouteToDisk:route];
+		}
+	}
+	
+	// we no longer use this anymore :(  remove it!
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"Routes"];
+	[[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 - (void)validateBindings {
@@ -184,15 +216,6 @@ enum AutomatorIntervalType {
     return [[_routes retain] autorelease];
 }
 
-/*- (Route*)currentRoute {
-    return [[_route retain] autorelease];
-}
-
-- (void)setCurrentRoute: (Route*)route {
-    [_route autorelease];
-    _route = [route retain];
-}*/
-
 - (Route*)currentRoute {
     return [[self currentRouteSet] routeForKey: [self currentRouteKey]];
 }
@@ -236,9 +259,11 @@ enum AutomatorIntervalType {
     [self didChangeValueForKey: @"routes"];
 
     // update the current route
-    changeWasMade = YES;
     [self setCurrentRouteSet: routeSet];
     [waypointTable reloadData];
+	
+	// so we know to save this route later!
+	[self currentRouteSet].changed = YES;
     
     // PGLog(@"Added route: %@", [routeSet name]);
 }
@@ -258,8 +283,6 @@ enum AutomatorIntervalType {
 
 - (IBAction)loadRoute: (id)sender {
     [waypointTable reloadData];
-	
-	[isFlyingRouteButton setState:[self currentRoute].isFlyingRoute];
 }
 
 - (IBAction)setRouteType: (id)sender {
@@ -272,9 +295,11 @@ enum AutomatorIntervalType {
         
         int ret = NSRunAlertPanel(@"Delete Route?", [NSString stringWithFormat: @"Are you sure you want to delete the route \"%@\"?", [[self currentRouteSet] name]], @"Delete", @"Cancel", NULL);
         if(ret == NSAlertDefaultReturn) {
-            
+			
             [self willChangeValueForKey: @"routes"];
             [_routes removeObject: [self currentRouteSet]];
+			
+			[self deleteRoute:[self currentRouteSet]];
             
             if([_routes count])
                 [self setCurrentRouteSet: [_routes objectAtIndex: 0]];
@@ -283,7 +308,6 @@ enum AutomatorIntervalType {
                 
             [self didChangeValueForKey: @"routes"];
             
-            changeWasMade = YES;
             [waypointTable reloadData];
         }
     }
@@ -294,6 +318,9 @@ enum AutomatorIntervalType {
 }
 
 - (IBAction)renameRoute: (id)sender {
+	
+	_nameBeforeRename = [[self.currentRouteSet name] copy];
+	
 	[NSApp beginSheet: renamePanel
 	   modalForWindow: [self.view window]
 		modalDelegate: nil
@@ -305,8 +332,12 @@ enum AutomatorIntervalType {
     [[sender window] makeFirstResponder: [[sender window] contentView]];
     [NSApp endSheet: renamePanel returnCode: 1];
     [renamePanel orderOut: nil];
-
-    changeWasMade = YES;
+	
+	// did the name change?
+	if ( ![_nameBeforeRename isEqualToString:[[self currentRouteSet] name]] ){
+		[self currentRouteSet].changed = YES;
+		[self deleteRouteWithName:_nameBeforeRename];
+	}
 }
 
 #pragma mark -
@@ -408,6 +439,15 @@ enum AutomatorIntervalType {
 #pragma mark -
 #pragma mark Waypoint & Other Actions
 
+- (void)selectCurrentWaypoint:(int)index{
+	
+	if ( [[waypointTable window] isVisible] && [scrollWithRoute state] ) {
+		if ( self.currentRouteSet == botController.theRoute ){
+			[waypointTable selectRow:index byExtendingSelection:NO];
+			[waypointTable scrollRowToVisible:index];
+		}
+	}
+}
 
 - (IBAction)closestWaypoint: (id)sender{
 
@@ -426,6 +466,7 @@ enum AutomatorIntervalType {
 	
 	if ( closestWaypointRow > 0 ){
 		[waypointTable selectRow:closestWaypointRow byExtendingSelection:NO];
+		[waypointTable scrollRowToVisible:closestWaypointRow];
 		PGLog(@"[Waypoint] Closest waypoint is %0.2f yards away", minDist);
 	}
 }
@@ -452,13 +493,6 @@ enum AutomatorIntervalType {
     [visualizePanel orderOut: nil];
 }
 
-- (IBAction)optionSelected: (id)sender {
-    if(![self currentRoute])        return;
-    if(![self.view window])         return;	
-	
-	[self currentRoute].isFlyingRoute = [isFlyingRouteButton state];
-}
-
 - (IBAction)addWaypoint: (id)sender {
     if(![self currentRoute])        return;
     if(![playerData playerIsValid:self]) return;
@@ -467,7 +501,7 @@ enum AutomatorIntervalType {
     Waypoint *newWP = [Waypoint waypointWithPosition: [playerData position]];
     [[self currentRoute] addWaypoint: newWP];
     [waypointTable reloadData];
-    changeWasMade = YES;
+	[self currentRouteSet].changed = YES;
     PGLog(@"Added: %@", newWP);
     NSString *readableRoute =  ([routeTypeSegment selectedTag] == 0) ? @"Primary" : @"Corpse Run";
     
@@ -497,7 +531,7 @@ enum AutomatorIntervalType {
     [waypointTable selectRow: [rowIndexes firstIndex] byExtendingSelection: NO]; 
     
     [waypointTable reloadData];
-    changeWasMade = YES;
+	[self currentRouteSet].changed = YES;
 }
 
 - (IBAction)editWaypointAction: (id)sender {
@@ -511,156 +545,25 @@ enum AutomatorIntervalType {
     
     // get our waypoint
     Waypoint *wp = [[[self currentRoute] waypointAtIndex: [waypointTable clickedRow]] retain];
-	
+
 	// open?
 	[[WaypointActionEditor sharedEditor] showEditorOnWindow: [self.view window] 
 											   withWaypoint: wp
 												 withAction: [sender tag]];
-	
-    changeWasMade = YES;
-	/*
-    // make sure the clicked row is valid
-    if([waypointTable clickedRow] < 0 || [waypointTable clickedRow] >= [[self currentRoute] waypointCount]) {
-        NSBeep();
-        PGLog(@"Error: invalid row (%d), cannot change action.", [waypointTable clickedRow]);
-        return;
-    }
-    
-    // get our waypoint
-    Waypoint *wp = [[self currentRoute] waypointAtIndex: [waypointTable clickedRow]];
-    _editWaypoint = wp;
-	wp.action.type = [sender tag];
-	
-	PGLog(@"Modifying WP %@ to %d", wp, wp.action.type);
-    
-	int type = 0;
-	if(wp.action.type == ActionType_None)
-		type = 0;
-	else if(wp.action.type == ActionType_Delay)
-		type = 1;
-	else if (wp.action.type == ActionType_Jump )
-		type = 3;
-    else
-        type = 2;
-    
-    // we only need to setup the GUI if this is a non-normal type
-    if( [wp.action type] != ActionType_None ) {
-        // PGLog(@"EDITING FOR %d", [wp.action type]);
-        // select the correct tab for our action
-        [wpActionTabs selectTabViewItemAtIndex: type];
-        [wpActionDelayText setFloatValue: wp.action.delay];
-        
-        // if we are a spell, item, or macro, set the correct segment
-        // otherwise, just set it to spell
-		if ( [wp.action type] != ActionType_Jump ){
-			if(wp.action.isPerform) {
-				[wpActionTypeSegments selectSegmentWithTag: wp.action.type];
-			}
-			else {
-				[wpActionTypeSegments selectSegmentWithTag: ActionType_Spell];
-			}
-		}
-        
-        // generate the correct menu for the popup
-        [self changeWaypointAction: wpActionTypeSegments];
-        
-        // pop open the editor window
-        [NSApp beginSheet: wpActionPanel
-           modalForWindow: [self.view window]
-            modalDelegate: nil
-           didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
-              contextInfo: nil];
-    } else {
-        _editWaypoint = nil;
-        [waypointTable reloadData];
-    }
-	 */
-    changeWasMade = YES;
 }
 
-- (IBAction)changeWaypointAction: (id)sender {
-    // PGLog(@"changeAction: %@", sender);
-    Waypoint *wp = _editWaypoint;
-    sender = (BetterSegmentedControl*)sender;
-    
-    //PGLog(@"%d vs. %d", [waypointTable clickedRow], [waypointTable selectedRow]);
-    //[[waypointTable tableColumnWithIdentifier: @"Type"]
-    //return;
-    
-    if(!wp || !sender) return;
-    
-    // get appropriate menu
-    NSMenu *menu = [[ActionMenusController sharedMenus] menuType: [sender selectedTag] actionID: wp.action.actionID];
-    if(menu) {
-        [wpActionIDPopUp setMenu: menu];
-        [wpActionIDPopUp selectItemWithTag: [wp.action.value unsignedIntValue]];
-    } else {
-        PGLog(@"Error creating menu for type %d, action %d", [sender selectedTag], [wp.action.value unsignedIntValue]);
-    }
-    
-}
-
-- (IBAction)closeWaypointAction: (id)sender {
-    [[sender window] makeFirstResponder: [[sender window] contentView]];
-    [NSApp endSheet: wpActionPanel returnCode: NSOKButton];
-    [wpActionPanel orderOut: nil];
-    
-    Waypoint *wp = _editWaypoint;
-    if(!wp) {
-        PGLog(@"Error editing waypoint action; there is no selected row!");
-        return;
-    }
-    
-    wp.action.value = [NSNumber numberWithInt: 0];
-	
-	NSString *selectedTab = [[wpActionTabs selectedTabViewItem] identifier];
-    
-    if ( [selectedTab isEqualToString: @"Normal"] ){
-        wp.action.type = ActionType_None;
-    }
-	else if ( [selectedTab isEqualToString: @"Delay"] ){
-        if([wpActionDelayText floatValue] == 0.0f) {   // if the delay is 0, set back to normal
-            wp.action.type = ActionType_None;
-        }
-		else{
-            wp.action.type = ActionType_Delay;
-            wp.action.value = [NSNumber numberWithFloat: [wpActionDelayText floatValue]];
-        }
+- (void)waypointActionEditorClosed: (BOOL)change{
+	if ( change ){
+		[self currentRouteSet].changed = YES;
 	}
-	else if ( [selectedTab isEqualToString: @"Jump"] ){
-		wp.action.type = ActionType_Jump;
-    }
-	else{
-        wp.action.type = ActionType_None;
-        
-        // waypoint actions are not currently enabled
-        if ( [[wpActionIDPopUp selectedItem] tag] == 0.0f ) {    // if no action specified, set back to normal
-            wp.action.type = ActionType_None;
-        }
-		else {
-            wp.action.type = [wpActionTypeSegments selectedTag];
-            wp.action.value = [NSNumber numberWithUnsignedInt: [[wpActionIDPopUp selectedItem] tag]];
-        }
-    }
-    
-    _editWaypoint = nil;
-    [waypointTable reloadData];
 }
-
-- (IBAction)cancelWaypointAction: (id)sender {
-    [[sender window] makeFirstResponder: [[sender window] contentView]];
-    [NSApp endSheet: wpActionPanel returnCode: NSCancelButton];
-    [wpActionPanel orderOut: nil];
-}
-
 
 - (IBAction)moveToWaypoint: (id)sender {
     int row = [[waypointTable selectedRowIndexes] firstIndex];
     if(row == NSNotFound || ![self currentRoute]) return;
-    
+	
     Waypoint *waypoint = [[self currentRoute] waypointAtIndex: row];
     
-    //[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(movementFinished:) name: @"MovementFinished" object: [waypoint position]];
     [movementController moveToWaypoint: waypoint];
 }
 
@@ -677,7 +580,6 @@ enum AutomatorIntervalType {
 
 #pragma mark -
 #pragma mark Route Automator
-// thanks to Josh for getting this started! I just cleaned up a little :)
 
 - (IBAction)openAutomatorPanel: (id)sender {
     if([[self currentRouteKey] isEqualToString: PrimaryRoute])
@@ -714,7 +616,6 @@ enum AutomatorIntervalType {
     
     [NSApp endSheet: automatorPanel returnCode: 1];
     [automatorPanel orderOut: nil];
-    [self saveRoutes];
 }
 
 - (IBAction)startStopAutomator: (id)sender {
@@ -794,7 +695,6 @@ enum AutomatorIntervalType {
             [route removeWaypointAtIndex: 0];
         }
         [automatorVizualizer setNeedsDisplay: YES];
-        changeWasMade = YES;
     }
 }
 
@@ -856,7 +756,6 @@ enum AutomatorIntervalType {
 		Waypoint *wp = [[self currentRoute] waypointAtIndex: rowIndex];
 		if ( wp.title != anObject ){
 			wp.title = anObject;
-			changeWasMade = YES;
 		}
 	}
 }
@@ -1058,7 +957,6 @@ enum AutomatorIntervalType {
 		// Adding another waypoint
         if(isAddWaypointEnabled) {
             [self toggleGlobalHotKey: shortcutRecorder];
-            [self saveRoutes];
         }
     }
 }
@@ -1194,12 +1092,109 @@ enum AutomatorIntervalType {
 			}
 		}
 	}
-
-    changeWasMade = YES;
 }
 
 - (IBAction)doneWaypointAction: (id)sender {
 	PGLog(@"done?");
+}
+
+#pragma mark New Route Saving
+
+- (void)deleteRoute:(RouteSet*)route{
+	[self deleteRouteWithName:[route name]];
+}
+
+- (void)deleteRouteWithName:(NSString*)routeName{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSString *filePath = [self pathForRouteFileWithName:[NSString stringWithFormat:@"%@.route", routeName]];
+	
+	if ( [fileManager fileExistsAtPath: filePath] ){
+		NSError *error = nil;
+		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
+			PGLog(@"[Routes] Error %@ when trying to delete route %@", error, filePath);
+		}
+	}
+}
+
+- (NSString *)pathForRouteFileWithName:(NSString*)routeFileName { 
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSString *folder = @"~/Library/Application Support/PocketGnome/";
+	
+	// only return folder
+	if ( routeFileName == nil ){
+		return folder;
+	}
+	
+	// create folder?
+	folder = [folder stringByExpandingTildeInPath];
+	if ( [fileManager fileExistsAtPath: folder] == NO ) {
+		[fileManager createDirectoryAtPath: folder attributes: nil];
+	}
+	
+	return [folder stringByAppendingPathComponent: routeFileName];
+}
+
+// path to route
+- (NSString *)pathForRouteFile:(RouteSet*)route { 
+	return [self pathForRouteFileWithName:[NSString stringWithFormat:@"%@.route", [route name]]];
+}
+
+// save the route
+- (void)saveRouteToDisk: (RouteSet*)route { 
+	NSString * path = [self pathForRouteFile:route];
+	
+	PGLog(@"[Routes] Saving %@ to %@", route, path);
+	
+	NSMutableDictionary * rootObject = [NSMutableDictionary dictionary];
+	[rootObject setValue:route forKey:@"Route"];
+	[NSKeyedArchiver archiveRootObject: rootObject toFile: path];
+} 
+
+- (RouteSet*)loadRouteFromDisk: (NSString*)fileName {
+	
+	NSString *path = [self pathForRouteFileWithName:fileName];
+	
+	// verify the file exists
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	if ( [fileManager fileExistsAtPath: path] == NO ) {
+		PGLog(@"[Routes] Route %@ is missing! Unable to load", fileName);
+		return nil;
+	}
+	
+	NSDictionary *rootObject = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
+	return [rootObject valueForKey:@"Route"];
+} 
+
+- (void)loadAllRoutes{
+	NSError *error = nil;
+	NSString *path = [self pathForRouteFileWithName:nil];
+	path = [path stringByExpandingTildeInPath];
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:path error:&error];
+
+	if ( error ){
+		PGLog(@"[Routes] Error when reading your routes! %@", error);
+		return;
+	}
+	
+	// if we get here then we're good!
+	if ( directoryList && [directoryList count] ){
+		
+		// loop through directory list
+		for ( NSString *fileName in directoryList ){
+			
+			// valid route file
+			if ( [fileName hasSuffix:@".route"] || [fileName hasSuffix:@".route\n"] ){
+				
+				RouteSet *route = [self loadRouteFromDisk:fileName];
+				
+				// valid route - add it!
+				if ( route != nil ){
+					[_routes addObject:route];
+				}
+			}
+		}
+	}
 }
 
 @end

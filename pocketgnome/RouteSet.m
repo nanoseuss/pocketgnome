@@ -20,6 +20,7 @@
     if (self != nil) {
         self.name = nil;
         self.routes = [NSMutableDictionary dictionary];
+		_changed = NO;
     }
     return self;
 }
@@ -96,6 +97,7 @@
 
 @synthesize name = _name;
 @synthesize routes = _routes;
+@synthesize changed = _changed;
 
 - (void)setRoutes: (NSDictionary*)routes {
     [_routes autorelease];

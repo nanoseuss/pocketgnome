@@ -41,6 +41,9 @@
 		031695191101314B00EF241B /* ItemAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 031695161101314B00EF241B /* ItemAction.xib */; };
 		0316951A1101314B00EF241B /* MacroAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 031695171101314B00EF241B /* MacroAction.xib */; };
 		0316951B1101314B00EF241B /* SpellAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 031695181101314B00EF241B /* SpellAction.xib */; };
+		0322D6DA11065D0800EF3EEF /* CombatProfileActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */; };
+		0322D6E211065D8900EF3EEF /* CombatProfileAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */; };
+		0322D72F110744D500EF3EEF /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0322D72E110744D500EF3EEF /* CoreData.framework */; };
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
@@ -410,6 +413,10 @@
 		031695161101314B00EF241B /* ItemAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ItemAction.xib; sourceTree = "<group>"; };
 		031695171101314B00EF241B /* MacroAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MacroAction.xib; sourceTree = "<group>"; };
 		031695181101314B00EF241B /* SpellAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SpellAction.xib; sourceTree = "<group>"; };
+		0322D6D811065D0700EF3EEF /* CombatProfileActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatProfileActionController.h; sourceTree = "<group>"; };
+		0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatProfileActionController.m; sourceTree = "<group>"; };
+		0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CombatProfileAction.xib; sourceTree = "<group>"; };
+		0322D72E110744D500EF3EEF /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		032B8C030FDEE37900807DD0 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
 		034429B60FAA3E1800E9DE03 /* Quest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quest.h; sourceTree = "<group>"; };
 		034429B70FAA3E1800E9DE03 /* Quest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Quest.m; sourceTree = "<group>"; };
@@ -806,7 +813,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -822,6 +829,7 @@
 				7D1B39C50F897721005CA0CD /* Message.framework in Frameworks */,
 				7D1B3A220F89860D005CA0CD /* ScriptingBridge.framework in Frameworks */,
 				030604B71088140000C57D77 /* ShortcutRecorder.framework in Frameworks */,
+				0322D72F110744D500EF3EEF /* CoreData.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -845,6 +853,7 @@
 		03168ED410FF705A00EF241B /* Waypoint Action NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */,
 				03685FA61103D73B001CE552 /* QuestGrabAction.xib */,
 				03685FA71103D73B001CE552 /* QuestTurnInAction.xib */,
 				03685DD911026831001CE552 /* JumpAction.xib */,
@@ -886,8 +895,17 @@
 				03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */,
 				0368601311061686001CE552 /* InteractActionController.h */,
 				0368601411061686001CE552 /* InteractActionController.m */,
+				0322D6D811065D0700EF3EEF /* CombatProfileActionController.h */,
+				0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */,
 			);
 			name = WaypointActions;
+			sourceTree = "<group>";
+		};
+		0322D7A511074B5E00EF3EEF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
@@ -948,6 +966,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0322D72E110744D500EF3EEF /* CoreData.framework */,
 				7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */,
 				7D1B39C40F897721005CA0CD /* Message.framework */,
 				7D2167F30DC4581700D5A815 /* Carbon.framework */,
@@ -975,7 +994,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* ggteabag.app */,
+				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -991,6 +1010,7 @@
 				7D72453E0D1511E20094665C /* Units */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
+				0322D7A511074B5E00EF3EEF /* Models */,
 				7D1B3A560F89885D005CA0CD /* Mail.app */,
 				7D1B3A940F898D89005CA0CD /* iChat.app */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -1594,7 +1614,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
+			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1818,6 +1838,7 @@
 				03685FA91103D73B001CE552 /* QuestTurnInAction.xib in Resources */,
 				0368601111061669001CE552 /* InteractAction.xib in Resources */,
 				614CD78A1106182100BA1B2F /* Bot.xib in Resources */,
+				0322D6E211065D8900EF3EEF /* CombatProfileAction.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1947,6 +1968,7 @@
 				03685FAD1103D768001CE552 /* QuestGrabActionController.m in Sources */,
 				03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */,
 				0368601511061686001CE552 /* InteractActionController.m in Sources */,
+				0322D6DA11065D0800EF3EEF /* CombatProfileActionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

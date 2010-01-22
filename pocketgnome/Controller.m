@@ -823,7 +823,7 @@ typedef struct NameObjectStruct{
 
 - (void)setCurrentStatus: (NSString*)statusMsg {
 	
-	PGLog(@"[Controller] Setting status to: %@", statusMsg);
+	//PGLog(@"[Controller] Setting status to: %@", statusMsg);
 	
     NSString *currentText = [[currentStatusText stringValue] retain];
     [currentStatusText setStringValue: statusMsg];

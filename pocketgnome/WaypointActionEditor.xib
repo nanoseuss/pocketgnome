@@ -593,7 +593,6 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">4</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -782,6 +781,7 @@
 										</object>
 										<object class="NSMenuItem" id="433599447">
 											<reference key="NSMenu" ref="229823351"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Mail</string>
 											<string key="NSKeyEquiv"/>
@@ -821,6 +821,7 @@
 										</object>
 										<object class="NSMenuItem" id="839995911">
 											<reference key="NSMenu" ref="229823351"/>
+											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Vendor</string>
 											<string key="NSKeyEquiv"/>
@@ -921,9 +922,23 @@
 											<int key="NSTag">7</int>
 											<reference key="NSTarget" ref="96582565"/>
 										</object>
+										<object class="NSMenuItem" id="946006536">
+											<reference key="NSMenu" ref="229823351"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Combat Profile</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">14</int>
+											<reference key="NSTarget" ref="96582565"/>
+										</object>
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
+								<int key="NSSelectedIndex">9</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1403,6 +1418,7 @@
 							<reference ref="42569431"/>
 							<reference ref="1603"/>
 							<reference ref="791696650"/>
+							<reference ref="946006536"/>
 						</object>
 						<reference key="parent" ref="96582565"/>
 					</object>
@@ -1719,6 +1735,11 @@
 						<reference key="object" ref="1603"/>
 						<reference key="parent" ref="229823351"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">745</int>
+						<reference key="object" ref="946006536"/>
+						<reference key="parent" ref="229823351"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1812,15 +1833,16 @@
 					<string>736.IBPluginDependency</string>
 					<string>743.IBPluginDependency</string>
 					<string>744.IBPluginDependency</string>
+					<string>745.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{432, 248}, {705, 336}}</string>
+					<string>{{290, 322}, {705, 336}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{432, 248}, {705, 336}}</string>
+					<string>{{290, 322}, {705, 336}}</string>
 					<integer value="0"/>
 					<string>{{745, 155}, {429, 399}}</string>
 					<boolean value="YES"/>
@@ -1844,7 +1866,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{958, 94}, {167, 343}}</string>
+					<string>{{816, 148}, {167, 363}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1864,7 +1886,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{958, 323}, {196, 243}}</string>
+					<string>{{871, 324}, {196, 243}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1887,6 +1909,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>BetterTableView</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1920,7 +1943,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">744</int>
+			<int key="maxID">745</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
