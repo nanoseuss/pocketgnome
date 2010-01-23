@@ -488,7 +488,6 @@
 										<object class="NSMenuItem" id="465664775">
 											<reference key="NSMenu" ref="623131397"/>
 											<bool key="NSIsDisabled">YES</bool>
-											<int key="NSIndent">1</int>
 											<string key="NSTitle">Questing</string>
 											<string key="NSKeyEquiv"/>
 											<int key="NSKeyEquivModMask">1048576</int>
@@ -497,6 +496,19 @@
 											<reference key="NSMixedImage" ref="496503712"/>
 											<string key="NSAction">_popUpItemAction:</string>
 											<int key="NSTag">19</int>
+											<reference key="NSTarget" ref="1016011523"/>
+										</object>
+										<object class="NSMenuItem" id="955093318">
+											<reference key="NSMenu" ref="623131397"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Mobs Killed</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">24</int>
 											<reference key="NSTarget" ref="1016011523"/>
 										</object>
 										<object class="NSMenuItem" id="376341888">
@@ -593,6 +605,7 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
+								<int key="NSSelectedIndex">4</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -938,7 +951,6 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">9</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1261,10 +1273,10 @@
 							<reference ref="533631782"/>
 							<reference ref="593712654"/>
 							<reference ref="301264721"/>
-							<reference ref="1037098557"/>
 							<reference ref="942781718"/>
 							<reference ref="813094834"/>
 							<reference ref="825441111"/>
+							<reference ref="1037098557"/>
 						</object>
 						<reference key="parent" ref="396563676"/>
 					</object>
@@ -1538,6 +1550,7 @@
 							<reference ref="703223862"/>
 							<reference ref="187860124"/>
 							<reference ref="465664775"/>
+							<reference ref="955093318"/>
 						</object>
 						<reference key="parent" ref="1016011523"/>
 					</object>
@@ -1740,6 +1753,11 @@
 						<reference key="object" ref="946006536"/>
 						<reference key="parent" ref="229823351"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">746</int>
+						<reference key="object" ref="955093318"/>
+						<reference key="parent" ref="623131397"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1834,15 +1852,16 @@
 					<string>743.IBPluginDependency</string>
 					<string>744.IBPluginDependency</string>
 					<string>745.IBPluginDependency</string>
+					<string>746.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{290, 322}, {705, 336}}</string>
+					<string>{{323, 322}, {705, 336}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{290, 322}, {705, 336}}</string>
+					<string>{{323, 322}, {705, 336}}</string>
 					<integer value="0"/>
 					<string>{{745, 155}, {429, 399}}</string>
 					<boolean value="YES"/>
@@ -1886,7 +1905,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{871, 324}, {196, 243}}</string>
+					<string>{{849, 377}, {196, 263}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1925,6 +1944,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -1943,7 +1963,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">745</int>
+			<int key="maxID">746</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2876,6 +2896,7 @@
 							<string>botController</string>
 							<string>chatController</string>
 							<string>combatController</string>
+							<string>combatProfileEditor</string>
 							<string>controller</string>
 							<string>logOutStuckAttemptsTextField</string>
 							<string>macroController</string>
@@ -2883,6 +2904,8 @@
 							<string>movementType</string>
 							<string>offsetController</string>
 							<string>playerData</string>
+							<string>statisticsController</string>
+							<string>waypointController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2891,6 +2914,7 @@
 							<string>BotController</string>
 							<string>id</string>
 							<string>id</string>
+							<string>CombatProfileEditor</string>
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>MacroController</string>
@@ -2898,6 +2922,8 @@
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
+							<string>StatisticsController</string>
+							<string>WaypointController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -3351,6 +3377,7 @@
 							<string>actionTableView</string>
 							<string>addActionDropDown</string>
 							<string>addConditionDropDown</string>
+							<string>combatProfileEditor</string>
 							<string>conditionMatchingSegment</string>
 							<string>conditionTableView</string>
 							<string>editorPanel</string>
@@ -3365,6 +3392,7 @@
 							<string>NSTableView</string>
 							<string>NSPopUpButton</string>
 							<string>NSPopUpButton</string>
+							<string>CombatProfileEditor</string>
 							<string>NSSegmentedControl</string>
 							<string>NSTableView</string>
 							<string>NSPanel</string>
@@ -3388,17 +3416,12 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addWaypoint:</string>
-							<string>cancelWaypointAction:</string>
-							<string>changeWaypointAction:</string>
 							<string>closeAutomatorPanel:</string>
 							<string>closeDescription:</string>
-							<string>closeExportPanel:</string>
 							<string>closeRename:</string>
 							<string>closeVisualize:</string>
-							<string>closeWaypointAction:</string>
 							<string>closestWaypoint:</string>
 							<string>createRoute:</string>
-							<string>doneWaypointAction:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
 							<string>exportRoute:</string>
@@ -3406,13 +3429,12 @@
 							<string>loadRoute:</string>
 							<string>moveToWaypoint:</string>
 							<string>openAutomatorPanel:</string>
-							<string>openExportPanel:</string>
-							<string>optionSelected:</string>
 							<string>removeRoute:</string>
 							<string>removeWaypoint:</string>
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
+							<string>showInFinder:</string>
 							<string>startStopAutomator:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
@@ -3421,12 +3443,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3469,18 +3485,18 @@
 							<string>combatController</string>
 							<string>controller</string>
 							<string>descriptionPanel</string>
-							<string>exportPanel</string>
-							<string>isFlyingRouteButton</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
 							<string>renamePanel</string>
 							<string>routeTypeSegment</string>
+							<string>scrollWithRoute</string>
 							<string>shortcutRecorder</string>
 							<string>testingMenu</string>
 							<string>view</string>
 							<string>visualizePanel</string>
 							<string>visualizeView</string>
+							<string>waypointSectionTitle</string>
 							<string>waypointTable</string>
 							<string>wpActionDelayText</string>
 							<string>wpActionIDPopUp</string>
@@ -3497,22 +3513,22 @@
 							<string>NSProgressIndicator</string>
 							<string>NSButton</string>
 							<string>RouteVisualizationView</string>
-							<string>id</string>
+							<string>BotController</string>
 							<string>id</string>
 							<string>Controller</string>
 							<string>NSPanel</string>
-							<string>NSPanel</string>
-							<string>NSButton</string>
 							<string>id</string>
 							<string>id</string>
 							<string>PlayerDataController</string>
 							<string>NSPanel</string>
 							<string>id</string>
+							<string>NSButton</string>
 							<string>SRRecorderControl</string>
 							<string>NSMenu</string>
 							<string>NSView</string>
 							<string>NSPanel</string>
 							<string>RouteVisualizationView</string>
+							<string>NSTextField</string>
 							<string>BetterTableView</string>
 							<string>NSTextField</string>
 							<string>NSPopUpButton</string>

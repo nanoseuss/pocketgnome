@@ -35,6 +35,7 @@ typedef enum Variety {
 	VarietyRouteRunTime		= 21,
 	VarietyInventoryFree	= 22,
 	VarietyDurability		= 23,
+	VarietyMobsKilled		= 24,
 	
 } ConditionVariety;
 

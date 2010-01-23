@@ -7,9 +7,11 @@
 //
 
 #import "RouteSet.h"
+#include <openssl/md5.h>
 
 @interface RouteSet ()
 @property (readwrite, retain) NSDictionary *routes;
+@property (readwrite, retain) NSString *UUID;
 @end
 
 @implementation RouteSet
@@ -21,6 +23,11 @@
         self.name = nil;
         self.routes = [NSMutableDictionary dictionary];
 		_changed = NO;
+		
+		// create a new UUID
+		CFUUIDRef uuidObj = CFUUIDCreate(nil);
+		self.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
+		CFRelease(uuidObj);
     }
     return self;
 }
@@ -36,18 +43,27 @@
     return self;
 }
 
-
 + (id)routeSetWithName: (NSString*)name {
     return [[[RouteSet alloc] initWithName: name] autorelease];
 }
-
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
 	self = [super init];
 	if(self) {
         self.name = [decoder decodeObjectForKey: @"Name"];
+		self.UUID = [decoder decodeObjectForKey: @"UUID"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
+		
+		if ( !self.UUID || [self.UUID length] == 0 ){
+			PGLog(@"[RouteSet] No UUID found! Generating!");
+			
+			// create a new UUID
+			CFUUIDRef uuidObj = CFUUIDCreate(nil);
+			self.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
+			CFRelease(uuidObj);
+			_changed = YES;
+		}
         
         // make sure we have a route object for every type
         if( ![self routeForKey: PrimaryRoute])
@@ -62,6 +78,7 @@
 -(void)encodeWithCoder:(NSCoder *)coder
 {
     [coder encodeObject: self.name forKey: @"Name"];
+	[coder encodeObject: self.UUID forKey: @"UUID"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 }
 
@@ -70,14 +87,11 @@
     RouteSet *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
     copy.routes = self.routes;
-    //NSMutableDictionary *newRoutes = [NSMutableDictionary dictionary];
-    //for(NSString *key in [self.routes allKeys]) {
-    //    [newRoutes setObject: [[self.routes objectForKey: key] copy] forKey: key];
-    //}
-    //copy.routes = newRoutes;
-    
-    // PGLog(@"Old routes: %@", self.routes);
-    // PGLog(@"New routes: %@", copy.routes);
+	
+	// create a new UUID
+	CFUUIDRef uuidObj = CFUUIDCreate(nil);
+	copy.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
+	CFRelease(uuidObj);
     
     return copy;
 }
@@ -86,6 +100,7 @@
 {
     self.name = nil;
     self.routes = nil;
+	self.UUID = nil;
     [super dealloc];
 }
 
@@ -98,6 +113,7 @@
 @synthesize name = _name;
 @synthesize routes = _routes;
 @synthesize changed = _changed;
+@synthesize UUID = _UUID;
 
 - (void)setRoutes: (NSDictionary*)routes {
     [_routes autorelease];

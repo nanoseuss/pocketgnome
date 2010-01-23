@@ -12,6 +12,8 @@
 #import "LootController.h"
 #import "CombatController.h"
 
+#import "Mob.h"
+
 @interface StatisticsController (Internal)
 - (void)resetPlayer;
 @end
@@ -24,6 +26,7 @@
 		_lootedItems = 0;
 		_mobsKilled = 0;
 		_startHonor = 0;
+		_mobsKilledDictionary = [[NSMutableDictionary dictionary] retain];
 		
 		// notifications
 		[[NSNotificationCenter defaultCenter] addObserver: self
@@ -157,6 +160,19 @@
 	_mobsKilled = 0;
 }
 
+- (void)resetQuestMobCount{
+	[_mobsKilledDictionary removeAllObjects];
+}
+
+- (int)killCountForEntryID:(int)entryID{
+	NSNumber *mobID = [NSNumber numberWithUnsignedLong:entryID];
+	NSNumber *count = [_mobsKilledDictionary objectForKey:mobID];
+						 
+	if ( count )
+		return [count intValue];
+	return 0;
+}
+
 #pragma mark Notifications
 
 - (void)playerIsValid: (NSNotification*)notification {
@@ -170,11 +186,23 @@
 - (void)unitDied: (NSNotification*)notification {
 	
 	id obj = [notification object];
-	PGLog(@"[**********] Unit killed: %@", obj);
-	
-	_mobsKilled++;
-}
 
+	_mobsKilled++;
+	
+	// incremement
+	int count = 1;
+	if ( [obj isKindOfClass:[Mob class]] ){
+		
+		NSNumber *entryID = [NSNumber numberWithInt:[(Mob*)obj entryID]];
+		if ( [_mobsKilledDictionary objectForKey:entryID] ){
+			count = [[_mobsKilledDictionary objectForKey:entryID] intValue] + 1;
+		}
+		
+		[_mobsKilledDictionary setObject:[NSNumber numberWithInt:count] forKey:entryID];
+	}
+	
+	PGLog(@"[**********] Unit killed: %@ %d times", obj, count);
+}
 
 #pragma mark -
 #pragma mark TableView Delegate & Datasource

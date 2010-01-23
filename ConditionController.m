@@ -31,6 +31,7 @@
 #import "RouteRunCountConditionController.h"
 #import "RouteRunTimeConditionController.h"
 #import "InventoryFreeConditionController.h"
+#import "MobsKilledConditionController.h"
 
 @implementation ConditionController
 
@@ -117,7 +118,8 @@
 		newController = [[RouteRunTimeConditionController alloc] init];
 	else if ( [condition variety] == VarietyInventoryFree )
 		newController = [[InventoryFreeConditionController alloc] init];
-	
+	else if ( [condition variety] == VarietyMobsKilled )
+		newController = [[MobsKilledConditionController alloc] init];
 	
 	
     if(newController) {

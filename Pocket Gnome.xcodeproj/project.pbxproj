@@ -61,6 +61,13 @@
 		038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038709B910D576E100DF5B90 /* BlacklistController.m */; };
 		038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */ = {isa = PBXBuildFile; fileRef = 038A4B4510E9656D00577D8F /* LastSpellCast.xib */; };
 		038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */; };
+		0393F413110A205800296CF8 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0393F412110A205800296CF8 /* libcrypto.dylib */; };
+		0393F52D110A558200296CF8 /* ReverseRouteAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0393F52B110A558200296CF8 /* ReverseRouteAction.xib */; };
+		0393F52E110A558300296CF8 /* VendorAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0393F52C110A558200296CF8 /* VendorAction.xib */; };
+		0393F530110A558F00296CF8 /* MailAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0393F52F110A558F00296CF8 /* MailAction.xib */; };
+		0393F533110A55DB00296CF8 /* MailActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F532110A55DB00296CF8 /* MailActionController.m */; };
+		0393F536110A55E300296CF8 /* VendorActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F535110A55E300296CF8 /* VendorActionController.m */; };
+		0393F539110A55EF00296CF8 /* ReverseRouteActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
@@ -71,6 +78,8 @@
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
+		03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */; };
+		03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
@@ -445,6 +454,16 @@
 		038A4B4510E9656D00577D8F /* LastSpellCast.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LastSpellCast.xib; sourceTree = "<group>"; };
 		038A4B4710E9657900577D8F /* LastSpellCastConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LastSpellCastConditionController.h; sourceTree = "<group>"; };
 		038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LastSpellCastConditionController.m; sourceTree = "<group>"; };
+		0393F412110A205800296CF8 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
+		0393F52B110A558200296CF8 /* ReverseRouteAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReverseRouteAction.xib; sourceTree = "<group>"; };
+		0393F52C110A558200296CF8 /* VendorAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VendorAction.xib; sourceTree = "<group>"; };
+		0393F52F110A558F00296CF8 /* MailAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MailAction.xib; sourceTree = "<group>"; };
+		0393F531110A55DB00296CF8 /* MailActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailActionController.h; sourceTree = "<group>"; };
+		0393F532110A55DB00296CF8 /* MailActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MailActionController.m; sourceTree = "<group>"; };
+		0393F534110A55E300296CF8 /* VendorActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VendorActionController.h; sourceTree = "<group>"; };
+		0393F535110A55E300296CF8 /* VendorActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VendorActionController.m; sourceTree = "<group>"; };
+		0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReverseRouteActionController.h; sourceTree = "<group>"; };
+		0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReverseRouteActionController.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -458,6 +477,9 @@
 		03CEF7860FCCD93100B47336 /* CorpseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorpseController.h; sourceTree = "<group>"; };
 		03CEF7870FCCD93100B47336 /* CorpseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CorpseController.m; sourceTree = "<group>"; };
 		03D65A581090EC0D00537E9C /* OffsetSignatures.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OffsetSignatures.plist; sourceTree = "<group>"; };
+		03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MobsKilledCondition.xib; sourceTree = "<group>"; };
+		03FFD46C110B930F0046AEDF /* MobsKilledConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobsKilledConditionController.h; sourceTree = "<group>"; };
+		03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobsKilledConditionController.m; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -830,6 +852,7 @@
 				7D1B3A220F89860D005CA0CD /* ScriptingBridge.framework in Frameworks */,
 				030604B71088140000C57D77 /* ShortcutRecorder.framework in Frameworks */,
 				0322D72F110744D500EF3EEF /* CoreData.framework in Frameworks */,
+				0393F413110A205800296CF8 /* libcrypto.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -839,12 +862,16 @@
 		03168DCA10FE8D0B00EF241B /* Waypoint Actions */ = {
 			isa = PBXGroup;
 			children = (
+				0393F52F110A558F00296CF8 /* MailAction.xib */,
+				0393F52B110A558200296CF8 /* ReverseRouteAction.xib */,
+				0393F52C110A558200296CF8 /* VendorAction.xib */,
 				03168DD610FE90B600EF241B /* DurabilityCondition.xib */,
 				03168DD710FE90B600EF241B /* InventoryFreeCondition.xib */,
 				03168DD810FE90B600EF241B /* PlayerLevelCondition.xib */,
 				03168DD910FE90B600EF241B /* PlayerZoneCondition.xib */,
 				03168DDA10FE90B600EF241B /* QuestCondition.xib */,
 				03168DDB10FE90B600EF241B /* RouteRunCountCondition.xib */,
+				03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */,
 				03168DDC10FE90B600EF241B /* RouteRunTimeCondition.xib */,
 			);
 			name = "Waypoint Actions";
@@ -897,6 +924,12 @@
 				0368601411061686001CE552 /* InteractActionController.m */,
 				0322D6D811065D0700EF3EEF /* CombatProfileActionController.h */,
 				0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */,
+				0393F531110A55DB00296CF8 /* MailActionController.h */,
+				0393F532110A55DB00296CF8 /* MailActionController.m */,
+				0393F534110A55E300296CF8 /* VendorActionController.h */,
+				0393F535110A55E300296CF8 /* VendorActionController.m */,
+				0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */,
+				0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */,
 			);
 			name = WaypointActions;
 			sourceTree = "<group>";
@@ -966,6 +999,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0393F412110A205800296CF8 /* libcrypto.dylib */,
 				0322D72E110744D500EF3EEF /* CoreData.framework */,
 				7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */,
 				7D1B39C40F897721005CA0CD /* Message.framework */,
@@ -1353,6 +1387,8 @@
 				03168E2610FE975300EF241B /* RouteRunTimeConditionController.m */,
 				03168E2810FE975E00EF241B /* InventoryFreeConditionController.h */,
 				03168E2910FE975E00EF241B /* InventoryFreeConditionController.m */,
+				03FFD46C110B930F0046AEDF /* MobsKilledConditionController.h */,
+				03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1839,6 +1875,10 @@
 				0368601111061669001CE552 /* InteractAction.xib in Resources */,
 				614CD78A1106182100BA1B2F /* Bot.xib in Resources */,
 				0322D6E211065D8900EF3EEF /* CombatProfileAction.xib in Resources */,
+				0393F52D110A558200296CF8 /* ReverseRouteAction.xib in Resources */,
+				0393F52E110A558300296CF8 /* VendorAction.xib in Resources */,
+				0393F530110A558F00296CF8 /* MailAction.xib in Resources */,
+				03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1969,6 +2009,10 @@
 				03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */,
 				0368601511061686001CE552 /* InteractActionController.m in Sources */,
 				0322D6DA11065D0800EF3EEF /* CombatProfileActionController.m in Sources */,
+				0393F533110A55DB00296CF8 /* MailActionController.m in Sources */,
+				0393F536110A55E300296CF8 /* VendorActionController.m in Sources */,
+				0393F539110A55EF00296CF8 /* ReverseRouteActionController.m in Sources */,
+				03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

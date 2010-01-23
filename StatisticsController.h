@@ -35,6 +35,9 @@
 	UInt32 _startHonor;
 	int _lootedItems;		// total number of looted items
 	int _mobsKilled;		// total number of mobs we've killed!
+	
+	// store our mob ID w/the # of kills (MEANT FOR QUESTS!)
+	NSMutableDictionary *_mobsKilledDictionary;
 }
 
 @property (readonly) NSView *view;
@@ -45,5 +48,9 @@
 
 // interface
 - (IBAction)resetStatistics:(id)sender;
+
+// for quests
+- (void)resetQuestMobCount;
+- (int)killCountForEntryID:(int)entryID;
 
 @end
