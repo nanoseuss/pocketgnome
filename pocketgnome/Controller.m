@@ -255,12 +255,13 @@ static Controller* sharedController = nil;
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
     
-    if([[filename pathExtension] isEqualToString: @"route"]) {
+    if ( [[filename pathExtension] isEqualToString: @"route"] || [[filename pathExtension] isEqualToString: @"routeset"] ) {
         [routeController importRouteAtPath: filename];
         [self toolbarItemSelected: routesToolbarItem];
         [mainToolbar setSelectedItemIdentifier: [routesToolbarItem itemIdentifier]];
         return YES;
-    } else if([[filename pathExtension] isEqualToString: @"behavior"]) {
+    }
+	else if ( [[filename pathExtension] isEqualToString: @"behavior"] || [[filename pathExtension] isEqualToString: @"behaviorset"] ) {
         [behaviorController importBehaviorAtPath: filename];
         [self toolbarItemSelected: behavsToolbarItem];
         [mainToolbar setSelectedItemIdentifier: [behavsToolbarItem itemIdentifier]];

@@ -23,6 +23,7 @@
 #import "BlacklistController.h"
 #import "WaypointController.h"
 #import "CombatProfileEditor.h"
+#import "StatisticsController.h"
 
 #import "WoWObject.h"
 #import "Offsets.h"
@@ -395,7 +396,8 @@ typedef enum MovementType {
 	
 	// END - new stuck check
 	
-	PGLog(@"[Move] Moving to %@ %@", position, checkPosition);
+	int index = [[[self patrolRoute] waypoints] indexOfObject: self.destination];
+	PGLog(@"[Move][%d-%d] Moving to %@ %@", index, [[[self patrolRoute] waypoints] count], position, checkPosition);
 
     self.lastSavedPosition = playerPosition;
     self.lastDirectionCorrection = [NSDate date];
@@ -863,12 +865,18 @@ typedef enum MovementType {
 		// switch route
 		else if ( [action type] == ActionType_SwitchRoute ){
 			
-			RouteSet *route = [action value];
+			RouteSet *route = nil;
+			NSString *UUID = [action value];
 			for ( RouteSet *otherRoute in [waypointController routes] ){
-				if ( [[route name] isEqualToString:[otherRoute name]] ){
+				if ( [UUID isEqualToString:[otherRoute UUID]] ){
 					route = otherRoute;
 					break;
 				}
+			}
+			
+			if ( route == nil ){
+				PGLog(@"[Waypoint] Unable to find route %@ to switch to!", UUID);
+				
 			}
 			
 			PGLog(@"[Waypoint] Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
@@ -903,6 +911,11 @@ typedef enum MovementType {
 		}
 		
 		else if ( [action type] == ActionType_QuestGrab || [action type] == ActionType_QuestTurnIn ){
+			
+			// reset mob counts
+			if ( [action type] == ActionType_QuestTurnIn ){
+				[statisticsController resetQuestMobCount];
+			}
 
 			// get all nearby mobs
 			NSArray *nearbyMobs = [mobController mobsWithinDistance:INTERACT_RANGE levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
@@ -918,12 +931,12 @@ typedef enum MovementType {
 					PGLog(@"[Waypoint] Turning in/grabbing quests to/from %@", questNPC);
 					
 					int i = 0, k = 1;
-					for ( ; i < 2; i++ ){
+					for ( ; i < 4; i++ ){
 						for ( ; k < 5; k++ ){
 							
 							// interact
 							if ( [botController interactWithMouseoverGUID:[questNPC GUID]] ){
-								usleep(200000);
+								usleep(300000);
 								
 								// click the gossip button
 								[macroController useMacroWithKey:@"QuestClickGossip" andInt:k];
@@ -985,12 +998,12 @@ typedef enum MovementType {
 		
 		// switch combat profile
 		else if ( [action type] == ActionType_CombatProfile ){
-			PGLog(@"[Waypoint] Switching from combat profile %@ to %@", botController.theCombatProfile, [action value]);
+			PGLog(@"[Waypoint] Switching from combat profile %@", botController.theCombatProfile);
 			
-			CombatProfile *profile = [action value];
+			CombatProfile *profile = nil;
+			NSString *UUID = [action value];
 			for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
-				if ( [[profile name] isEqualToString:[otherProfile name]] ){
-					PGLog(@"found combat profile %@", otherProfile);
+				if ( [UUID isEqualToString:[otherProfile UUID]] ){
 					profile = otherProfile;
 					break;
 				}
@@ -999,6 +1012,8 @@ typedef enum MovementType {
 			[botController changeCombatProfile:profile];
 		}
 	}
+	
+	PGLog(@"[Waypoint] Action %d complete, checking for more!", actionToExecute);
 
 	[self performSelector: _cmd
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys:
@@ -1042,7 +1057,6 @@ typedef enum MovementType {
 		PGLog(@"[Waypoint] Just took action, ignoring");
 	}
 	
-
 	[self realMoveToNextWaypoint];
 	
 	

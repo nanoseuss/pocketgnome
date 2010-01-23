@@ -47,8 +47,8 @@ enum AutomatorIntervalType {
 
 - (void)deleteRoute:(RouteSet*)route;
 - (void)deleteRouteWithName:(NSString*)routeName;
-- (NSString *)pathForRouteFile:(RouteSet*)route;
-- (NSString *)pathForRouteFileWithName:(NSString*)routeFileName;
+- (NSString *)pathForRoute:(RouteSet*)route;
+- (NSString *)pathForRouteWithName:(NSString*)routeFileName;
 - (void)saveRouteToDisk: (RouteSet*)route;
 - (RouteSet*)loadRouteFromDisk: (NSString*)name; 
 - (void)loadAllRoutes;
@@ -399,42 +399,14 @@ enum AutomatorIntervalType {
         [data writeToFile: saveLocation atomically: YES];
     }
 }
-
-- (IBAction)openExportPanel: (id)sender {
-
-	[NSApp beginSheet: exportPanel
-	   modalForWindow: [waypointTable window]
-		modalDelegate: nil
-	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
-		  contextInfo: nil];
+- (IBAction)showInFinder: (id)sender {
+	
+	NSString *filePath = [self pathForRoute:[self currentRouteSet]];
+	
+	// show in finder!
+	NSWorkspace *ws = [NSWorkspace sharedWorkspace];
+	[ws selectFile: filePath inFileViewerRootedAtPath:nil];
 }
-
-- (IBAction)closeExportPanel: (id)sender {
-    [NSApp endSheet: exportPanel returnCode: 1];
-    [exportPanel orderOut: nil];
-}
-
-- (IBAction)exportRoutes: (id)sender {
-    if(![sender count]) {
-        NSBeep();
-        return;
-    }
-
-    NSSavePanel *savePanel = [NSSavePanel savePanel];
-    [savePanel setCanCreateDirectories: YES];
-    [savePanel setTitle: ([sender count] == 1) ? @"Export Route" : @"Export Routes"];
-    [savePanel setMessage: ([sender count] == 1) ? @"Please choose a destination for this route." : @"Please choose a destination for these routes."];
-    int ret = [savePanel runModalForDirectory: @"~/" file: [[NSString stringWithFormat: @"%d", [sender count]] stringByAppendingPathExtension: ([sender count] == 1) ? @"route" : @"routeset"]];
-    
-	if(ret == NSFileHandlingPanelOKButton) {
-        NSString *saveLocation = [savePanel filename];
-        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: ([sender count] == 1) ? [sender lastObject] : sender];
-        [data writeToFile: saveLocation atomically: YES];
-        [self closeExportPanel: nil];
-    }
-}
-
-
 
 #pragma mark -
 #pragma mark Waypoint & Other Actions
@@ -545,11 +517,18 @@ enum AutomatorIntervalType {
     
     // get our waypoint
     Waypoint *wp = [[[self currentRoute] waypointAtIndex: [waypointTable clickedRow]] retain];
-
-	// open?
-	[[WaypointActionEditor sharedEditor] showEditorOnWindow: [self.view window] 
-											   withWaypoint: wp
-												 withAction: [sender tag]];
+	
+	// setting this waypoint to nothing!
+	if ( [sender tag] == ActionType_None ){
+		[wp setActions:nil];
+		wp.rule = nil;
+	}
+	// open our editor
+	else{
+		[[WaypointActionEditor sharedEditor] showEditorOnWindow: [self.view window] 
+												   withWaypoint: wp
+													 withAction: [sender tag]];
+	}
 }
 
 - (void)waypointActionEditorClosed: (BOOL)change{
@@ -1094,29 +1073,21 @@ enum AutomatorIntervalType {
 	}
 }
 
-- (IBAction)doneWaypointAction: (id)sender {
-	PGLog(@"done?");
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem{
+	
+	// waypoints
+	if ( [[tabViewItem identifier] intValue] == 0 ) {
+		[waypointSectionTitle setStringValue:[NSString stringWithFormat:@"Waypoints for: %@", [self.currentRouteSet name]]];
+	}
+	// overall actions
+	else {
+		[waypointSectionTitle setStringValue:[NSString stringWithFormat:@"Overall actions for: %@", [self.currentRouteSet name]]];
+	}
 }
 
 #pragma mark New Route Saving
 
-- (void)deleteRoute:(RouteSet*)route{
-	[self deleteRouteWithName:[route name]];
-}
-
-- (void)deleteRouteWithName:(NSString*)routeName{
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	NSString *filePath = [self pathForRouteFileWithName:[NSString stringWithFormat:@"%@.route", routeName]];
-	
-	if ( [fileManager fileExistsAtPath: filePath] ){
-		NSError *error = nil;
-		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
-			PGLog(@"[Routes] Error %@ when trying to delete route %@", error, filePath);
-		}
-	}
-}
-
-- (NSString *)pathForRouteFileWithName:(NSString*)routeFileName { 
+- (NSString *)pathForRouteWithName:(NSString*)routeFileName { 
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSString *folder = @"~/Library/Application Support/PocketGnome/";
 	
@@ -1135,13 +1106,30 @@ enum AutomatorIntervalType {
 }
 
 // path to route
-- (NSString *)pathForRouteFile:(RouteSet*)route { 
-	return [self pathForRouteFileWithName:[NSString stringWithFormat:@"%@.route", [route name]]];
+- (NSString *)pathForRoute:(RouteSet*)route { 
+	return [self pathForRouteWithName:[NSString stringWithFormat:@"%@.route", [route name]]];
+}
+
+// delete the route
+- (void)deleteRouteWithName:(NSString*)routeName{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSString *filePath = [self pathForRouteWithName:[NSString stringWithFormat:@"%@.route", routeName]];
+	
+	if ( [fileManager fileExistsAtPath: filePath] ){
+		NSError *error = nil;
+		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
+			PGLog(@"[Routes] Error %@ when trying to delete route %@", error, filePath);
+		}
+	}
+}
+
+- (void)deleteRoute:(RouteSet*)route{
+	[self deleteRouteWithName:[route name]];
 }
 
 // save the route
 - (void)saveRouteToDisk: (RouteSet*)route { 
-	NSString * path = [self pathForRouteFile:route];
+	NSString * path = [self pathForRoute:route];
 	
 	PGLog(@"[Routes] Saving %@ to %@", route, path);
 	
@@ -1152,7 +1140,7 @@ enum AutomatorIntervalType {
 
 - (RouteSet*)loadRouteFromDisk: (NSString*)fileName {
 	
-	NSString *path = [self pathForRouteFileWithName:fileName];
+	NSString *path = [self pathForRouteWithName:fileName];
 	
 	// verify the file exists
 	NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -1165,13 +1153,13 @@ enum AutomatorIntervalType {
 	return [rootObject valueForKey:@"Route"];
 } 
 
-- (void)loadAllRoutes{
+// load routes
+- (void)loadRoutesForDirectory: (NSString*)directory{
+	
+	// load a list of files at the directory
 	NSError *error = nil;
-	NSString *path = [self pathForRouteFileWithName:nil];
-	path = [path stringByExpandingTildeInPath];
 	NSFileManager *fileManager = [NSFileManager defaultManager];
-	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:path error:&error];
-
+	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:directory error:&error];
 	if ( error ){
 		PGLog(@"[Routes] Error when reading your routes! %@", error);
 		return;
@@ -1183,8 +1171,15 @@ enum AutomatorIntervalType {
 		// loop through directory list
 		for ( NSString *fileName in directoryList ){
 			
+			// is this a directory?
+			/*BOOL isDir = NO;
+			if ( [fileManager fileExistsAtPath:[directory stringByAppendingPathComponent: fileName] isDirectory:&isDir] && isDir ) {
+				// recursive call?
+				//	before this works, we need to associate a route w/a directory
+			}*/
+
 			// valid route file
-			if ( [fileName hasSuffix:@".route"] || [fileName hasSuffix:@".route\n"] ){
+			if ( [[fileName pathExtension] isEqualToString: @"route"] ){
 				
 				RouteSet *route = [self loadRouteFromDisk:fileName];
 				
@@ -1195,6 +1190,12 @@ enum AutomatorIntervalType {
 			}
 		}
 	}
+}
+
+- (void)loadAllRoutes{
+	NSString *path = [self pathForRouteWithName:nil];
+	path = [path stringByExpandingTildeInPath];
+	[self loadRoutesForDirectory:path];
 }
 
 @end

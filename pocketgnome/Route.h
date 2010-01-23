@@ -16,6 +16,7 @@
 + (id)route;
 
 @property (readonly, retain) NSArray *waypoints;
+
 - (unsigned)waypointCount;
 - (Waypoint*)waypointAtIndex: (unsigned)index;
 - (Waypoint*)waypointClosestToPosition: (Position*)position;
@@ -24,6 +25,5 @@
 - (void)insertWaypoint: (Waypoint*)waypoint atIndex: (unsigned)index;
 - (void)removeWaypoint: (Waypoint*)waypoint;
 - (void)removeWaypointAtIndex: (unsigned)index;
-
 
 @end

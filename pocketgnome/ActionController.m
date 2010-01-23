@@ -20,6 +20,9 @@
 #import "QuestGrabActionController.h"
 #import "InteractActionController.h"
 #import "CombatProfileActionController.h"
+#import "VendorActionController.h"
+#import "MailActionController.h"
+#import "ReverseRouteActionController.h"
 
 @implementation ActionController
 
@@ -63,6 +66,12 @@
 		newController = [[InteractActionController alloc] init];
 	else if ( [action type] == ActionType_CombatProfile )
 		newController = [[CombatProfileActionController alloc] init];
+	else if ( [action type] == ActionType_Vendor )
+		newController = [[VendorActionController alloc] init];
+	else if ( [action type] == ActionType_Mail )
+		newController = [[MailActionController alloc] init];
+	else if ( [action type] == ActionType_ReverseRoute )
+		newController = [[ReverseRouteActionController alloc] init];
 	
     if(newController) {
         [newController setStateFromAction: action];

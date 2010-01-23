@@ -39,7 +39,6 @@
     IBOutlet NSMenu *actionMenu;
     IBOutlet NSMenu *testingMenu;
     IBOutlet NSPanel *renamePanel;
-    IBOutlet NSPanel *exportPanel;
     
     // waypoint action editor
     IBOutlet NSPanel *wpActionPanel;
@@ -76,6 +75,7 @@
 	NSString *_nameBeforeRename;
 	
 	IBOutlet NSButton		*scrollWithRoute;
+	IBOutlet NSTextField	*waypointSectionTitle;
 }
 
 - (void)saveRoutes;
@@ -102,10 +102,9 @@
 - (IBAction)renameRoute: (id)sender;
 - (IBAction)closeRename: (id)sender;
 - (IBAction)duplicateRoute: (id)sender;
-- (IBAction)openExportPanel: (id)sender;
-- (IBAction)closeExportPanel: (id)sender;
 - (IBAction)waypointMenuAction: (id)sender;
 - (IBAction)closeDescription: (id)sender;
+- (IBAction)showInFinder: (id)sender;
 
 // importing/exporting
 - (void)importRouteAtPath: (NSString*)path;
@@ -132,7 +131,6 @@
 - (void)waypointActionEditorClosed: (BOOL)change;
 
 // new action/conditions
-- (IBAction)doneWaypointAction: (id)sender;
 - (void)selectCurrentWaypoint:(int)index;
 
 @end

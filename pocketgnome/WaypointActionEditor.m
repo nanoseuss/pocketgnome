@@ -25,6 +25,7 @@
 #import "RouteRunTimeConditionController.h"
 #import "RouteRunCountConditionController.h"
 #import "InventoryFreeConditionController.h"
+#import "MobsKilledConditionController.h"
 
 #import "SwitchRouteActionController.h"
 #import "RepairActionController.h"
@@ -37,6 +38,9 @@
 #import "QuestGrabActionController.h"
 #import "InteractActionController.h"
 #import "CombatProfileActionController.h"
+#import "VendorActionController.h"
+#import "MailActionController.h"
+#import "ReverseRouteActionController.h"
 
 #import "WaypointController.h"
 #import "SpellController.h"
@@ -100,6 +104,7 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == VarietyRouteRunTime )		newCondition = [[[RouteRunTimeConditionController alloc] init] autorelease];
 	else if ( type == VarietyRouteRunCount )	newCondition = [[[RouteRunCountConditionController alloc] init] autorelease];
 	else if ( type == VarietyInventoryFree )	newCondition = [[[InventoryFreeConditionController alloc] init] autorelease];
+	else if ( type == VarietyMobsKilled )		newCondition = [[[MobsKilledConditionController alloc] init] autorelease];
 	
     if ( newCondition ) {
         [_conditionList addObject: newCondition];
@@ -125,7 +130,9 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_QuestGrab)			newAction = [[[QuestGrabActionController alloc] init] autorelease];
 	else if ( type == ActionType_Interact)			newAction = [[[InteractActionController alloc] init] autorelease];
 	else if ( type == ActionType_CombatProfile)		newAction = [CombatProfileActionController combatProfileActionControllerWithProfiles:[combatProfileEditor combatProfiles]];
-	
+	else if ( type == ActionType_Vendor)			newAction = [[[VendorActionController alloc] init] autorelease];
+	else if ( type == ActionType_Mail)				newAction = [[[MailActionController alloc] init] autorelease];
+	else if ( type == ActionType_ReverseRoute)		newAction = [[[ReverseRouteActionController alloc] init] autorelease];
 	
 	if ( action != nil ){
 		[newAction setStateFromAction:action];
@@ -165,12 +172,15 @@ static WaypointActionEditor *sharedEditor = nil;
 	_waypoint = [wp retain];
 	
 	[self clearTables];
-
+	
 	// valid waypoint (not sure why it wouldn't be)
 	if ( wp ){
+		
 		// add description
-		[waypointDescription setStringValue:[wp title]];
-
+		if ( [wp title] ){
+			[waypointDescription setStringValue:[wp title]];
+		}
+		
 		// add any actions
 		if ( [wp.actions count] > 0 ){
 			for ( Action *action in wp.actions ) {
@@ -189,6 +199,7 @@ static WaypointActionEditor *sharedEditor = nil;
 		}
 		// add a default
 		else if ( type > ActionType_None && type <= ActionType_Max ){
+
 			[self addActionWithType:type andAction:nil];
 		}
 		
@@ -205,7 +216,7 @@ static WaypointActionEditor *sharedEditor = nil;
 				[conditionMatchingSegment selectSegmentWithTag: 1];
 		}
 	}
-	
+
 	// reload tables
 	[actionTableView reloadData];
 	[conditionTableView reloadData];

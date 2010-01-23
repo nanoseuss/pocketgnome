@@ -10452,6 +10452,22 @@
 					</object>
 					<int key="connectionID">4169</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">statisticsController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="506723390"/>
+					</object>
+					<int key="connectionID">4182</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">statisticsController</string>
+						<reference key="source" ref="94147614"/>
+						<reference key="destination" ref="506723390"/>
+					</object>
+					<int key="connectionID">4183</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -15262,7 +15278,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4169</int>
+			<int key="maxID">4183</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15517,6 +15533,7 @@
 							<string>spellController</string>
 							<string>startStopButton</string>
 							<string>startstopRecorder</string>
+							<string>statisticsController</string>
 							<string>statusText</string>
 							<string>view</string>
 							<string>waypointController</string>
@@ -15606,6 +15623,7 @@
 							<string>SpellController</string>
 							<string>NSButton</string>
 							<string>SRRecorderControl</string>
+							<string>StatisticsController</string>
 							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>WaypointController</string>
@@ -16282,6 +16300,7 @@
 							<string>movementType</string>
 							<string>offsetController</string>
 							<string>playerData</string>
+							<string>statisticsController</string>
 							<string>waypointController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -16299,6 +16318,7 @@
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
+							<string>StatisticsController</string>
 							<string>WaypointController</string>
 						</object>
 					</object>
@@ -16893,12 +16913,10 @@
 							<string>addWaypoint:</string>
 							<string>closeAutomatorPanel:</string>
 							<string>closeDescription:</string>
-							<string>closeExportPanel:</string>
 							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closestWaypoint:</string>
 							<string>createRoute:</string>
-							<string>doneWaypointAction:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
 							<string>exportRoute:</string>
@@ -16906,12 +16924,12 @@
 							<string>loadRoute:</string>
 							<string>moveToWaypoint:</string>
 							<string>openAutomatorPanel:</string>
-							<string>openExportPanel:</string>
 							<string>removeRoute:</string>
 							<string>removeWaypoint:</string>
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
+							<string>showInFinder:</string>
 							<string>startStopAutomator:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
@@ -16920,8 +16938,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -16964,17 +16980,18 @@
 							<string>combatController</string>
 							<string>controller</string>
 							<string>descriptionPanel</string>
-							<string>exportPanel</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
 							<string>renamePanel</string>
 							<string>routeTypeSegment</string>
+							<string>scrollWithRoute</string>
 							<string>shortcutRecorder</string>
 							<string>testingMenu</string>
 							<string>view</string>
 							<string>visualizePanel</string>
 							<string>visualizeView</string>
+							<string>waypointSectionTitle</string>
 							<string>waypointTable</string>
 							<string>wpActionDelayText</string>
 							<string>wpActionIDPopUp</string>
@@ -16991,21 +17008,22 @@
 							<string>NSProgressIndicator</string>
 							<string>NSButton</string>
 							<string>RouteVisualizationView</string>
-							<string>id</string>
+							<string>BotController</string>
 							<string>id</string>
 							<string>Controller</string>
-							<string>NSPanel</string>
 							<string>NSPanel</string>
 							<string>id</string>
 							<string>id</string>
 							<string>PlayerDataController</string>
 							<string>NSPanel</string>
 							<string>id</string>
+							<string>NSButton</string>
 							<string>SRRecorderControl</string>
 							<string>NSMenu</string>
 							<string>NSView</string>
 							<string>NSPanel</string>
 							<string>RouteVisualizationView</string>
+							<string>NSTextField</string>
 							<string>BetterTableView</string>
 							<string>NSTextField</string>
 							<string>NSPopUpButton</string>

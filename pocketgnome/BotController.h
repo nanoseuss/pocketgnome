@@ -48,6 +48,7 @@
 @class MemoryViewController;
 @class CombatProfileEditor;
 @class BlacklistController;
+@class StatisticsController;
 
 @class ScanGridView;
 
@@ -85,6 +86,7 @@
 	IBOutlet MemoryViewController	*memoryViewController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet BlacklistController	*blacklistController;
+	IBOutlet StatisticsController	*statisticsController;
 
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;

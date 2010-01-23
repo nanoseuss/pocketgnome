@@ -27,6 +27,7 @@
 @class BotController;
 @class WaypointController;
 @class CombatProfileEditor;
+@class StatisticsController;
 
 #define MobReachedNotification      @"MobReachedNotification"
 //#define RouteFinishedNotification   @"RouteFinishedNotification"
@@ -49,6 +50,7 @@
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet WaypointController		*waypointController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
+	IBOutlet StatisticsController	*statisticsController;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementType;

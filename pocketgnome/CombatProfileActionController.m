@@ -55,7 +55,7 @@
 - (void)setStateFromAction: (Action*)action{
 	
 	for ( NSMenuItem *item in [profilePopUp itemArray] ){
-		if ( [[(CombatProfile*)[item representedObject] name] isEqualToString:[(CombatProfile*)[action value] name]] ){
+		if ( [[(CombatProfile*)[item representedObject] UUID] isEqualToString:action.value] ){
 			[profilePopUp selectItem:item];
 			break;
 		}
@@ -70,7 +70,7 @@
     Action *action = [Action actionWithType:ActionType_CombatProfile value:nil];
 	
 	[action setEnabled: self.enabled];
-	[action setValue: [[profilePopUp selectedItem] representedObject]];
+	[action setValue: [[[profilePopUp selectedItem] representedObject] UUID]];
     
     return action;
 }

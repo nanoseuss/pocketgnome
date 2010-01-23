@@ -23,6 +23,7 @@
 	
 	int _lastPlayerZone;
 	int _lastBGStatus;
+	int _lastLevel;
 }
 
 @end

@@ -9,6 +9,8 @@
 #import "SwitchRouteActionController.h"
 #import "ActionController.h"
 
+#import "RouteSet.h"
+
 @implementation SwitchRouteActionController
 
 - (id) init
@@ -64,7 +66,7 @@
 - (void)setStateFromAction: (Action*)action{
 	
 	for ( NSMenuItem *item in [routePopUp itemArray] ){
-		if ( [[(RouteSet*)[item representedObject] name] isEqualToString:[(RouteSet*)action.value name]] ){
+		if ( [[(RouteSet*)[item representedObject] UUID] isEqualToString:action.value] ){
 			[routePopUp selectItem:item];
 			break;
 		}
@@ -79,7 +81,7 @@
     Action *action = [Action actionWithType:ActionType_SwitchRoute value:nil];
 	
 	[action setEnabled: self.enabled];
-	[action setValue: [[routePopUp selectedItem] representedObject]];
+	[action setValue: [[[routePopUp selectedItem] representedObject] UUID]];
     
     return action;
 }

@@ -32,6 +32,7 @@
 #import "CombatProfileEditor.h"
 #import "EventController.h"
 #import "BlacklistController.h"
+#import "StatisticsController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -439,7 +440,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		   [condition variety] != VarietyRouteRunCount && 
 		   [condition variety] != VarietyRouteRunTime && 
 		   [condition variety] != VarietyInventoryFree && 
-		   [condition variety] != VarietyDurability 
+		   [condition variety] != VarietyDurability &&
+		   [condition variety] != VarietyMobsKilled
 		   ) goto loopEnd;
 
         
@@ -1144,13 +1146,37 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				// check free spaces
                 if( [condition comparator] == CompareMore) {
                     conditionEval = ( averageDurability > durabilityPercentage ) ? YES : NO;
-					PGLog(@"  %0.2f > %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+					//PGLog(@"  %0.2f > %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
                 } else if([condition comparator] == CompareEqual) {
                     conditionEval = ( averageDurability == durabilityPercentage ) ? YES : NO;
-					PGLog(@"  %0.2f = %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+					//PGLog(@"  %0.2f = %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
                 } else if([condition comparator] == CompareLess) {
                     conditionEval = ( averageDurability < durabilityPercentage ) ? YES : NO;
-                    PGLog(@"  %0.2f < %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+                    //PGLog(@"  %0.2f < %0.2f is %d", averageDurability, durabilityPercentage, conditionEval);
+                } else goto loopEnd;
+				
+				break;
+				
+				/* ******************************** */
+                /* Durability Condition				*/
+                /* ******************************** */
+            case VarietyMobsKilled:;
+				if(test) PGLog(@"Doing mobs killed condition...");
+				
+				int entryID = [[condition value] intValue];
+				int killCount = [condition state];
+				int realKillCount = [statisticsController killCountForEntryID:entryID];
+				
+				// check free spaces
+                if( [condition comparator] == CompareMore) {
+                    conditionEval = ( realKillCount > killCount ) ? YES : NO;
+					PGLog(@"  %d > %d is %d", realKillCount, killCount, conditionEval);
+                } else if([condition comparator] == CompareEqual) {
+                    conditionEval = ( realKillCount == killCount ) ? YES : NO;
+					PGLog(@"  %d = %d is %d", realKillCount, killCount, conditionEval);
+                } else if([condition comparator] == CompareLess) {
+                    conditionEval = ( realKillCount < killCount ) ? YES : NO;
+                    PGLog(@"  %d < %d is %d", realKillCount, killCount, conditionEval);
                 } else goto loopEnd;
 				
 				break;
@@ -3284,8 +3310,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootUseItems					= [lootUseItemsCheckbox state];
 		
 		// friendly shit
-		
 		_includeFriendly = [self includeFriendlyInCombat];
+		
+		// reset statistics
+		[statisticsController resetQuestMobCount];
 		
 		// start our log out timer - only check every 5 seconds!
 		_logOutTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(logOutTimer:) userInfo: nil repeats: YES];
@@ -4672,6 +4700,8 @@ NSMutableDictionary *_diffDict = nil;
 
 // set the new combat profile + select it in the dropdown!
 - (void)changeCombatProfile:(CombatProfile*)profile{
+	
+	PGLog(@"[Bot] Switching to combat profile %@", profile);
 	self.theCombatProfile = profile;
 	
 	for ( NSMenuItem *item in [combatProfilePopup itemArray] ){
@@ -4822,7 +4852,6 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (IBAction)test: (id)sender{
-
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;

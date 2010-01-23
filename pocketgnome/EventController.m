@@ -26,6 +26,7 @@
 		_uberQuickTimer = nil;
 		_lastPlayerZone = -1;
 		_lastBGStatus = -1;
+		_lastLevel = -1;
 		
 		// Notifications
 		[[NSNotificationCenter defaultCenter] addObserver: self
@@ -36,8 +37,6 @@
                                                  selector: @selector(playerIsInvalid:) 
                                                      name: PlayerIsInvalidNotification 
                                                    object: nil];
-		
-		_fiveSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(fiveSecondTimer:) userInfo: nil repeats: YES];
     }
     return self;
 }
@@ -50,19 +49,36 @@
 
 - (void)playerIsValid: (NSNotification*)not {
 	_uberQuickTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1f target: self selector: @selector(uberQuickTimer:) userInfo: nil repeats: YES];
+	_fiveSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(fiveSecondTimer:) userInfo: nil repeats: YES];
 }
 
 - (void)playerIsInvalid: (NSNotification*)not {
 	[_uberQuickTimer invalidate]; _uberQuickTimer = nil;
+	[_fiveSecondTimer invalidate]; _fiveSecondTimer = nil;
 }
 
 #pragma mark Timers
 
 - (void)fiveSecondTimer: (NSTimer*)timer {
-	// invalidate timers!
-	if ( ![controller isWoWOpen] ){
-		[_uberQuickTimer invalidate]; _uberQuickTimer = nil;
+
+	int currentLevel = [playerController level];
+	
+	if ( _lastLevel != currentLevel ){
+		if ( _lastLevel != -1 ){
+			// growl notification on gaining a level!
+			if ( [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning] ) {
+				[GrowlApplicationBridge notifyWithTitle: @"You've gained a level!"
+											description: [NSString stringWithFormat: @"You have reached level %d.", currentLevel]
+									   notificationName: @"PlayerLevelUp"
+											   iconData: [[NSImage imageNamed: @"Ability_Warrior_Revenge"] TIFFRepresentation]
+											   priority: 0
+											   isSticky: NO
+										   clickContext: nil];    
+			}
+		}
 	}
+	
+	_lastLevel = currentLevel;
 }
 
 - (void)uberQuickTimer: (NSTimer*)timer {
