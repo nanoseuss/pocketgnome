@@ -174,7 +174,7 @@ typedef enum MovementType {
 
     if(!self.isPaused || (([playerData movementFlags] & 0x1) == 0x1)) {
         // stop movement if we haven't already
-        PGLog(@"[Move] Pause movement.");
+        PGLog(@"[Move] Paused movement");
 		
 		[self moveForwardStop];
         
@@ -299,7 +299,7 @@ typedef enum MovementType {
 	
 	_lastWaypointToTakeAction = nil;
 
-    if( [route waypointCount] > 0 ) {
+    if ( [route waypointCount] > 0 ) {
         //[combatController setCombatEnabled: attack];
         [self setIsPatrolling: YES];
         _patrolCount = count;
@@ -328,9 +328,9 @@ typedef enum MovementType {
 	Waypoint *startWaypoint = nil;
 	Position *playerPosition = [playerData position];
 	float minDist = INFINITY, tempDist;
-	for(Waypoint *waypoint in [[self patrolRoute] waypoints]) {
+	for ( Waypoint *waypoint in [[self patrolRoute] waypoints] ) {
 		tempDist = [playerPosition distanceToPosition: [waypoint position]];
-		if( (tempDist < minDist) && (tempDist >= 0.0f)) {
+		if ( (tempDist < minDist) && (tempDist >= 0.0f) ) {
 			minDist = tempDist;
 			startWaypoint = waypoint;
 		}
@@ -740,7 +740,7 @@ typedef enum MovementType {
                 index++;
             
             self.waypointDoneCount++;
-            // check to see if we've hit our max WP
+            // check to see if we've hit our max WP (this is NOT always accurate, we shouldn't really do this by tracking waypointDoneCount)
             if(_patrolCount && (self.waypointDoneCount > _patrolCount*[waypoints count]))   {
                 PGLog(@"[Move] Patrol count expired. Ending patrol.");
                 [self finishRoute];
@@ -900,13 +900,13 @@ typedef enum MovementType {
 				else
 					[self setPatrolRoute: corpseRunRoute];
 				
-				[self beginPatrol: 1];
+				[self beginPatrol: 0];
 				return;
 			}
 			// alive, switch routes!
 			else{
 				[self setPatrolRoute: [route routeForKey: PrimaryRoute]];
-				[self beginPatrol: 1];
+				[self beginPatrol: 0];
 			}
 		}
 		
@@ -931,8 +931,8 @@ typedef enum MovementType {
 					PGLog(@"[Waypoint] Turning in/grabbing quests to/from %@", questNPC);
 					
 					int i = 0, k = 1;
-					for ( ; i < 4; i++ ){
-						for ( ; k < 5; k++ ){
+					for ( ; i < 3; i++ ){
+						for ( k = 1; k < 5; k++ ){
 							
 							// interact
 							if ( [botController interactWithMouseoverGUID:[questNPC GUID]] ){
@@ -962,6 +962,12 @@ typedef enum MovementType {
 					}
 				}
 			}
+		}
+		
+		// interact
+		else if ( [action type] == ActionType_Interact ){
+			//- (Mob*)closestMobForInteraction:(UInt32)entryID;
+			
 		}
 		
 		// repair

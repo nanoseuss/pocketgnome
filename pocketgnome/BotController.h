@@ -135,6 +135,7 @@
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;
 	BOOL _lootUseItems;
+	int _movingTowardMobCount;
 	
 	// fishing shit
 	float _fishingGatherDistance;

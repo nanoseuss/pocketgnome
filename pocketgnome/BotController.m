@@ -233,6 +233,7 @@
 		_includeFriendly = NO;
 		_lastSpellCast = 0;
         _mountAttempt = 0;
+		_movingTowardMobCount = 0;
 		_lootDismountAttempt = nil;
 		_mountLastAttempt = nil;
 		
@@ -2755,6 +2756,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					[movementController resetUnit];
 				}
 				else{
+					_movingTowardMobCount = 0;
 					PGLog(@"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
 					[movementController moveToObject: mobToLoot andNotify: YES];
 					return YES;
@@ -2765,9 +2767,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
         }
 		else{
-			PGLog(@"[Loot] We're already moving toward %@ (%@)", mobToLoot, [movementController moveToObject]);
-			[movementController resumeMovement];
-			return YES;
+			_movingTowardMobCount++;
+			
+			// gives us 6 seconds to move to the unit
+			if ( _movingTowardMobCount <= 60 ){
+				PGLog(@"[Loot] We're already moving toward %@ (%@) %d", mobToLoot, [movementController moveToObject], _movingTowardMobCount);
+				[movementController resumeMovement];
+				return YES;
+			}
+			else{
+				PGLog(@"[Loot] Unable to reach %@, removing from loot list", mobToLoot);
+				[movementController resetUnit];
+				[_mobsToLoot removeObject:mobToLoot];
+			}
 		}
     }
     

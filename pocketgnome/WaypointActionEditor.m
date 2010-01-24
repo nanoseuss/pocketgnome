@@ -47,6 +47,8 @@
 #import "InventoryController.h"
 #import "MacroController.h"
 #import "CombatProfileEditor.h"
+#import "MobController.h"
+#import "NodeController.h"
 
 @implementation WaypointActionEditor
 
@@ -128,11 +130,20 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_Jump)				newAction = [[[JumpActionController alloc] init] autorelease];
 	else if ( type == ActionType_QuestTurnIn)		newAction = [[[QuestTurnInActionController alloc] init] autorelease];
 	else if ( type == ActionType_QuestGrab)			newAction = [[[QuestGrabActionController alloc] init] autorelease];
-	else if ( type == ActionType_Interact)			newAction = [[[InteractActionController alloc] init] autorelease];
 	else if ( type == ActionType_CombatProfile)		newAction = [CombatProfileActionController combatProfileActionControllerWithProfiles:[combatProfileEditor combatProfiles]];
 	else if ( type == ActionType_Vendor)			newAction = [[[VendorActionController alloc] init] autorelease];
 	else if ( type == ActionType_Mail)				newAction = [[[MailActionController alloc] init] autorelease];
 	else if ( type == ActionType_ReverseRoute)		newAction = [[[ReverseRouteActionController alloc] init] autorelease];
+	else if ( type == ActionType_Interact){
+		NSMutableArray *nearbyObjects = [mobController mobsWithinDistance:8.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+		
+		NSArray *nodes = [nodeController nodesWithinDistance:8.0f ofType:AnyNode maxLevel:9000];
+		if ( [nodes count] ){
+			[nearbyObjects addObjectsFromArray:nodes];
+		}
+		
+		newAction = [InteractActionController interactActionControllerWithUnits:nearbyObjects];
+	}
 	
 	if ( action != nil ){
 		[newAction setStateFromAction:action];

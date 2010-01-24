@@ -15,6 +15,8 @@
 @class InventoryController;
 @class MacroController;
 @class CombatProfileEditor;
+@class MobController;
+@class NodeController;
 
 @interface WaypointActionEditor : NSObject {
 
@@ -23,6 +25,8 @@
 	IBOutlet InventoryController	*inventoryController;
 	IBOutlet MacroController		*macroController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
+	IBOutlet MobController			*mobController;
+	IBOutlet NodeController			*nodeController;
 	
 	IBOutlet NSPanel			*editorPanel;
 	IBOutlet NSPopUpButton		*addConditionDropDown;

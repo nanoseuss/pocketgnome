@@ -10,6 +10,8 @@
 #import "ActionController.h"
 
 #import "Unit.h"
+#import "Mob.h"
+#import "Rule.h"
 
 @implementation InteractActionController
 
@@ -32,6 +34,19 @@
     self = [self init];
     if (self != nil) {
         self.units = units;
+		
+		if ( [units count] == 0 ){
+			PGLog(@"no mobs...");
+			[self removeBindings];
+			
+			NSMenu *menu = [[[NSMenu alloc] initWithTitle: @"No Mobs"] autorelease];
+			NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle: @"No Nearby mobs found" action: nil keyEquivalent: @""] autorelease];
+			[item setIndentationLevel: 1];
+			[item setTag:0];
+			[menu addItem: item];
+			
+			[unitsPopUp setMenu:menu];	
+		}
     }
     return self;
 }
@@ -69,8 +84,24 @@
     
     Action *action = [Action actionWithType:ActionType_Interact value:nil];
 	
+	// since we pass a rule w/a name if there are NO objects
+	id object = [[unitsPopUp selectedItem] representedObject];
+	id value = nil;
+	if ( object != nil ){
+		// store entry ID
+		if ( [object isKindOfClass:[Mob class]] ){
+			PGLog(@"saving as mob ");
+			value = [NSNumber numberWithInt:[(Unit*)object entryID]];
+		}
+		// store GUID
+		else{
+			PGLog(@"saving as player ");
+			value = [NSNumber numberWithUnsignedLongLong:[(Unit*)object GUID]];
+		}
+	}
+	
 	[action setEnabled: self.enabled];
-	[action setValue: [NSNumber numberWithUnsignedLongLong:[(Unit*)[[unitsPopUp selectedItem] representedObject] GUID]]];
+	[action setValue: value];
     
     return action;
 }
