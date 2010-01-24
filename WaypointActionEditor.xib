@@ -605,7 +605,6 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">4</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -794,7 +793,6 @@
 										</object>
 										<object class="NSMenuItem" id="433599447">
 											<reference key="NSMenu" ref="229823351"/>
-											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Mail</string>
 											<string key="NSKeyEquiv"/>
@@ -834,7 +832,6 @@
 										</object>
 										<object class="NSMenuItem" id="839995911">
 											<reference key="NSMenu" ref="229823351"/>
-											<bool key="NSIsDisabled">YES</bool>
 											<int key="NSIndent">1</int>
 											<string key="NSTitle">Vendor</string>
 											<string key="NSKeyEquiv"/>
@@ -951,6 +948,7 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
+								<int key="NSSelectedIndex">9</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1885,7 +1883,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{816, 148}, {167, 363}}</string>
+					<string>{{849, 148}, {167, 363}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2160,6 +2158,7 @@
 							<string>spellController</string>
 							<string>startStopButton</string>
 							<string>startstopRecorder</string>
+							<string>statisticsController</string>
 							<string>statusText</string>
 							<string>view</string>
 							<string>waypointController</string>
@@ -2249,6 +2248,7 @@
 							<string>SpellController</string>
 							<string>NSButton</string>
 							<string>SRRecorderControl</string>
+							<string>StatisticsController</string>
 							<string>NSTextField</string>
 							<string>NSView</string>
 							<string>WaypointController</string>
@@ -3383,6 +3383,7 @@
 							<string>editorPanel</string>
 							<string>inventoryController</string>
 							<string>macroController</string>
+							<string>mobController</string>
 							<string>spellController</string>
 							<string>waypointController</string>
 							<string>waypointDescription</string>
@@ -3398,6 +3399,7 @@
 							<string>NSPanel</string>
 							<string>InventoryController</string>
 							<string>MacroController</string>
+							<string>MobController</string>
 							<string>SpellController</string>
 							<string>WaypointController</string>
 							<string>NSTextField</string>
