@@ -195,8 +195,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
-			if ( offset > 0x0 )
-				PGLog(@"%@: 0x%X", key, offset);
+			//if ( offset > 0x0 )
+				//PGLog(@"%@: 0x%X", key, offset);
 		}
 		
 		// hard-code some as i'm lazy + can't test on PPC yet :(
@@ -241,7 +241,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF231FC] forKey:@"PLAYER_IN_BUILDING_STATIC"];
 			
 			// i'm lazy for 3.3.0a
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xE02A78] forKey:@"MOUNT_LIST_POINTER"];
+			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE02A78] forKey:@"MOUNT_LIST_POINTER"];
 			
 			
 			// for the mini-map (x,y only) 010B2C60
@@ -375,7 +375,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
+				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}
@@ -422,7 +422,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				return offset;
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
+				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
 			}
 		}
 	}
@@ -596,7 +596,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				[list addObject:[NSNumber numberWithInt:offset]];
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X, ignoring... (%d)", offset, minOffset, i);
+				//PGLog(@"[Offset] Found 0x%X < 0x%X, ignoring... (%d)", offset, minOffset, i);
 			}
 		}
 	}
@@ -640,7 +640,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				[list addObject:[NSNumber numberWithInt:offset]];
 			}
 			else if ( offset > 0x0 ){
-				PGLog(@"[Offset] Found 0x%X < 0x%X, ignoring... (%d)", offset, minOffset, i);
+				//PGLog(@"[Offset] Found 0x%X < 0x%X, ignoring... (%d)", offset, minOffset, i);
 			}
 		}
 	}

@@ -14,7 +14,7 @@ typedef enum ActionType {
     ActionType_Item				= 2,
     ActionType_Macro			= 3,
     ActionType_Delay			= 4,
-    ActionType_Interact			= 5,
+    ActionType_InteractNPC		= 5,
 	ActionType_Jump				= 6,
 	ActionType_SwitchRoute		= 7,
 	ActionType_QuestTurnIn		= 8,
@@ -24,6 +24,7 @@ typedef enum ActionType {
 	ActionType_Repair			= 12,
 	ActionType_ReverseRoute		= 13,
 	ActionType_CombatProfile	= 14,
+    ActionType_InteractObject	= 15,
     ActionType_Max,
 } ActionType;
 
@@ -43,7 +44,6 @@ typedef enum ActionType {
 @property (readwrite, copy) id value;
 
 @property BOOL enabled;
-@property (readonly) BOOL       isPerform;
 
 // in order to play nice with old code
 @property (readonly) float      delay;

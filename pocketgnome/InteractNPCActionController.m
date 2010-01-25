@@ -1,27 +1,26 @@
 //
-//  InteractActionController.m
+//  InteractNPCActionController.m
 //  Pocket Gnome
 //
 //  Created by Josh on 1/19/10.
 //  Copyright 2010 Savory Software, LLC. All rights reserved.
 //
 
-#import "InteractActionController.h"
+#import "InteractNPCActionController.h"
 #import "ActionController.h"
 
 #import "Unit.h"
 #import "Mob.h"
-#import "Rule.h"
 
-@implementation InteractActionController
+@implementation InteractNPCActionController
 
 - (id)init
 {
     self = [super init];
     if (self != nil) {
 		_units = nil;
-        if(![NSBundle loadNibNamed: @"InteractAction" owner: self]) {
-            PGLog(@"Error loading InteractAction.nib.");
+        if(![NSBundle loadNibNamed: @"InteractNPCAction" owner: self]) {
+            PGLog(@"Error loading InteractNPCAction.nib.");
             
             [self release];
             self = nil;
@@ -36,7 +35,6 @@
         self.units = units;
 		
 		if ( [units count] == 0 ){
-			PGLog(@"no mobs...");
 			[self removeBindings];
 			
 			NSMenu *menu = [[[NSMenu alloc] initWithTitle: @"No Mobs"] autorelease];
@@ -51,8 +49,8 @@
     return self;
 }
 
-+ (id)interactActionControllerWithUnits: (NSArray*)units{
-	return [[[InteractActionController alloc] initWithUnits: units] autorelease];
++ (id)interactNPCActionControllerWithUnits: (NSArray*)units{
+	return [[[InteractNPCActionController alloc] initWithUnits: units] autorelease];
 }
 
 // if we don't remove bindings, it won't leave!
@@ -82,23 +80,10 @@
 - (Action*)action {
     [self validateState: nil];
     
-    Action *action = [Action actionWithType:ActionType_Interact value:nil];
+    Action *action = [Action actionWithType:ActionType_InteractNPC value:nil];
 	
-	// since we pass a rule w/a name if there are NO objects
 	id object = [[unitsPopUp selectedItem] representedObject];
-	id value = nil;
-	if ( object != nil ){
-		// store entry ID
-		if ( [object isKindOfClass:[Mob class]] ){
-			PGLog(@"saving as mob ");
-			value = [NSNumber numberWithInt:[(Unit*)object entryID]];
-		}
-		// store GUID
-		else{
-			PGLog(@"saving as player ");
-			value = [NSNumber numberWithUnsignedLongLong:[(Unit*)object GUID]];
-		}
-	}
+	id value = [NSNumber numberWithInt:[(Mob*)object entryID]];
 	
 	[action setEnabled: self.enabled];
 	[action setValue: value];

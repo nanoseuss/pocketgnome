@@ -18,7 +18,8 @@
 #import "JumpActionController.h"
 #import "QuestTurnInActionController.h"
 #import "QuestGrabActionController.h"
-#import "InteractActionController.h"
+#import "InteractObjectActionController.h"
+#import "InteractNPCActionController.h"
 #import "CombatProfileActionController.h"
 #import "VendorActionController.h"
 #import "MailActionController.h"
@@ -62,8 +63,10 @@
 		newController = [[QuestTurnInActionController alloc] init];
 	else if ( [action type] == ActionType_QuestGrab )
 		newController = [[QuestGrabActionController alloc] init];
-	else if ( [action type] == ActionType_Interact )
-		newController = [[InteractActionController alloc] init];
+	else if ( [action type] == ActionType_InteractNPC )
+		newController = [[InteractNPCActionController alloc] init];
+	else if ( [action type] == ActionType_InteractObject )
+		newController = [[InteractObjectActionController alloc] init];	
 	else if ( [action type] == ActionType_CombatProfile )
 		newController = [[CombatProfileActionController alloc] init];
 	else if ( [action type] == ActionType_Vendor )

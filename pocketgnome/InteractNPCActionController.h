@@ -1,5 +1,5 @@
 //
-//  InteractActionController.h
+//  InteractNPCActionController.h
 //  Pocket Gnome
 //
 //  Created by Josh on 1/19/10.
@@ -9,13 +9,13 @@
 #import <Cocoa/Cocoa.h>
 #import "ActionController.h"
 
-@interface InteractActionController : ActionController {
+@interface InteractNPCActionController : ActionController {
 	IBOutlet NSPopUpButton	*unitsPopUp;
 	
 	NSArray *_units;
 }
 
-+ (id)interactActionControllerWithUnits: (NSArray*)units;
++ (id)interactNPCActionControllerWithUnits: (NSArray*)units;
 
 @property (readwrite, copy) NSArray *units;
 

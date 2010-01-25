@@ -36,7 +36,8 @@
 #import "JumpActionController.h"
 #import "QuestTurnInActionController.h"
 #import "QuestGrabActionController.h"
-#import "InteractActionController.h"
+#import "InteractObjectActionController.h"
+#import "InteractNPCActionController.h"
 #import "CombatProfileActionController.h"
 #import "VendorActionController.h"
 #import "MailActionController.h"
@@ -134,15 +135,13 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_Vendor)			newAction = [[[VendorActionController alloc] init] autorelease];
 	else if ( type == ActionType_Mail)				newAction = [[[MailActionController alloc] init] autorelease];
 	else if ( type == ActionType_ReverseRoute)		newAction = [[[ReverseRouteActionController alloc] init] autorelease];
-	else if ( type == ActionType_Interact){
-		NSMutableArray *nearbyObjects = [mobController mobsWithinDistance:8.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
-		
+	else if ( type == ActionType_InteractNPC){
+		NSArray *nearbyMobs = [mobController mobsWithinDistance:8.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+		newAction = [InteractNPCActionController interactNPCActionControllerWithUnits:nearbyMobs];
+	}
+	else if ( type == ActionType_InteractObject){
 		NSArray *nodes = [nodeController nodesWithinDistance:8.0f ofType:AnyNode maxLevel:9000];
-		if ( [nodes count] ){
-			[nearbyObjects addObjectsFromArray:nodes];
-		}
-		
-		newAction = [InteractActionController interactActionControllerWithUnits:nearbyObjects];
+		newAction = [InteractObjectActionController interactObjectActionControllerWithObjects:nodes];
 	}
 	
 	if ( action != nil ){

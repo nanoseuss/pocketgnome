@@ -964,10 +964,30 @@ typedef enum MovementType {
 			}
 		}
 		
-		// interact
-		else if ( [action type] == ActionType_Interact ){
-			//- (Mob*)closestMobForInteraction:(UInt32)entryID;
+		// interact with NPC
+		else if ( [action type] == ActionType_InteractNPC ){
 			
+			NSNumber *entryID = [action value];
+			PGLog(@"[Waypoint] Interacting with mob %@", entryID);
+
+			// moving bad, lets pause!
+			[self pauseMovement];
+			
+			// interact
+			[botController interactWithMob:[entryID unsignedIntValue]];
+		}
+		
+		// interact with object
+		else if ( [action type] == ActionType_InteractObject ){
+			
+			NSNumber *entryID = [action value];
+			PGLog(@"[Waypoint] Interacting with node %@", entryID);
+			
+			// moving bad, lets pause!
+			[self pauseMovement];
+			
+			// interact
+			[botController interactWithNode:[entryID unsignedIntValue]];	
 		}
 		
 		// repair

@@ -138,6 +138,8 @@
 
 - (void)executeRegen: (BOOL)delay;
 
+- (NSString*)isRouteSetSound: (RouteSet*)route;
+
 @end
 
 
@@ -237,6 +239,7 @@
 		_lootDismountAttempt = nil;
 		_mountLastAttempt = nil;
 		
+		_routesChecked = [[NSMutableArray array] retain];
         _mobsToLoot = [[NSMutableArray array] retain];
         
         // wipe pvp options
@@ -264,6 +267,13 @@
         [NSBundle loadNibNamed: @"Bot" owner: self];
     } 
     return self;
+}
+
+- (void)dealloc{
+	[_routesChecked release]; _routesChecked = nil;
+	[_mobsToLoot release]; _mobsToLoot = nil;
+	
+	[super dealloc];
 }
 
 - (void)awakeFromNib {
@@ -3284,6 +3294,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return;
 		}
 	}
+	
+	// make sure the route will work!
+	if ( self.theRoute ){
+		[_routesChecked removeAllObjects];
+		NSString *error = [self isRouteSetSound:self.theRoute];
+		if ( error && [error length] > 0 ){
+			PGLog(@"[Bot] Your route is not configured correctly!");
+			NSBeep();
+			NSRunAlertPanel(@"Route is not configured correctly", error, @"Okay", NULL, NULL);
+			return;
+		}
+	}
     
     if( [self isBotting])
         [self stopBot: nil];
@@ -4734,6 +4756,81 @@ NSMutableDictionary *_diffDict = nil;
 			break;
 		}
 	}
+}
+
+- (NSString*)isRouteSound: (Route*)route withName:(NSString*)name{
+	NSMutableString *errorMessage = [NSMutableString string];
+	// loop through!
+	int wpNum = 1;
+	for ( Waypoint *wp in [route waypoints] ){
+		if ( wp.actions && [wp.actions count] ){
+			for ( Action *action in wp.actions ){
+				
+				if ( [action type] == ActionType_SwitchRoute ){
+					
+					RouteSet *switchRoute = nil;
+					NSString *UUID = [action value];
+					for ( RouteSet *otherRoute in [waypointController routes] ){
+						if ( [UUID isEqualToString:[otherRoute UUID]] ){
+							switchRoute = otherRoute;
+							break;
+						}
+					}
+					
+					// check this route for issues
+					if ( switchRoute != nil ){
+						[errorMessage appendString:[self isRouteSetSound:switchRoute]];
+					}
+					else{
+						[errorMessage appendString:[NSString stringWithFormat:@"Error on route '%@'\r\n\tSwitch route not found on waypoint action %d\r\n", name, wpNum]];
+					}
+				}
+				
+				else if ( [action type] == ActionType_CombatProfile ){
+					BOOL profileFound = NO;
+					NSString *UUID = [action value];
+					for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
+						if ( [UUID isEqualToString:[otherProfile UUID]] ){
+							profileFound = YES;
+							break;
+						}
+					}
+					if ( !profileFound ){
+						[errorMessage appendString:[NSString stringWithFormat:@"Error on route '%@'\r\n\tCombat profile not found on waypoint action %d\r\n", name, wpNum]];
+					}
+				}
+			}			
+		}	
+		wpNum++;
+	}
+	
+	return errorMessage;
+}
+
+// this will loop through to make sure we actually have the correct routes + profiles!
+- (NSString*)isRouteSetSound: (RouteSet*)route{
+	
+	// so we don't get stuck in an infinite loop
+	if ( [_routesChecked containsObject:[route UUID]] ){
+		return [NSString string];
+	}
+	[_routesChecked addObject:[route UUID]];
+	
+	NSMutableString *errorMessage = [NSMutableString string];
+	
+	// verify primary route
+	Route *primaryRoute  = [route routeForKey: PrimaryRoute];
+	[errorMessage appendString:[self isRouteSound:primaryRoute withName:[route name]]];
+
+	// verify corpse route
+	Route *corpseRunRoute = [route routeForKey: CorpseRunRoute];
+	[errorMessage appendString:[self isRouteSound:corpseRunRoute withName:[route name]]];
+
+	if ( !errorMessage || [errorMessage length] == 0 ){
+		return [NSString string];
+	}
+
+	return errorMessage;
 }
 
 #pragma mark Testing Shit

@@ -71,6 +71,8 @@
 	
 	[action setEnabled: self.enabled];
 	[action setValue: [[[profilePopUp selectedItem] representedObject] UUID]];
+	
+	PGLog(@"saving combat profile with %@", [[[profilePopUp selectedItem] representedObject] UUID]);
     
     return action;
 }

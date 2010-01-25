@@ -137,6 +137,8 @@
 	BOOL _lootUseItems;
 	int _movingTowardMobCount;
 	
+	NSMutableArray *_routesChecked;
+	
 	// fishing shit
 	float _fishingGatherDistance;
 	BOOL _fishingApplyLure;
