@@ -56,7 +56,6 @@
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
 		
 		if ( !self.UUID || [self.UUID length] == 0 ){
-			PGLog(@"[RouteSet] No UUID found! Generating!");
 			
 			// create a new UUID
 			CFUUIDRef uuidObj = CFUUIDCreate(nil);

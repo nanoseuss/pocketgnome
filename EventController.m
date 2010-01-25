@@ -64,7 +64,7 @@
 	int currentLevel = [playerController level];
 	
 	if ( _lastLevel != currentLevel ){
-		if ( _lastLevel != -1 ){
+		if ( currentLevel > 1 ){
 			// growl notification on gaining a level!
 			if ( [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning] ) {
 				[GrowlApplicationBridge notifyWithTitle: @"You've gained a level!"
