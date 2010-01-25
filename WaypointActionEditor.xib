@@ -807,7 +807,7 @@
 										<object class="NSMenuItem" id="951348558">
 											<reference key="NSMenu" ref="229823351"/>
 											<int key="NSIndent">1</int>
-											<string key="NSTitle">NPC/Object</string>
+											<string key="NSTitle">NPC</string>
 											<string key="NSKeyEquiv"/>
 											<int key="NSKeyEquivModMask">1048576</int>
 											<int key="NSMnemonicLoc">2147483647</int>
@@ -815,6 +815,19 @@
 											<reference key="NSMixedImage" ref="496503712"/>
 											<string key="NSAction">_popUpItemAction:</string>
 											<int key="NSTag">5</int>
+											<reference key="NSTarget" ref="96582565"/>
+										</object>
+										<object class="NSMenuItem" id="275977461">
+											<reference key="NSMenu" ref="229823351"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Object/Node</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">15</int>
 											<reference key="NSTarget" ref="96582565"/>
 										</object>
 										<object class="NSMenuItem" id="329309867">
@@ -948,7 +961,7 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">9</int>
+								<int key="NSSelectedIndex">8</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1429,6 +1442,7 @@
 							<reference ref="1603"/>
 							<reference ref="791696650"/>
 							<reference ref="946006536"/>
+							<reference ref="275977461"/>
 						</object>
 						<reference key="parent" ref="96582565"/>
 					</object>
@@ -1756,6 +1770,11 @@
 						<reference key="object" ref="955093318"/>
 						<reference key="parent" ref="623131397"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">747</int>
+						<reference key="object" ref="275977461"/>
+						<reference key="parent" ref="229823351"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1851,6 +1870,7 @@
 					<string>744.IBPluginDependency</string>
 					<string>745.IBPluginDependency</string>
 					<string>746.IBPluginDependency</string>
+					<string>747.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1883,7 +1903,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{849, 148}, {167, 363}}</string>
+					<string>{{849, 128}, {167, 383}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1943,6 +1963,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -1961,7 +1982,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">746</int>
+			<int key="maxID">747</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3384,6 +3405,7 @@
 							<string>inventoryController</string>
 							<string>macroController</string>
 							<string>mobController</string>
+							<string>nodeController</string>
 							<string>spellController</string>
 							<string>waypointController</string>
 							<string>waypointDescription</string>
@@ -3400,6 +3422,7 @@
 							<string>InventoryController</string>
 							<string>MacroController</string>
 							<string>MobController</string>
+							<string>NodeController</string>
 							<string>SpellController</string>
 							<string>WaypointController</string>
 							<string>NSTextField</string>

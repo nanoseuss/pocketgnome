@@ -56,8 +56,6 @@
 		03685FA91103D73B001CE552 /* QuestTurnInAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685FA71103D73B001CE552 /* QuestTurnInAction.xib */; };
 		03685FAD1103D768001CE552 /* QuestGrabActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03685FAC1103D768001CE552 /* QuestGrabActionController.m */; };
 		03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */; };
-		0368601111061669001CE552 /* InteractAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0368601011061669001CE552 /* InteractAction.xib */; };
-		0368601511061686001CE552 /* InteractActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0368601411061686001CE552 /* InteractActionController.m */; };
 		038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038709B910D576E100DF5B90 /* BlacklistController.m */; };
 		038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */ = {isa = PBXBuildFile; fileRef = 038A4B4510E9656D00577D8F /* LastSpellCast.xib */; };
 		038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */; };
@@ -80,6 +78,10 @@
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
 		03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */; };
 		03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */; };
+		03FFD596110CB5440046AEDF /* InteractNPCActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD593110CB5440046AEDF /* InteractNPCActionController.m */; };
+		03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD595110CB5440046AEDF /* InteractObjectActionController.m */; };
+		03FFD59A110CB55A0046AEDF /* InteractNPCAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD598110CB55A0046AEDF /* InteractNPCAction.xib */; };
+		03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD599110CB55A0046AEDF /* InteractObjectAction.xib */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
@@ -446,9 +448,6 @@
 		03685FAC1103D768001CE552 /* QuestGrabActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestGrabActionController.m; sourceTree = "<group>"; };
 		03685FAE1103D77A001CE552 /* QuestTurnInActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestTurnInActionController.h; sourceTree = "<group>"; };
 		03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestTurnInActionController.m; sourceTree = "<group>"; };
-		0368601011061669001CE552 /* InteractAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InteractAction.xib; sourceTree = "<group>"; };
-		0368601311061686001CE552 /* InteractActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InteractActionController.h; sourceTree = "<group>"; };
-		0368601411061686001CE552 /* InteractActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InteractActionController.m; sourceTree = "<group>"; };
 		038709B810D576E100DF5B90 /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
 		038709B910D576E100DF5B90 /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
 		038A4B4510E9656D00577D8F /* LastSpellCast.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LastSpellCast.xib; sourceTree = "<group>"; };
@@ -480,6 +479,12 @@
 		03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MobsKilledCondition.xib; sourceTree = "<group>"; };
 		03FFD46C110B930F0046AEDF /* MobsKilledConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobsKilledConditionController.h; sourceTree = "<group>"; };
 		03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobsKilledConditionController.m; sourceTree = "<group>"; };
+		03FFD592110CB5440046AEDF /* InteractNPCActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InteractNPCActionController.h; sourceTree = "<group>"; };
+		03FFD593110CB5440046AEDF /* InteractNPCActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InteractNPCActionController.m; sourceTree = "<group>"; };
+		03FFD594110CB5440046AEDF /* InteractObjectActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InteractObjectActionController.h; sourceTree = "<group>"; };
+		03FFD595110CB5440046AEDF /* InteractObjectActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InteractObjectActionController.m; sourceTree = "<group>"; };
+		03FFD598110CB55A0046AEDF /* InteractNPCAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InteractNPCAction.xib; sourceTree = "<group>"; };
+		03FFD599110CB55A0046AEDF /* InteractObjectAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = InteractObjectAction.xib; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
@@ -890,7 +895,8 @@
 				031695181101314B00EF241B /* SpellAction.xib */,
 				0316900F10FF84AB00EF241B /* SwitchRouteAction.xib */,
 				03168EDC10FF70C600EF241B /* RepairAction.xib */,
-				0368601011061669001CE552 /* InteractAction.xib */,
+				03FFD598110CB55A0046AEDF /* InteractNPCAction.xib */,
+				03FFD599110CB55A0046AEDF /* InteractObjectAction.xib */,
 			);
 			name = "Waypoint Action NIBs";
 			sourceTree = "<group>";
@@ -920,8 +926,6 @@
 				03685FAC1103D768001CE552 /* QuestGrabActionController.m */,
 				03685FAE1103D77A001CE552 /* QuestTurnInActionController.h */,
 				03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */,
-				0368601311061686001CE552 /* InteractActionController.h */,
-				0368601411061686001CE552 /* InteractActionController.m */,
 				0322D6D811065D0700EF3EEF /* CombatProfileActionController.h */,
 				0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */,
 				0393F531110A55DB00296CF8 /* MailActionController.h */,
@@ -930,6 +934,10 @@
 				0393F535110A55E300296CF8 /* VendorActionController.m */,
 				0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */,
 				0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */,
+				03FFD592110CB5440046AEDF /* InteractNPCActionController.h */,
+				03FFD593110CB5440046AEDF /* InteractNPCActionController.m */,
+				03FFD594110CB5440046AEDF /* InteractObjectActionController.h */,
+				03FFD595110CB5440046AEDF /* InteractObjectActionController.m */,
 			);
 			name = WaypointActions;
 			sourceTree = "<group>";
@@ -1872,13 +1880,14 @@
 				03685DDA11026831001CE552 /* JumpAction.xib in Resources */,
 				03685FA81103D73B001CE552 /* QuestGrabAction.xib in Resources */,
 				03685FA91103D73B001CE552 /* QuestTurnInAction.xib in Resources */,
-				0368601111061669001CE552 /* InteractAction.xib in Resources */,
 				614CD78A1106182100BA1B2F /* Bot.xib in Resources */,
 				0322D6E211065D8900EF3EEF /* CombatProfileAction.xib in Resources */,
 				0393F52D110A558200296CF8 /* ReverseRouteAction.xib in Resources */,
 				0393F52E110A558300296CF8 /* VendorAction.xib in Resources */,
 				0393F530110A558F00296CF8 /* MailAction.xib in Resources */,
 				03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */,
+				03FFD59A110CB55A0046AEDF /* InteractNPCAction.xib in Resources */,
+				03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2007,12 +2016,13 @@
 				031694D9110103E900EF241B /* JumpActionController.m in Sources */,
 				03685FAD1103D768001CE552 /* QuestGrabActionController.m in Sources */,
 				03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */,
-				0368601511061686001CE552 /* InteractActionController.m in Sources */,
 				0322D6DA11065D0800EF3EEF /* CombatProfileActionController.m in Sources */,
 				0393F533110A55DB00296CF8 /* MailActionController.m in Sources */,
 				0393F536110A55E300296CF8 /* VendorActionController.m in Sources */,
 				0393F539110A55EF00296CF8 /* ReverseRouteActionController.m in Sources */,
 				03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */,
+				03FFD596110CB5440046AEDF /* InteractNPCActionController.m in Sources */,
+				03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

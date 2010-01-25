@@ -275,9 +275,6 @@
         [resultActionDropdown setMenu: noActionMenu];
         [resultActionDropdown selectItemWithTag: 0];
     }
-	if([sender selectedTag] == ActionType_Interact) {
-        [resultActionDropdown setMenu: _interactMenu];        
-    }
     if( [[resultActionDropdown menu] itemWithTag: oldTag] ) {
         [resultActionDropdown selectItemWithTag: oldTag];
     }

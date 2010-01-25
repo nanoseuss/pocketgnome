@@ -83,14 +83,6 @@
     _type = type;
 }
 
-- (BOOL)isPerform {
-    if((self.type >= ActionType_Spell) && (self.type <= ActionType_Macro))
-        return YES;
-	if(self.type == ActionType_Interact)
-		return YES;
-    return NO;
-}
-
 - (float)delay {
     if(self.type == ActionType_Delay) {
         return [self.value floatValue];
