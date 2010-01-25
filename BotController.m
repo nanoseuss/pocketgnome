@@ -1415,7 +1415,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//	I'm running into a problem where PG will not loot after death, but instead move onto a hostile NOT in combat
 		//	So lets add a check here, this isn't how I want it to operate, but it will work for now
 		BOOL doCombatProcedure = YES;
-		/*
+		
 		if ( self.doLooting && [_mobsToLoot count] ){
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 			
@@ -1427,7 +1427,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else{
 				PGLog(@"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
 			}
-		}*/
+		}
 		
 		// temp fix for looting
 		if ( doCombatProcedure ){
@@ -2075,7 +2075,25 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
-	return matchFound;
+	// kind of a hack right now, but it *should* work
+	//	I'm running into a problem where PG will not loot after death, but instead move onto a hostile NOT in combat
+	//	So lets add a check here, this isn't how I want it to operate, but it will work for now
+	BOOL doCombatProcedure = YES;
+	
+	if ( self.doLooting && [_mobsToLoot count] ){
+		NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
+		
+		// we can break out of this procedure early!
+		if ( [inCombatUnits count] == 0 ){
+			doCombatProcedure = NO;
+			PGLog(@"[ProcedureCheck] Not executing combat procedure!");
+		}
+		else{
+			PGLog(@"[ProcedureCheck] Executing combat procedure. %d units remain", [inCombatUnits count]);
+		}
+	}
+	
+	return matchFound && doCombatProcedure;
 }
 
 // this function will actually fire off our combat procedure if needed! 
