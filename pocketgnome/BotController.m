@@ -1697,10 +1697,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [[playerController player] isMounted] )
 			[movementController dismount];
 		
-		NSNumber *count = [_lootDismountAttempt objectForKey:unit];
+		NSNumber *count = [[_lootDismountAttempt objectForKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]] retain];
 		if ( count ){
 			[_lootDismountAttempt release]; _lootDismountAttempt = nil;
-			_lootDismountAttempt = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:[count intValue]+1],		unit, nil];
+			_lootDismountAttempt = [[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:[count intValue]+1],		[NSNumber numberWithUnsignedLongLong:[unit GUID]], nil] retain];
 		}
 		else{
 			PGLog(@"[Loot] Error, we're dropping from the wrong node?!?? %@", unit);
@@ -2326,7 +2326,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
 			
 			[_lootDismountAttempt release]; _lootDismountAttempt = nil;
-			_lootDismountAttempt = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:0],		unit, nil];
+			_lootDismountAttempt = [[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:0],		[NSNumber numberWithUnsignedLongLong:[unit GUID]], nil] retain];
 			[movementController dismount];
 			[self lootNode: unit];
 		}
@@ -2877,8 +2877,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					continue;
 				}
 				
-				if ( _lootDismountAttempt && [_lootDismountAttempt objectForKey:nodeToLoot] ){
-					NSNumber *count = [_lootDismountAttempt objectForKey:nodeToLoot];
+				if ( _lootDismountAttempt && [_lootDismountAttempt objectForKey:[NSNumber numberWithUnsignedLongLong:[nodeToLoot GUID]]] ){
+					NSNumber *count = [_lootDismountAttempt objectForKey:[NSNumber numberWithUnsignedLongLong:[nodeToLoot GUID]]];
 					
 					// the count represents 0.1 second intervals after we fall from our mount (so if we fall far, we don't want to try that node again!)
 					if ( [count intValue] > 5 ){

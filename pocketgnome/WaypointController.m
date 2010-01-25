@@ -522,6 +522,7 @@ enum AutomatorIntervalType {
 	if ( [sender tag] == ActionType_None ){
 		[wp setActions:nil];
 		wp.rule = nil;
+		[self currentRouteSet].changed = YES;
 	}
 	// open our editor
 	else{
