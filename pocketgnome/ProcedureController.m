@@ -12,6 +12,7 @@
 #import "RuleEditor.h"
 #import "Rule.h"
 #import "SecureUserDefaults.h"
+#import "SaveData.h"
 
 #import "BetterSegmentedControl.h"
 
@@ -22,13 +23,16 @@
     self = [super init];
     if (self != nil) {
         _behavior = nil;
-        
-        id loadedProcs = [[NSUserDefaults standardUserDefaults] objectForKey: @"Behaviors"];
-        if(loadedProcs)
-            _behaviors = [[NSKeyedUnarchiver unarchiveObjectWithData: loadedProcs] mutableCopy];
-        else
-            _behaviors = [[NSMutableArray array] retain];
-        
+		_nameBeforeRename = nil;
+		
+		// old way
+		_behaviors = [[self loadAllDataForKey:@"Behaviors" withClass:[Behavior class]] retain];
+		
+		// new way!
+		if ( !_behaviors ){
+			_behaviors = [[self loadAllObjects] retain];
+		}
+
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
         
         [NSBundle loadNibNamed: @"Behaviors" owner: self];
@@ -91,7 +95,13 @@
 
 
 - (void)saveBehaviors {
-    [[NSUserDefaults standardUserDefaults] setObject: [NSKeyedArchiver archivedDataWithRootObject: _behaviors] forKey: @"Behaviors"];
+	
+	// save all for now
+	for ( Behavior *behavior in _behaviors ){
+		[self saveObject:behavior];
+	}
+	
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"Behaviors"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -146,6 +156,10 @@
     // update the current procedure
     [self saveBehaviors];
     [self setCurrentBehavior: behavior];
+	
+	// we will want to save this later!
+	[self currentBehavior].changed = YES;
+	
     [ruleTable reloadData];
     
     //PGLog(@"Added behavior: %@", [behavior name]);
@@ -188,7 +202,9 @@
         int ret = NSRunAlertPanel(@"Delete Behavior?", [NSString stringWithFormat: @"Are you sure you want to delete the behavior \"%@\"?", [[self currentBehavior] name]], @"Delete", @"Cancel", NULL);
         if(ret == NSAlertDefaultReturn) {
             [self willChangeValueForKey: @"behaviors"];
-            [_behaviors removeObject: [self currentBehavior]];
+			[_behaviors removeObject: [self currentBehavior]];
+			
+			[self deleteObject:[self currentBehavior]];
             
             if([self.behaviors count])
                 [self setCurrentBehavior: [self.behaviors objectAtIndex: 0]];
@@ -207,6 +223,9 @@
 }
 
 - (IBAction)renameBehavior: (id)sender {
+	
+	_nameBeforeRename = [[[self currentBehavior] name] copy];
+	
 	[NSApp beginSheet: renamePanel
 	   modalForWindow: [self.view window]
 		modalDelegate: nil
@@ -219,7 +238,11 @@
     [NSApp endSheet: renamePanel returnCode: 1];
     [renamePanel orderOut: nil];
     
-    [self saveBehaviors];
+	// did the name change?
+	if ( ![_nameBeforeRename isEqualToString:[[self currentBehavior] name]] ){
+		[self currentBehavior].changed = YES;
+		[self deleteObjectWithName:_nameBeforeRename];
+	}
 }
 
 - (IBAction)updateOptions: (id)sender {
@@ -625,6 +648,16 @@
     [aTableView reloadData];
     
     return YES;
+}
+
+#pragma mark SaveData
+// for saving
+- (NSString*)objectExtension{
+	return @"behavior";
+}
+
+- (NSString*)objectName:(id)object{
+	return [(Behavior*)object name];
 }
 
 

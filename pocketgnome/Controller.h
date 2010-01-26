@@ -26,6 +26,7 @@
 @class FishController;
 @class OffsetController;
 @class StatisticsController;
+@class CombatProfileEditor;
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
@@ -49,6 +50,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 	IBOutlet CorpseController		*corpseController;
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet StatisticsController	*statisticsController;
+	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;

@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "CombatProfile.h"
+#import "SaveData.h"
 
 @class PlayersController;
 @class BotController;
@@ -16,7 +17,7 @@
 
 @class Player;
 
-@interface CombatProfileEditor : NSObject {
+@interface CombatProfileEditor : SaveData {
     IBOutlet NSPanel			*editorPanel;
     IBOutlet NSPanel			*renamePanel;
     IBOutlet NSTableView		*ignoreTable;
@@ -32,6 +33,8 @@
 	
     NSMutableArray				*_combatProfiles;
     CombatProfile				*_currentCombatProfile;
+	
+	NSString *_nameBeforeRename;
 }
 
 @property (readonly) NSArray *combatProfiles;

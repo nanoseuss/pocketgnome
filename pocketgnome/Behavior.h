@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "Procedure.h"
+#import "SaveDataObject.h"
 
 #define PreCombatProcedure  @"PreCombatProcedure"
 #define HealingProcedure    @"HealingProcedure"
@@ -16,7 +17,7 @@
 #define RegenProcedure      @"RegenProcedure"
 #define PatrollingProcedure @"PatrollingProcedure"
 
-@interface Behavior : NSObject <NSCoding, NSCopying> {
+@interface Behavior : SaveDataObject {
     NSString *_name;
     BOOL _meleeCombat, _usePet;
     NSMutableDictionary *_procedures;

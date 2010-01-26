@@ -7,11 +7,11 @@
 //
 
 #import "RouteSet.h"
+#import "SaveDataObject.h"
 #include <openssl/md5.h>
 
 @interface RouteSet ()
 @property (readwrite, retain) NSDictionary *routes;
-@property (readwrite, retain) NSString *UUID;
 @end
 
 @implementation RouteSet
@@ -22,12 +22,6 @@
     if (self != nil) {
         self.name = nil;
         self.routes = [NSMutableDictionary dictionary];
-		_changed = NO;
-		
-		// create a new UUID
-		CFUUIDRef uuidObj = CFUUIDCreate(nil);
-		self.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
-		CFRelease(uuidObj);
     }
     return self;
 }
@@ -52,17 +46,7 @@
 	self = [super init];
 	if(self) {
         self.name = [decoder decodeObjectForKey: @"Name"];
-		self.UUID = [decoder decodeObjectForKey: @"UUID"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
-		
-		if ( !self.UUID || [self.UUID length] == 0 ){
-			
-			// create a new UUID
-			CFUUIDRef uuidObj = CFUUIDCreate(nil);
-			self.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
-			CFRelease(uuidObj);
-			_changed = YES;
-		}
         
         // make sure we have a route object for every type
         if( ![self routeForKey: PrimaryRoute])
@@ -77,7 +61,6 @@
 -(void)encodeWithCoder:(NSCoder *)coder
 {
     [coder encodeObject: self.name forKey: @"Name"];
-	[coder encodeObject: self.UUID forKey: @"UUID"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 }
 
@@ -86,12 +69,8 @@
     RouteSet *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
     copy.routes = self.routes;
-	
-	// create a new UUID
-	CFUUIDRef uuidObj = CFUUIDCreate(nil);
-	copy.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
-	CFRelease(uuidObj);
-    
+	copy.changed = YES;
+
     return copy;
 }
 
@@ -99,19 +78,17 @@
 {
     self.name = nil;
     self.routes = nil;
-	self.UUID = nil;
     [super dealloc];
 }
 
 #pragma mark -
 
 - (NSString*)description {
-    return [NSString stringWithFormat: @"<RouteSet %@>", [self name]];
+    return [NSString stringWithFormat: @"<RouteSet %@ %@>", [self name], [self UUID]];
 }
 
 @synthesize name = _name;
 @synthesize routes = _routes;
-@synthesize changed = _changed;
 @synthesize UUID = _UUID;
 
 - (void)setRoutes: (NSDictionary*)routes {

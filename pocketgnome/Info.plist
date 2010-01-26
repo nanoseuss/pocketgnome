@@ -11,7 +11,27 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>combatProfile</string>
+				<string>combatprofile</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>pgBehavior</string>
+			<key>CFBundleTypeName</key>
+			<string>CombatProfile</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSDocumentClass</key>
+			<string>CombatProfile</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>XML</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>route</string>
+				<string>routeset</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>pgRoute</string>
@@ -30,6 +50,7 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>behavior</string>
+				<string>behaviorset</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>pgBehavior</string>

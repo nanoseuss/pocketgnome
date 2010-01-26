@@ -12,6 +12,7 @@
 #import "BotController.h"
 #import "Controller.h"
 #import "MobController.h"
+#import "SaveData.h"
 
 #import "Offsets.h"
 #import "Mob.h"
@@ -42,14 +43,17 @@ static CombatProfileEditor *sharedEditor = nil;
     } if (self != nil) {
 		sharedEditor = self;
         self.currentCombatProfile = nil;
+		_nameBeforeRename = nil;
 		
-        // load in saved profiles
-        id loadedProfiles = [[NSUserDefaults standardUserDefaults] objectForKey: @"CombatProfiles"];
-        if(loadedProfiles)
-            _combatProfiles = [[NSKeyedUnarchiver unarchiveObjectWithData: loadedProfiles] mutableCopy];
-        else
-            _combatProfiles = [[NSMutableArray array] retain];
-            
+		// old way
+		_combatProfiles = [[self loadAllDataForKey:@"CombatProfiles" withClass:[CombatProfile class]] retain];
+		
+		// new way!
+		if ( !_combatProfiles ){
+			_combatProfiles = [[self loadAllObjects] retain];
+		}
+		
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
             
         [NSBundle loadNibNamed: @"CombatProfile" owner: self];
     }
@@ -67,6 +71,10 @@ static CombatProfileEditor *sharedEditor = nil;
 
 @synthesize combatProfiles = _combatProfiles;
 @synthesize currentCombatProfile = _currentCombatProfile;
+
+- (void)applicationWillTerminate: (NSNotification*)notification {
+    [self saveCombatProfiles];
+}
 
 - (void)populatePlayerList: (id)popUpButton withGUID:(UInt64)guid{
 	
@@ -136,11 +144,19 @@ static CombatProfileEditor *sharedEditor = nil;
 }
 
 - (void)editorDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
-    [self saveCombatProfiles];
+	[self currentCombatProfile].changed = YES;
 }
 
 - (void)saveCombatProfiles {
-    [[NSUserDefaults standardUserDefaults] setObject: [NSKeyedArchiver archivedDataWithRootObject: [self combatProfiles]] forKey: @"CombatProfiles"];
+	
+	// save all for now
+	for ( CombatProfile *profile in _combatProfiles ){
+		//if ( profile.changed ){
+			[self saveObject:profile];
+		//}
+	}
+
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"CombatProfiles"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -175,6 +191,9 @@ static CombatProfileEditor *sharedEditor = nil;
 
     // update the current route
     self.currentCombatProfile = profile;
+	
+	// we will want to save this later!
+	[self currentCombatProfile].changed = YES;
     
     [self saveCombatProfiles];
     [ignoreTable reloadData];
@@ -193,11 +212,15 @@ static CombatProfileEditor *sharedEditor = nil;
 }
 
 - (IBAction)loadCombatProfile: (id)sender {
+	[self currentCombatProfile].changed = YES;
     [ignoreTable reloadData];
 }
 
 
 - (IBAction)renameCombatProfile: (id)sender {
+	
+	_nameBeforeRename = [[self.currentCombatProfile name] copy];
+	
 	[NSApp beginSheet: renamePanel
 	   modalForWindow: editorPanel
 		modalDelegate: nil
@@ -210,6 +233,12 @@ static CombatProfileEditor *sharedEditor = nil;
     [NSApp endSheet: renamePanel returnCode: 1];
     [renamePanel orderOut: nil];
     [self saveCombatProfiles];
+	
+	// did the name change?
+	if ( ![_nameBeforeRename isEqualToString:[[self currentCombatProfile] name]] ){
+		[self currentCombatProfile].changed = YES;
+		[self deleteObjectWithName:_nameBeforeRename];
+	}
 }
 
 - (IBAction)duplicateCombatProfile: (id)sender {
@@ -223,6 +252,8 @@ static CombatProfileEditor *sharedEditor = nil;
         if(ret == NSAlertDefaultReturn) {
             [self willChangeValueForKey: @"combatProfiles"];
             [_combatProfiles removeObject: self.currentCombatProfile];
+			
+			[self deleteObject:self.currentCombatProfile];
             
             if([self.combatProfiles count])
                 self.currentCombatProfile = [self.combatProfiles objectAtIndex: 0];
@@ -296,6 +327,7 @@ static CombatProfileEditor *sharedEditor = nil;
     if(!self.currentCombatProfile) return;
     
     [self.currentCombatProfile addEntry: [IgnoreEntry entry]];
+	[self currentCombatProfile].changed = YES;
     [ignoreTable reloadData];
 }
 
@@ -313,6 +345,7 @@ static CombatProfileEditor *sharedEditor = nil;
     entry.ignoreType = [NSNumber numberWithInt: 0];
     entry.ignoreValue = [NSNumber numberWithInt: [mob entryID]];
     [self.currentCombatProfile addEntry: entry];
+	[self currentCombatProfile].changed = YES;
     [ignoreTable reloadData];
 }
 
@@ -329,7 +362,7 @@ static CombatProfileEditor *sharedEditor = nil;
     [ignoreTable selectRow: [rowIndexes firstIndex] byExtendingSelection: NO]; 
     
     [ignoreTable reloadData];
-    [self saveCombatProfiles];
+	[self currentCombatProfile].changed = YES;
 }
 
 
@@ -375,4 +408,15 @@ static CombatProfileEditor *sharedEditor = nil;
         [[self.currentCombatProfile entryAtIndex: rowIndex] setIgnoreValue: anObject];
     }
 }
+
+#pragma mark SaveData
+// for saving
+- (NSString*)objectExtension{
+	return @"combatprofile";
+}
+
+- (NSString*)objectName:(id)object{
+	return [(CombatProfile*)object name];
+}
+
 @end

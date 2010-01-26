@@ -11,12 +11,9 @@
 #import "Mob.h"
 #import "IgnoreEntry.h"
 #import "Offsets.h"
+#import "SaveDataObject.h"
 
 #import "PlayerDataController.h"
-
-@interface CombatProfile ()
-@property (readwrite, retain) NSString *UUID;
-@end
 
 @implementation CombatProfile
 
@@ -60,12 +57,6 @@
 		self.engageRange = 30.0f;
         self.attackLevelMin = 2;
         self.attackLevelMax = PLAYER_LEVEL_CAP;
-		
-		// create a new UUID
-		CFUUIDRef uuidObj = CFUUIDCreate(nil);
-		self.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
-		CFRelease(uuidObj);
-		_changed = NO;
     }
     return self;
 }
@@ -124,10 +115,7 @@
     copy.attackLevelMin = self.attackLevelMin;
     copy.attackLevelMax = self.attackLevelMax;
 	
-	// create a new UUID
-	CFUUIDRef uuidObj = CFUUIDCreate(nil);
-	copy.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
-	CFRelease(uuidObj);
+	copy.changed = YES;
     
     return copy;
 }
@@ -171,19 +159,6 @@
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
         self.attackLevelMin = [[decoder decodeObjectForKey: @"AttackLevelMin"] intValue];
         self.attackLevelMax = [[decoder decodeObjectForKey: @"AttackLevelMax"] intValue];
-		
-		self.UUID = [decoder decodeObjectForKey: @"UUID"];
-		
-		if ( !self.UUID || [self.UUID length] == 0 ){
-			PGLog(@"[RouteSet] No UUID found! Generating!");
-			
-			// create a new UUID
-			CFUUIDRef uuidObj = CFUUIDCreate(nil);
-			self.UUID = (NSString*)CFUUIDCreateString(nil, uuidObj);
-			CFRelease(uuidObj);
-			
-			_changed = YES;
-		}
 	}
 	return self;
 }
@@ -225,8 +200,6 @@
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMax] forKey: @"AttackLevelMax"];
 
     [coder encodeObject: self.entries forKey: @"IgnoreList"];
-	
-	[coder encodeObject: self.UUID forKey: @"UUID"];
 }
 
 - (void) dealloc
@@ -270,9 +243,6 @@
 @synthesize attackRange;
 @synthesize attackLevelMin;
 @synthesize attackLevelMax;
-
-@synthesize UUID = _UUID;
-@synthesize changed = _changed;
 
 - (BOOL)unitShouldBeIgnored: (Unit*)unit{
 	

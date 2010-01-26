@@ -22,6 +22,7 @@
 #import "CorpseController.h"
 #import "OffsetController.h"
 #import "StatisticsController.h"
+#import "CombatProfileEditor.h"
 
 #import "CGSPrivate.h"
 
@@ -265,6 +266,12 @@ static Controller* sharedController = nil;
         [behaviorController importBehaviorAtPath: filename];
         [self toolbarItemSelected: behavsToolbarItem];
         [mainToolbar setSelectedItemIdentifier: [behavsToolbarItem itemIdentifier]];
+        return YES;
+    }
+	else if ( [[filename pathExtension] isEqualToString: @"combatprofile"] || [[filename pathExtension] isEqualToString: @"combatProfile"] ) {
+        [combatProfileEditor importCombatProfileAtPath: filename];
+        [self toolbarItemSelected: botToolbarItem];
+        [mainToolbar setSelectedItemIdentifier: [botToolbarItem itemIdentifier]];
         return YES;
     }
     

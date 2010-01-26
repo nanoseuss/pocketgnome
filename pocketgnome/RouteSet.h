@@ -8,24 +8,20 @@
 
 #import <Cocoa/Cocoa.h>
 #import "Route.h"
+#import "SaveDataObject.h"
 
 #define PrimaryRoute        @"PrimaryRoute"
 #define CorpseRunRoute      @"CorpseRunRoute"
 
-@interface RouteSet : NSObject <NSCoding, NSCopying> {
+@interface RouteSet : SaveDataObject {
     NSString *_name;
     NSMutableDictionary *_routes;
-	NSString *_UUID;		// unique ID
-	
-	BOOL _changed;	// use so we know if we should re-save or not
 }
 
 + (id)routeSetWithName: (NSString*)name;
 
 @property (readwrite, copy) NSString *name;
 @property (readonly, retain) NSDictionary *routes;
-@property (readwrite, assign) BOOL changed;
-@property (readonly, retain) NSString *UUID;
 
 - (Route*)routeForKey: (NSString*)key;
 - (void)setRoute: (Route*)route forKey: (NSString*)key;
