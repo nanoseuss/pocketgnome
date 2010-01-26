@@ -24,6 +24,7 @@
 #import "Action.h"
 #import "Mob.h"
 #import "ActionMenusController.h"
+#import "SaveData.h"
 
 #import "RouteVisualizationView.h"
 
@@ -44,14 +45,6 @@ enum AutomatorIntervalType {
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
 - (void)automatorPulse;
-
-- (void)deleteRoute:(RouteSet*)route;
-- (void)deleteRouteWithName:(NSString*)routeName;
-- (NSString *)pathForRoute:(RouteSet*)route;
-- (NSString *)pathForRouteWithName:(NSString*)routeFileName;
-- (void)saveRouteToDisk: (RouteSet*)route;
-- (RouteSet*)loadRouteFromDisk: (NSString*)name; 
-- (void)loadAllRoutes;
 @end
 
 @implementation WaypointController
@@ -71,43 +64,12 @@ enum AutomatorIntervalType {
 		_selectedRows = nil;
 		_nameBeforeRename = nil;
 		
-		_routes = [[NSMutableArray array] retain];
+		// old way
+		_routes = [[self loadAllDataForKey:@"Routes" withClass:[RouteSet class]] retain];
 		
-		BOOL newStyle = YES;
-		
-		// load the routes
-		id loadedRoutes = [[NSUserDefaults standardUserDefaults] objectForKey: @"Routes"];
-		
-		if ( loadedRoutes ){
-			
-			NSArray *routeData = [NSKeyedUnarchiver unarchiveObjectWithData: loadedRoutes];
-			
-			// do a check to see if this is old-style information (not stored in files)
-			if ( routeData != nil && [routeData count] > 0 ){
-				
-				id object = [routeData objectAtIndex:0];
-				
-				// old style!!
-				if ( [object isKindOfClass:[RouteSet class]] ){
-					newStyle = NO;
-					for ( RouteSet *route in routeData ){
-						
-						route.changed = YES;
-						
-						[_routes addObject:route];
-					}
-					
-					PGLog(@"[Routes] Loaded %d routes from the old method!", [_routes count]);
-				}
-			}
-		}
-		
-		// load routes via the new method!
-		if ( newStyle ){
-			
-			[self loadAllRoutes];
-			
-			PGLog(@"[Routes] Loaded %d routes from the new method!", [_routes count]);
+		// new way!
+		if ( !_routes ){
+			_routes = [[self loadAllObjects] retain];
 		}
 		
         // listen for notification
@@ -164,11 +126,11 @@ enum AutomatorIntervalType {
 	// lets save our routes if they've changed!
 	for ( RouteSet *route in _routes ){
 		if ( route.changed ){
-			[self saveRouteToDisk:route];
+			[self saveObject:route];
 		}
 	}
 	
-	// we no longer use this anymore :(  remove it!
+	// we no longer use this anymore! Yay!
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"Routes"];
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -299,7 +261,7 @@ enum AutomatorIntervalType {
             [self willChangeValueForKey: @"routes"];
             [_routes removeObject: [self currentRouteSet]];
 			
-			[self deleteRoute:[self currentRouteSet]];
+			[self deleteObject:[self currentRouteSet]];
             
             if([_routes count])
                 [self setCurrentRouteSet: [_routes objectAtIndex: 0]];
@@ -336,7 +298,7 @@ enum AutomatorIntervalType {
 	// did the name change?
 	if ( ![_nameBeforeRename isEqualToString:[[self currentRouteSet] name]] ){
 		[self currentRouteSet].changed = YES;
-		[self deleteRouteWithName:_nameBeforeRename];
+		[self deleteObjectWithName:_nameBeforeRename];
 	}
 }
 
@@ -358,7 +320,7 @@ enum AutomatorIntervalType {
             [self addRoute: importedRoute];
 		}
 		else if ( [importedRoute isKindOfClass: [NSDictionary class]] ) {
-			[self addRoute: [importedRoute objectForKey:@"Route"]];	
+			[self addRoute:[importedRoute objectForKey:@"Route"]];	
         }
 		else if ( [importedRoute isKindOfClass: [NSArray class]] ) {
             for ( RouteSet *route in importedRoute) {
@@ -1094,117 +1056,14 @@ enum AutomatorIntervalType {
 	}
 }
 
-#pragma mark New Route Saving
-
-- (NSString *)pathForRouteWithName:(NSString*)routeFileName { 
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	NSString *folder = @"~/Library/Application Support/PocketGnome/";
-	
-	// only return folder
-	if ( routeFileName == nil ){
-		return folder;
-	}
-	
-	// create folder?
-	folder = [folder stringByExpandingTildeInPath];
-	if ( [fileManager fileExistsAtPath: folder] == NO ) {
-		[fileManager createDirectoryAtPath: folder attributes: nil];
-	}
-	
-	return [folder stringByAppendingPathComponent: routeFileName];
+#pragma mark SaveData
+// for saving
+- (NSString*)objectExtension{
+	return @"route";
 }
 
-// path to route
-- (NSString *)pathForRoute:(RouteSet*)route { 
-	return [self pathForRouteWithName:[NSString stringWithFormat:@"%@.route", [route name]]];
-}
-
-// delete the route
-- (void)deleteRouteWithName:(NSString*)routeName{
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	NSString *filePath = [self pathForRouteWithName:[NSString stringWithFormat:@"%@.route", routeName]];
-	
-	if ( [fileManager fileExistsAtPath: filePath] ){
-		NSError *error = nil;
-		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
-			PGLog(@"[Routes] Error %@ when trying to delete route %@", error, filePath);
-		}
-	}
-}
-
-- (void)deleteRoute:(RouteSet*)route{
-	[self deleteRouteWithName:[route name]];
-}
-
-// save the route
-- (void)saveRouteToDisk: (RouteSet*)route { 
-	NSString * path = [self pathForRoute:route];
-	
-	PGLog(@"[Routes] Saving %@ to %@", route, path);
-	
-	NSMutableDictionary * rootObject = [NSMutableDictionary dictionary];
-	[rootObject setValue:route forKey:@"Route"];
-	[NSKeyedArchiver archiveRootObject: rootObject toFile: path];
-} 
-
-- (RouteSet*)loadRouteFromDisk: (NSString*)fileName {
-	
-	NSString *path = [self pathForRouteWithName:fileName];
-	
-	// verify the file exists
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	if ( [fileManager fileExistsAtPath: path] == NO ) {
-		PGLog(@"[Routes] Route %@ is missing! Unable to load", fileName);
-		return nil;
-	}
-	
-	NSDictionary *rootObject = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
-	return [rootObject valueForKey:@"Route"];
-} 
-
-// load routes
-- (void)loadRoutesForDirectory: (NSString*)directory{
-	
-	// load a list of files at the directory
-	NSError *error = nil;
-	NSFileManager *fileManager = [NSFileManager defaultManager];
-	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:directory error:&error];
-	if ( error ){
-		PGLog(@"[Routes] Error when reading your routes! %@", error);
-		return;
-	}
-	
-	// if we get here then we're good!
-	if ( directoryList && [directoryList count] ){
-		
-		// loop through directory list
-		for ( NSString *fileName in directoryList ){
-			
-			// is this a directory?
-			/*BOOL isDir = NO;
-			if ( [fileManager fileExistsAtPath:[directory stringByAppendingPathComponent: fileName] isDirectory:&isDir] && isDir ) {
-				// recursive call?
-				//	before this works, we need to associate a route w/a directory
-			}*/
-
-			// valid route file
-			if ( [[fileName pathExtension] isEqualToString: @"route"] ){
-				
-				RouteSet *route = [self loadRouteFromDisk:fileName];
-				
-				// valid route - add it!
-				if ( route != nil ){
-					[_routes addObject:route];
-				}
-			}
-		}
-	}
-}
-
-- (void)loadAllRoutes{
-	NSString *path = [self pathForRouteWithName:nil];
-	path = [path stringByExpandingTildeInPath];
-	[self loadRoutesForDirectory:path];
+- (NSString*)objectName:(id)object{
+	return [(RouteSet*)object name];
 }
 
 @end

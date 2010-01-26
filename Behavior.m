@@ -7,6 +7,7 @@
 //
 
 #import "Behavior.h"
+#import "SaveDataObject.h"
 
 @interface Behavior ()
 @property (readwrite, retain) NSDictionary *procedures;
@@ -95,6 +96,7 @@
     copy.procedures = self.procedures;
     copy.usePet = self.usePet;
     copy.meleeCombat = self.meleeCombat;
+	copy.changed = YES;
         
     return copy;
 }
@@ -136,6 +138,5 @@
         _procedures = nil;
     }
 }
-
 
 @end

@@ -9,8 +9,9 @@
 #import <Cocoa/Cocoa.h>
 #import "Behavior.h"
 #import "Procedure.h"
+#import "SaveData.h"
 
-@interface ProcedureController : NSObject {
+@interface ProcedureController : SaveData {
     IBOutlet id ruleEditor;
     IBOutlet id spellController;
     IBOutlet id itemController;
@@ -27,6 +28,7 @@
     Behavior *_behavior;
     NSMutableArray *_behaviors;
     BOOL validSelection;
+	NSString *_nameBeforeRename;
     
     NSSize minSectionSize, maxSectionSize;
 }

@@ -8,11 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 #import "IgnoreEntry.h"
+#import "SaveDataObject.h"
 
 @class Unit;
 @class Player;
 
-@interface CombatProfile : NSObject <NSCoding, NSCopying> {
+@interface CombatProfile : SaveDataObject {
     NSString *_name;
     NSMutableArray *_combatEntries;
     
@@ -33,9 +34,6 @@
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
-	
-	BOOL _changed;
-	NSString *_UUID;
 }
 
 + (id)combatProfile;
@@ -83,8 +81,5 @@
 @property (readwrite, assign) float engageRange;
 @property (readwrite, assign) int attackLevelMin;
 @property (readwrite, assign) int attackLevelMax;
-
-@property (readonly, retain) NSString *UUID;
-@property (readwrite, assign) BOOL changed;
 
 @end

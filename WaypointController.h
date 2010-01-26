@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "SaveData.h"
 
 @class Route;
 @class RouteSet;
@@ -22,7 +23,7 @@
 @class BetterSegmentedControl;
 @class RouteVisualizationView;
 
-@interface WaypointController : NSObject {
+@interface WaypointController : SaveData {
 
     IBOutlet Controller *controller;
     IBOutlet PlayerDataController *playerData;

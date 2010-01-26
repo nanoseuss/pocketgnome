@@ -10484,6 +10484,14 @@
 					</object>
 					<int key="connectionID">4185</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">combatProfileEditor</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="165867882"/>
+					</object>
+					<int key="connectionID">4186</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -15294,7 +15302,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4185</int>
+			<int key="maxID">4186</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15759,7 +15767,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">CombatProfileEditor</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -15873,6 +15881,7 @@
 							<string>botToolbarItem</string>
 							<string>chatLogController</string>
 							<string>chatLogToolbarItem</string>
+							<string>combatProfileEditor</string>
 							<string>corpseController</string>
 							<string>currentStatusText</string>
 							<string>disableGUIScriptCheckbox</string>
@@ -15919,6 +15928,7 @@
 							<string>NSToolbarItem</string>
 							<string>ChatLogController</string>
 							<string>NSToolbarItem</string>
+							<string>CombatProfileEditor</string>
 							<string>CorpseController</string>
 							<string>id</string>
 							<string>NSButton</string>
@@ -16585,7 +16595,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ProcedureController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -16752,6 +16762,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">RuleEditor.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SaveData</string>
+					<string key="superclassName">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">SaveData.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -16925,7 +16943,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WaypointController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
