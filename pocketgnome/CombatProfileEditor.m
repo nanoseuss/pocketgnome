@@ -267,7 +267,7 @@ static CombatProfileEditor *sharedEditor = nil;
     }
 }
 
-- (void)importCombatProfileAtPath: (NSString*)path {
+- (id)importCombatProfileAtPath: (NSString*)path {
     id importedProfile;
     NS_DURING {
         importedProfile = [NSKeyedUnarchiver unarchiveObjectWithFile: path];
@@ -277,9 +277,12 @@ static CombatProfileEditor *sharedEditor = nil;
     
     if(importedProfile && [importedProfile isKindOfClass: [CombatProfile class]]) {
         [self addCombatProfile: importedProfile];
+		
+		return importedProfile;
     } else {
         NSRunAlertPanel(@"Profile not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid profile.", path], @"Okay", NULL, NULL);
     }
+	return nil;
 }
 
 - (IBAction)importCombatProfile: (id)sender {

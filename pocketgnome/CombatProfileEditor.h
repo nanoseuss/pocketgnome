@@ -51,7 +51,7 @@
 - (IBAction)duplicateCombatProfile: (id)sender;
 - (IBAction)deleteCombatProfile: (id)sender;
 
-- (void)importCombatProfileAtPath: (NSString*)path;
+- (id)importCombatProfileAtPath: (NSString*)path;
 - (IBAction)importCombatProfile: (id)sender;
 - (IBAction)exportCombatProfile: (id)sender;
 
