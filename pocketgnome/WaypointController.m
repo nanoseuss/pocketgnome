@@ -351,13 +351,21 @@ enum AutomatorIntervalType {
     } NS_ENDHANDLER
     
     if(importedRoute) {
-        if([importedRoute isKindOfClass: [RouteSet class]]) {
+		
+		PGLog(@"%@", importedRoute);
+		
+        if ( [importedRoute isKindOfClass: [RouteSet class]] ) {
             [self addRoute: importedRoute];
-        } else if([importedRoute isKindOfClass: [NSArray class]]) {
-            for(RouteSet *route in importedRoute) {
+		}
+		else if ( [importedRoute isKindOfClass: [NSDictionary class]] ) {
+			[self addRoute: [importedRoute objectForKey:@"Route"]];	
+        }
+		else if ( [importedRoute isKindOfClass: [NSArray class]] ) {
+            for ( RouteSet *route in importedRoute) {
                 [self addRoute: route];
             }
-        } else {
+        }
+		else {
             importedRoute = nil;
         }
     }
