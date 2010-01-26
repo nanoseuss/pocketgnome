@@ -269,9 +269,15 @@ static Controller* sharedController = nil;
         return YES;
     }
 	else if ( [[filename pathExtension] isEqualToString: @"combatprofile"] || [[filename pathExtension] isEqualToString: @"combatProfile"] ) {
-        [combatProfileEditor importCombatProfileAtPath: filename];
-        [self toolbarItemSelected: botToolbarItem];
-        [mainToolbar setSelectedItemIdentifier: [botToolbarItem itemIdentifier]];
+        id combatProfile = [combatProfileEditor importCombatProfileAtPath: filename];
+		
+		if ( combatProfile ){
+			[self toolbarItemSelected: botToolbarItem];
+			[mainToolbar setSelectedItemIdentifier: [botToolbarItem itemIdentifier]];
+			
+			[[CombatProfileEditor sharedEditor] showEditorOnWindow: [[botController view] window] 
+												   forProfileNamed: [(CombatProfile*)combatProfile name]];
+		}
         return YES;
     }
     

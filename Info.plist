@@ -17,7 +17,7 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>pgBehavior</string>
 			<key>CFBundleTypeName</key>
-			<string>CombatProfile</string>
+			<string>Combat Profile</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>LSTypeIsPackage</key>
