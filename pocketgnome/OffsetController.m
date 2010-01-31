@@ -195,8 +195,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
-			//if ( offset > 0x0 )
-				//PGLog(@"%@: 0x%X", key, offset);
+			if ( offset > 0x0 )
+				PGLog(@"%@: 0x%X", key, offset);
 		}
 		
 		// hard-code some as i'm lazy + can't test on PPC yet :(

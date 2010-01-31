@@ -708,4 +708,173 @@ static SpellController *sharedSpells = nil;
 	return 0;
 }
 
+- (NSArray*)allActionIDsOnActionBars{
+	
+	// grab memory
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return NO;
+	
+	NSMutableArray *allActionIDs = [NSMutableArray array];
+	
+	// find out where the action is stored
+	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
+	
+	// find where the spell is on our bar
+	UInt32 hotbarActionIDs[MAXIMUM_SPELLS_IN_BARS] = {0};
+	if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset Buffer: (Byte *)&hotbarActionIDs BufLength: sizeof(hotbarActionIDs)] ){
+		
+		int i;
+		for ( i = 0; i < MAXIMUM_SPELLS_IN_BARS; i++ ){
+			[allActionIDs addObject:[NSNumber numberWithInt:hotbarActionIDs[i]]];
+		}
+	}
+	
+	return [[allActionIDs retain] autorelease];
+}
+
+- (BOOL)isUsableActionWithSlot: (int)slot{
+	
+	// grab memory
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return NO;
+	
+	UInt32 isUsable = 0, dueToMana = 0;
+	[memory loadDataForObject: self atAddress: 0xD7DFC0 + (slot*4) Buffer: (Byte *)&isUsable BufLength: sizeof(isUsable)];
+	[memory loadDataForObject: self atAddress: 0xD7DD80 + (slot*4) Buffer: (Byte *)&dueToMana BufLength: sizeof(dueToMana)];
+	
+	//PGLog(@" [Spell] For slot 0x%X, usable? %d due to mana? %d", slot, isUsable, dueToMana);
+	
+	// yay! we can use this ability!
+	if ( isUsable && !dueToMana ){
+		return YES;
+	}
+	
+	return NO;
+}
+
+// are we able to use this spell (it must be on an action bar!)
+- (BOOL)isUsableAction: (UInt32)actionID{
+	
+	// grab memory
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return NO;
+	
+	// find out where the action is stored
+	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
+	
+	// find where the spell is on our bar
+	UInt32 hotbarActionIDs[MAXIMUM_SPELLS_IN_BARS] = {0};
+	int spellOffset = -1;
+	if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset Buffer: (Byte *)&hotbarActionIDs BufLength: sizeof(hotbarActionIDs)] ){
+		
+		int i;
+		for ( i = 0; i < MAXIMUM_SPELLS_IN_BARS; i++ ){
+			
+			if ( actionID == hotbarActionIDs[i] ){
+				spellOffset = i;
+			}
+		}
+	}
+	
+	/*
+	 this method doesn't work unfortunately, the spells must be on the player's bars
+	
+	UInt32 readActionID = 0;
+	int i, spellOffset = -1;
+	// loop through all 10 bars to find it
+	for ( i = 0; i <= 0x1E0; i++ ){
+		if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset + (i*4) Buffer: (Byte *)&readActionID BufLength: sizeof(readActionID)] && readActionID ){
+			if ( readActionID == actionID ){
+				spellOffset = i;
+				break;
+			}
+		}
+	}*/
+	
+	if ( spellOffset != -1 ){
+		return [self isUsableActionWithSlot:spellOffset];
+	}
+	
+	return NO;
+	
+	//PGLog(@"Spell offset: 0x%X", spellOffset);
+
+
+	
+	
+	/*UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
+	 
+	 PGLog(@"writing to 0x%X", hotbarBaseOffset + BAR6_OFFSET);
+	 
+	 // get the old spell
+	 UInt32 oldActionID = 0;
+	 [memory loadDataForObject: self atAddress: (hotbarBaseOffset + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	 
+	 // write the new action to memory
+	 [memory saveDataForAddress: (hotbarBaseOffset + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
+	 
+	 // wow needs time to process the spell change
+	 usleep([controller refreshDelay]*2);
+	 
+	 BOOL usable = [self isUsableActionWithSlot:(BAR6_OFFSET / 4)];
+	 
+	 // then save our old action back
+	 [memory saveDataForAddress: (hotbarBaseOffset + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	 
+	 // wow needs time to process the spell change
+	 usleep([controller refreshDelay]*2);
+	 
+	 return usable;*/
+	
+	
+	
+
+	// save the old spell + write the new one
+		/*
+	 isUsable Flag		- Returns 1 if the action is valid for use at present (Does NOT include cooldown or range tests), nil otherwise. 
+	 notEnoughMana Flag - Returns 1 if the reason for the action not being usable is because there is not enough mana/rage/energy, nil otherwise. 
+	 
+	 
+	signed int __cdecl lua_IsUsableAction(int a1)
+	{
+		int v1; // eax@2
+		double v2; // ST18_8@2
+		signed int result; // eax@3
+		
+		if ( !FrameScript_IsNumber(a1, 1) )
+			FrameScript_DisplayError(a1, "Usage: IsUsableAction(slot)");
+		v2 = sub_814950(a1, 1);
+		__asm { cvttsd2si eax, [ebp+var_10]; Convert with Truncation Scalar Double-Precision Floating-Point Value to Doubleword Integer }
+		v1 = _EAX - 1;
+		if ( (unsigned int)v1 <= 0x8F && dword_isUsable[v1] )	//dword_D7DFC0
+		{
+			// action not useable, due to mana/rage/energy
+			if ( dword_D7DD80[v1] )
+			{
+				FrameScript_pushnil(a1);
+				FrameScript_PushNumber(a1, 4607182418800017408LL);
+				result = 2;
+			}
+			// action usable, mana irrelevant
+			else
+			{
+				FrameScript_PushNumber(a1, 4607182418800017408LL);
+				FrameScript_pushnil(a1);
+				result = 2;
+			}
+		}
+		// action not usable, and no mana :(
+		else
+		{
+			FrameScript_pushnil(a1);
+			FrameScript_pushnil(a1);
+			result = 2;
+		}
+		return result;
+	}*/
+}
+
 @end

@@ -11,7 +11,6 @@
 #import "SaveDataObject.h"
 
 #define PreCombatProcedure  @"PreCombatProcedure"
-#define HealingProcedure    @"HealingProcedure"
 #define CombatProcedure     @"CombatProcedure"
 #define PostCombatProcedure @"PostCombatProcedure"
 #define RegenProcedure      @"RegenProcedure"
@@ -31,5 +30,7 @@
 @property BOOL usePet;
 
 - (Procedure*)procedureForKey: (NSString*)key;
+
+- (NSArray*)allProcedures;
 
 @end

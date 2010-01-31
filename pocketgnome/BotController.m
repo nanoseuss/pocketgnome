@@ -33,6 +33,7 @@
 #import "EventController.h"
 #import "BlacklistController.h"
 #import "StatisticsController.h"
+#import "BindingsController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -432,6 +433,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			//PGLog(@"[Rule] Failed, spell is on cooldown!");
 			return NO;
 		}
+	}
+	
+	// check to see if we can even cast this spell
+	if ( ![spellController isUsableAction:[[rule action] actionID]] ){
+		PGLog(@"[Rule] Action %d isn't usable!", [[rule action] actionID]);
+		return NO;
 	}
     
     for(Condition *condition in [rule conditions]) {
@@ -3324,7 +3331,73 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return;
 		}
 	}
+	
+	// make sure our spells are on our action bars!
+	NSArray *allProcedures = [self.theBehavior allProcedures];
+	NSMutableArray *allActions = [NSMutableArray array];
+	if ( allProcedures && [allProcedures count] ){
+		
+		// look at each procedure
+		for ( Procedure *procedure in allProcedures ){
+			
+			// look at each rule
+			int i;
+			for ( i = 0; i < [procedure ruleCount]; i++ ) {
+				Rule *rule = [procedure ruleAtIndex: i];
+				
+				if ( [[rule action] actionID] ){
+					[allActions addObject:[NSNumber numberWithInt:[[rule action] actionID]]];
+				}
+			}
+		}
+	}
+	
+	// now that we have all the spells/items/macros the behavior uses, make sure they are on our action bars!
+	NSArray *actionBarActions = [spellController allActionIDsOnActionBars];
+	for ( NSNumber *actionID in actionBarActions ){
+		
+		// then all are found!
+		if ( [allActions count] == 0 )
+			break;
+		
+		if ( [allActions containsObject:actionID] ){
+			[allActions removeObject:actionID];
+		}
+		else{
+			// macro/item check
+			
+		}
+	}
+	
+	if ( [allActions count] > 0 ){
+		
+		NSMutableString *error = [NSMutableString string];
+		
+		[error appendString:@"The following spells/macros/items are not on your action bar, please add them to your bar:\n\n"];
+		
+		for ( NSNumber *actionID in allActions ){
+			
+			Spell *spell = [spellController spellForID:actionID];
+			
+			if ( [spellController isPlayerSpell:spell] ){
+				[error appendString:[NSString stringWithFormat:@"Spell: %@ <%@>\n", [spell name], actionID]];
+			}
+			else{
+				[error appendString:[NSString stringWithFormat:@"Item or Macro: %d\n", [actionID intValue]]];
+			}
+		}
+		
+		PGLog(@"[Bot] Your spells/macros/items need to be on your action bars!");
+		NSBeep();
+		NSRunAlertPanel(@"Your spells/macros/items need to be on your action bars!", error, @"Okay", NULL, NULL);
+		return;
+	}
+	
+	
     
+	PGLog(@"total things to cast: %d", [allActions count]);
+	
+	
     if( [self isBotting])
         [self stopBot: nil];
     
@@ -4978,9 +5051,207 @@ NSMutableDictionary *_diffDict = nil;
 	[self startClick];
 }
 
+/*
+ using System.Runtime.InteropServices;
+ 
+ namespace Onyx.WoW
+ {
+ public class WoWFaction
+ {
+ private readonly FactionTemplateDbcRecord _template;
+ private FactionDbcRecord _record;
+ 
+ public WoWFaction(int id) : this(id, true)
+ {
+ }
+ 
+ internal WoWFaction(int id, bool isTemplate)
+ {
+ Id = id;
+ if (IsValid)
+ {
+ if (isTemplate)
+ {
+ _template = OnyxWoW.Db[ClientDb.FactionTemplate].GetRow(id).GetStruct<FactionTemplateDbcRecord>();
+ _record = OnyxWoW.Db[ClientDb.Faction].GetRow(_template.FactionId).GetStruct<FactionDbcRecord>();
+ }
+ else
+ {
+ _record = OnyxWoW.Db[ClientDb.Faction].GetRow(id).GetStruct<FactionDbcRecord>();
+ }
+ }
+ }
+ 
+ public int Id { get; private set; }
+ public string Name { get { return _record.Name; } }
+ public string Description { get { return _record.Description; } }
+ public WoWFaction ParentFaction { get { return new WoWFaction(_record.ParentFaction, false); } }
+ public bool IsValid { get { return Id != 0; } }
+ 
+ public WoWUnitRelation RelationTo(WoWFaction other)
+ {
+ return CompareFactions(this, other);
+ }
+ 
+ public static WoWUnitRelation CompareFactions(WoWFaction factionA, WoWFaction factionB)
+ {
+ FactionTemplateDbcRecord atmpl = factionA._template;
+ FactionTemplateDbcRecord btmpl = factionB._template;
+ 
+ if ((btmpl.FightSupport & atmpl.HostileMask) != 0)
+ {
+ return (WoWUnitRelation) 1;
+ }
+ 
+ for (int i = 0; i < 4; i++)
+ {
+ if (atmpl.EnemyFactions[i] == btmpl.Id)
+ {
+ return (WoWUnitRelation) 1;
+ }
+ if (atmpl.EnemyFactions[i] == 0)
+ {
+ break;
+ }
+ }
+ 
+ if ((btmpl.FightSupport & atmpl.FriendlyMask) != 0)
+ {
+ return (WoWUnitRelation) 4;
+ }
+ 
+ for (int i = 0; i < 4; i++)
+ {
+ if (atmpl.FriendlyFactions[i] == btmpl.Id)
+ {
+ return (WoWUnitRelation) 4;
+ }
+ if (atmpl.FriendlyFactions[i] == 0)
+ {
+ break;
+ }
+ }
+ 
+ if ((atmpl.FightSupport & btmpl.FriendlyMask) != 0)
+ {
+ return (WoWUnitRelation) 4;
+ }
+ 
+ for (int i = 0; i < 4; i++)
+ {
+ if (btmpl.FriendlyFactions[i] == atmpl.Id)
+ {
+ return (WoWUnitRelation) 4;
+ }
+ if (btmpl.FriendlyFactions[i] == 0)
+ {
+ break;
+ }
+ }
+ 
+ return (WoWUnitRelation) (~(byte) ((uint) atmpl.FactionFlags >> 12) & 2 | 1);
+ }
+ 
+ public override string ToString()
+ {
+ if (!IsValid)
+ {
+ return "N/A";
+ }
+ return Name + ", Parent: " + ParentFaction;
+ }
+ 
+ #region Nested type: FactionDbcRecord
+ 
+ [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+ private struct FactionDbcRecord
+ {
+ public int Id;
+ private int _unk0;
+ public int Allied;
+ public int AtWar;
+ private int _unk1;
+ private int _unk2;
+ private int _unk3;
+ private int _unk4;
+ private int _unk5;
+ private int _unk6;
+ public int Reputation;
+ public int Mod1;
+ public int Mod2;
+ public int Mod3;
+ private int _unk7;
+ private int _unk8;
+ private int _unk9;
+ private int _unk10;
+ public int ParentFaction;
+ 
+ // 4 unknowns added recently. Cba to figure out what they're for
+ // since I have no use for them!
+ private int _unk11;
+ private int _unk12;
+ private int _unk13;
+ private int _unk14;
+ 
+ [MarshalAs(UnmanagedType.LPStr)]
+ public string Name;
+ 
+ [MarshalAs(UnmanagedType.LPStr)]
+ public string Description;
+ }
+ 
+ #endregion
+ 
+ #region Nested type: FactionTemplateDbcRecord
+ 
+ [StructLayout(LayoutKind.Sequential)]
+ private struct FactionTemplateDbcRecord
+ {
+ public int Id;
+ public int FactionId;
+ public int FactionFlags;
+ public int FightSupport;
+ public int FriendlyMask;
+ public int HostileMask;
+ 
+ [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+ public int[] EnemyFactions;
+ 
+ [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+ public int[] FriendlyFactions;
+ }
+ 
+ #endregion
+ }
+ }
+*/ 
+
 - (IBAction)test: (id)sender{
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	
+	// find out where the action is stored
+	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
+	UInt32 readActionID = 0;
+	int i;
+	// loop through all 10 bars to find it
+	for ( i = 0; i <= MAXIMUM_SPELLS_IN_BARS; i++ ){
+		if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset + (i*4) Buffer: (Byte *)&readActionID BufLength: sizeof(readActionID)] && readActionID ){
+			Spell *spell = [spellController spellForID:[NSNumber numberWithInt:readActionID]];
+			if ( spell ){
+				PGLog(@" %@", [spell name]);
+			}
+			PGLog(@" [Spell] For spell %u usable? %d", readActionID, [spellController isUsableAction:readActionID]);
+		}
+	}
+
+	//[bindingsController doIt];
+	
+	return;
+	
+	// ugh why won't the below work!	
+	//MemoryAccess *memory = [controller wowMemoryAccess];
 	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];
