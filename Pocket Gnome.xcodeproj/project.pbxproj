@@ -71,6 +71,7 @@
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
 		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
 		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
+		03BD330E11120A7A00941971 /* BindingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BD330D11120A7A00941971 /* BindingsController.m */; };
 		03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
 		03C42CCA1096839E0085E888 /* Macros.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03C42CC91096839E0085E888 /* Macros.plist */; };
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
@@ -472,6 +473,8 @@
 		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
 		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
 		03B6D26110F626EA00EC6EFF /* RuneConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RuneConditionController.m; sourceTree = "<group>"; };
+		03BD330C11120A7A00941971 /* BindingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BindingsController.h; sourceTree = "<group>"; };
+		03BD330D11120A7A00941971 /* BindingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BindingsController.m; sourceTree = "<group>"; };
 		03C42CC91096839E0085E888 /* Macros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Macros.plist; sourceTree = "<group>"; };
 		03CEF7840FCCD93100B47336 /* Corpse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Corpse.h; sourceTree = "<group>"; };
 		03CEF7850FCCD93100B47336 /* Corpse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Corpse.m; sourceTree = "<group>"; };
@@ -1006,6 +1009,8 @@
 				0313B4D710BAEA0B009E74E4 /* EventController.m */,
 				038709B810D576E100DF5B90 /* BlacklistController.h */,
 				038709B910D576E100DF5B90 /* BlacklistController.m */,
+				03BD330C11120A7A00941971 /* BindingsController.h */,
+				03BD330D11120A7A00941971 /* BindingsController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2035,6 +2040,7 @@
 				03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */,
 				03E1D73B110F54BE003180E4 /* SaveData.m in Sources */,
 				03E1D7B8110F62CD003180E4 /* SaveDataObject.m in Sources */,
+				03BD330E11120A7A00941971 /* BindingsController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

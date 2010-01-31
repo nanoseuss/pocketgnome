@@ -254,7 +254,11 @@ typedef enum ViewTypes {
 		uint32_t addr = startAddress + clickedRow*size;
 		NSNumber *address = [NSNumber numberWithInt:addr];
 		PGLog(@"[Memory] Searching for pointers to 0x%X", addr);
-		[NSThread detachNewThreadSelector: @selector(findAllPointers:) toTarget: self withObject: address];	
+		_pointerScanThread = [[NSThread alloc] initWithTarget:self
+													 selector:@selector(pointerScan:)
+													   object:address];
+		//[pointerScanNumTextField setIntValue:1];	// only scan the 1!
+		[_pointerScanThread start];
 	}
 }
 

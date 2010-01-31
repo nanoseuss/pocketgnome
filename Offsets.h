@@ -63,6 +63,8 @@
     #define TARGET_MOUSEOVER    0x30 /* GUID */
 // }
 
+#define MAXIMUM_SPELLS_IN_BARS	120		// 120 spells, 10 bars, 12 spells each
+
 #define BAR1_OFFSET         0x0     // main hotbar
 #define BAR2_OFFSET         0x30    // 2nd hotbar
 #define BAR3_OFFSET         0x60    // 3rd hotbar (right bar 1)

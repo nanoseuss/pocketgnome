@@ -124,6 +124,23 @@
     return [_procedures objectForKey: key];
 }
 
+- (NSArray*)allProcedures{
+	NSMutableArray *allProcedures = [NSMutableArray array];
+	
+	if ( [_procedures objectForKey: PreCombatProcedure] )
+		[allProcedures addObject:[_procedures objectForKey: PreCombatProcedure]];
+	if ( [_procedures objectForKey: CombatProcedure] )
+		[allProcedures addObject:[_procedures objectForKey: CombatProcedure]];
+	if ( [_procedures objectForKey: PostCombatProcedure] )
+		[allProcedures addObject:[_procedures objectForKey: PostCombatProcedure]];
+	if ( [_procedures objectForKey: RegenProcedure] )
+		[allProcedures addObject:[_procedures objectForKey: RegenProcedure]];
+	if ( [_procedures objectForKey: PatrollingProcedure] )
+		[allProcedures addObject:[_procedures objectForKey: PatrollingProcedure]];
+	
+	return [[allProcedures retain] autorelease];
+}
+
 - (void)setProcedure: (Procedure*)proc forKey: (NSString*)key {
     if(proc && key) {
         [_procedures setObject: proc forKey: key];
