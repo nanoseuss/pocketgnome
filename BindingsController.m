@@ -65,8 +65,7 @@
 							[NSNumber numberWithInt:kVK_Option]				,@"alt",				
 							[NSNumber numberWithInt:kVK_ANSI_KeypadPlus]	,@"numpadplus",		
 							[NSNumber numberWithInt:-1]						,@"mousewheelup",		
-							[NSNumber numberWithInt:kVK_PageDown]			,@"pagedown",			
-							[NSNumber numberWithInt:-1]						,@"printscreen",		
+							[NSNumber numberWithInt:kVK_PageDown]			,@"pagedown",				
 							[NSNumber numberWithInt:kVK_ANSI_KeypadClear]	,@"numlock",			
 							[NSNumber numberWithInt:-1]						,@"button3",			
 							[NSNumber numberWithInt:kUpArrowCharCode]		,@"up",				
@@ -94,7 +93,14 @@
 							[NSNumber numberWithInt:kVK_F10]				,@"f10",				
 							[NSNumber numberWithInt:kVK_F11]				,@"f11",				
 							[NSNumber numberWithInt:kVK_RightArrow]			,@"right",			
-							[NSNumber numberWithInt:kVK_F12]				,@"f12",				
+							[NSNumber numberWithInt:kVK_F12]				,@"f12",		
+							[NSNumber numberWithInt:kVK_F13]				,@"printscreen",	
+							[NSNumber numberWithInt:kVK_F14]				,@"f14",	
+							[NSNumber numberWithInt:kVK_F15]				,@"f15",	
+							[NSNumber numberWithInt:kVK_F16]				,@"f16",	
+							[NSNumber numberWithInt:kVK_F17]				,@"f17",	
+							[NSNumber numberWithInt:kVK_F18]				,@"f18",	
+							[NSNumber numberWithInt:kVK_F19]				,@"f19",	
 							nil] retain];
 						   
 		_bindings = [[NSMutableDictionary dictionary] retain];
@@ -118,6 +124,7 @@
 	[_bindings release]; _bindings = nil;
 	[_keyCodesWithCommands release]; _keyCodesWithCommands = nil;
 	[_commandToAscii release]; _commandToAscii = nil;
+	[_bindingsToCodes release]; _bindingsToCodes = nil;
     [super dealloc];
 }
 
@@ -129,9 +136,15 @@
 
 - (void)playerIsInvalid: (NSNotification*)not {
 	[_bindings removeAllObjects];
+	[_keyCodesWithCommands removeAllObjects];
+	[_bindingsToCodes removeAllObjects];
 }
 
 #pragma mark Key Bindings Scanner
+
+- (void)reloadBindings{
+	[self getKeyBindings];
+}
 
 typedef struct WoWBinding {
     UInt32 nextBinding;		// 0x0
@@ -208,8 +221,6 @@ typedef struct WoWBinding {
 	
 	// find codes for our action bars
 	[self mapBindingsToKeys];
-	
-	PGLog(@"[Bindings] Total found: %d", [_bindings count]);
 }
 
 
@@ -272,6 +283,12 @@ typedef struct WoWBinding {
 		// only one command!
 		if ( splitIndex == -1 ){
 			command1 = [key lowercaseString];
+			
+			
+			NSString *binding = [[_bindings objectForKey:key] lowercaseString];
+			if ( [binding isEqualToString:[[NSString stringWithFormat:@"MULTIACTIONBAR1BUTTON1"] lowercaseString]] ){
+				PGLog(@" %@", command1);
+			}
 		}
 		// 2 commands
 		else{
@@ -306,6 +323,7 @@ typedef struct WoWBinding {
 			[allCodes addObject:[NSNumber numberWithInt:[chatController keyCodeForCharacter:command1]]];
 		}
 		else if ( command1 && [command1 length] > 0 ){
+
 			int code = [self toAsciiCode:command1];
 			if ( code != -1 ){
 				[allCodes addObject:[NSNumber numberWithInt:code]];
@@ -359,11 +377,6 @@ typedef struct WoWBinding {
 	}
 }
 
-- (void)doIt{
-	//[self getKeyBindings];
-	[self convertToAscii];
-}
-
 - (NSArray*)bindingForCommand:(NSString*)binding{
 	
 	NSString *lowerCase = [binding lowercaseString];
@@ -375,43 +388,6 @@ typedef struct WoWBinding {
 	
 	return nil;
 }
-
-/*
-- (BOOL)executeBinding:(NSString*)binding{
-	
-	NSArray *codes = [self bindingForCommand:binding];
-	
-	int code = 0;
-	int modifier = 0;
-	
-	// find our code + any modifiers
-	for ( NSNumber *tehCode in codes ){
-
-		int codeVal = [tehCode intValue];
-		
-		if ( codeVal == kVK_Control ){
-			modifier += NSControlKeyMask;
-		}
-		else if ( codeVal == kVK_Shift ){
-			modifier += NSShiftKeyMask;
-		}
-		else if ( codeVal == kVK_Option ){
-			modifier += NSAlternateKeyMask;
-		}
-		else{
-			code = codeVal;
-		}
-	}
-	
-	// valid code to send found
-	if ( code > 0x0 ){
-		[chatController pressHotkey:code withModifier:modifier];
-		
-		return YES;		
-	}
-	
-	return NO;
-}*/
 
 // grab the key code only
 - (int)codeForBinding:(NSString*)binding{
@@ -455,6 +431,17 @@ typedef struct WoWBinding {
 	}
 	
 	return modifier;
+}
+
+- (BOOL)bindingForKeyExists:(NSString*)key{
+
+	NSDictionary *dict = [_bindingsToCodes objectForKey:key];
+	
+	if ( dict && [[dict objectForKey:@"Code"] intValue] >= 0 ){
+		return YES;
+	}
+	
+	return NO;
 }
 
 // this will do an "intelligent" scan to find our key bindings! Then store them for use! (reset when player is invalid)
@@ -550,7 +537,7 @@ typedef struct WoWBinding {
 									 [NSNumber numberWithInt:code],			@"Code",
 									 [NSNumber numberWithInt:modifier],		@"Modifier",
 									 nil]
-							 forKey:BindingPetAttack];
+							 forKey:BindingInteractMouseover];
 	}
 	else{
 		PGLog(@"[Bindings] No Interact with Mouseover key found! Bind a key to 'Interact with Mouseover'!");

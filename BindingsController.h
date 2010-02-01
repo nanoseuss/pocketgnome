@@ -41,18 +41,16 @@
 	GUID _guid;
 }
 
-- (void)doIt;
-
-// example: MULTIACTIONBAR1BUTTON1 for lower left action bar 1
-- (NSArray*)bindingForCommand:(NSString*)binding;
-
-// just pass MULTIACTIONBAR1BUTTON1 and it will send the command to the client!
-//- (BOOL)executeBinding:(NSString*)binding;
-
 // this will send the command to the client (use the above 3 keys - defines)
 - (BOOL)executeBindingForKey:(NSString*)key;
 
 // returns the bar offset (where the spell should be written to)
 - (int)barOffsetForKey:(NSString*)key;
+
+// just tells us if a binding exists!
+- (BOOL)bindingForKeyExists:(NSString*)key;
+
+// only called on bot start
+- (void)reloadBindings;
 
 @end

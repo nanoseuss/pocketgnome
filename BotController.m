@@ -3239,8 +3239,38 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         return;
     }
 	
-	// find our key bindings
+	// make sure mounting will even work
+	if ( [mountCheckbox state] ){
+		if ( ![spellController mountSpell:[mountType selectedTag] andFast:YES] ){
+			PGLog(@"[Bot] Mounting will fail!");
+			NSBeep();
+			NSRunAlertPanel(@"No valid mount spells found on your action bars!", @"You must have a valid mount spell on ANY action bar in order for 'stay mounted' to function! You may also want to click 'Load All' on the spells tab if you don't see any spells listed under 'Mounts'", @"Okay", NULL, NULL);
+			return;
+		}
+	}
 	
+	// find our key bindings
+	[bindingsController reloadBindings];
+	BOOL bindingsError = NO;
+	NSMutableString *error = [NSMutableString stringWithFormat:@"You need to bind your keys to something! The following aren't bound:\n"];
+	if ( ![bindingsController bindingForKeyExists:BindingPrimaryHotkey] ){
+		[error appendString:@"\tLower Left Action Bar 1 (Or Action Bar 1)\n"];
+		bindingsError = YES;
+	}
+	else if ( ![bindingsController bindingForKeyExists:BindingPetAttack] && self.theBehavior.usePet ){
+		[error appendString:@"\tPet Attack\n"];
+		bindingsError = YES;
+	}
+	else if ( ![bindingsController bindingForKeyExists:BindingInteractMouseover] ){
+		[error appendString:@"\tInteract With Mouseover\n"];
+		bindingsError = YES;
+	}
+	if ( bindingsError ){
+        PGLog(@"[Bot] All keys aren't bound!");
+        NSBeep();
+        NSRunAlertPanel(@"You need to bind the correct keys in your Game Menu", error, @"Okay", NULL, NULL);
+        return;
+	}
 	
 	// behavior check - friendly
 	if ( self.theCombatProfile.healingEnabled ){
