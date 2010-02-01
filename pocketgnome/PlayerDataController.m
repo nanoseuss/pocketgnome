@@ -264,7 +264,10 @@ static PlayerDataController* sharedController = nil;
     if ( GUID_LOW32(globalGUID) == selfGUID && objectType == TYPEID_PLAYER && previousPtr > 0x0 ) {
 		if ( !_lastState ) {
 			PGLog(@"[Player] Player is valid. %@", [sender class]);
+			
 			[self loadState];
+			
+			[[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsValidNotification object: nil];
 		}
 		return YES;
 	}
@@ -312,9 +315,7 @@ static PlayerDataController* sharedController = nil;
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&playerAddress BufLength: sizeof(playerAddress)];
 		PGLog(@"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
     }
-	
-	PGLog(@"loading state...");
-    
+
     // if we got a ~~~~
     // 1) valid player address
     // 2) the player signature is correct
@@ -333,9 +334,7 @@ static PlayerDataController* sharedController = nil;
         // reset internal state info variables
         self.wasDead = [self isDead];
         savedLevel = 0;
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName: PlayerIsValidNotification object: nil];
-        
+
         // and start the update process
         [self performSelector: @selector(refreshPlayerData) withObject: nil afterDelay: _updateFrequency];
         return;
