@@ -10511,6 +10511,14 @@
 					</object>
 					<int key="connectionID">4189</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">bindingsController</string>
+						<reference key="source" ref="94147614"/>
+						<reference key="destination" ref="963237447"/>
+					</object>
+					<int key="connectionID">4190</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -15327,7 +15335,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4189</int>
+			<int key="maxID">4190</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -16649,16 +16657,13 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addRule:</string>
-							<string>closeExportPanel:</string>
 							<string>closeRename:</string>
 							<string>createBehavior:</string>
 							<string>deleteRule:</string>
 							<string>duplicateBehavior:</string>
 							<string>exportBehavior:</string>
-							<string>exportBehaviors:</string>
 							<string>importBehavior:</string>
 							<string>loadBehavior:</string>
-							<string>openExportPanel:</string>
 							<string>removeBehavior:</string>
 							<string>renameBehavior:</string>
 							<string>setBehaviorEvent:</string>
@@ -16680,9 +16685,6 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -16691,7 +16693,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>actionMenu</string>
 							<string>combatPriorityTextField</string>
-							<string>exportPanel</string>
 							<string>itemController</string>
 							<string>procedureEventSegment</string>
 							<string>renamePanel</string>
@@ -16704,7 +16705,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
 							<string>NSTextField</string>
-							<string>NSPanel</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSPanel</string>
@@ -16815,6 +16815,10 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">SaveData</string>
 					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">showInFinder:</string>
+						<string key="NS.object.0">id</string>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">SaveData.h</string>
@@ -17015,7 +17019,6 @@
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
-							<string>showInFinder:</string>
 							<string>startStopAutomator:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
@@ -17024,7 +17027,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

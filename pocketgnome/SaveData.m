@@ -210,4 +210,18 @@
 	return nil;
 }
 
+#pragma mark UI Options (optional)
+
+- (IBAction)showInFinder: (id)sender {
+	
+	NSString *filePath = [NSString stringWithFormat:@"%@/", [self pathForObjectName:nil withExtension:NO]];
+	
+	PGLog(@"%@", filePath);
+	
+	// show in finder!
+	NSWorkspace *ws = [NSWorkspace sharedWorkspace];
+	[ws openFile: filePath];
+}
+
+
 @end

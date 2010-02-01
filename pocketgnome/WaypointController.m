@@ -369,14 +369,6 @@ enum AutomatorIntervalType {
         [data writeToFile: saveLocation atomically: YES];
     }
 }
-- (IBAction)showInFinder: (id)sender {
-	
-	NSString *filePath = [self pathForRoute:[self currentRouteSet]];
-	
-	// show in finder!
-	NSWorkspace *ws = [NSWorkspace sharedWorkspace];
-	[ws selectFile: filePath inFileViewerRootedAtPath:nil];
-}
 
 #pragma mark -
 #pragma mark Waypoint & Other Actions

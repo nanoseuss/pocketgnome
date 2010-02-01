@@ -21,7 +21,6 @@
     IBOutlet NSTableView *ruleTable;
     IBOutlet NSMenu *actionMenu;
     IBOutlet NSPanel *renamePanel;
-    IBOutlet NSPanel *exportPanel;
 	
 	IBOutlet NSTextField *combatPriorityTextField;
 
@@ -51,9 +50,6 @@
 - (void)importBehaviorAtPath: (NSString*)path;
 - (IBAction)importBehavior: (id)sender;
 - (IBAction)exportBehavior: (id)sender;
-- (IBAction)exportBehaviors: (id)sender;
-- (IBAction)openExportPanel: (id)sender;
-- (IBAction)closeExportPanel: (id)sender;
 
 // behavior actions
 - (IBAction)createBehavior: (id)sender;

@@ -281,48 +281,24 @@
     self.minSectionSize = [self.view frame].size;
     self.maxSectionSize = [self.view frame].size;
     
-    [shortcutRecorder setCanCaptureGlobalHotKeys: YES];
     [startstopRecorder setCanCaptureGlobalHotKeys: YES];
-    [petAttackRecorder setCanCaptureGlobalHotKeys: YES];
-	[mouseOverRecorder setCanCaptureGlobalHotKeys: YES];
-    
-    KeyCombo combo1 = { NSShiftKeyMask, kSRKeysF13 };
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyCode"])
-        combo1.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyCode"] intValue];
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyFlags"])
-        combo1.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"HotkeyFlags"] intValue];
 
+	// remove old key bindings
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"HotkeyCode"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"HotkeyFlags"];
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"PetAttackCode"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"PetAttackFlags"];
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"MouseOverTargetCode"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"MouseOverTargetFlags"];
+	
     KeyCombo combo2 = { NSCommandKeyMask, kSRKeysEscape };
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"StartstopCode"])
         combo2.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"StartstopCode"] intValue];
     if([[NSUserDefaults standardUserDefaults] objectForKey: @"StartstopFlags"])
         combo2.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"StartstopFlags"] intValue];
-    
-    KeyCombo combo3 = { NSShiftKeyMask, kVK_ANSI_T };
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackCode"])
-        combo3.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackCode"] intValue];
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackFlags"])
-        combo3.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"PetAttackFlags"] intValue];
-        
-    KeyCombo combo4 = { 0, -1 };
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"])
-        combo4.code = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetCode"] intValue];
-    if([[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"])
-        combo4.flags = [[[NSUserDefaults standardUserDefaults] objectForKey: @"MouseOverTargetFlags"] intValue];
 	
-    [shortcutRecorder setDelegate: nil];
     [startstopRecorder setDelegate: self];
-    [petAttackRecorder setDelegate: nil];
-	[mouseOverRecorder setDelegate: nil];
-
-    [shortcutRecorder setKeyCombo: combo1];
     [startstopRecorder setKeyCombo: combo2];
-    [petAttackRecorder setKeyCombo: combo3];
-	[mouseOverRecorder setKeyCombo: combo4];
-    
-    [shortcutRecorder setDelegate: self];
-    [petAttackRecorder setDelegate: self];
-	[mouseOverRecorder setDelegate: self];
 	
     // set up overlay window
     [overlayWindow setLevel: NSFloatingWindowLevel];
@@ -1578,10 +1554,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// send in pet if needed
 		if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] && [rule target] == TargetEnemy ) {
 			if ( [[self procedureInProgress] isEqualToString: PreCombatProcedure] || [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-				if ( ![controller isWoWChatBoxOpen] && (_currentPetAttackHotkey >= 0 ) ) {
-					PGLog(@"[Bot] Sending in pet to attack!");
-					[chatController pressHotkey: _currentPetAttackHotkey withModifier: _currentPetAttackHotkeyModifier];
-				}
+				[bindingsController executeBindingForKey:BindingPetAttack];
 			}
 		}
 		
@@ -3079,7 +3052,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
-	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state]) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] && ![playerController isIndoors] ){
+	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state]) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] ){
 		
 		_mountAttempt++;
 		
@@ -3169,7 +3142,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if([skinningCheckbox state])
         status = [status stringByAppendingFormat: @" Skinning (%d).", [skinningSkillText intValue]];
 	
-	BOOL enableMount = NO;
+	BOOL enableMount = YES;
 	
 	// enable our any mount
 	if ( [miningCheckbox state] || [herbalismCheckbox state] || [netherwingEggCheckbox state] || [fishingCheckbox state] ){
@@ -3208,14 +3181,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
 	PGLog(@"[Bot] Starting with attack range of %0.2f to %0.2f", [self.theCombatProfile engageRange], [self.theCombatProfile attackRange]);
-    
-    // get hotkey settings
-    KeyCombo hotkey = [shortcutRecorder keyCombo];
-    _currentHotkeyModifier = hotkey.flags;
-    _currentHotkey = hotkey.code;
-    hotkey = [petAttackRecorder keyCombo];
-    _currentPetAttackHotkeyModifier = hotkey.flags;
-    _currentPetAttackHotkey = hotkey.code;
     
     self.doLooting = [lootCheckbox state];
     self.gatherDistance = [gatherDistText floatValue];
@@ -3273,6 +3238,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         NSRunAlertPanel(@"Combat Profile is not valid", @"You must select a valid combat profile before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
         return;
     }
+	
+	// find our key bindings
+	
 	
 	// behavior check - friendly
 	if ( self.theCombatProfile.healingEnabled ){
@@ -3345,14 +3313,29 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			for ( i = 0; i < [procedure ruleCount]; i++ ) {
 				Rule *rule = [procedure ruleAtIndex: i];
 				
+				// an action exists!
 				if ( [[rule action] actionID] ){
-					[allActions addObject:[NSNumber numberWithInt:[[rule action] actionID]]];
+					
+					// action id changes based on type
+					switch([rule resultType]) {
+						case ActionType_Item: 
+							[allActions addObject:[NSNumber numberWithInt:USE_ITEM_MASK + [[rule action] actionID]]];
+							break;
+						case ActionType_Macro:
+							[allActions addObject:[NSNumber numberWithInt:USE_MACRO_MASK + [[rule action] actionID]]];
+							break;
+						case ActionType_Spell:
+							[allActions addObject:[NSNumber numberWithInt:[[rule action] actionID]]];
+							break;
+						default:
+							break;
+					}
 				}
 			}
 		}
 	}
 	
-	// now that we have all the spells/items/macros the behavior uses, make sure they are on our action bars!
+	// remove the actions that are on our bars
 	NSArray *actionBarActions = [spellController allActionIDsOnActionBars];
 	for ( NSNumber *actionID in actionBarActions ){
 		
@@ -3363,17 +3346,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [allActions containsObject:actionID] ){
 			[allActions removeObject:actionID];
 		}
-		else{
-			// macro/item check
-			
-		}
 	}
 	
+	// any left here aren't on any bar, throw an error!
 	if ( [allActions count] > 0 ){
-		
 		NSMutableString *error = [NSMutableString string];
-		
-		[error appendString:@"The following spells/macros/items are not on your action bar, please add them to your bar:\n\n"];
+		[error appendString:@"The following spells/macros/items are not on any action bar, please add them to a bar:\n\n"];
 		
 		for ( NSNumber *actionID in allActions ){
 			
@@ -3387,21 +3365,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 		
+		[error appendString:@"\nI would recommend using Bartender4 to better organize your spells (the bars can be hidden)"];
+		
 		PGLog(@"[Bot] Your spells/macros/items need to be on your action bars!");
 		NSBeep();
 		NSRunAlertPanel(@"Your spells/macros/items need to be on your action bars!", error, @"Okay", NULL, NULL);
 		return;
 	}
-	
-	
-    
-	PGLog(@"total things to cast: %d", [allActions count]);
-	
-	
+
     if( [self isBotting])
         [self stopBot: nil];
     
-    if(self.theCombatProfile && self.theBehavior && (_currentHotkey >= 0)) {
+    if(self.theCombatProfile && self.theBehavior ) {
         PGLog(@"[Bot] Starting.");
         [spellController reloadPlayerSpells];
         
@@ -3578,12 +3553,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 NSMutableDictionary *_diffDict = nil;
 - (IBAction)testHotkey: (id)sender {
+	
+	
+	PGLog(@"testing");
+	
+	return;
+	
     //int value = 28734;
     //[[controller wowMemoryAccess] saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&value BufLength: sizeof(value)];
     //PGLog(@"Set Mana Tap.");
     
-    KeyCombo hotkey = [shortcutRecorder keyCombo];
-    [chatController pressHotkey: hotkey.code withModifier: hotkey.flags];
+    //[chatController pressHotkey: hotkey.code withModifier: hotkey.flags];
     
     
     if(!_diffDict) _diffDict = [[NSMutableDictionary dictionary] retain];
@@ -3868,25 +3848,11 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)shortcutRecorder:(SRRecorderControl *)recorder keyComboDidChange:(KeyCombo)newKeyCombo {
-    if(recorder == shortcutRecorder) {
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"HotkeyCode"];
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"HotkeyFlags"];
-    }
-    
+
     if(recorder == startstopRecorder) {
        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"StartstopCode"];
        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"StartstopFlags"];
        [self toggleGlobalHotKey: startstopRecorder];
-    }
-    
-    if(recorder == petAttackRecorder) {
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"PetAttackCode"];
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"PetAttackFlags"];
-    }
-    
-    if(recorder == mouseOverRecorder) {
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.code] forKey: @"MouseOverTargetCode"];
-        [[NSUserDefaults standardUserDefaults] setObject: [NSNumber numberWithInt: newKeyCombo.flags] forKey: @"MouseOverTargetFlags"];
     }
 	
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -4514,15 +4480,18 @@ NSMutableDictionary *_diffDict = nil;
 	if ( !memory )
 		return NO;
 	
+	int barOffset = [bindingsController barOffsetForKey:BindingPrimaryHotkey];
+	if ( barOffset == -1 ){
+		PGLog(@"[Bot] Unable to execute spells! Ahhhhh! Issue with bindings!");
+		return NO;
+	}
+	
 	UInt32 oldActionID = 0;
 	UInt32 cooldown = [controller refreshDelay]*2;
-	KeyCombo hotkey = [shortcutRecorder keyCombo];
-	_currentHotkeyModifier = hotkey.flags;
-	_currentHotkey = hotkey.code;
 	
 	// save the old spell + write the new one
-	[memory loadDataForObject: self atAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
-	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + BAR6_OFFSET) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
+	[memory loadDataForObject: self atAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
 	
 	// write gibberish to the error location
 	char string[3] = {'_', '_', '\0'};
@@ -4531,25 +4500,23 @@ NSMutableDictionary *_diffDict = nil;
 	// wow needs time to process the spell change
 	usleep(cooldown);
 
-	// then post keydown if the chat box is not open
-	if ( ![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13) ) {
-		[chatController pressHotkey: _currentHotkey withModifier: _currentHotkeyModifier];
-		_lastSpellCastGameTime = [playerController currentTime];
-		
-		// make sure it was a spell and not an item/macro
-		if ( !((USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID)) ){
-			_lastSpellCast = actionID;
-		}
-		else {
-			_lastSpellCast = 0;
-		}
+	// send the key command
+	[bindingsController executeBindingForKey:BindingPrimaryHotkey];
+	_lastSpellCastGameTime = [playerController currentTime];
+	
+	// make sure it was a spell and not an item/macro
+	if ( !((USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID)) ){
+		_lastSpellCast = actionID;
+	}
+	else {
+		_lastSpellCast = 0;
 	}
 	
 	// wow needs time to process the spell change before we change it back
 	usleep(cooldown*2);
 	
 	// then save our old action back
-	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"]+BAR6_OFFSET) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	
 	// We don't want to check lastAttemptedActionID if it's not a spell!
 	BOOL wasSpellCast = YES;
@@ -4684,19 +4651,7 @@ NSMutableDictionary *_diffDict = nil;
 		// wow needs time to process the change
 		usleep([controller refreshDelay]);
 		
-		// Use our hotkey!
-		KeyCombo hotkey = [mouseOverRecorder keyCombo];
-		
-		if ( hotkey.code < 0 ){
-			return NO;
-		}
-		
-		// Send out "interact with mouse over" keybinding!
-		if(![controller isWoWChatBoxOpen] || (_currentHotkey == kVK_F13)) {
-			[chatController pressHotkey: hotkey.code  withModifier: hotkey.flags];
-			
-			return YES;
-		}
+		return [bindingsController executeBindingForKey:BindingInteractMouseover];
 	}
 	
 	return NO;
@@ -4779,24 +4734,6 @@ NSMutableDictionary *_diffDict = nil;
 	KeyCombo combo = [startstopRecorder keyCombo];
 	if ( combo.code == -1 ){
 		flags |= HotKeyStartStop;
-	}
-	
-	// Check Interact with
-	combo = [mouseOverRecorder keyCombo];
-	if ( combo.code == -1 ){
-		flags |= HotKeyInteractMouseover;
-	}
-	
-	// Check Bottom Left Action Bar
-	combo = [shortcutRecorder keyCombo];
-	if ( combo.code == -1 ){
-		flags |= HotKeyPrimary;
-	}
-	
-	// Check Pet attack
-	combo = [petAttackRecorder keyCombo];
-	if ( combo.code == -1 ){
-		flags |= HotKeyPetAttack;
 	}
 	
 	return flags;	
@@ -5228,30 +5165,20 @@ NSMutableDictionary *_diffDict = nil;
 
 - (IBAction)test: (id)sender{
 	
-	MemoryAccess *memory = [controller wowMemoryAccess];
+
 	
 	
-	// find out where the action is stored
-	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
-	UInt32 readActionID = 0;
-	int i;
-	// loop through all 10 bars to find it
-	for ( i = 0; i <= MAXIMUM_SPELLS_IN_BARS; i++ ){
-		if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset + (i*4) Buffer: (Byte *)&readActionID BufLength: sizeof(readActionID)] && readActionID ){
-			Spell *spell = [spellController spellForID:[NSNumber numberWithInt:readActionID]];
-			if ( spell ){
-				PGLog(@" %@", [spell name]);
-			}
-			PGLog(@" [Spell] For spell %u usable? %d", readActionID, [spellController isUsableAction:readActionID]);
-		}
-	}
+	[bindingsController executeBindingForKey:BindingPrimaryHotkey];
+	
+	//MULTIACTIONBAR1BUTTON1
+	//INTERACTMOUSEOVER
 
 	//[bindingsController doIt];
 	
 	return;
 	
 	// ugh why won't the below work!	
-	//MemoryAccess *memory = [controller wowMemoryAccess];
+	MemoryAccess *memory = [controller wowMemoryAccess];
 	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];

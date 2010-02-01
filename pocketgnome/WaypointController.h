@@ -105,7 +105,6 @@
 - (IBAction)duplicateRoute: (id)sender;
 - (IBAction)waypointMenuAction: (id)sender;
 - (IBAction)closeDescription: (id)sender;
-- (IBAction)showInFinder: (id)sender;
 
 // importing/exporting
 - (void)importRouteAtPath: (NSString*)path;
