@@ -3240,7 +3240,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 	
 	// make sure mounting will even work
-	if ( [mountCheckbox state] ){
+	if ( [mountCheckbox state] && ![[playerController player] isMounted] ){
 		if ( ![spellController mountSpell:[mountType selectedTag] andFast:YES] ){
 			PGLog(@"[Bot] Mounting will fail!");
 			NSBeep();
