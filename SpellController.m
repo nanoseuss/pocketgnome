@@ -399,10 +399,24 @@ static SpellController *sharedSpells = nil;
 	}
 	
 	// Randomly select one from the array!
-	if ( [mounts count] > 0 ){
+	while ( [mounts count] > 0 ){
+		
+		// choose a random mount
 		int randomMount = SSRandomIntBetween(0, [mounts count]-1);
 		
-		return [mounts objectAtIndex:randomMount];
+		// get the random spell from the list!
+		Spell *spell = [mounts objectAtIndex:randomMount];
+		
+		// make sure we can cast the spell!
+		if ( [self isUsableAction:[[spell ID] intValue]] ){
+			PGLog(@"[Mount] Found usable mount! %@", spell);
+			return spell;
+		}
+		
+		PGLog(@"[Mount] Unable to verify spell %@, trying to find another (if no mount is on an action bar this will fail forever).", spell);
+		
+		// this spell failed, remove it so we don't select it again
+		[mounts removeObjectAtIndex:randomMount];
 	}
 	
 	return nil;

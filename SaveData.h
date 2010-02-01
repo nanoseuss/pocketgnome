@@ -19,6 +19,9 @@
 - (void)saveObject: (id)object;					// save an object
 - (NSArray*)loadAllObjects;						// return an array w/all objects found in the app support folder
 
+// UI
+- (IBAction)showInFinder: (id)sender;
+
 // should be implemented by the subclass
 - (NSString*)objectExtension;
 - (NSString*)objectName:(id)object;

@@ -101,8 +101,6 @@
     //BOOL attackPlayers, attackNeutralNPCs, attackHostileNPCs, _ignoreElite;
     //int _currentAttackDistance, _minLevel, _maxLevel, _attackAnyLevel;
     
-    int _currentHotkeyModifier, _currentPetAttackHotkeyModifier;
-    int _currentHotkey, _currentPetAttackHotkey;
 	UInt32 _lastSpellCastGameTime;
 	UInt32 _lastSpellCast;
     BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg, _doFishing;
@@ -251,10 +249,7 @@
     IBOutlet NSPanel *hotkeyHelpPanel;
     IBOutlet NSPanel *lootHotkeyHelpPanel;
 	IBOutlet NSPanel *gatheringLootingPanel;
-    IBOutlet SRRecorderControl *shortcutRecorder;
-    IBOutlet SRRecorderControl *petAttackRecorder;
     IBOutlet SRRecorderControl *startstopRecorder;
-	IBOutlet SRRecorderControl *mouseOverRecorder;
     PTHotKey *StartStopBotGlobalHotkey;
     
     IBOutlet NSTextField *statusText;

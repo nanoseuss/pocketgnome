@@ -410,50 +410,6 @@
     
 }
 
-- (IBAction)openExportPanel: (id)sender {
-
-	[NSApp beginSheet: exportPanel
-	   modalForWindow: [ruleTable window]
-		modalDelegate: nil
-	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
-		  contextInfo: nil];
-}
-
-- (IBAction)closeExportPanel: (id)sender {
-    [NSApp endSheet: exportPanel returnCode: 1];
-    [exportPanel orderOut: nil];
-}
-
-- (IBAction)exportBehaviors: (id)sender {
-    NSArray *behaviors = (NSArray*)sender;
-    if(![behaviors isKindOfClass: [NSArray class]])
-        return;
-    if(![behaviors count]) {
-        NSBeep();
-        return;
-    }
-    
-    // let the user know if these behaviors contains macros
-    if([self behaviorsContainMacros: behaviors]) {
-        NSBeep();
-        NSRunCriticalAlertPanel(@"Warning: Behaviors Contain Macros", @"The behaviors you are exporting contain one or more rules that utilize macros.  Macros are contained within your local copy of Warcraft, and will not be exported with this behavior -- these rules will not work on anybody else's computer!", @"Okay", NULL, NULL);
-    }
-
-    int behaviorCount = [behaviors count];
-    NSSavePanel *savePanel = [NSSavePanel savePanel];
-    [savePanel setCanCreateDirectories: YES];
-    [savePanel setTitle: (behaviorCount == 1) ? @"Export Behavior" : @"Export Behaviors"];
-    [savePanel setMessage: (behaviorCount == 1) ? @"Please choose a destination for this behavior." : @"Please choose a destination for these behaviors."];
-    int ret = [savePanel runModalForDirectory: @"~/" file: [[NSString stringWithFormat: @"%d", [behaviors count]] stringByAppendingPathExtension: (behaviorCount == 1) ? @"route" : @"behaviorset"]];
-    
-	if(ret == NSFileHandlingPanelOKButton) {
-        NSString *saveLocation = [savePanel filename];
-        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: (behaviorCount == 1) ? [behaviors lastObject] : behaviors];
-        [data writeToFile: saveLocation atomically: YES];
-        [self closeExportPanel: nil];
-    }
-}
-
 #pragma mark -
 #pragma mark NSTableView Delesource
 

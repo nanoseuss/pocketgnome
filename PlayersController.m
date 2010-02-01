@@ -203,6 +203,11 @@ static PlayersController *sharedPlayers = nil;
 // returns yes on adding
 - (BOOL)addPlayerName: (NSString*)name withGUID:(UInt64)guid{
 	
+	if ( name == nil ){
+		PGLog(@"[Players] Name not added for 0x%qX, not found", guid);
+		return NO;
+	}
+	
 	NSNumber *fullGUID = [NSNumber numberWithUnsignedLongLong:guid];
 	
 	if ( ![_playerNameList objectForKey: fullGUID] ){
