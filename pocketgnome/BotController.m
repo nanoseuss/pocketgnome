@@ -567,21 +567,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     }
                 }
                 
-                // IS THE PLAYER INDOORS?
-                if( [condition state] == StateIndoors ) {
-                    if(test) PGLog(@"Doing State 'Indoors' condition...");
-                    conditionEval = ( [condition comparator] == CompareIs ) ? [playerController isIndoors] : [playerController isOutdoors];
-                    if(test) {
-                        if([condition comparator] == CompareIs) {
-                            if(conditionEval)   PGLog(@" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
-                            else                PGLog(@" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
-                        } else {
-                            if(conditionEval)   PGLog(@" --> (%@) Unit is not indoors.", TRUE_FALSE(conditionEval));
-                            else                PGLog(@" --> (%@) Unit is indoors.", TRUE_FALSE(conditionEval));
-                        }
-                    }
-                }
-                
                 break;
                 
                 /* ******************************** */
@@ -1392,8 +1377,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// priority system for combat
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 		
-		
-		
 		// kind of a hack right now, but it *should* work
 		//	I'm running into a problem where PG will not loot after death, but instead move onto a hostile NOT in combat
 		//	So lets add a check here, this isn't how I want it to operate, but it will work for now
@@ -1653,6 +1636,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				   afterDelay: 0.1f];
 		PGLog(@"[Procedure] Rule executed, trying for more rules!");
 		return;
+	}
+	
+	if ( [[combatController combatList] count] > 0 ){
+		PGLog(@"[Procedure] We still have units in combat! Why are we quitting! O noes!");
 	}
 
 	// we're done
@@ -3238,6 +3225,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         NSRunAlertPanel(@"Combat Profile is not valid", @"You must select a valid combat profile before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
         return;
     }
+	
+	// we need at least one macro!
+	if ( [[macroController macros] count] == 0 ){
+        PGLog(@"[Bot] You need at least one macro for Pocket Gnome to function.");
+        NSBeep();
+        NSRunAlertPanel(@"You need a macro!", @"You need at least one macro for Pocket Gnome to function correctly. It can be blank, simply create one in your game menu.", @"Okay", NULL, NULL);
+        return;
+	}
 	
 	// make sure mounting will even work
 	if ( [mountCheckbox state] && ![[playerController player] isMounted] ){

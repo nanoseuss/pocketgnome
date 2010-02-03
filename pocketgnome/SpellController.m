@@ -755,8 +755,8 @@ static SpellController *sharedSpells = nil;
 		return NO;
 	
 	UInt32 isUsable = 0, dueToMana = 0;
-	[memory loadDataForObject: self atAddress: 0xD7DFC0 + (slot*4) Buffer: (Byte *)&isUsable BufLength: sizeof(isUsable)];
-	[memory loadDataForObject: self atAddress: 0xD7DD80 + (slot*4) Buffer: (Byte *)&dueToMana BufLength: sizeof(dueToMana)];
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"Lua_IsUsableAction"] + (slot*4) Buffer: (Byte *)&isUsable BufLength: sizeof(isUsable)];
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"Lua_IsUsableActionNotEnough"] + (slot*4) Buffer: (Byte *)&dueToMana BufLength: sizeof(dueToMana)];
 	
 	//PGLog(@" [Spell] For slot 0x%X, usable? %d due to mana? %d", slot, isUsable, dueToMana);
 	

@@ -2,6 +2,44 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Lua_IsUsableAction</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x8B\x14\x85\x00\xEE\xD8\x00\x8B\x04\x85\x40\xF0\xD8\x00\x85\xC0\x74\xAC</string>
+			<key>Mask</key>
+			<string>xxx%%%%xxx????xxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.0a: lua_IsUsableAction</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
+	<key>Lua_IsUsableActionNotEnough</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x8B\x14\x85\x00\xEE\xD8\x00\x8B\x04\x85\x40\xF0\xD8\x00\x85\xC0\x74\xAC</string>
+			<key>Mask</key>
+			<string>xxx????xxx%%%%xxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.0a: lua_IsUsableAction</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>RUNE_STATE_START</key>
 	<dict>
 		<key>Intel</key>
@@ -462,29 +500,6 @@
 			<string>\x3C\x40\x01\x1E\x7E\xA3\xAB\x78\x7E\xE4\xBB\x78\x90\x02\x17\xC8\x7E\x65\x9B\x78\x38\xC0\x00\xBA</string>
 			<key>Mask</key>
 			<string>xx??xxxxxxxxxx??xxxxxxxx</string>
-		</dict>
-	</dict>
-	<key>PLAYER_IN_BUILDING_STATIC</key>
-	<dict>
-		<key>Intel</key>
-		<dict>
-			<key>Signature</key>
-			<string>\x8D\x95\x68\xFF\xFF\xFF\x89\x5C\x24\x1C\xC7\x44\x24\x18\xA0\xB8\xFB\x00\xC7\x44\x24\x14\xE0\x48\x0F\x01</string>
-			<key>Mask</key>
-			<string>xxxxxxxxxxxxxx????xxxx%%%%</string>
-			<key>Comment</key>
-			<string>From 3.3.0: sub_606980</string>
-		</dict>
-		<key>ppc</key>
-		<dict>
-			<key>Signature</key>
-			<string>\x3F\xC0\x01\x1E\x3C\x60\x00\x11\x90\x02\x00\x3C\x3B\xDE\xE5\xA4</string>
-			<key>Mask</key>
-			<string>xx??xxxxxxxxxx??</string>
-			<key>AdditionalOffset</key>
-			<string>0x7C</string>
-			<key>SubtractOffset</key>
-			<string>0x10000</string>
 		</dict>
 	</dict>
 	<key>HOTBAR_BASE_STATIC</key>

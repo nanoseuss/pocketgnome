@@ -199,60 +199,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				PGLog(@"%@: 0x%X", key, offset);
 		}
 		
-		// hard-code some as i'm lazy + can't test on PPC yet :(
-		if ( IS_PPC || emulatePPC ){
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x146A0F8] forKey:@"CORPSE_POSITION_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x14C5748] forKey:@"PLAYER_IN_BUILDING_STATIC"];	// also 0x136EE64
-		}
-		
-		if ( IS_X86 ){
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10E760C] forKey:@"OBJECT_LIST_LL_PTR"];		// function from 14th offset, 3.3.0 binary  sub_49D820
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C0] forKey:@"PLAYER_GUID_STATIC"];		//0xF4DCB0
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C8] forKey:@"PLAYER_NAME_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x1028EA6] forKey:@"SERVER_NAME_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD79C] forKey:@"PLAYER_CURRENT_ZONE"];		// 0xE3DB19  0xE3E58C
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE35E4C] forKey:@"ACCOUNT_NAME_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCAC40] forKey:@"KNOWN_SPELLS_STATIC"];		// 0xFCBC40
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E5D0] forKey:@"TARGET_TABLE_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF45220] forKey:@"HOTBAR_BASE_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4B38] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA29E0] forKey:@"LAST_RED_ERROR_MESSAGE"];		// this signature is actually correct, lol one made it through 3.3
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x1225A80] forKey:@"CHAT_BOX_OPEN_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBA2A4] forKey:@"ITEM_IN_LOOT_WINDOW"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF46F20] forKey:@"BATTLEGROUND_STATUS"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFCD6AC] forKey:@"MACRO_LIST_PTR"];
-			
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C73FC] forKey:@"CTM_POS"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74D8] forKey:@"CTM_ACTION"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74E8] forKey:@"CTM_DISTANCE"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74EC] forKey:@"CTM_SCALE"];	
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10C74F0] forKey:@"CTM_GUID"];
-			
-			
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFBB8A0] forKey:@"PLAYER_IN_BUILDING_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF47DFC] forKey:@"CHATLOG_START"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0x10B4A20] forKey:@"CD_LIST_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFC9BC0] forKey:@"MOUNT_LIST_POINTER"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE3E4E0] forKey:@"COMBO_POINTS_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xFA2980] forKey:@"CORPSE_POSITION_STATIC"];
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xF3C3A0 + 0x28] forKey:@"PLAYER_NAME_LIST"];
-			
-			
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0xF231FC] forKey:@"PLAYER_IN_BUILDING_STATIC"];
-			
-			// i'm lazy for 3.3.0a
-			//[offsets setObject: [NSNumber numberWithUnsignedLong:0xE02A78] forKey:@"MOUNT_LIST_POINTER"];
-			
-			
-			// for the mini-map (x,y only) 010B2C60
-			
-
-			
-			
-			/*[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C8] forKey:@"PLAYER_NAME_STATIC"];
-			[offsets setObject: [NSNumber numberWithUnsignedLong:0x10287C8] forKey:@"PLAYER_NAME_STATIC"];
-			*/
-		}
+		// can hard code some here
 		
 		_offsetsLoaded = YES;
 	}
