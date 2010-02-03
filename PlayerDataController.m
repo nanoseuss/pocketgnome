@@ -533,18 +533,6 @@ static PlayerDataController* sharedController = nil;
     return nil;
 }
 
-- (BOOL)isIndoors {
-    UInt32 value = 0;
-    if([[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"PLAYER_IN_BUILDING_STATIC"]) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
-        return (value == 1);
-    }
-    return NO;
-}
-
-- (BOOL)isOutdoors {
-    return ![self isIndoors];
-}
-
 - (BOOL)isOnGround {
 	
 	// Player is in the air!

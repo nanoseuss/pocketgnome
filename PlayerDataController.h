@@ -161,9 +161,6 @@ enum ePlayer_RuneTypes {
 - (BOOL)isHostileWithFaction: (UInt32)faction;
 - (BOOL)isFriendlyWithFaction: (UInt32)faction;
 
-- (BOOL)isIndoors;
-- (BOOL)isOutdoors;
-
 - (BOOL)isOnGround;
 
 - (UInt32)spellCasting;
