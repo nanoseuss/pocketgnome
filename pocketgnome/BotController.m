@@ -404,7 +404,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// check to see if we can even cast this spell
-	if ( ![spellController isUsableAction:[[rule action] actionID] withType:[[rule action] type]] ){
+	if ( [[rule action] type] == ActionType_Spell && ![spellController isUsableAction:[[rule action] actionID]] ){
 		PGLog(@"[Rule] Action %d isn't usable!", [[rule action] actionID]);
 		return NO;
 	}
