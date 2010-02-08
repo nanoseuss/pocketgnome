@@ -2242,18 +2242,18 @@
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
-					<object class="NSTextField" id="585182550">
+					<object class="NSTextField" id="855412015">
 						<reference key="NSNextResponder" ref="992636968"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{179, 88}, {411, 34}}</string>
+						<string key="NSFrame">{{200, 113}, {386, 34}}</string>
 						<reference key="NSSuperview" ref="992636968"/>
 						<bool key="NSEnabled">YES</bool>
-						<object class="NSTextFieldCell" key="NSCell" id="314807122">
+						<object class="NSTextFieldCell" key="NSCell" id="733094707">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">272891904</int>
-							<string key="NSContents">It may function correctly on new versions, check the site below for more details.</string>
+							<string key="NSContents">This version of {name} is confirmed to work with WoW 2.4.1.</string>
 							<reference key="NSSupport" ref="699064415"/>
-							<reference key="NSControlView" ref="585182550"/>
+							<reference key="NSControlView" ref="855412015"/>
 							<reference key="NSBackgroundColor" ref="1031085640"/>
 							<reference key="NSTextColor" ref="557612642"/>
 						</object>
@@ -2274,22 +2274,6 @@
 								<int key="NSfFlags">16</int>
 							</object>
 							<reference key="NSControlView" ref="147402103"/>
-							<reference key="NSBackgroundColor" ref="1031085640"/>
-							<reference key="NSTextColor" ref="557612642"/>
-						</object>
-					</object>
-					<object class="NSTextField" id="893925936">
-						<reference key="NSNextResponder" ref="992636968"/>
-						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{200, 130}, {386, 17}}</string>
-						<reference key="NSSuperview" ref="992636968"/>
-						<bool key="NSEnabled">YES</bool>
-						<object class="NSTextFieldCell" key="NSCell" id="1057024737">
-							<int key="NSCellFlags">67239488</int>
-							<int key="NSCellFlags2">272630784</int>
-							<string key="NSContents">This version of {name} is confirmed to work with WoW 2.4.1.</string>
-							<reference key="NSSupport" ref="699098009"/>
-							<reference key="NSControlView" ref="893925936"/>
 							<reference key="NSBackgroundColor" ref="1031085640"/>
 							<reference key="NSTextColor" ref="557612642"/>
 						</object>
@@ -7172,14 +7156,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">versionInfoText</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="893925936"/>
-					</object>
-					<int key="connectionID">2401</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">aboutValidImage</string>
 						<reference key="source" ref="148782052"/>
 						<reference key="destination" ref="53226824"/>
@@ -10334,6 +10310,14 @@
 					</object>
 					<int key="connectionID">4212</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">versionInfoText</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="855412015"/>
+					</object>
+					<int key="connectionID">4219</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -11212,11 +11196,10 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="371258519"/>
 							<reference ref="147402103"/>
-							<reference ref="893925936"/>
 							<reference ref="53226824"/>
 							<reference ref="91733093"/>
 							<reference ref="927718598"/>
-							<reference ref="585182550"/>
+							<reference ref="855412015"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">About</string>
@@ -11258,20 +11241,6 @@
 						<int key="objectID">2411</int>
 						<reference key="object" ref="257375565"/>
 						<reference key="parent" ref="147402103"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">2376</int>
-						<reference key="object" ref="893925936"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1057024737"/>
-						</object>
-						<reference key="parent" ref="992636968"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">2377</int>
-						<reference key="object" ref="1057024737"/>
-						<reference key="parent" ref="893925936"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">2402</int>
@@ -13882,18 +13851,18 @@
 						<reference key="parent" ref="927718598"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">4215</int>
-						<reference key="object" ref="585182550"/>
+						<int key="objectID">4217</int>
+						<reference key="object" ref="855412015"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="314807122"/>
+							<reference ref="733094707"/>
 						</object>
 						<reference key="parent" ref="992636968"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">4216</int>
-						<reference key="object" ref="314807122"/>
-						<reference key="parent" ref="585182550"/>
+						<int key="objectID">4218</int>
+						<reference key="object" ref="733094707"/>
+						<reference key="parent" ref="855412015"/>
 					</object>
 				</object>
 			</object>
@@ -14061,8 +14030,6 @@
 					<string>2375.IBEditorWindowLastContentRect</string>
 					<string>2375.IBPluginDependency</string>
 					<string>2375.editorWindowContentRectSynchronizationRect</string>
-					<string>2376.IBPluginDependency</string>
-					<string>2377.IBPluginDependency</string>
 					<string>2378.IBEditorWindowLastContentRect</string>
 					<string>2378.IBPluginDependency</string>
 					<string>2378.editorWindowContentRectSynchronizationRect</string>
@@ -14444,8 +14411,8 @@
 					<string>4109.IBPluginDependency</string>
 					<string>4117.IBPluginDependency</string>
 					<string>4192.IBPluginDependency</string>
-					<string>4215.IBPluginDependency</string>
-					<string>4216.IBPluginDependency</string>
+					<string>4217.IBPluginDependency</string>
+					<string>4218.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -14629,8 +14596,6 @@
 					<string>{{627, 403}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{422, 211}, {607, 197}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{340, 235}, {740, 413}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{0, 92}, {588, 290}}</string>
@@ -15063,7 +15028,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4216</int>
+			<int key="maxID">4219</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
