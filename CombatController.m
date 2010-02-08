@@ -48,6 +48,8 @@
 		_addUnit		= nil;
 		_castingUnit	= nil;
 		
+		_enteredCombat = nil;
+		
 		_inCombat = NO;
 		
 		_unitsAttackingMe = [[NSMutableArray array] retain];
@@ -196,6 +198,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[units addObject:_attackUnit];
 	}
 	
+	// add our add
 	if ( _addUnit != nil && ![units containsObject:_addUnit] ){
 		[units addObject:_addUnit];
 	}
@@ -316,12 +319,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		_castingUnit = nil;
 	}
 	
-	// send a macro to correctly target
-	/*if ( unit == oldTarget && ( type == TargetEnemy || type == TargetAdd || type == TargetFriend || type == TargetPet ) ){
-		// target the new one!
-		PGLog(@"KJSDFHLKJSDFHKSDFHKSJDFHSKDJF TARGETING %@", unit);
-		[macroController useMacro:@"SelectTarget"];
-	}*/
+	// remember when we started w/this unit
+	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
+	
+	
 	
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
 	if ( oldTarget && [botController isPvPing] ){
@@ -531,7 +532,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//PGLog(@" [Combat] Removing in combat units After: %d", [allPotentialUnits count]);
 	}
 	
-	// add combat units that have been validated!
+	// add combat units that have been validated! (includes attack unit + add)
 	NSArray *inCombatUnits = [self combatListValidated];
 	if ( [inCombatUnits count] ){
 		//PGLog(@" [Combat] Adding %d validated in combat units Before: %d", [inCombatUnits count], [allPotentialUnits count]);
@@ -571,7 +572,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				continue;
 			}
 			
-			// ignore dead/evading/not valid units
+			// ignore dead/evading/not valid units (fairly certain the evading check doesn't even work)
 			if ( [unit isDead] || [unit isEvading] || ![unit isValid] ){
 				continue;
 			}
@@ -581,25 +582,24 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				continue;
 			}
 			
-			isFriendly = [playerData isFriendlyWithFaction: [unit factionTemplate]];
-			
-			// ignore friendly
-			if ( isFriendly && !includeFriendly ){
+			// ignore friendly?
+			if ( !includeFriendly && [playerData isFriendlyWithFaction: [unit factionTemplate]] ){
 				continue;
 			}
 			
 			// range changes if the unit is friendly or not
 			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
 			range = (self.inCombat ? (isFriendly ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange) : botController.theCombatProfile.engageRange);
-			
 			if ( distanceToTarget > range ){
 				continue;
 			}
 			
-			// make sure they're not a ghost
-			NSArray *auras = [auraController aurasForUnit: unit idsOnly: YES];
-			if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
-				continue;
+			// player: make sure they're not a ghost
+			if ( [unit isPlayer] ){
+				NSArray *auras = [auraController aurasForUnit: unit idsOnly: YES];
+				if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
+					continue;
+				}
 			}
 			
 			[validUnits addObject: unit];

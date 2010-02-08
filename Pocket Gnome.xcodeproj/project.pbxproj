@@ -44,6 +44,9 @@
 		0322D6DA11065D0800EF3EEF /* CombatProfileActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */; };
 		0322D6E211065D8900EF3EEF /* CombatProfileAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */; };
 		0322D72F110744D500EF3EEF /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0322D72E110744D500EF3EEF /* CoreData.framework */; };
+		0341DD60111B0F6B00074CED /* Objects.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0341DD5F111B0F6B00074CED /* Objects.xib */; };
+		0341DD66111B0FBE00074CED /* ObjectsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0341DD65111B0FBE00074CED /* ObjectsController.m */; };
+		0341DDDA111B21D700074CED /* ObjectController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0341DDD9111B21D700074CED /* ObjectController.m */; };
 		034429B80FAA3E1800E9DE03 /* Quest.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429B70FAA3E1800E9DE03 /* Quest.m */; };
 		034429BD0FAA3E3800E9DE03 /* QuestItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BC0FAA3E3800E9DE03 /* QuestItem.m */; };
 		034429C00FAA3E5600E9DE03 /* QuestController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034429BF0FAA3E5600E9DE03 /* QuestController.m */; };
@@ -114,7 +117,6 @@
 		7D3C91EB0E47C8C700EDF3B3 /* Gathering.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7D3C91EA0E47C8C700EDF3B3 /* Gathering.plist */; };
 		7D41E5950DE9FE8800118EA0 /* PlayersController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D41E5940DE9FE8800118EA0 /* PlayersController.m */; };
 		7D41E5980DEA00A500118EA0 /* Player.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D41E5970DEA00A500118EA0 /* Player.m */; };
-		7D41E59A0DEA017600118EA0 /* Players.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D41E5990DEA017600118EA0 /* Players.xib */; };
 		7D41E8130DEA28FE00118EA0 /* Spell_Holy_PrayerofSpirit.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D41E8120DEA28FE00118EA0 /* Spell_Holy_PrayerofSpirit.png */; };
 		7D41E8670DEA2DE800118EA0 /* BloodElf-Female.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D41E8530DEA2DE800118EA0 /* BloodElf-Female.png */; };
 		7D41E8680DEA2DE800118EA0 /* BloodElf-Male.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D41E8540DEA2DE800118EA0 /* BloodElf-Male.png */; };
@@ -199,7 +201,6 @@
 		7D5498960F02232500DD46F8 /* FishController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D5498950F02232500DD46F8 /* FishController.m */; };
 		7D5A384A0D14B52900E491CD /* NSNumberToHexString.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D5A38490D14B52900E491CD /* NSNumberToHexString.m */; };
 		7D60430C0D5FC2DF001501AF /* mixed.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D60430B0D5FC2DF001501AF /* mixed.png */; };
-		7D60434E0D5FCAA6001501AF /* Items.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7D60434D0D5FCAA6001501AF /* Items.xib */; };
 		7D65C8F90D2EE14500C50DF7 /* Rule.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D65C8F80D2EE14500C50DF7 /* Rule.m */; };
 		7D65C8FC0D2EE16B00C50DF7 /* Condition.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D65C8FB0D2EE16B00C50DF7 /* Condition.m */; };
 		7D65C9DB0D2EF93100C50DF7 /* ProcedureController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D65C9DA0D2EF93100C50DF7 /* ProcedureController.m */; };
@@ -322,11 +323,9 @@
 		7DD64B210D5D192500773CAB /* off.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DD64B1F0D5D192500773CAB /* off.png */; };
 		7DD64B220D5D192500773CAB /* on.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DD64B200D5D192500773CAB /* on.png */; };
 		7DD8037D0D514E62005C2F01 /* Player.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD8037C0D514E62005C2F01 /* Player.xib */; };
-		7DD8038C0D515046005C2F01 /* Mobs.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD8038B0D515046005C2F01 /* Mobs.xib */; };
 		7DD803980D515142005C2F01 /* Spells.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD803970D515142005C2F01 /* Spells.xib */; };
 		7DD803A20D5151CA005C2F01 /* Routes.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD803A10D5151CA005C2F01 /* Routes.xib */; };
 		7DD803A40D5153E5005C2F01 /* Behaviors.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD803A30D5153E5005C2F01 /* Behaviors.xib */; };
-		7DD804280D516186005C2F01 /* Nodes.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DD804270D516185005C2F01 /* Nodes.xib */; };
 		7DD8910B0F2BE875007E9FE4 /* DeathKnight.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */; };
 		7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */ = {isa = PBXBuildFile; fileRef = 7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */; };
 		7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */; };
@@ -432,6 +431,11 @@
 		0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CombatProfileAction.xib; sourceTree = "<group>"; };
 		0322D72E110744D500EF3EEF /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		032B8C030FDEE37900807DD0 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
+		0341DD5F111B0F6B00074CED /* Objects.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Objects.xib; sourceTree = "<group>"; };
+		0341DD64111B0FBE00074CED /* ObjectsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectsController.h; sourceTree = "<group>"; };
+		0341DD65111B0FBE00074CED /* ObjectsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectsController.m; sourceTree = "<group>"; };
+		0341DDD8111B21D700074CED /* ObjectController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectController.h; sourceTree = "<group>"; };
+		0341DDD9111B21D700074CED /* ObjectController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ObjectController.m; sourceTree = "<group>"; };
 		034429B60FAA3E1800E9DE03 /* Quest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Quest.h; sourceTree = "<group>"; };
 		034429B70FAA3E1800E9DE03 /* Quest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Quest.m; sourceTree = "<group>"; };
 		034429BB0FAA3E3800E9DE03 /* QuestItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuestItem.h; sourceTree = "<group>"; };
@@ -550,7 +554,6 @@
 		7D41E5940DE9FE8800118EA0 /* PlayersController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlayersController.m; sourceTree = "<group>"; };
 		7D41E5960DEA00A500118EA0 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
 		7D41E5970DEA00A500118EA0 /* Player.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Player.m; sourceTree = "<group>"; };
-		7D41E5990DEA017600118EA0 /* Players.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Players.xib; sourceTree = "<group>"; };
 		7D41E8120DEA28FE00118EA0 /* Spell_Holy_PrayerofSpirit.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Spell_Holy_PrayerofSpirit.png; sourceTree = "<group>"; };
 		7D41E8530DEA2DE800118EA0 /* BloodElf-Female.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "BloodElf-Female.png"; sourceTree = "<group>"; };
 		7D41E8540DEA2DE800118EA0 /* BloodElf-Male.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "BloodElf-Male.png"; sourceTree = "<group>"; };
@@ -648,7 +651,6 @@
 		7D5A38490D14B52900E491CD /* NSNumberToHexString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNumberToHexString.m; sourceTree = "<group>"; };
 		7D5B92960D9F179D00423FC6 /* gnome.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = gnome.icns; sourceTree = "<group>"; };
 		7D60430B0D5FC2DF001501AF /* mixed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mixed.png; sourceTree = "<group>"; };
-		7D60434D0D5FCAA6001501AF /* Items.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Items.xib; sourceTree = "<group>"; };
 		7D62BD380DE3790C000D0B6D /* ObjectConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjectConstants.h; sourceTree = "<group>"; };
 		7D65C8F70D2EE14500C50DF7 /* Rule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rule.h; sourceTree = "<group>"; };
 		7D65C8F80D2EE14500C50DF7 /* Rule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Rule.m; sourceTree = "<group>"; };
@@ -825,11 +827,9 @@
 		7DD64B1F0D5D192500773CAB /* off.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = off.png; sourceTree = "<group>"; };
 		7DD64B200D5D192500773CAB /* on.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = on.png; sourceTree = "<group>"; };
 		7DD8037C0D514E62005C2F01 /* Player.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Player.xib; sourceTree = "<group>"; };
-		7DD8038B0D515046005C2F01 /* Mobs.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Mobs.xib; sourceTree = "<group>"; };
 		7DD803970D515142005C2F01 /* Spells.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Spells.xib; sourceTree = "<group>"; };
 		7DD803A10D5151CA005C2F01 /* Routes.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Routes.xib; sourceTree = "<group>"; };
 		7DD803A30D5153E5005C2F01 /* Behaviors.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Behaviors.xib; sourceTree = "<group>"; };
-		7DD804270D516185005C2F01 /* Nodes.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Nodes.xib; sourceTree = "<group>"; };
 		7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DeathKnight.png; sourceTree = "<group>"; };
 		7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = DeathKnight_Small.gif; sourceTree = "<group>"; };
 		7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = InteractWithTarget.png; sourceTree = "<group>"; };
@@ -958,9 +958,27 @@
 			name = Models;
 			sourceTree = "<group>";
 		};
+		0341DD68111B104100074CED /* Object Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				0341DDD8111B21D700074CED /* ObjectController.h */,
+				0341DDD9111B21D700074CED /* ObjectController.m */,
+				7D220F130D1691E90026DF75 /* MobController.h */,
+				7D220F140D1691E90026DF75 /* MobController.m */,
+				7D41E5930DE9FE8800118EA0 /* PlayersController.h */,
+				7D41E5940DE9FE8800118EA0 /* PlayersController.m */,
+				7D7A695B0D26F04F0008C3FF /* NodeController.h */,
+				7D7A695C0D26F04F0008C3FF /* NodeController.m */,
+				7D9712970D248ED4005E3BD1 /* InventoryController.h */,
+				7D9712980D248ED4005E3BD1 /* InventoryController.m */,
+			);
+			name = "Object Controllers";
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				0341DD68111B104100074CED /* Object Controllers */,
 				7DAAE7180D148972003F1E3C /* Controller.h */,
 				7DAAE7190D148972003F1E3C /* Controller.m */,
 				7DB2C4480D3BFE4100100B4D /* BotController.h */,
@@ -973,20 +991,12 @@
 				7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */,
 				7DAAE7670D14917E003F1E3C /* PlayerDataController.h */,
 				7DAAE7680D14917E003F1E3C /* PlayerDataController.m */,
-				7D220F130D1691E90026DF75 /* MobController.h */,
-				7D220F140D1691E90026DF75 /* MobController.m */,
-				7D41E5930DE9FE8800118EA0 /* PlayersController.h */,
-				7D41E5940DE9FE8800118EA0 /* PlayersController.m */,
 				7DD3D4090D1B2FEB0023D097 /* SpellController.h */,
 				7DD3D40A0D1B2FEB0023D097 /* SpellController.m */,
-				7D7A695B0D26F04F0008C3FF /* NodeController.h */,
-				7D7A695C0D26F04F0008C3FF /* NodeController.m */,
 				03567AAB10DDAB52001ACE43 /* CombatController.h */,
 				03567AAC10DDAB52001ACE43 /* CombatController.m */,
 				7D220E610D1662F70026DF75 /* MovementController.h */,
 				7D220E620D1662F70026DF75 /* MovementController.m */,
-				7D9712970D248ED4005E3BD1 /* InventoryController.h */,
-				7D9712980D248ED4005E3BD1 /* InventoryController.m */,
 				7D06F0400D23058B00DA4E99 /* AuraController.h */,
 				7D06F0410D23058B00DA4E99 /* AuraController.m */,
 				7D45A6B80E4461CA008A3601 /* BonjourController.h */,
@@ -1129,12 +1139,9 @@
 				614CD7891106182100BA1B2F /* Bot.xib */,
 				03A01B39109A2CFF00E6098E /* Statistics.xib */,
 				7DD8037C0D514E62005C2F01 /* Player.xib */,
-				7DD8038B0D515046005C2F01 /* Mobs.xib */,
-				7D41E5990DEA017600118EA0 /* Players.xib */,
 				7DD803970D515142005C2F01 /* Spells.xib */,
-				7D60434D0D5FCAA6001501AF /* Items.xib */,
-				7DD804270D516185005C2F01 /* Nodes.xib */,
 				03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */,
+				0341DD5F111B0F6B00074CED /* Objects.xib */,
 				7DD803A10D5151CA005C2F01 /* Routes.xib */,
 				7DD803A30D5153E5005C2F01 /* Behaviors.xib */,
 				7DCB5A3F0D540647001678BC /* Memory.xib */,
@@ -1518,6 +1525,8 @@
 		7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				0341DD64111B0FBE00074CED /* ObjectsController.h */,
+				0341DD65111B0FBE00074CED /* ObjectsController.m */,
 				7D97730D0D2DBF5400E6D8F9 /* RuleEditor.h */,
 				7D97730E0D2DBF5400E6D8F9 /* RuleEditor.m */,
 				7D65C9D90D2EF93100C50DF7 /* ProcedureController.h */,
@@ -1713,11 +1722,9 @@
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				7D3C91EB0E47C8C700EDF3B3 /* Gathering.plist in Resources */,
 				7DD8037D0D514E62005C2F01 /* Player.xib in Resources */,
-				7DD8038C0D515046005C2F01 /* Mobs.xib in Resources */,
 				7DD803980D515142005C2F01 /* Spells.xib in Resources */,
 				7DD803A20D5151CA005C2F01 /* Routes.xib in Resources */,
 				7DD803A40D5153E5005C2F01 /* Behaviors.xib in Resources */,
-				7DD804280D516186005C2F01 /* Nodes.xib in Resources */,
 				7DBA60600D51D28600FD6A5F /* Spell_Holy_MindVision.png in Resources */,
 				7DBA60620D51D28600FD6A5F /* Spell_FireResistanceTotem_01.png in Resources */,
 				7DBA60630D51D28600FD6A5F /* INV_Misc_Head_Dragon_Bronze.png in Resources */,
@@ -1733,7 +1740,6 @@
 				7DD64B210D5D192500773CAB /* off.png in Resources */,
 				7DD64B220D5D192500773CAB /* on.png in Resources */,
 				7D60430C0D5FC2DF001501AF /* mixed.png in Resources */,
-				7D60434E0D5FCAA6001501AF /* Items.xib in Resources */,
 				7D4AFB340D9EDBF100A33CE1 /* bad.tif in Resources */,
 				7D4AFB350D9EDBF100A33CE1 /* good.tif in Resources */,
 				7DBC34540DB57665000C9BCF /* SRRemoveShortcut.tif in Resources */,
@@ -1746,7 +1752,6 @@
 				7D80B4770DE75795004D00F6 /* Combat.png in Resources */,
 				7D80B48D0DE75905004D00F6 /* Dead.png in Resources */,
 				7D80B4B10DE76098004D00F6 /* Neutral.png in Resources */,
-				7D41E59A0DEA017600118EA0 /* Players.xib in Resources */,
 				7D41E8130DEA28FE00118EA0 /* Spell_Holy_PrayerofSpirit.png in Resources */,
 				7D41E8670DEA2DE800118EA0 /* BloodElf-Female.png in Resources */,
 				7D41E8680DEA2DE800118EA0 /* BloodElf-Male.png in Resources */,
@@ -1903,6 +1908,7 @@
 				03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */,
 				03FFD59A110CB55A0046AEDF /* InteractNPCAction.xib in Resources */,
 				03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */,
+				0341DD60111B0F6B00074CED /* Objects.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2041,6 +2047,8 @@
 				03E1D73B110F54BE003180E4 /* SaveData.m in Sources */,
 				03E1D7B8110F62CD003180E4 /* SaveDataObject.m in Sources */,
 				03BD330E11120A7A00941971 /* BindingsController.m in Sources */,
+				0341DD66111B0FBE00074CED /* ObjectsController.m in Sources */,
+				0341DDDA111B21D700074CED /* ObjectController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -8,8 +8,10 @@
 
 #import <Cocoa/Cocoa.h>
 #import "Node.h"
+#import "ObjectController.h"
 
 @class PlayerDataController;
+@class ObjectsController;
 
 typedef enum {
     AnyNode = 0,
@@ -18,22 +20,14 @@ typedef enum {
 	FishingSchool = 3,
 } NodeType;
 
-@interface NodeController : NSObject {
-    IBOutlet id controller;
+@interface NodeController : ObjectController {
     IBOutlet id botController;
-    IBOutlet PlayerDataController *playerController;
     IBOutlet id movementController;
     IBOutlet id memoryViewController;
-    
-    IBOutlet NSView *view;
-    
-    IBOutlet id nodeTable;
+	IBOutlet ObjectsController	*objectsController;
     
     IBOutlet NSPopUpButton *moveToList;
 
-    NSString *filterString;
-    NSMutableArray *_nodeList;
-    NSMutableArray *_nodeDataList;
     NSMutableArray *_finishedNodes;
     
     // NSMutableDictionary *_nodeNames;
@@ -41,24 +35,10 @@ typedef enum {
     NSDictionary *_miningDict;
     NSDictionary *_herbalismDict;
 	
-    NSTimer *_updateTimer;
-    float _updateFrequency;
-    NSSize minSectionSize, maxSectionSize;
     int _nodeTypeFilter;
 }
 
-@property (readonly) NSView *view;
-@property (readonly) NSString *sectionTitle;
-@property NSSize minSectionSize;
-@property NSSize maxSectionSize;
-@property float updateFrequency;
-
-- (void)addAddresses: (NSArray*)addresses;
-// - (BOOL)addNode: (Node*)node;
 - (unsigned)nodeCount;
-//- (void)finishedNode: (Node*)node;
-- (void)resetAllNodes;
-//- (BOOL)removeFinishedNode: (Node*)node;
 
 - (NSArray*)nodesOfType:(UInt32)nodeType shouldLock:(BOOL)lock;
 - (NSArray*)allMiningNodes;
@@ -71,6 +51,9 @@ typedef enum {
 - (Node*)closestNodeForInteraction:(UInt32)entryID;
 - (Node*)nodeWithEntryID:(UInt32)entryID;
 
+- (NSArray*)uniqueNodesAlphabetized;
+- (Node*)closestNodeWithName:(NSString*)nodeName;
+/*
 - (IBAction)filterNodes: (id)sender;
 - (IBAction)resetList: (id)sender;
 - (IBAction)faceNode: (id)sender;
@@ -78,6 +61,6 @@ typedef enum {
 - (IBAction)filterList: (id)sender;
 
 - (IBAction)moveToStart: (id)sender;
-- (IBAction)moveToStop: (id)sender;
+- (IBAction)moveToStop: (id)sender;*/
 
 @end

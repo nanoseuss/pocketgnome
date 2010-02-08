@@ -7,45 +7,28 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "ObjectController.h"
 
 @class Item;
 
-@class Controller;
 @class PlayerDataController;
 @class MemoryViewController;
+@class ObjectsController;
 
-@interface InventoryController : NSObject {
-    IBOutlet Controller *controller;
-    IBOutlet PlayerDataController *playerData;
+@interface InventoryController : ObjectController {
     IBOutlet MemoryViewController *memoryViewController;
-
-    IBOutlet NSView *view;
-    IBOutlet NSTableView *itemTable;
+	IBOutlet ObjectsController	*objectsController;
 	
 	int _updateDurabilityCounter;
 
-    NSMutableArray *_itemList, *_itemDataList;
 	NSArray *_itemsPlayerIsWearing, *_itemsInBags;
     NSMutableDictionary *_itemNameList;
-    NSSize minSectionSize, maxSectionSize;
-	
-	NSTimer *_updateTimer;
-	float updateFrequency;
 }
 
 + (InventoryController *)sharedInventory;
 
-@property (readonly) NSView *view;
-@property (readonly) NSString *sectionTitle;
-@property NSSize minSectionSize;
-@property NSSize maxSectionSize;
-@property float updateFrequency;
-
 // general
-- (void)addAddresses: (NSArray*)addresses;
-//- (BOOL)addItem: (Item*)item;
 - (unsigned)itemCount;
-- (void)resetInventory;
 
 // query
 - (Item*)itemForGUID: (GUID)guid;

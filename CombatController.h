@@ -48,6 +48,8 @@
 	
 	BOOL _inCombat;
 	
+	NSDate *_enteredCombat;
+	
 	NSMutableArray *_unitsAttackingMe;
 	NSMutableArray *_unitsAllCombat;		// meant for the display table ONLY!
 	

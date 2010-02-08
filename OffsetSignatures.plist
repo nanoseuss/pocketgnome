@@ -2,6 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Lua_GetBindingKey</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\xA1\xE0\x2F\xC8\x00\x31\xDB\x89\x45\xE4\xC7\x44\x24\x08\x00\x00\x00\x00\xC7\x44\x24\x04\x01\x00\x00\x00</string>
+			<key>Mask</key>
+			<string>x????xxxxxxxxxxxxxxxxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.0a: lua_GetBindingKey</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>Lua_IsUsableAction</key>
 	<dict>
 		<key>Intel</key>
