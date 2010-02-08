@@ -8,60 +8,40 @@
 
 #import <Cocoa/Cocoa.h>
 #import "Mob.h"
+#import "ObjectController.h"
 
 @class CombatProfile;
 
 @class BotController;
 
-@interface MobController : NSObject {
-    IBOutlet id controller;
-    IBOutlet id playerData;
+@class ObjectsController;
+
+@interface MobController : ObjectController {
     IBOutlet BotController *botController;
     IBOutlet id memoryViewController;
     IBOutlet id combatController;
     IBOutlet id movementController;
     IBOutlet id auraController;
     IBOutlet id spellController;
-    
-    IBOutlet id view;
-    
-    IBOutlet id mobTable;
-    IBOutlet id mobColorByLevel;
-    //IBOutlet id mobHideNonSelectable;
-    //IBOutlet id mobHidePets;
-    //IBOutlet id mobHideCritters;
-    
+	
+	IBOutlet ObjectsController	*objectsController;
+
     IBOutlet id trackFriendlyMenuItem;
     IBOutlet id trackNeutralMenuItem;
     IBOutlet id trackHostileMenuItem;
     
     IBOutlet NSPopUpButton *additionalList;
     
-
-    NSMutableArray *_mobList;
-    NSMutableArray *_mobDataList;
-    NSTimer *_updateTimer;
-    float _updateFrequency;
     int cachedPlayerLevel;
     Mob *memoryViewMob;
-    NSSize minSectionSize, maxSectionSize;
-    NSString *filterString;
 }
 
 + (MobController *)sharedController;
 
-@property (readonly) NSView *view;
-@property (readonly) NSString *sectionTitle;
-@property NSSize minSectionSize;
-@property NSSize maxSectionSize;
 @property (readonly) NSImage *toolbarIcon;
-@property float updateFrequency;
 
-- (void)addAddresses: (NSArray*)addresses;
-//- (BOOL)addMob: (Mob*)mob;
 - (unsigned)mobCount;
 - (NSArray*)allMobs;
-- (void)resetAllMobs;
 - (void)doCombatScan;
 
 - (void)clearTargets;
@@ -83,12 +63,9 @@
                 includeHostile: (BOOL)hostile;
 - (Mob*)closestMobForInteraction:(UInt32)entryID;
 
-- (IBAction)filterMobs: (id)sender;
+- (NSArray*)uniqueMobsAlphabetized;
+- (Mob*)closestMobWithName:(NSString*)mobName;
+
 - (IBAction)updateTracking: (id)sender;
-- (IBAction)resetMobList: (id)sender;
-- (IBAction)targetMob: (id)sender;
-- (IBAction)faceMob: (id)sender;
-- (IBAction)additionalStart: (id)sender;
-- (IBAction)additionalStop: (id)sender;
 
 @end

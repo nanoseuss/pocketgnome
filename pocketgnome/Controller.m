@@ -23,6 +23,7 @@
 #import "OffsetController.h"
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
+#import "ObjectsController.h"
 
 #import "CGSPrivate.h"
 
@@ -184,21 +185,6 @@ static Controller* sharedController = nil;
     } else {
         PGLog(@"Growl not running.");
     }*/
-    
-    // insert the new ChatLog toolbar item if it hasn't been done before and it's not there
-    if(![[NSUserDefaults standardUserDefaults] boolForKey: @"AddedChatLogToolbarItem"]) {
-        BOOL foundChatLog = NO;
-        for(NSToolbarItem *item in [mainToolbar items]) {
-            if([[item itemIdentifier] isEqualToString: [chatLogToolbarItem itemIdentifier]]) {
-                foundChatLog = YES;
-            }
-        }
-        if(!foundChatLog) {
-            PGLog(@"Inserting Chat Log toolbar item.");
-            [mainToolbar insertItemWithItemIdentifier: [chatLogToolbarItem itemIdentifier] atIndex: 1];
-        }
-        [[NSUserDefaults standardUserDefaults] setBool: YES forKey: @"AddedChatLogToolbarItem"];
-	}
 }
 
 - (void)finalizeUserDefaults {
@@ -501,10 +487,10 @@ typedef struct NameObjectStruct{
 						PGLog(@"[Controller] Player base address 0x%X changed to 0x%X, verifying change...", [playerData baselineAddress], objectAddress);
 						
 						// reset mobs, nodes, and inventory for the new player address
-						[mobController resetAllMobs];
-						[nodeController resetAllNodes];
-						[itemController resetInventory];
-						[playersController resetAllPlayers];
+						[mobController resetAllObjects];
+						[nodeController resetAllObjects];
+						[itemController resetAllObjects];
+						[playersController resetAllObjects];
 						
 						// tell our player controller its new address
 						[playerData setStructureAddress: objAddress];
@@ -731,18 +717,6 @@ typedef struct NameObjectStruct{
         minSize = [spellController minSectionSize];
         maxSize = [spellController maxSectionSize];
     }
-    if( [sender tag] == 4) {
-        newView = [mobController view];
-        addToTitle = [mobController sectionTitle];
-        minSize = [mobController minSectionSize];
-        maxSize = [mobController maxSectionSize];
-    }
-    if( [sender tag] == 5) {
-        newView = [nodeController view];
-        addToTitle = [nodeController sectionTitle];
-        minSize = [nodeController minSectionSize];
-        maxSize = [nodeController maxSectionSize];
-    }
     if( [sender tag] == 6) {
         newView = [routeController view];
         addToTitle = [routeController sectionTitle];
@@ -755,12 +729,6 @@ typedef struct NameObjectStruct{
         minSize = [behaviorController minSectionSize];
         maxSize = [behaviorController maxSectionSize];
     }
-    if( [sender tag] == 8) {
-        newView = [itemController view];
-        addToTitle = [itemController sectionTitle];
-        minSize = [itemController minSectionSize];
-        maxSize = [itemController maxSectionSize];
-    }
     //if( [sender tag] == 9) {
     //    newView = settingsView;
     //    addToTitle = @"Settings";
@@ -770,12 +738,6 @@ typedef struct NameObjectStruct{
         addToTitle = [memoryViewController sectionTitle];
         minSize = [memoryViewController minSectionSize];
         maxSize = [memoryViewController maxSectionSize];
-    }
-    if( [sender tag] == 11) {
-        newView = [playersController view];
-        addToTitle = [playersController sectionTitle];
-        minSize = [playersController minSectionSize];
-        maxSize = [playersController maxSectionSize];
     }
     if( [sender tag] == 12) {
         newView = [chatLogController view];
@@ -788,6 +750,12 @@ typedef struct NameObjectStruct{
         addToTitle = [statisticsController sectionTitle];
         minSize = [statisticsController minSectionSize];
         maxSize = [statisticsController maxSectionSize];
+    }
+	if( [sender tag] == 15) {
+        newView = [objectsController view];
+        addToTitle = [objectsController sectionTitle];
+        minSize = [objectsController minSectionSize];
+        maxSize = [objectsController maxSectionSize];
     }
 	
     if(newView) {
@@ -1436,10 +1404,7 @@ typedef struct NameObjectStruct{
             [spellsToolbarItem itemIdentifier],
 			[statisticsToolbarItem itemIdentifier],
             NSToolbarSpaceItemIdentifier,
-            [playersToolbarItem itemIdentifier], 
-            [mobsToolbarItem itemIdentifier], 
-            [itemsToolbarItem itemIdentifier],
-            [nodesToolbarItem itemIdentifier], 
+			[objectsToolbarItem itemIdentifier], 
             NSToolbarSpaceItemIdentifier,
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
@@ -1454,17 +1419,14 @@ typedef struct NameObjectStruct{
     // toolbar items that are selectable. In our case, all of them
     return [NSArray arrayWithObjects:  [botToolbarItem itemIdentifier], 
             [playerToolbarItem itemIdentifier], 
-            [itemsToolbarItem itemIdentifier], 
             [spellsToolbarItem itemIdentifier],
-			[mobsToolbarItem itemIdentifier], 
-            [playersToolbarItem itemIdentifier],
-            [nodesToolbarItem itemIdentifier], 
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
             [memoryToolbarItem itemIdentifier],
             [prefsToolbarItem itemIdentifier],
             [chatLogToolbarItem itemIdentifier], 
-			[statisticsToolbarItem itemIdentifier],nil];
+			[statisticsToolbarItem itemIdentifier],
+			[objectsToolbarItem itemIdentifier],nil];
 }
 
 #pragma mark -

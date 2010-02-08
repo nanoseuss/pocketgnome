@@ -12,6 +12,7 @@
 #import "PlayerDataController.h"
 #import "ChatController.h"
 #import "BotController.h"
+#import "OffsetController.h"
 
 #import "MemoryAccess.h"
 
@@ -166,7 +167,8 @@ typedef struct WoWBinding {
 	[_keyCodesWithCommands removeAllObjects];
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	UInt32 offset = 0xC82FE0, bindingsManager = 0, structPointer = 0, firstStruct = 0;
+	UInt32 offset = [offsetController offset:@"Lua_GetBindingKey"];
+	UInt32 bindingsManager = 0, structPointer = 0, firstStruct = 0;
 	WoWBinding bindingStruct;
 	
 	// find the address of our key bindings manager

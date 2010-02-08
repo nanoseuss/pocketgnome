@@ -12,6 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="1957"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -604,15 +605,12 @@
 							<string>07725E07-8272-45B3-8E61-4F0DE5CB6FA3</string>
 							<string>1AB5F1BB-1F41-4416-ABA3-968123DB2AA9</string>
 							<string>1EC440B1-046C-46D8-8B82-5AFAE091B652</string>
-							<string>71AFAC80-1961-4445-89F4-A90AE36CF500</string>
-							<string>77EA3948-2237-4258-9249-6626A1F406A3</string>
 							<string>9EE3016C-0962-4579-8A78-D9D7C0ADB621</string>
 							<string>A3C977D0-AC84-4970-ADF4-9EE1E7EE4C52</string>
-							<string>A999C0F3-BC6D-47BF-B882-D7D9422D44AF</string>
 							<string>AC3CE7D1-FD9A-4988-8CAE-0407AAD23ADF</string>
 							<string>B2A74294-0FE0-4D41-B504-51CA3ED45339</string>
+							<string>B63A3426-1473-4336-8F1D-5BCB25041F68</string>
 							<string>C8D3D151-66DC-4B26-9227-FD886A23058B</string>
-							<string>E3993BCB-9E36-4585-B08C-8C0BC011193A</string>
 							<string>F6035D3E-470C-423D-A669-9427AFE6E2BB</string>
 							<string>NSToolbarCustomizeToolbarItem</string>
 							<string>NSToolbarFlexibleSpaceItem</string>
@@ -687,50 +685,6 @@
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
-							<object class="NSToolbarItem" id="1046819676">
-								<object class="NSMutableString" key="NSToolbarItemIdentifier">
-									<characters key="NS.bytes">71AFAC80-1961-4445-89F4-A90AE36CF500</characters>
-								</object>
-								<string key="NSToolbarItemLabel">Mobs</string>
-								<string key="NSToolbarItemPaletteLabel">Mobs</string>
-								<nil key="NSToolbarItemToolTip"/>
-								<nil key="NSToolbarItemView"/>
-								<object class="NSCustomResource" key="NSToolbarItemImage">
-									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">INV_Misc_Head_Dragon_Bronze</string>
-								</object>
-								<nil key="NSToolbarItemTarget"/>
-								<nil key="NSToolbarItemAction"/>
-								<string key="NSToolbarItemMinSize">{0, 0}</string>
-								<string key="NSToolbarItemMaxSize">{0, 0}</string>
-								<bool key="NSToolbarItemEnabled">YES</bool>
-								<bool key="NSToolbarItemAutovalidates">YES</bool>
-								<int key="NSToolbarItemTag">4</int>
-								<bool key="NSToolbarIsUserRemovable">YES</bool>
-								<int key="NSToolbarItemVisibilityPriority">0</int>
-							</object>
-							<object class="NSToolbarItem" id="169927937">
-								<object class="NSMutableString" key="NSToolbarItemIdentifier">
-									<characters key="NS.bytes">77EA3948-2237-4258-9249-6626A1F406A3</characters>
-								</object>
-								<string key="NSToolbarItemLabel">Players</string>
-								<string key="NSToolbarItemPaletteLabel">Players</string>
-								<nil key="NSToolbarItemToolTip"/>
-								<nil key="NSToolbarItemView"/>
-								<object class="NSCustomResource" key="NSToolbarItemImage">
-									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">Spell_Holy_PrayerofSpirit</string>
-								</object>
-								<nil key="NSToolbarItemTarget"/>
-								<nil key="NSToolbarItemAction"/>
-								<string key="NSToolbarItemMinSize">{0, 0}</string>
-								<string key="NSToolbarItemMaxSize">{0, 0}</string>
-								<bool key="NSToolbarItemEnabled">YES</bool>
-								<bool key="NSToolbarItemAutovalidates">YES</bool>
-								<int key="NSToolbarItemTag">11</int>
-								<bool key="NSToolbarIsUserRemovable">YES</bool>
-								<int key="NSToolbarItemVisibilityPriority">0</int>
-							</object>
 							<object class="NSToolbarItem" id="442076634">
 								<object class="NSMutableString" key="NSToolbarItemIdentifier">
 									<characters key="NS.bytes">9EE3016C-0962-4579-8A78-D9D7C0ADB621</characters>
@@ -772,28 +726,6 @@
 								<bool key="NSToolbarItemEnabled">YES</bool>
 								<bool key="NSToolbarItemAutovalidates">YES</bool>
 								<int key="NSToolbarItemTag">9</int>
-								<bool key="NSToolbarIsUserRemovable">YES</bool>
-								<int key="NSToolbarItemVisibilityPriority">0</int>
-							</object>
-							<object class="NSToolbarItem" id="791479997">
-								<object class="NSMutableString" key="NSToolbarItemIdentifier">
-									<characters key="NS.bytes">A999C0F3-BC6D-47BF-B882-D7D9422D44AF</characters>
-								</object>
-								<string key="NSToolbarItemLabel">Nodes</string>
-								<string key="NSToolbarItemPaletteLabel">Nodes</string>
-								<nil key="NSToolbarItemToolTip"/>
-								<nil key="NSToolbarItemView"/>
-								<object class="NSCustomResource" key="NSToolbarItemImage">
-									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">INV_Misc_Gem_Bloodstone_01</string>
-								</object>
-								<nil key="NSToolbarItemTarget"/>
-								<nil key="NSToolbarItemAction"/>
-								<string key="NSToolbarItemMinSize">{0, 0}</string>
-								<string key="NSToolbarItemMaxSize">{0, 0}</string>
-								<bool key="NSToolbarItemEnabled">YES</bool>
-								<bool key="NSToolbarItemAutovalidates">YES</bool>
-								<int key="NSToolbarItemTag">5</int>
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
@@ -841,6 +773,28 @@
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
+							<object class="NSToolbarItem" id="271453216">
+								<object class="NSMutableString" key="NSToolbarItemIdentifier">
+									<characters key="NS.bytes">B63A3426-1473-4336-8F1D-5BCB25041F68</characters>
+								</object>
+								<string key="NSToolbarItemLabel">Objects</string>
+								<string key="NSToolbarItemPaletteLabel">Objects</string>
+								<nil key="NSToolbarItemToolTip"/>
+								<nil key="NSToolbarItemView"/>
+								<object class="NSCustomResource" key="NSToolbarItemImage">
+									<string key="NSClassName">NSImage</string>
+									<string key="NSResourceName">INV_Misc_Head_Dragon_Blue</string>
+								</object>
+								<nil key="NSToolbarItemTarget"/>
+								<nil key="NSToolbarItemAction"/>
+								<string key="NSToolbarItemMinSize">{0, 0}</string>
+								<string key="NSToolbarItemMaxSize">{0, 0}</string>
+								<bool key="NSToolbarItemEnabled">YES</bool>
+								<bool key="NSToolbarItemAutovalidates">YES</bool>
+								<int key="NSToolbarItemTag">15</int>
+								<bool key="NSToolbarIsUserRemovable">YES</bool>
+								<int key="NSToolbarItemVisibilityPriority">0</int>
+							</object>
 							<object class="NSToolbarItem" id="944730264">
 								<object class="NSMutableString" key="NSToolbarItemIdentifier">
 									<characters key="NS.bytes">C8D3D151-66DC-4B26-9227-FD886A23058B</characters>
@@ -860,28 +814,6 @@
 								<bool key="NSToolbarItemEnabled">YES</bool>
 								<bool key="NSToolbarItemAutovalidates">YES</bool>
 								<int key="NSToolbarItemTag">6</int>
-								<bool key="NSToolbarIsUserRemovable">YES</bool>
-								<int key="NSToolbarItemVisibilityPriority">0</int>
-							</object>
-							<object class="NSToolbarItem" id="420946435">
-								<object class="NSMutableString" key="NSToolbarItemIdentifier">
-									<characters key="NS.bytes">E3993BCB-9E36-4585-B08C-8C0BC011193A</characters>
-								</object>
-								<string key="NSToolbarItemLabel">Items</string>
-								<string key="NSToolbarItemPaletteLabel">Items</string>
-								<nil key="NSToolbarItemToolTip"/>
-								<nil key="NSToolbarItemView"/>
-								<object class="NSCustomResource" key="NSToolbarItemImage">
-									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">inv_misc_bag_14</string>
-								</object>
-								<nil key="NSToolbarItemTarget"/>
-								<nil key="NSToolbarItemAction"/>
-								<string key="NSToolbarItemMinSize">{0, 0}</string>
-								<string key="NSToolbarItemMaxSize">{0, 0}</string>
-								<bool key="NSToolbarItemEnabled">YES</bool>
-								<bool key="NSToolbarItemAutovalidates">YES</bool>
-								<int key="NSToolbarItemTag">8</int>
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
@@ -1015,11 +947,8 @@
 						<reference ref="442076634"/>
 						<reference ref="484822692"/>
 						<reference ref="778403213"/>
-						<reference ref="420946435"/>
 						<reference ref="748084000"/>
-						<reference ref="169927937"/>
-						<reference ref="1046819676"/>
-						<reference ref="791479997"/>
+						<reference ref="271453216"/>
 						<reference ref="944730264"/>
 						<reference ref="515029510"/>
 						<reference ref="1064180091"/>
@@ -1039,10 +968,7 @@
 						<reference ref="748084000"/>
 						<reference ref="499189514"/>
 						<reference ref="805655019"/>
-						<reference ref="169927937"/>
-						<reference ref="1046819676"/>
-						<reference ref="420946435"/>
-						<reference ref="791479997"/>
+						<reference ref="271453216"/>
 						<reference ref="805655019"/>
 						<reference ref="944730264"/>
 						<reference ref="515029510"/>
@@ -1057,7 +983,7 @@
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{700, 200}</string>
 				<object class="NSView" key="NSWindowView" id="307790377">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1195,6 +1121,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{749, 200}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{700, 277}</string>
@@ -6301,6 +6228,9 @@
 			<object class="NSCustomObject" id="963237447">
 				<string key="NSClassName">BindingsController</string>
 			</object>
+			<object class="NSCustomObject" id="1037448800">
+				<string key="NSClassName">ObjectsController</string>
+			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<object class="NSMutableArray" key="connectionRecords">
@@ -6699,14 +6629,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">playerController</string>
-						<reference key="source" ref="275065446"/>
-						<reference key="destination" ref="1002180867"/>
-					</object>
-					<int key="connectionID">919</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">dataSource</string>
 						<reference key="source" ref="988717511"/>
 						<reference key="destination" ref="226621460"/>
@@ -6957,14 +6879,6 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">toolbarItemSelected:</string>
 						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="1046819676"/>
-					</object>
-					<int key="connectionID">2297</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">toolbarItemSelected:</string>
-						<reference key="source" ref="148782052"/>
 						<reference key="destination" ref="748084000"/>
 					</object>
 					<int key="connectionID">2298</int>
@@ -6992,14 +6906,6 @@
 						<reference key="destination" ref="442076634"/>
 					</object>
 					<int key="connectionID">2301</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">toolbarItemSelected:</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="791479997"/>
-					</object>
-					<int key="connectionID">2302</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -7072,22 +6978,6 @@
 						<reference key="destination" ref="748084000"/>
 					</object>
 					<int key="connectionID">2331</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">mobsToolbarItem</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="1046819676"/>
-					</object>
-					<int key="connectionID">2332</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">nodesToolbarItem</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="791479997"/>
-					</object>
-					<int key="connectionID">2333</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -7234,14 +7124,6 @@
 					<int key="connectionID">2364</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">toolbarItemSelected:</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="420946435"/>
-					</object>
-					<int key="connectionID">2365</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">controller</string>
 						<reference key="source" ref="201772977"/>
@@ -7256,14 +7138,6 @@
 						<reference key="destination" ref="1071325592"/>
 					</object>
 					<int key="connectionID">2367</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">itemsToolbarItem</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="420946435"/>
-					</object>
-					<int key="connectionID">2368</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -7947,28 +7821,12 @@
 					<int key="connectionID">2563</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">toolbarItemSelected:</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="169927937"/>
-					</object>
-					<int key="connectionID">2565</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">playersController</string>
 						<reference key="source" ref="148782052"/>
 						<reference key="destination" ref="771133398"/>
 					</object>
 					<int key="connectionID">2566</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">playersToolbarItem</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="169927937"/>
-					</object>
-					<int key="connectionID">2567</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -10519,6 +10377,142 @@
 					</object>
 					<int key="connectionID">4190</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toolbarItemSelected:</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="271453216"/>
+					</object>
+					<int key="connectionID">4193</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">objectsToolbarItem</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="271453216"/>
+					</object>
+					<int key="connectionID">4194</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">controller</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="148782052"/>
+					</object>
+					<int key="connectionID">4196</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">itemController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="201772977"/>
+					</object>
+					<int key="connectionID">4197</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">memoryViewController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="1071325592"/>
+					</object>
+					<int key="connectionID">4198</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">mobController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="1065682814"/>
+					</object>
+					<int key="connectionID">4199</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nodeController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="275065446"/>
+					</object>
+					<int key="connectionID">4200</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">playersController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="771133398"/>
+					</object>
+					<int key="connectionID">4201</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">objectsController</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="1037448800"/>
+					</object>
+					<int key="connectionID">4202</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="963237447"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">4205</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">playerData</string>
+						<reference key="source" ref="275065446"/>
+						<reference key="destination" ref="1002180867"/>
+					</object>
+					<int key="connectionID">4206</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">objectsController</string>
+						<reference key="source" ref="1065682814"/>
+						<reference key="destination" ref="1037448800"/>
+					</object>
+					<int key="connectionID">4207</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">objectsController</string>
+						<reference key="source" ref="275065446"/>
+						<reference key="destination" ref="1037448800"/>
+					</object>
+					<int key="connectionID">4208</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">objectsController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="1037448800"/>
+					</object>
+					<int key="connectionID">4209</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">objectsController</string>
+						<reference key="source" ref="771133398"/>
+						<reference key="destination" ref="1037448800"/>
+					</object>
+					<int key="connectionID">4210</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">movementController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="290834434"/>
+					</object>
+					<int key="connectionID">4211</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">playerController</string>
+						<reference key="source" ref="1037448800"/>
+						<reference key="destination" ref="1002180867"/>
+					</object>
+					<int key="connectionID">4212</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -11269,16 +11263,13 @@
 							<reference ref="778403213"/>
 							<reference ref="944730264"/>
 							<reference ref="515029510"/>
-							<reference ref="1046819676"/>
 							<reference ref="748084000"/>
 							<reference ref="442076634"/>
-							<reference ref="791479997"/>
-							<reference ref="420946435"/>
 							<reference ref="446309517"/>
 							<reference ref="1064180091"/>
-							<reference ref="169927937"/>
 							<reference ref="484822692"/>
 							<reference ref="499189514"/>
+							<reference ref="271453216"/>
 						</object>
 						<reference key="parent" ref="836553576"/>
 					</object>
@@ -11318,11 +11309,6 @@
 						<reference key="parent" ref="591372859"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">1970</int>
-						<reference key="object" ref="1046819676"/>
-						<reference key="parent" ref="591372859"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">1971</int>
 						<reference key="object" ref="748084000"/>
 						<reference key="parent" ref="591372859"/>
@@ -11337,16 +11323,6 @@
 						<reference key="object" ref="201772977"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Inventory</string>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">2295</int>
-						<reference key="object" ref="791479997"/>
-						<reference key="parent" ref="591372859"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">2315</int>
-						<reference key="object" ref="420946435"/>
-						<reference key="parent" ref="591372859"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">2321</int>
@@ -11600,11 +11576,6 @@
 						<int key="objectID">2560</int>
 						<reference key="object" ref="771133398"/>
 						<reference key="parent" ref="0"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">2564</int>
-						<reference key="object" ref="169927937"/>
-						<reference key="parent" ref="591372859"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">2682</int>
@@ -14147,6 +14118,16 @@
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Bindings</string>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4191</int>
+						<reference key="object" ref="1037448800"/>
+						<reference key="parent" ref="0"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4192</int>
+						<reference key="object" ref="271453216"/>
+						<reference key="parent" ref="591372859"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -14242,7 +14223,6 @@
 					<string>1969.IBPluginDependency</string>
 					<string>197.IBPluginDependency</string>
 					<string>197.ImportedFromIB2</string>
-					<string>1970.IBPluginDependency</string>
 					<string>1971.IBPluginDependency</string>
 					<string>1972.IBPluginDependency</string>
 					<string>198.IBPluginDependency</string>
@@ -14298,10 +14278,8 @@
 					<string>220.editorWindowContentRectSynchronizationRect</string>
 					<string>221.IBPluginDependency</string>
 					<string>221.ImportedFromIB2</string>
-					<string>2295.IBPluginDependency</string>
 					<string>23.IBPluginDependency</string>
 					<string>23.ImportedFromIB2</string>
-					<string>2315.IBPluginDependency</string>
 					<string>2321.IBPluginDependency</string>
 					<string>2339.IBPluginDependency</string>
 					<string>2349.IBPluginDependency</string>
@@ -14364,7 +14342,6 @@
 					<string>2469.IBPluginDependency</string>
 					<string>2475.IBPluginDependency</string>
 					<string>2480.IBPluginDependency</string>
-					<string>2564.IBPluginDependency</string>
 					<string>2571.IBPluginDependency</string>
 					<string>2577.IBPluginDependency</string>
 					<string>2601.IBPluginDependency</string>
@@ -14708,6 +14685,7 @@
 					<string>4108.IBPluginDependency</string>
 					<string>4109.IBPluginDependency</string>
 					<string>4117.IBPluginDependency</string>
+					<string>4192.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -14801,15 +14779,15 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{448, 442}, {749, 200}}</string>
+					<string>{{272, 95}, {749, 200}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{448, 442}, {749, 200}}</string>
+					<string>{{272, 95}, {749, 200}}</string>
 					<integer value="1"/>
 					<string>{{49, 661}, {640, 200}}</string>
 					<integer value="1"/>
 					<string>{700, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{556, 642}, {617, 0}}</string>
+					<string>{{338, 295}, {617, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{57, 707}, {616, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -14820,7 +14798,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -14877,9 +14854,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -14904,7 +14879,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{225, 906}, {197, 73}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15298,6 +15272,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -15335,7 +15310,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4190</int>
+			<int key="maxID">4212</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15431,11 +15406,13 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>chatController</string>
 							<string>controller</string>
+							<string>offsetController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>ChatController</string>
 							<string>Controller</string>
+							<string>OffsetController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -15580,7 +15557,6 @@
 							<string>mobController</string>
 							<string>mountCheckbox</string>
 							<string>mountType</string>
-							<string>mouseOverRecorder</string>
 							<string>movementController</string>
 							<string>netherwingEggCheckbox</string>
 							<string>nodeController</string>
@@ -15592,7 +15568,6 @@
 							<string>nodeIgnoreMobDistanceText</string>
 							<string>offsetController</string>
 							<string>overlayWindow</string>
-							<string>petAttackRecorder</string>
 							<string>playerController</string>
 							<string>playersController</string>
 							<string>procedureController</string>
@@ -15606,7 +15581,6 @@
 							<string>routePopup</string>
 							<string>runningTimer</string>
 							<string>scanGrid</string>
-							<string>shortcutRecorder</string>
 							<string>skinningCheckbox</string>
 							<string>skinningSkillText</string>
 							<string>spellController</string>
@@ -15671,7 +15645,6 @@
 							<string>MobController</string>
 							<string>NSButton</string>
 							<string>NSPopUpButton</string>
-							<string>SRRecorderControl</string>
 							<string>MovementController</string>
 							<string>NSButton</string>
 							<string>NodeController</string>
@@ -15683,7 +15656,6 @@
 							<string>NSTextField</string>
 							<string>OffsetController</string>
 							<string>NSWindow</string>
-							<string>SRRecorderControl</string>
 							<string>PlayerDataController</string>
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
@@ -15697,7 +15669,6 @@
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>ScanGridView</string>
-							<string>SRRecorderControl</string>
 							<string>NSButton</string>
 							<string>id</string>
 							<string>SpellController</string>
@@ -15942,7 +15913,6 @@
 							<string>currentStatusText</string>
 							<string>disableGUIScriptCheckbox</string>
 							<string>itemController</string>
-							<string>itemsToolbarItem</string>
 							<string>mainBackgroundBox</string>
 							<string>mainToolbar</string>
 							<string>mainWindow</string>
@@ -15952,17 +15922,16 @@
 							<string>memoryToolbarItem</string>
 							<string>memoryViewController</string>
 							<string>mobController</string>
-							<string>mobsToolbarItem</string>
 							<string>newIdentifierField</string>
 							<string>newNameField</string>
 							<string>newSignatureField</string>
 							<string>nodeController</string>
-							<string>nodesToolbarItem</string>
+							<string>objectsController</string>
+							<string>objectsToolbarItem</string>
 							<string>offsetController</string>
 							<string>playerData</string>
 							<string>playerToolbarItem</string>
 							<string>playersController</string>
-							<string>playersToolbarItem</string>
 							<string>prefsToolbarItem</string>
 							<string>routeController</string>
 							<string>routesToolbarItem</string>
@@ -15989,7 +15958,6 @@
 							<string>id</string>
 							<string>NSButton</string>
 							<string>InventoryController</string>
-							<string>NSToolbarItem</string>
 							<string>id</string>
 							<string>NSToolbar</string>
 							<string>id</string>
@@ -15999,17 +15967,16 @@
 							<string>NSToolbarItem</string>
 							<string>MemoryViewController</string>
 							<string>MobController</string>
-							<string>NSToolbarItem</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NodeController</string>
+							<string>ObjectsController</string>
 							<string>NSToolbarItem</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 							<string>NSToolbarItem</string>
 							<string>PlayersController</string>
-							<string>NSToolbarItem</string>
 							<string>NSToolbarItem</string>
 							<string>WaypointController</string>
 							<string>NSToolbarItem</string>
@@ -16095,24 +16062,18 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">InventoryController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">ObjectController</string>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>controller</string>
-							<string>itemTable</string>
 							<string>memoryViewController</string>
-							<string>playerData</string>
-							<string>view</string>
+							<string>objectsController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>Controller</string>
-							<string>NSTableView</string>
 							<string>MemoryViewController</string>
-							<string>PlayerDataController</string>
-							<string>NSView</string>
+							<string>ObjectsController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -16290,29 +16251,10 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">MobController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">ObjectController</string>
 					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>additionalStart:</string>
-							<string>additionalStop:</string>
-							<string>faceMob:</string>
-							<string>filterMobs:</string>
-							<string>resetMobList:</string>
-							<string>targetMob:</string>
-							<string>updateTracking:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
+						<string key="NS.key.0">updateTracking:</string>
+						<string key="NS.object.0">id</string>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -16322,17 +16264,13 @@
 							<string>auraController</string>
 							<string>botController</string>
 							<string>combatController</string>
-							<string>controller</string>
 							<string>memoryViewController</string>
-							<string>mobColorByLevel</string>
-							<string>mobTable</string>
 							<string>movementController</string>
-							<string>playerData</string>
+							<string>objectsController</string>
 							<string>spellController</string>
 							<string>trackFriendlyMenuItem</string>
 							<string>trackHostileMenuItem</string>
 							<string>trackNeutralMenuItem</string>
-							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -16342,11 +16280,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+							<string>ObjectsController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -16455,21 +16389,79 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NodeController</string>
+					<string key="superclassName">ObjectController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>memoryViewController</string>
+							<string>moveToList</string>
+							<string>movementController</string>
+							<string>objectsController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>NSPopUpButton</string>
+							<string>id</string>
+							<string>ObjectsController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">NodeController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ObjectController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">tableDoubleClick:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller</string>
+							<string>playerData</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>Controller</string>
+							<string>PlayerDataController</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ObjectController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ObjectsController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>faceNode:</string>
-							<string>filterList:</string>
-							<string>filterNodes:</string>
+							<string>faceObject:</string>
+							<string>filter:</string>
 							<string>moveToStart:</string>
 							<string>moveToStop:</string>
-							<string>resetList:</string>
-							<string>targetNode:</string>
+							<string>refreshData:</string>
+							<string>reloadNames:</string>
+							<string>resetObjects:</string>
+							<string>targetObject:</string>
+							<string>updateTracking:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -16483,30 +16475,42 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>botController</string>
 							<string>controller</string>
+							<string>itemController</string>
+							<string>itemTable</string>
 							<string>memoryViewController</string>
-							<string>moveToList</string>
+							<string>mobController</string>
+							<string>mobTable</string>
 							<string>movementController</string>
+							<string>nodeController</string>
 							<string>nodeTable</string>
 							<string>playerController</string>
+							<string>playersController</string>
+							<string>playersTable</string>
+							<string>tabView</string>
 							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSPopUpButton</string>
-							<string>id</string>
-							<string>id</string>
+							<string>Controller</string>
+							<string>InventoryController</string>
+							<string>NSTableView</string>
+							<string>MemoryViewController</string>
+							<string>MobController</string>
+							<string>NSTableView</string>
+							<string>MovementController</string>
+							<string>NodeController</string>
+							<string>NSTableView</string>
 							<string>PlayerDataController</string>
+							<string>PlayersController</string>
+							<string>NSTableView</string>
+							<string>NSTabView</string>
 							<string>NSView</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">NodeController.h</string>
+						<string key="minorKey">ObjectsController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -16597,51 +16601,26 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">PlayersController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">ObjectController</string>
 					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>facePlayer:</string>
-							<string>reloadNames:</string>
-							<string>resetPlayerList:</string>
-							<string>targetPlayer:</string>
-							<string>updateTracking:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
+						<string key="NS.key.0">updateTracking:</string>
+						<string key="NS.object.0">id</string>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>controller</string>
 							<string>memoryViewController</string>
 							<string>movementController</string>
+							<string>objectsController</string>
 							<string>playerColorByLevel</string>
-							<string>playerData</string>
-							<string>playerTable</string>
-							<string>trackFriendly</string>
-							<string>trackHostile</string>
-							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>Controller</string>
 							<string>MemoryViewController</string>
 							<string>MovementController</string>
+							<string>ObjectsController</string>
 							<string>NSButton</string>
-							<string>PlayerDataController</string>
-							<string>NSTableView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSView</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">

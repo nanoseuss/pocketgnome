@@ -1324,7 +1324,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Unit *originalTarget = target;
     int completed = [[state objectForKey: @"CompletedRules"] intValue];
     int attempts = [[state objectForKey: @"RuleAttempts"] intValue];
-    int actions = [[state objectForKey: @"ActionsPerformed"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
 	if ( rulesTried == nil ){
 		//PGLog(@"[Procedure^^^^^^^^^^^^^] Creating dictionary to track our tried rules!");
@@ -1360,7 +1359,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
     
     // have we exceeded our maximum attempts on this rule?
-    if(attempts > 3) {
+    if ( attempts > 3 ) {
         PGLog(@"  Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
         [self performSelector: _cmd
                    withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -1377,11 +1376,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// priority system for combat
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 		
+		// decision "tree"
+		// if in combat, attack nearby
+		// if not in combat, check for an add
+		// if not in combat, should we loot?
+		// if not in combat, should we find another?
+		// evaluate...
+		
 		// kind of a hack right now, but it *should* work
 		//	I'm running into a problem where PG will not loot after death, but instead move onto a hostile NOT in combat
 		//	So lets add a check here, this isn't how I want it to operate, but it will work for now
 		BOOL doCombatProcedure = YES;
 		
+		// temp fix for looting
 		if ( self.doLooting && [_mobsToLoot count] ){
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 			
@@ -1395,7 +1402,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 		
-		// temp fix for looting
 		if ( doCombatProcedure ){
 			NSArray *units = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
 			NSArray *adds = [combatController allAdds];
@@ -1608,7 +1614,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 					// success!
 					else{
-						actions++;
 						completed++;
 					}
 				}
@@ -1629,7 +1634,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 								[state objectForKey: @"Procedure"],				@"Procedure",
 								[NSNumber numberWithInt: completed],            @"CompletedRules",
-								[NSNumber numberWithInt: actions],				@"ActionsPerformed",        // but increment attempts
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
 								target,											@"Target", nil]
@@ -1638,9 +1642,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
+	/*
+	// we could get here by lets say, having no mana (or rage/energy), but we're still fighting something. So continue!
 	if ( [[combatController combatList] count] > 0 ){
-		PGLog(@"[Procedure] We still have units in combat! Why are we quitting! O noes!");
-	}
+		PGLog(@"[Procedure] We still have units in combat! Why are we quitting! O noes trying to kill more!");
+		
+		[self performSelector: _cmd
+				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+								[state objectForKey: @"Procedure"],				@"Procedure",
+								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
+								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
+								nil,											@"Target", nil]
+				   afterDelay: 0.1f];
+		return;
+	}*/
 
 	// we're done
 	PGLog(@"[Procedure] Done! Finishing!");

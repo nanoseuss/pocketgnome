@@ -7,52 +7,34 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "ObjectController.h"
 
 @class Player;
 @class Unit;
 
-@class Controller;
 @class PlayerDataController;
 @class MemoryViewController;
 @class MovementController;
+@class ObjectsController;
 
-@interface PlayersController : NSObject {
-    IBOutlet Controller *controller;
-    IBOutlet PlayerDataController *playerData;
+@interface PlayersController : ObjectController {
     IBOutlet MemoryViewController *memoryViewController;
     IBOutlet MovementController *movementController;
+	IBOutlet ObjectsController	*objectsController;
 
-    IBOutlet NSView *view;
-    IBOutlet NSTableView *playerTable;
     IBOutlet NSButton *playerColorByLevel;
-    
-    IBOutlet id trackFriendly;
-    IBOutlet id trackHostile;
-
-    NSMutableArray *_playerList;
-    NSMutableArray *_playerDataList;
+	
 	NSMutableDictionary *_playerNameList;
 
     int cachedPlayerLevel;
-    NSTimer *_updateTimer;
-    NSSize minSectionSize, maxSectionSize;
-    float updateFrequency;
 }
 
 @property (readonly) unsigned playerCount;
-@property (readonly) NSView *view;
-@property (readonly) NSString *sectionTitle;
-@property NSSize minSectionSize;
-@property NSSize maxSectionSize;
-@property float updateFrequency;
 
 + (PlayersController *)sharedPlayers;
 - (NSArray*)allPlayers;
 - (Player*)playerTarget;
 - (Player*)playerWithGUID: (GUID)guid;
-- (void)addAddresses: (NSArray*)addresses;
-//- (BOOL)addPlayer: (Player*)player;
-- (void)resetAllPlayers;
 
 - (NSArray*)playersWithinDistance: (float)distance
                        levelRange: (NSRange)range
@@ -62,16 +44,12 @@
 - (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile;
 - (NSArray*)friendlyPlayers;
 
-- (IBAction)facePlayer: (id)sender;
-- (IBAction)targetPlayer: (id)sender;
-- (IBAction)resetPlayerList: (id)sender;
-- (IBAction)reloadNames: (id)sender;
-
-- (IBAction)updateTracking: (id)sender;
+- (void)updateTracking: (id)sender;
 
 - (NSString*)playerNameWithGUID:(UInt64)guid;
 
 // player name
 - (BOOL)addPlayerName: (NSString*)name withGUID:(UInt64)guid;
 - (int)totalNames;
+
 @end

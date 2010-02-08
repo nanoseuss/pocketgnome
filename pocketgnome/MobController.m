@@ -16,6 +16,7 @@
 #import "AuraController.h"
 #import "BotController.h"
 #import "SpellController.h"
+#import "ObjectsController.h"
 
 #import "MemoryAccess.h"
 #import "CombatProfile.h"
@@ -26,10 +27,6 @@
 #import "Offsets.h"
 
 #import "ImageAndTextCell.h"
-
-@interface MobController ()
-@property (readwrite, retain) NSString *filterString;
-@end
 
 @interface MobController (Internal)
 - (BOOL)trackingMob: (Mob*)mob;
@@ -55,84 +52,15 @@ static MobController* sharedController = nil;
 		self = sharedController;
 	} else if (self != nil) {
         sharedController = self;
-        _updateTimer = nil;
+
         [[NSUserDefaults standardUserDefaults] registerDefaults: [NSDictionary dictionaryWithObject: @"0.25" forKey: @"MobControllerUpdateFrequency"]];
-        _mobList = [[NSMutableArray array] retain];
-        _mobDataList = [[NSMutableArray array] retain];
         cachedPlayerLevel = 0;
-        
-        // wow memory access validity
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(memoryAccessValid:) 
-                                                     name: MemoryAccessValidNotification 
-                                                   object: nil];
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(memoryAccessInvalid:) 
-                                                     name: MemoryAccessInvalidNotification 
-                                                   object: nil];
-        
-        [NSBundle loadNibNamed: @"Mobs" owner: self];
     }
     return self;
 }
 
-- (void)awakeFromNib {
-    self.minSectionSize = [self.view frame].size;
-    self.maxSectionSize = NSZeroSize;
-    
-    self.updateFrequency = [[NSUserDefaults standardUserDefaults] floatForKey: @"MobControllerUpdateFrequency"];
-    
-    [mobTable setDoubleAction: @selector(mobTableDoubleClick:)];
-    [(NSTableView*)mobTable setTarget: self];
-
-    ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
-    [imageAndTextCell setEditable: NO];
-    [[mobTable tableColumnWithIdentifier: @"Name"] setDataCell: imageAndTextCell];
-
-    //_updateTimer = [NSTimer scheduledTimerWithTimeInterval: self.updateFrequency target: self selector: @selector(reloadMobData:) userInfo: nil repeats: YES];
-    //[_updateTimer retain];
-}
-
-#pragma mark Notifications
-
-- (void)memoryAccessValid: (NSNotification*)notification {
-    MemoryAccess *memory = [controller wowMemoryAccess];
-    if(!memory) return;
-    //PGLog(@"Reloading memory access for %d mobs.", [_mobList count]);
-    for(Mob *mob in _mobList) {
-        [mob setMemoryAccess: memory];
-    }
-}
-
-- (void)memoryAccessInvalid: (NSNotification*)notification {
-    [self resetAllMobs];
-}
-
 
 #pragma mark Accessors
-
-@synthesize view;
-@synthesize updateFrequency = _updateFrequency;
-@synthesize minSectionSize;
-@synthesize maxSectionSize;
-@synthesize filterString;
-
-- (NSString*)sectionTitle {
-    return @"Mobs";
-}
-
-- (void)setUpdateFrequency: (float)frequency {
-    if(frequency < 0.1) frequency = 0.1;
-    
-    [self willChangeValueForKey: @"updateFrequency"];
-    _updateFrequency = [[NSString stringWithFormat: @"%.2f", frequency] floatValue];
-    [self didChangeValueForKey: @"updateFrequency"];
-    
-    [[NSUserDefaults standardUserDefaults] setFloat: _updateFrequency forKey: @"MobControllerUpdateFrequency"];
-
-    [_updateTimer invalidate];
-    _updateTimer = [NSTimer scheduledTimerWithTimeInterval: _updateFrequency target: self selector: @selector(reloadMobData:) userInfo: nil repeats: YES];
-}
 
 - (NSImage*)toolbarIcon {
     NSImage *original = [NSImage imageNamed: @"INV_Misc_Head_Dragon_Bronze"];
@@ -142,11 +70,11 @@ static MobController* sharedController = nil;
                                  [NSFont fontWithName:@"Helvetica-Bold" size: 18], NSFontAttributeName,
                                  [NSColor whiteColor], NSForegroundColorAttributeName, nil] autorelease];
     
-    NSString *count = [NSString stringWithFormat: @"%d", [_mobList count]];
+    NSString *count = [NSString stringWithFormat: @"%d", [_objectList count]];
     NSSize numSize = [count sizeWithAttributes:attributes];
     NSSize iconSize = [original size];
     
-    if ([_mobList count]) {
+    if ([_objectList count]) {
         
         [newImage lockFocus];
         float max = ((numSize.width > numSize.height) ? numSize.width : numSize.height) + 8.0f;
@@ -168,7 +96,7 @@ static MobController* sharedController = nil;
 // deselect all mobs
 - (void)clearTargets{
 	// deselect all
-	for(Mob *mob in _mobList) {
+	for(Mob *mob in _objectList) {
 		[mob deselect];
 	}
 }
@@ -191,7 +119,7 @@ static MobController* sharedController = nil;
 - (Mob*)playerTarget {
     GUID playerTarget = [playerData targetID];
     
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         if( playerTarget == [mob GUID]) {
             return mob;
         }
@@ -200,7 +128,7 @@ static MobController* sharedController = nil;
 }
 
 - (Mob*)mobWithEntryID: (int)entryID {
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         if( entryID == [mob entryID]) {
             return [[mob retain] autorelease];
         }
@@ -211,7 +139,7 @@ static MobController* sharedController = nil;
 - (NSArray*)mobsWithEntryID: (int)entryID {
 
 	NSMutableArray *mobs = [NSMutableArray array];
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
 		
 		if( entryID == [mob entryID]) {
 			[mobs addObject: mob];
@@ -222,7 +150,7 @@ static MobController* sharedController = nil;
 }
 
 - (Mob*)mobWithGUID: (GUID)guid {
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         if( guid == [mob GUID]) {
             return [[mob retain] autorelease];
         }
@@ -231,63 +159,30 @@ static MobController* sharedController = nil;
 }
 
 - (unsigned)mobCount {
-    return [_mobList count];
+    return [_objectList count];
+}
+
+- (unsigned int)objectCount {
+	return [_objectList count];	
+}
+
+- (NSArray*)allObjects{
+	return [[_objectList retain] autorelease];
 }
 
 - (NSArray*)allMobs {
-    return [[_mobList retain] autorelease];
+    return [[_objectList retain] autorelease];
 }
 
 
 - (void)addAddresses: (NSArray*)addresses {
-    NSMutableDictionary *addressDict = [NSMutableDictionary dictionary];
-    NSMutableArray *objectsToRemove = [NSMutableArray array];
-    NSMutableArray *dataList = _mobList;
-    MemoryAccess *memory = [controller wowMemoryAccess];
-    if(![memory isValid]) return;
-    
-    [self willChangeValueForKey: @"mobCount"];
+	
+	[super addAddresses: addresses];
 
-    // enumerate current object addresses
-    // determine which objects need to be removed
-    for(WoWObject *obj in dataList) {
-        if([obj isValid]) {
-            [addressDict setObject: obj forKey: [NSNumber numberWithUnsignedLongLong: [obj baseAddress]]];
-        } else {
-            [objectsToRemove addObject: obj];
-        }
-    }
-    
-    // remove any if necessary
-    if([objectsToRemove count]) {
-        [dataList removeObjectsInArray: objectsToRemove];
-    }
-    
-    // add new objects if they don't currently exist
-    NSDate *now = [NSDate date];
-    for(NSNumber *address in addresses) {
-        if( ![addressDict objectForKey: address] ) {
-            [dataList addObject: [Mob mobWithAddress: address inMemory: memory]];
-        } else {
-            [[addressDict objectForKey: address] setRefreshDate: now];
-        }
-    }
-    
-    [self didChangeValueForKey: @"mobCount"];
     [self updateTracking: nil];
 }
 
-/*- (BOOL)addMob: (Mob*)mob {
-    if(mob && ![self trackingMob: mob]) {
-        [self willChangeValueForKey: @"mobCount"];
-        [_mobList addObject: mob];
-        [self didChangeValueForKey: @"mobCount"];
-        
-        return YES;
-    }
-    return NO;
-}*/
-
+/*
 - (IBAction)resetMobList: (id)sender {
     [self resetAllMobs];
     [mobTable reloadData];
@@ -308,18 +203,8 @@ static MobController* sharedController = nil;
     
     if(selectedRow >= [_mobDataList count]) return;
     Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
-    
-    // !!!: remove this hack when 10.5.7 ships
-    //[controller makeWoWFront];
-    
-    
+
     [movementController turnTowardObject: mob];
-            
-    //if(angleBetween > 0)
-    //    [playerDataController setPlayerDirection: angleOffset];
-    //else
-    //    [playerDataController setPlayerDirection: 2.0*3.1415926 - angleOffset];
-    
 }
 
 - (IBAction)additionalStart: (id)sender {
@@ -341,7 +226,7 @@ static MobController* sharedController = nil;
         // create a list of all out grumpy peons and their distance from us
         NSMutableArray *mobList = [NSMutableArray array];
         Position *playerPosition = [(PlayerDataController*)playerData position];
-        for(Mob *mob in _mobList) {
+        for(Mob *mob in _objectList) {
             if([mob entryID] == tag) { 
                 
                 float distance = [playerPosition distanceToPosition: [mob position]];
@@ -389,14 +274,14 @@ static MobController* sharedController = nil;
 - (IBAction)additionalStop: (id)sender {
     
     [movementController setPatrolRoute: nil];
-}
+}*/
 
 #pragma mark -
 
 - (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position aliveOnly:(BOOL)aliveOnly{
 	
 	NSMutableArray *withinRangeMobs = [NSMutableArray array];
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
 		
 		// Just return nearby mobs
 		if ( mobIDs == nil ){
@@ -442,9 +327,9 @@ static MobController* sharedController = nil;
     BOOL ignoreLevelOne = ([playerData level] > 10) ? YES : NO;
     Position *playerPosition = [(PlayerDataController*)playerData position];
 	
-	//PGLog(@"[Mob] Total mobs: %d", [_mobList count]);
+	//PGLog(@"[Mob] Total mobs: %d", [_objectList count]);
     
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         
         if ( !includeElite && [mob isElite] ){
 			//PGLog(@"[Mob] Ignoring elite %@", mob);
@@ -502,7 +387,7 @@ static MobController* sharedController = nil;
     
     Position *playerPosition = [(PlayerDataController*)playerData position];
     
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         float distance = [playerPosition distanceToPosition: [mob position]];
 		
         if((distance != INFINITY) && (distance <= 9)) {
@@ -517,6 +402,53 @@ static MobController* sharedController = nil;
     return nil;
 }
 
+#pragma mark ObjectsController helpers
+
+- (NSArray*)uniqueMobsAlphabetized{
+	
+	NSMutableArray *addedMobNames = [NSMutableArray array];
+	
+	for ( Mob *mob in _objectList ){
+		if ( ![addedMobNames containsObject:[mob name]] ){
+			[addedMobNames addObject:[mob name]];
+		}
+	}
+	
+	[addedMobNames sortUsingSelector:@selector(compare:)];
+	
+	return [[addedMobNames retain] autorelease];
+}
+
+- (Mob*)closestMobWithName:(NSString*)mobName{
+	
+	NSMutableArray *mobsWithName = [NSMutableArray array];
+	
+	// find mobs with the name!
+	for ( Mob *mob in _objectList ){
+		if ( [mobName isEqualToString:[mob name]] ){
+			[mobsWithName addObject:mob];
+		}
+	}
+	
+	if ( [mobsWithName count] == 1 ){
+		return [mobsWithName objectAtIndex:0];
+	}
+	
+	Position *playerPosition = [playerData position];
+	Mob *closestMob = nil;
+	float closestDistance = INFINITY;
+	for ( Mob *mob in mobsWithName ){
+		
+		float distance = [playerPosition distanceToPosition:[mob position]];
+		if ( distance < closestDistance ){
+			closestDistance = distance;
+			closestMob = mob;
+		}
+	}
+	
+	return closestMob;	
+}
+
 #pragma mark -
 
 - (void)doCombatScan {
@@ -526,7 +458,7 @@ static MobController* sharedController = nil;
     // check to see if we're in combat
 
 	if ( doNearbyScan ){
-		for(Mob *mob in _mobList) {
+		for(Mob *mob in _objectList) {
 			if ( [mob entryID] == nearbyEntryID && ![mob isDead] ){
 				[[NSSound soundNamed: @"alarm"] play];
 				PGLog(@"[Combat] Found %d nearby! Playing alarm!", nearbyEntryID);
@@ -537,140 +469,11 @@ static MobController* sharedController = nil;
 }
 
 - (BOOL)trackingMob: (Mob*)trackingMob {
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         if( [mob isEqualToObject: trackingMob] )
             return YES;
     }
     return NO;
-}
-
-- (void)resetAllMobs {
-    [self willChangeValueForKey: @"mobCount"];
-    [_mobList removeAllObjects];
-    [self didChangeValueForKey: @"mobCount"];
-}
-
-
-- (void)reloadMobData: (NSTimer*)timer {
-    if(![[mobTable window] isVisible] && ![botController isBotting]) return;
-    if(![playerData playerIsValid:self]) return;
-    
-    [_mobDataList removeAllObjects];
-    cachedPlayerLevel = [playerData level];
-    
-    // only resort and display the table if the window is visible
-    if( [[mobTable window] isVisible]) {
-        
-        unsigned level, health;
-        for(Mob *mob in _mobList) {
-            
-            if( ![mob isValid] )
-                continue;
-            
-            if(self.filterString) {
-                if([[mob name] rangeOfString: self.filterString options: NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound) {
-                    continue;
-                }
-            }
-            
-            BOOL hideNonSeletable = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideNonSelectable"];
-            BOOL hidePets = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHidePets"];
-            BOOL hideCritters = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideCritters"];
-            
-            // hide invisible mobs from the list
-            if(hideNonSeletable && ![mob isSelectable])
-                continue;
-            
-            health = [mob currentHealth];
-            level = [mob level];
-            
-            NSString *name = [mob name];
-            
-            // check to see if it's a pet
-            if([mob isPet]) {
-                if( hidePets ) continue;
-                if( [mob isTotem]) {
-                    name = [@"[Totem] " stringByAppendingString: name];
-                } else {
-                    name = [@"[Pet] " stringByAppendingString: name];
-                }
-            }
-            
-            // name = [[NSString stringWithFormat: @"[0x%X] ", [mob unitBytes2]] stringByAppendingString: name];
-            
-            BOOL isDead = [mob isDead];
-            BOOL isCombat = [mob isInCombat];
-            int faction = [mob factionTemplate];
-            BOOL isHostile = [playerData isHostileWithFaction: faction];
-            BOOL isNeutral = (!isHostile && ![playerData isFriendlyWithFaction: faction]);
-            
-            BOOL allianceFriendly = ([controller reactMaskForFaction: faction] & 0x2);
-            BOOL hordeFriendly = ([controller reactMaskForFaction: faction] & 0x4);
-            BOOL bothFriendly = hordeFriendly && allianceFriendly;
-            allianceFriendly = allianceFriendly && !bothFriendly;
-            hordeFriendly = hordeFriendly && !bothFriendly;
-            BOOL critter = ([controller reactMaskForFaction: faction] == 0) && (level == 1);
-            
-            // skip critters if necessary
-            if( hideCritters && critter)
-                continue;
-            
-            float distance = [[(PlayerDataController*)playerData position] distanceToPosition: [mob position]];
-            
-            NSImage *nameIcon = nil;
-            if( !nameIcon && (level == PLAYER_LEVEL_CAP+3) && [mob isElite])
-                nameIcon = [NSImage imageNamed: @"Skull"];
-            
-            if( !nameIcon && [mob isAuctioneer])    nameIcon = [NSImage imageNamed: @"BankerGossipIcon"];
-            if( !nameIcon && [mob isStableMaster])  nameIcon = [NSImage imageNamed: @"Stable"];
-            if( !nameIcon && [mob isBanker])        nameIcon = [NSImage imageNamed: @"BankerGossipIcon"];
-            if( !nameIcon && [mob isInnkeeper])     nameIcon = [NSImage imageNamed: @"Innkeeper"];
-            if( !nameIcon && [mob isFlightMaster])  nameIcon = [NSImage imageNamed: @"TaxiGossipIcon"];
-            if( !nameIcon && [mob canRepair])       nameIcon = [NSImage imageNamed: @"Repair"];
-            if( !nameIcon && [mob isVendor])        nameIcon = [NSImage imageNamed: @"VendorGossipIcon"];
-            if( !nameIcon && [mob isTrainer])       nameIcon = [NSImage imageNamed: @"TrainerGossipIcon"];
-            if( !nameIcon && [mob isQuestGiver])    nameIcon = [NSImage imageNamed: @"ActiveQuestIcon"];
-            if( !nameIcon && [mob canGossip])       nameIcon = [NSImage imageNamed: @"GossipGossipIcon"];
-            if( !nameIcon && allianceFriendly)      nameIcon = [NSImage imageNamed: @"AllianceCrest"];
-            if( !nameIcon && hordeFriendly)         nameIcon = [NSImage imageNamed: @"HordeCrest"];
-            if( !nameIcon && critter)               nameIcon = [NSImage imageNamed: @"Chicken"];
-            if( !nameIcon)                          nameIcon = [NSImage imageNamed: @"NeutralCrest"];
-            
-            
-            [_mobDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                      mob,                                                      @"Mob",
-                                      name,                                                     @"Name",
-                                      [NSNumber numberWithInt: [mob entryID]],                  @"ID",
-                                      [NSNumber numberWithInt: health],                         @"Health",
-                                      [NSNumber numberWithUnsignedInt: level],                  @"Level",
-                                      [NSString stringWithFormat: @"0x%X", [mob baseAddress]],  @"Address",
-                                      [NSNumber numberWithFloat: distance],                     @"Distance", 
-                                      [mob isPet] ? @"Yes" : @"No",                             @"Pet",
-                                      // isHostile ? @"Yes" : @"No",                           @"Hostile",
-                                      // isCombat ? @"Yes" : @"No",                            @"Combat",
-                                      (isDead ? @"3" : (isCombat ? @"1" : (isNeutral ? @"4" : (isHostile ? @"2" : @"5")))),  @"Status",
-                                      nameIcon,                                                 @"NameIcon", 
-                                      nil]];
-            //[mobDict setObject: [NSNumber numberWithUnsignedInt: health] forKey: @"Health"];
-            //[mobDict setObject: [NSNumber numberWithUnsignedInt: level] forKey: @"Level"];
-            //[mobDict setObject: [NSNumber numberWithUnsignedInt: [mob baseAddress]] forKey: @"Address"];
-            //[mobDict setObject: [NSNumber numberWithFloat: distance] forKey: @"Distance"];
-        }
-        
-        [_mobDataList sortUsingDescriptors: [mobTable sortDescriptors]];
-        [mobTable reloadData];
-    }
-    
-	[self doCombatScan];
-}
-
-- (IBAction)filterMobs: (id)sender {
-    if([[sender stringValue] length]) {
-        self.filterString = [sender stringValue];
-    } else {
-        self.filterString = nil;
-    }
-    [self reloadMobData: nil];
 }
 
 - (IBAction)updateTracking: (id)sender {
@@ -692,7 +495,7 @@ static MobController* sharedController = nil;
         return;
     }
     
-    for(Mob *mob in _mobList) {
+    for(Mob *mob in _objectList) {
         BOOL isHostile = [playerData isHostileWithFaction: [mob factionTemplate]];
         BOOL isFriendly = [playerData isFriendlyWithFaction: [mob factionTemplate]];
         BOOL isNeutral = (!isHostile && !isFriendly);
@@ -713,123 +516,241 @@ static MobController* sharedController = nil;
     }
 }
 
+#pragma mark - Implementing functions from teh super class!
+
+- (id)objectWithAddress:(NSNumber*) address inMemory:(MemoryAccess*)memory{
+	return [Mob mobWithAddress:address inMemory:memory];
+}
+
+- (NSString*)updateFrequencyKey{
+	return @"MobControllerUpdateFrequency";
+}
+
+- (unsigned int)objectCountWithFilters{
+	BOOL hideNonSeletable = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideNonSelectable"];
+	BOOL hidePets = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHidePets"];
+	BOOL hideCritters = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideCritters"];
+	
+	if ( [_objectDataList count] || ( hideNonSeletable || hidePets || hideCritters ) )
+		return [_objectDataList count];
+	
+	return [_objectList count];
+}
+
+// update our object data list!
+- (void)refreshData {
+	
+	// remove old objects
+	[_objectDataList removeAllObjects];
+	
+	// is player valid?
+	if ( ![playerData playerIsValid:self] ) return;
+	
+	// search for nearby mobs (for alarm!)
+	[self doCombatScan];
+	
+	// is tab viewable?
+	if ( ![objectsController isTabVisible:Tab_Mobs] )
+		return;
+	
+    cachedPlayerLevel = [playerData level];
+    
+	unsigned level, health;
+	Position *playerPosition = [(PlayerDataController*)playerData position];
+	NSString *filterString = [objectsController nameFilter];
+	for ( Mob *mob in _objectList ) {
+		
+		if ( ![mob isValid] )
+			continue;
+		
+		if ( filterString ) {
+			if( [[mob name] rangeOfString: filterString options: NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound) {
+				continue;
+			}
+		}
+		
+		BOOL hideNonSeletable = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideNonSelectable"];
+		BOOL hidePets = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHidePets"];
+		BOOL hideCritters = [[NSUserDefaults standardUserDefaults] boolForKey: @"MobHideCritters"];
+		
+		// hide invisible mobs from the list
+		if ( hideNonSeletable && ![mob isSelectable] )
+			continue;
+		
+		int faction = [mob factionTemplate];
+		level = [mob level];
+		BOOL critter = ([controller reactMaskForFaction: faction] == 0) && (level == 1);
+		
+		// skip critters if necessary
+		if( hideCritters && critter)
+			continue;
+		
+		NSString *name = nil;
+		
+		// check to see if it's a pet
+		if ( [mob isPet] ) {
+			if ( hidePets ) continue;
+			if ( [mob isTotem] ){
+				name = [mob name];
+				name = [@"[Totem] " stringByAppendingString: name];
+			}
+			else{
+				name = [mob name];
+				name = [@"[Pet] " stringByAppendingString: name];
+			}
+		}
+		
+		health = [mob currentHealth];
+		
+		
+		if ( !name )
+			name = [mob name];
+
+		BOOL isDead = [mob isDead];
+		BOOL isCombat = [mob isInCombat];
+				BOOL isHostile = [playerData isHostileWithFaction: faction];
+		BOOL isNeutral = (!isHostile && ![playerData isFriendlyWithFaction: faction]);
+		BOOL allianceFriendly = ([controller reactMaskForFaction: faction] & 0x2);
+		BOOL hordeFriendly = ([controller reactMaskForFaction: faction] & 0x4);
+		BOOL bothFriendly = hordeFriendly && allianceFriendly;
+		allianceFriendly = allianceFriendly && !bothFriendly;
+		hordeFriendly = hordeFriendly && !bothFriendly;
+		
+		float distance = [playerPosition distanceToPosition: [mob position]];
+		
+		NSImage *nameIcon = nil;
+		if( !nameIcon && (level == PLAYER_LEVEL_CAP+3) && [mob isElite])
+			nameIcon = [NSImage imageNamed: @"Skull"];
+		
+		if( !nameIcon && [mob isAuctioneer])    nameIcon = [NSImage imageNamed: @"BankerGossipIcon"];
+		if( !nameIcon && [mob isStableMaster])  nameIcon = [NSImage imageNamed: @"Stable"];
+		if( !nameIcon && [mob isBanker])        nameIcon = [NSImage imageNamed: @"BankerGossipIcon"];
+		if( !nameIcon && [mob isInnkeeper])     nameIcon = [NSImage imageNamed: @"Innkeeper"];
+		if( !nameIcon && [mob isFlightMaster])  nameIcon = [NSImage imageNamed: @"TaxiGossipIcon"];
+		if( !nameIcon && [mob canRepair])       nameIcon = [NSImage imageNamed: @"Repair"];
+		if( !nameIcon && [mob isVendor])        nameIcon = [NSImage imageNamed: @"VendorGossipIcon"];
+		if( !nameIcon && [mob isTrainer])       nameIcon = [NSImage imageNamed: @"TrainerGossipIcon"];
+		if( !nameIcon && [mob isQuestGiver])    nameIcon = [NSImage imageNamed: @"ActiveQuestIcon"];
+		if( !nameIcon && [mob canGossip])       nameIcon = [NSImage imageNamed: @"GossipGossipIcon"];
+		if( !nameIcon && allianceFriendly)      nameIcon = [NSImage imageNamed: @"AllianceCrest"];
+		if( !nameIcon && hordeFriendly)         nameIcon = [NSImage imageNamed: @"HordeCrest"];
+		if( !nameIcon && critter)               nameIcon = [NSImage imageNamed: @"Chicken"];
+		if( !nameIcon)                          nameIcon = [NSImage imageNamed: @"NeutralCrest"];
+		
+		
+		[_objectDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+								  mob,                                                      @"Mob",
+								  name,                                                     @"Name",
+								  [NSNumber numberWithInt: [mob entryID]],                  @"ID",
+								  [NSNumber numberWithInt: health],                         @"Health",
+								  [NSNumber numberWithUnsignedInt: level],                  @"Level",
+								  [NSString stringWithFormat: @"0x%X", [mob baseAddress]],  @"Address",
+								  [NSNumber numberWithFloat: distance],                     @"Distance", 
+								  [mob isPet] ? @"Yes" : @"No",                             @"Pet",
+								  // isHostile ? @"Yes" : @"No",                           @"Hostile",
+								  // isCombat ? @"Yes" : @"No",                            @"Combat",
+								  (isDead ? @"3" : (isCombat ? @"1" : (isNeutral ? @"4" : (isHostile ? @"2" : @"5")))),  @"Status",
+								  nameIcon,                                                 @"NameIcon", 
+								  nil]];
+        
+	}
+	
+	// sort
+	[_objectDataList sortUsingDescriptors: [[objectsController mobTable] sortDescriptors]];
+	
+	// reload table
+	[objectsController loadTabData];
+}
+
+- (WoWObject*)objectForRowIndex:(int)rowIndex{
+	if ( rowIndex >= [_objectDataList count] ) return nil;
+	return [[_objectDataList objectAtIndex: rowIndex] objectForKey: @"Mob"];
+}
 
 #pragma mark -
-#pragma mark TableView Delegate & Datasource
-
-- (void)tableView:(NSTableView *)aTableView  sortDescriptorsDidChange:(NSArray *)oldDescriptors {
-    if(aTableView == mobTable) {
-        [_mobDataList sortUsingDescriptors: [aTableView sortDescriptors]];
-        [mobTable reloadData];
-    }
-}
-
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-    if(aTableView == mobTable) {
-        return [_mobDataList count];
-    }
-    return 0;
-}
+#pragma mark TableView Delegate & Datasource (called from objectsController, NOT from the UI)
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
-    if(rowIndex == -1) return nil;
-    if(aTableView == mobTable) {
-        if(rowIndex >= [_mobDataList count]) return nil;
-        
-        if([[aTableColumn identifier] isEqualToString: @"Distance"])
-            return [NSString stringWithFormat: @"%.2f", [[[_mobDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-        
-        if([[aTableColumn identifier] isEqualToString: @"Status"]) {
-            NSString *status = [[_mobDataList objectAtIndex: rowIndex] objectForKey: @"Status"];
-            if([status isEqualToString: @"1"])  status = @"Combat";
-            if([status isEqualToString: @"2"])  status = @"Hostile";
-            if([status isEqualToString: @"3"])  status = @"Dead";
-            if([status isEqualToString: @"4"])  status = @"Neutral";
-            if([status isEqualToString: @"5"])  status = @"Friendly";
-            return [NSImage imageNamed: status];
-        }
-        
-        return [[_mobDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
-    }
+
+    if ( rowIndex == -1 || rowIndex >= [_objectDataList count] ) return nil;
+	
+	if ( [[aTableColumn identifier] isEqualToString: @"Distance"] )
+		return [NSString stringWithFormat: @"%.2f", [[[_objectDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
+	
+	if ( [[aTableColumn identifier] isEqualToString: @"Status"] ) {
+		NSString *status = [[_objectDataList objectAtIndex: rowIndex] objectForKey: @"Status"];
+		if([status isEqualToString: @"1"])  status = @"Combat";
+		if([status isEqualToString: @"2"])  status = @"Hostile";
+		if([status isEqualToString: @"3"])  status = @"Dead";
+		if([status isEqualToString: @"4"])  status = @"Neutral";
+		if([status isEqualToString: @"5"])  status = @"Friendly";
+		return [NSImage imageNamed: status];
+	}
+	
+	return [[_objectDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+}
+
+- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex{
     
-    return nil;
+	if ( aRowIndex == -1 || aRowIndex >= [_objectDataList count] ) return;
+
+	if ( [[aTableColumn identifier] isEqualToString: @"Name"] ) {
+		[(ImageAndTextCell*)aCell setImage: [[_objectDataList objectAtIndex: aRowIndex] objectForKey: @"NameIcon"]];
+	}
+	
+	if ( ![aCell respondsToSelector: @selector(setTextColor:)] )
+		return;
+	
+	if ( cachedPlayerLevel == 0 || ![[NSUserDefaults standardUserDefaults] boolForKey: @"MobColorByLevel"] ) {
+		[aCell setTextColor: [NSColor blackColor]];
+		return;
+	}
+	
+	Mob *mob = [[_objectDataList objectAtIndex: aRowIndex] objectForKey: @"Mob"];
+	int mobLevel = [mob level];
+	
+	if ( mobLevel >= cachedPlayerLevel+5 ){
+		[aCell setTextColor: [NSColor redColor]];
+		return;
+	}
+	
+	if ( mobLevel > cachedPlayerLevel+3 ){
+		[aCell setTextColor: [NSColor orangeColor]];
+		return;
+	}
+	
+	if ( mobLevel > cachedPlayerLevel-2 ){
+		[aCell setTextColor: [NSColor colorWithCalibratedRed: 1.0 green: 200.0/255.0 blue: 30.0/255.0 alpha: 1.0]];
+		return;
+	}
+	
+	if ( mobLevel > cachedPlayerLevel-8 ){
+		[aCell setTextColor: [NSColor colorWithCalibratedRed: 30.0/255.0 green: 115.0/255.0 blue: 30.0/255.0 alpha: 1.0] ]; // [NSColor greenColor]
+		return;
+	}
+	
+	[aCell setTextColor: [NSColor darkGrayColor]];
 }
 
-- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex
-{
-    if( aRowIndex == -1) return;
-        if(aTableView == mobTable) {
-            if(aRowIndex >= [_mobDataList count]) return;
-            
-            if ([[aTableColumn identifier] isEqualToString: @"Name"]) {
-                [(ImageAndTextCell*)aCell setImage: [[_mobDataList objectAtIndex: aRowIndex] objectForKey: @"NameIcon"]];
-            }
-            
-            if( ![aCell respondsToSelector: @selector(setTextColor:)] )
-                return;
-            
-            if(cachedPlayerLevel == 0 || [mobColorByLevel state] == NSOffState) {
-                [aCell setTextColor: [NSColor blackColor]];
-                return;
-            }
-            
-            Mob *mob = [[_mobDataList objectAtIndex: aRowIndex] objectForKey: @"Mob"];
-            int mobLevel = [mob level];
-            
-            if(mobLevel >= cachedPlayerLevel+5) {
-                [aCell setTextColor: [NSColor redColor]];
-                return;
-            }
-            
-            if(mobLevel > cachedPlayerLevel+3) {
-                [aCell setTextColor: [NSColor orangeColor]];
-                return;
-            }
-            
-            if(mobLevel > cachedPlayerLevel-2) {
-                [aCell setTextColor: [NSColor colorWithCalibratedRed: 1.0 green: 200.0/255.0 blue: 30.0/255.0 alpha: 1.0]];
-                return;
-            }
-            
-            if(mobLevel > cachedPlayerLevel-8) {
-                [aCell setTextColor: [NSColor colorWithCalibratedRed: 30.0/255.0 green: 115.0/255.0 blue: 30.0/255.0 alpha: 1.0] ]; // [NSColor greenColor]
-                return;
-            }
-            
-            [aCell setTextColor: [NSColor darkGrayColor]];
-        }
-    return;
-}
 
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
-    return NO;
-}
-
-- (BOOL)tableView:(NSTableView *)aTableView shouldSelectTableColumn:(NSTableColumn *)aTableColumn {
+- (BOOL)tableView:(NSTableView *)aTableView shouldSelectTableColumn:(NSTableColumn *)aTableColumn{
     
-    if(aTableView == mobTable) {
-        if( [[aTableColumn identifier] isEqualToString: @"Pet"] ) {
-            return NO;
-        }
-        if( [[aTableColumn identifier] isEqualToString: @"Hostile"] ) {
-            return NO;
-        }
-        if( [[aTableColumn identifier] isEqualToString: @"Combat"] ) {
-            return NO;
-        }
-    }
+	if ( [[aTableColumn identifier] isEqualToString: @"Pet"] ){
+		return NO;
+	}
+	if ( [[aTableColumn identifier] isEqualToString: @"Hostile"] ){
+		return NO;
+	}
+	if ( [[aTableColumn identifier] isEqualToString: @"Combat"] ){
+		return NO;
+	}
+	
     return YES;
 }
 
-- (void)mobTableDoubleClick: (id)sender {
-    [memoryViewMob release];
-    memoryViewMob = nil;
-    if( [sender clickedRow] == -1 || [sender clickedRow] >= [_mobDataList count] ) return;
-    
-    [memoryViewController showObjectMemory: [[_mobDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
-    [controller showMemoryView];
+- (void)tableDoubleClick: (id)sender{
+	[memoryViewController showObjectMemory: [[_objectDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Mob"]];
+	[controller showMemoryView];
 }
-
-#pragma mark -
 
 @end

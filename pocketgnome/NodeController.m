@@ -11,6 +11,7 @@
 #import "PlayerDataController.h"
 #import "MemoryViewController.h"
 #import "MovementController.h"
+#import "ObjectsController.h"
 #import "Waypoint.h"
 #import "Offsets.h"
 
@@ -27,11 +28,6 @@ typedef enum {
     Filter_Transport        = 11,
 } FilterType;
 
-@interface NodeController ()
-@property (readwrite, assign) int nodeTypeFilter;
-@property (readwrite, retain) NSString *filterString;
-@end
-
 @interface NodeController (Internal)
 
 - (int)nodeLevel: (Node*)node;
@@ -47,9 +43,7 @@ typedef enum {
 {
     self = [super init];
     if (self != nil) {
-        
-        _nodeList = [[NSMutableArray array] retain];
-        _nodeDataList = [[NSMutableArray array] retain];
+
         _finishedNodes = [[NSMutableArray array] retain];
         
         // load in our gathering dictionaries
@@ -67,240 +61,23 @@ typedef enum {
 //            _nodeNames = [[NSKeyedUnarchiver unarchiveObjectWithData: nodeNames] mutableCopy];            
 //        } else
 //            _nodeNames = [[NSMutableDictionary dictionary] retain];
-            
-        self.nodeTypeFilter = Filter_All;
-        _updateTimer = nil;
-        [[NSUserDefaults standardUserDefaults] registerDefaults: [NSDictionary dictionaryWithObject: @"1.0" forKey: @"NodeControllerUpdateFrequency"]];
-        
-        [[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(applicationWillTerminate:) 
-                                                     name: NSApplicationWillTerminateNotification 
-                                                   object: nil];
-        
-        //[[NSNotificationCenter defaultCenter] addObserver: self
-        //                                         selector: @selector(nodeNameLoaded:) 
-        //                                             name: NodeNameLoadedNotification 
-        //                                           object: nil];
-
-        [NSBundle loadNibNamed: @"Nodes" owner: self];
+		
+		//
+		
+		NSDictionary *defaultValues = [NSDictionary dictionaryWithObjectsAndKeys:
+									   @"1.0",								@"NodeControllerUpdateFrequency",
+									   [NSNumber numberWithInt: -100],      @"NodeFilterType", nil];
+		
+		[[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
+		[[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
     }
     return self;
 }
 
-- (void)awakeFromNib {
-
-    self.minSectionSize = [self.view frame].size;
-    self.maxSectionSize = NSZeroSize;
-    
-    self.updateFrequency = [[NSUserDefaults standardUserDefaults] floatForKey: @"NodeControllerUpdateFrequency"];
-    
-    [nodeTable setDoubleAction: @selector(tableDoubleClick:)];
-    [(NSTableView*)nodeTable setTarget: self];
-    
-    ImageAndTextCell *imageAndTextCell = [[[ImageAndTextCell alloc] init] autorelease];
-    [imageAndTextCell setEditable: NO];
-    [[nodeTable tableColumnWithIdentifier: @"Name"] setDataCell: imageAndTextCell];
-}
-
-- (void)applicationWillTerminate: (NSNotification*)notification {
-//    [[NSUserDefaults standardUserDefaults] setObject: [NSKeyedArchiver archivedDataWithRootObject: _nodeNames] forKey: @"NodeNames"];
-//    [MyUserDefaults synchronize];
-}
-
-
-#pragma mark Basic Accessors
-
-@synthesize view;
-@synthesize updateFrequency = _updateFrequency;
-@synthesize minSectionSize;
-@synthesize maxSectionSize;
-@synthesize nodeTypeFilter = _nodeTypeFilter;
-@synthesize filterString;
-
-- (NSString*)sectionTitle {
-    return @"Nodes";
-}
-
-- (void)setUpdateFrequency: (float)frequency {
-    if(frequency < 0.5) frequency = 0.5;
-    
-    [self willChangeValueForKey: @"updateFrequency"];
-    _updateFrequency = [[NSString stringWithFormat: @"%.2f", frequency] floatValue];
-    [self didChangeValueForKey: @"updateFrequency"];
-    
-    [[NSUserDefaults standardUserDefaults] setFloat: _updateFrequency forKey: @"NodeControllerUpdateFrequency"];
-
-    [_updateTimer invalidate];
-    _updateTimer = [NSTimer scheduledTimerWithTimeInterval: _updateFrequency target: self selector: @selector(reloadNodeData:) userInfo: nil repeats: YES];
-}
-
-#pragma mark Notification/Timer Callbacks
-
-//- (void)nodeNameLoaded: (NSNotification*)notification {
-//    Node *node = (Node*)[notification object];
-//    
-//    NSString *name = [node name];
-//    if(name) {
-//        PGLog(@"Saving node: %@", node);
-//        [_nodeNames setObject: name forKey: [NSNumber numberWithInt: [node entryID]]];
-//    }
-//}
-
-- (void)reloadNodeData: (id)sender {
-    if( ![[nodeTable window] isVisible] ) return;
-    if(![playerController playerIsValid:self]) return;
-    
-    [_nodeDataList removeAllObjects];
-    
-    for(Node *node in _nodeList) {
-        NSString *name = [node name];
-        name = ((name && [name length]) ? name : @"Unknown");
-        
-        float distance = [[(PlayerDataController*)playerController position] distanceToPosition: [node position]];
-        
-        NSString *type = nil;
-        int typeVal = [node nodeType];
-        if( [_miningDict objectForKey: name])       type = @"Mining";
-        if( [_herbalismDict objectForKey: name])    type = @"Herbalism";
-        
-        // first, do type filter
-        if(self.nodeTypeFilter < 0) {
-            // all              = -100
-            // minerals         = -1
-            // herbs            = -2
-            // quest container  = -3
-            // mine/herb        = -4
-            // transport        = 11
-
-            if((self.nodeTypeFilter == Filter_Minerals)     && ![type isEqualToString: @"Mining"])       continue;
-            if((self.nodeTypeFilter == Filter_Herbs)        && ![type isEqualToString: @"Herbalism"])    continue;
-            if((self.nodeTypeFilter == Filter_Mine_Herb)    && !type)                                   continue;
-            if((self.nodeTypeFilter == Filter_Container_Quest)) {
-                if((typeVal != 3) || (([node flags] & GAMEOBJECT_FLAG_CANT_TARGET) != GAMEOBJECT_FLAG_CANT_TARGET)) {
-                    continue;   // must be a container, and flagged as quest
-                }
-            }
-            
-        } else {
-            if(self.nodeTypeFilter == Filter_Transport) {
-                if((typeVal != 11) || (typeVal != 15)) continue; // both types of transport
-            } else {
-                if(self.nodeTypeFilter != typeVal)
-                    continue;
-            }
-        }
-        
-        // then, do string filter
-        if(self.filterString) {
-            if([[node name] rangeOfString: self.filterString options: NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound) {
-                continue;
-            }
-        }
-        
-        // get the string if we don't have it already
-        if( !type)  type = [node stringForNodeType: typeVal];
-        
-        // invalid no longer working in 3.0.2
-        name = ([node validToLoot] ? name : [name stringByAppendingString: @" [Invalid]"]);
-        
-        [_nodeDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                   node,                                                        @"Node",
-                                   name,                                                        @"Name",
-                                   [NSNumber numberWithInt: [node entryID]],                    @"ID",
-                                   [NSString stringWithFormat: @"0x%X", [node baseAddress]],    @"Address",
-                                   [NSNumber numberWithFloat: distance],                        @"Distance",
-                                   type,                                                        @"Type",
-                                   [node imageForNodeType: [node nodeType]],                    @"NameIcon",
-                                   nil]];
-    }
-
-    [_nodeDataList sortUsingDescriptors: [nodeTable sortDescriptors]];
-    [nodeTable reloadData];
-}
-
 #pragma mark Dataset Modification
 
-- (void)addAddresses: (NSArray*)addresses {
-	
-    NSMutableDictionary *addressDict = [NSMutableDictionary dictionary];
-    NSMutableArray *objectsToRemove = [NSMutableArray array];
-    NSMutableArray *dataList = _nodeList;
-    MemoryAccess *memory = [controller wowMemoryAccess];
-    if(![memory isValid]) return;
-    
-    [self willChangeValueForKey: @"nodeCount"];
-
-    // enumerate current object addresses
-    // determine which objects need to be removed
-    for(WoWObject *obj in dataList) {
-        if([obj isValid] && [(Node*)obj validToLoot]) {
-            [addressDict setObject: obj forKey: [NSNumber numberWithUnsignedLongLong: [obj baseAddress]]];
-        } else {
-            [objectsToRemove addObject: obj];
-        }
-    }
-    
-    // remove any if necessary
-    if([objectsToRemove count]) {
-        [dataList removeObjectsInArray: objectsToRemove];
-        [_finishedNodes removeObjectsInArray: objectsToRemove];
-    }
-
-    // add new objects if they don't currently exist
-    NSDate *now = [NSDate date];
-    for(NSNumber *address in addresses) {
-        if( ![addressDict objectForKey: address] ) {
-            [dataList addObject: [Node nodeWithAddress: address inMemory: memory]];
-        } else {
-            [[addressDict objectForKey: address] setRefreshDate: now];
-        }
-    }
-    
-    [self didChangeValueForKey: @"nodeCount"];
-}
-
-/*
-- (BOOL)removeFinishedNode: (Node*)node{
-	if ( [_finishedNodes containsObject:node] ){
-		[_finishedNodes removeObject:node];
-		PGLog(@"[Node] Node %@ removed from blacklist", node);
-		return YES;
-	}
-	
-	PGLog(@"[Node] Node %@ not found in blacklist", node);
-	
-	return NO;	
-}
-
-- (void)finishedNode: (Node*)node{
-    if(node && ![_finishedNodes containsObject: node]) {
-        [_finishedNodes addObject: node];
-    }
-}
-
-- (BOOL)addNode: (Node*)newNode {
-    if(newNode && ![self trackingNode: newNode] && [newNode isValid]) {
-        
-        // if(![self nodeName: newNode]) [newNode loadNodeName];
-        
-        [self willChangeValueForKey: @"nodeCount"];
-        [_nodeList addObject: newNode];
-        [self didChangeValueForKey: @"nodeCount"];
-        //PGLog(@"Adding node: %@", newNode);
-        return YES;
-    }
-    return NO;
-}*/
-
 - (unsigned)nodeCount {
-    return [_nodeList count];
-}
-
-- (void)resetAllNodes {
-    [self willChangeValueForKey: @"nodeCount"];
-    [_nodeList removeAllObjects];
-    [_nodeDataList removeAllObjects];
-    [self didChangeValueForKey: @"nodeCount"];
+    return [_objectList count];
 }
 
 #pragma mark Internal
@@ -336,7 +113,7 @@ typedef enum {
 
 
 - (BOOL)trackingNode: (Node*)trackingNode {
-    for(Node *node in _nodeList) {
+    for(Node *node in _objectList) {
         if( [node isEqualToObject: trackingNode] ) {
             return YES;
         }
@@ -353,12 +130,12 @@ typedef enum {
 	//   Mainly b/c we access this from another thread
 	NSArray *nodeList = nil;
 	if (lock ){
-		@synchronized(_nodeList){
-			nodeList = [[_nodeList copy] autorelease];
+		@synchronized(_objectList){
+			nodeList = [[_objectList copy] autorelease];
 		}
 	}
 	else{
-		nodeList = [[_nodeList copy] autorelease];
+		nodeList = [[_objectList copy] autorelease];
 	}
 	
 	NSMutableArray *nodes = [NSMutableArray array];
@@ -374,7 +151,7 @@ typedef enum {
 - (NSArray*)allMiningNodes {
     NSMutableArray *nodes = [NSMutableArray array];
     
-    for(Node *node in _nodeList) {
+    for(Node *node in _objectList) {
         if( [_miningDict objectForKey: [node name]])
             [nodes addObject: node];
     }
@@ -385,7 +162,7 @@ typedef enum {
 - (NSArray*)allHerbalismNodes {
     NSMutableArray *nodes = [NSMutableArray array];
     
-    for(Node *node in _nodeList) {
+    for(Node *node in _objectList) {
         if( [_herbalismDict objectForKey: [node name]])
             [nodes addObject: node];
     }
@@ -395,7 +172,7 @@ typedef enum {
 - (NSArray*)nodesWithinDistance: (float)nodeDistance NodeIDs: (NSArray*)nodeIDs position:(Position*)position{
 	
 	NSMutableArray *nearbyNodes = [NSMutableArray array];
-    for(Node *node in _nodeList) {
+    for(Node *node in _objectList) {
 		
 		// Just return nearby nodes
 		if ( nodeIDs == nil ){
@@ -424,7 +201,7 @@ typedef enum {
 	
 	PGLog(@"Searching for %d", entryID);
 	NSMutableArray *nearbyNodes = [NSMutableArray array];
-    for(Node *node in _nodeList) {
+    for(Node *node in _objectList) {
 		if ( [node entryID] == entryID ){
 			float distance = [position distanceToPosition: [node position]];
 			PGLog(@"Found %d == %d with distance of %0.2f", [node entryID], entryID, distance);
@@ -439,8 +216,8 @@ typedef enum {
 
 - (NSArray*)nodesWithinDistance: (float)distance ofAbsoluteType: (GameObjectType)type {
     NSMutableArray *finalList = [NSMutableArray array];
-    Position *playerPosition = [(PlayerDataController*)playerController position];
-    for(Node* node in _nodeList) {
+    Position *playerPosition = [(PlayerDataController*)playerData position];
+    for(Node* node in _objectList) {
         if(   [node isValid]
            && [node validToLoot]
            && ([playerPosition distanceToPosition: [node position]] <= distance)
@@ -454,12 +231,12 @@ typedef enum {
 - (NSArray*)nodesWithinDistance: (float)distance ofType: (NodeType)type maxLevel: (int)level {
     NSArray *nodeList = nil;
     NSMutableArray *finalList = [NSMutableArray array];
-    if(type == AnyNode)         nodeList = _nodeList;
+    if(type == AnyNode)         nodeList = _objectList;
     if(type == MiningNode)      nodeList = [self allMiningNodes];
     if(type == HerbalismNode)   nodeList = [self allHerbalismNodes];
 	if(type == FishingSchool)	nodeList = [self nodesOfType:GAMEOBJECT_TYPE_FISHINGHOLE shouldLock:NO];
 	
-    Position *playerPosition = [(PlayerDataController*)playerController position];
+    Position *playerPosition = [(PlayerDataController*)playerData position];
     for(Node* node in nodeList) {
         if(   [node isValid]
            && [node validToLoot]
@@ -473,8 +250,8 @@ typedef enum {
 }
 
 - (Node*)closestNodeForInteraction:(UInt32)entryID {
-    NSArray *nodeList = _nodeList;
-    Position *playerPosition = [(PlayerDataController*)playerController position];
+    NSArray *nodeList = _objectList;
+    Position *playerPosition = [(PlayerDataController*)playerData position];
     for(Node* node in nodeList) {
 		
 		if ( [node entryID]==entryID ){
@@ -492,8 +269,8 @@ typedef enum {
 }
 
 - (Node*)closestNode:(UInt32)entryID {
-    NSArray *nodeList = _nodeList;
-    Position *playerPosition = [(PlayerDataController*)playerController position];
+    NSArray *nodeList = _objectList;
+    Position *playerPosition = [(PlayerDataController*)playerData position];
 	Node *closestNode = nil;
 	float closestDistance = INFINITY;
 	float distance = 0.0f;
@@ -508,7 +285,7 @@ typedef enum {
 }
 
 - (Node*)nodeWithEntryID:(UInt32)entryID{
-	for(Node* node in _nodeList) {
+	for(Node* node in _objectList) {
 		if ( [node entryID] == entryID ){
 			return node;
 		}
@@ -517,53 +294,9 @@ typedef enum {
     return nil;
 }
 
-#pragma mark Tableview Bullshit
-
-
-- (void)tableView:(NSTableView *)aTableView  sortDescriptorsDidChange:(NSArray *)oldDescriptors {
-    [_nodeDataList sortUsingDescriptors: [aTableView sortDescriptors]];
-    [nodeTable reloadData];
-}
-
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-    return [_nodeDataList count];
-}
-
-- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
-    if(rowIndex == -1) return nil;
-    
-    if([[aTableColumn identifier] isEqualToString: @"Distance"])
-        return [NSString stringWithFormat: @"%.2f", [[[_nodeDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
-    
-    return [[_nodeDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
-}
-
-- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex
-{
-    if( aRowIndex == -1 || aRowIndex >= [_nodeDataList count]) return;
-
-    if ([[aTableColumn identifier] isEqualToString: @"Name"]) {
-        [(ImageAndTextCell*)aCell setImage: [[_nodeDataList objectAtIndex: aRowIndex] objectForKey: @"NameIcon"]];
-    }
-}
-
-//- (void)tableViewSelectionDidChange:(NSNotification *)aNotification {
-//    [nodeTable reloadData];
-//}
-
-- (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
-    return NO;
-}
-
-- (void)tableDoubleClick: (id)sender {
-    if( [sender clickedRow] == -1 ) return;
-    
-    [memoryViewController showObjectMemory: [[_nodeDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Node"]];
-    [controller showMemoryView];
-}
-
 #pragma mark IB Actions
 
+/*
 - (IBAction)resetList: (id)sender {
     [self resetAllNodes];
     [nodeTable reloadData];
@@ -597,7 +330,7 @@ typedef enum {
     
     Node *node = [[_nodeDataList objectAtIndex: selectedRow] objectForKey: @"Node"];
     
-    [playerController setPrimaryTarget: node];
+    [playerData setPrimaryTarget: node];
 }
 
 - (IBAction)filterList: (id)sender {
@@ -626,8 +359,8 @@ typedef enum {
         
         // create a list of nodes with this tag
         NSMutableArray *nodeList = [NSMutableArray array];
-        Position *playerPosition = [(PlayerDataController*)playerController position];
-        for(Node *node in _nodeList) {
+        Position *playerPosition = [(PlayerDataController*)playerData position];
+        for(Node *node in _objectList) {
             if([node entryID] == tag) {
                 
                 float distance = [playerPosition distanceToPosition: [node position]];
@@ -660,6 +393,198 @@ typedef enum {
 
 - (IBAction)moveToStop: (id)sender {
     [movementController setPatrolRoute: nil];
+}*/
+
+#pragma mark ObjectsController helpers
+
+- (NSArray*)uniqueNodesAlphabetized{
+	
+	NSMutableArray *addedNodeNames = [NSMutableArray array];
+	
+	for ( Node *node in _objectList ){
+		if ( ![addedNodeNames containsObject:[node name]] ){
+			[addedNodeNames addObject:[node name]];
+		}
+	}
+	
+	[addedNodeNames sortUsingSelector:@selector(compare:)];
+	
+	return [[addedNodeNames retain] autorelease];
+}
+
+- (Node*)closestNodeWithName:(NSString*)nodeName{
+	
+	NSMutableArray *nodesWithName = [NSMutableArray array];
+	
+	// find mobs with the name!
+	for ( Node *node in _objectList ){
+		if ( [nodeName isEqualToString:[node name]] ){
+			[nodesWithName addObject:node];
+		}
+	}
+	
+	if ( [nodesWithName count] == 1 ){
+		return [nodesWithName objectAtIndex:0];
+	}
+	
+	Position *playerPosition = [playerData position];
+	Node *closestNode = nil;
+	float closestDistance = INFINITY;
+	for ( Node *node in nodesWithName ){
+		
+		float distance = [playerPosition distanceToPosition:[node position]];
+		if ( distance < closestDistance ){
+			closestDistance = distance;
+			closestNode = node;
+		}
+	}
+	
+	return closestNode;	
+}
+
+#pragma mark Sub Class implementations
+
+- (void)objectAddedToList:(WoWObject*)obj{
+	// we could do a check to make sure the object is valid and remove if not?
+	// probably not though
+}
+
+- (id)objectWithAddress:(NSNumber*) address inMemory:(MemoryAccess*)memory{
+	return [Node nodeWithAddress:address inMemory:memory];
+}
+
+- (NSString*)updateFrequencyKey{
+	return @"NodeControllerUpdateFrequency";
+}
+
+- (unsigned int)objectCountWithFilters{
+	
+	int filterType = [[[NSUserDefaults standardUserDefaults] objectForKey:@"NodeFilterType"] intValue];
+	
+	if ( [_objectDataList count] || filterType != -100 )
+		return [_objectDataList count];
+	
+	return [_objectList count];
+}
+
+- (void)refreshData{
+	
+	// remove old objects
+	[_objectDataList removeAllObjects];
+	
+	// is tab viewable?
+	if ( ![objectsController isTabVisible:Tab_Nodes] )
+		return;
+	
+    if ( ![playerData playerIsValid:self] ) return;
+    
+	int filterType = [[[NSUserDefaults standardUserDefaults] objectForKey:@"NodeFilterType"] intValue];  
+	NSString *filterString = [objectsController nameFilter];
+	Position *playerPosition = [(PlayerDataController*)playerData position];
+	
+    for ( Node *node in _objectList ) {
+        NSString *name = [node name];
+        name = ((name && [name length]) ? name : @"Unknown");
+        
+        float distance = [playerPosition distanceToPosition: [node position]];
+        
+        NSString *type = nil;
+        int typeVal = [node nodeType];
+        if( [_miningDict objectForKey: name])       type = @"Mining";
+        if( [_herbalismDict objectForKey: name])    type = @"Herbalism";
+		
+        // first, do type filter
+        if ( filterType < 0 ) {
+            // all              = -100
+            // minerals         = -1
+            // herbs            = -2
+            // quest container  = -3
+            // mine/herb        = -4
+            // transport        = 11
+			
+            if ( ( filterType == Filter_Minerals)     && ![type isEqualToString: @"Mining"] )		continue;
+            if ( ( filterType == Filter_Herbs)        && ![type isEqualToString: @"Herbalism"] )	continue;
+            if ( ( filterType == Filter_Mine_Herb)    && !type)										continue;
+            if ( ( filterType == Filter_Container_Quest)) {
+                if ( ( typeVal != 3 ) || ( ( [node flags] & GAMEOBJECT_FLAG_CANT_TARGET ) != GAMEOBJECT_FLAG_CANT_TARGET ) ) {
+                    continue;   // must be a container, and flagged as quest
+                }
+            }
+            
+        } 
+		else{
+            if ( filterType == Filter_Transport ){
+                if ( ( typeVal != 11 ) || ( typeVal != 15 ) ) continue; // both types of transport
+            }
+			else{
+                if ( filterType != typeVal )
+                    continue;
+            }
+        }
+        
+        // then, do string filter
+
+        if ( filterString ){
+            if([[node name] rangeOfString: filterString options: NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch].location == NSNotFound) {
+                continue;
+            }
+        }
+        
+        // get the string if we don't have it already
+        if ( !type )  type = [node stringForNodeType: typeVal];
+        
+        // invalid no longer working in 3.0.2
+        name = ([node validToLoot] ? name : [name stringByAppendingString: @" [Invalid]"]);
+        
+        [_objectDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+                                   node,                                                        @"Node",
+                                   name,                                                        @"Name",
+                                   [NSNumber numberWithInt: [node entryID]],                    @"ID",
+                                   [NSString stringWithFormat: @"0x%X", [node baseAddress]],    @"Address",
+                                   [NSNumber numberWithFloat: distance],                        @"Distance",
+                                   type,                                                        @"Type",
+                                   [node imageForNodeType: [node nodeType]],                    @"NameIcon",
+                                   nil]];
+    }
+	
+	// sort
+	[_objectDataList sortUsingDescriptors: [[objectsController nodeTable] sortDescriptors]];
+	
+	// reload table
+	[objectsController loadTabData];
+}
+
+- (WoWObject*)objectForRowIndex:(int)rowIndex{
+	if ( rowIndex >= [_objectDataList count] ) return nil;
+	return [[_objectDataList objectAtIndex: rowIndex] objectForKey: @"Node"];
+}
+
+#pragma mark -
+#pragma mark TableView Delegate & Datasource
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
+    if ( rowIndex == -1 || rowIndex >= [_objectDataList count] ) return nil;
+    
+    if ( [[aTableColumn identifier] isEqualToString: @"Distance"] )
+        return [NSString stringWithFormat: @"%.2f", [[[_objectDataList objectAtIndex: rowIndex] objectForKey: @"Distance"] floatValue]];
+    
+    return [[_objectDataList objectAtIndex: rowIndex] objectForKey: [aTableColumn identifier]];
+}
+
+- (void)tableView: (NSTableView *)aTableView willDisplayCell: (id)aCell forTableColumn: (NSTableColumn *)aTableColumn row: (int)aRowIndex
+{
+    if ( aRowIndex == -1 || aRowIndex >= [_objectDataList count] ) return;
+	
+    if ( [[aTableColumn identifier] isEqualToString: @"Name"] ){
+        [(ImageAndTextCell*)aCell setImage: [[_objectDataList objectAtIndex: aRowIndex] objectForKey: @"NameIcon"]];
+    }
+}
+
+- (void)tableDoubleClick: (id)sender {
+    if ( [sender clickedRow] == -1 ) return;
+    
+    [memoryViewController showObjectMemory: [[_objectDataList objectAtIndex: [sender clickedRow]] objectForKey: @"Node"]];
+    [controller showMemoryView];
 }
 
 @end

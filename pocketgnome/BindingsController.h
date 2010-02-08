@@ -10,6 +10,7 @@
 
 @class Controller;
 @class ChatController;
+@class OffsetController;
 
 #define BindingPrimaryHotkey		@"BindingPrimaryHotkey"
 #define BindingPetAttack			@"BindingPetAttack"
@@ -17,8 +18,9 @@
 
 @interface BindingsController : NSObject {
 	
-	IBOutlet Controller *controller;
-	IBOutlet ChatController *chatController;
+	IBOutlet Controller			*controller;
+	IBOutlet ChatController		*chatController;
+	IBOutlet OffsetController	*offsetController;
 
 	NSMutableDictionary *_bindings;
 	NSMutableDictionary *_keyCodesWithCommands;
