@@ -77,7 +77,7 @@
 -(BOOL)isSpellOnCooldown:(UInt32)spell;
 -(UInt32)cooldownLeftForSpellID:(UInt32)spell;
 
-- (BOOL)isUsableAction: (UInt32)actionID withType:(int)type;
+- (BOOL)isUsableAction: (UInt32)actionID;
 - (BOOL)isUsableActionWithSlot: (int)slot;
 - (NSArray*)allActionIDsOnActionBars;
 
