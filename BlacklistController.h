@@ -14,11 +14,19 @@
 
 @interface BlacklistController : NSObject {
 
-	NSMutableArray *_blacklist;
+	NSMutableDictionary *_blacklist;
 
 }
 
-- (void)blacklistObject: (WoWObject*)obj withCount:(int)count;
+// reasons to be blacklisted!
+enum{
+	Reason_None					= 0,
+	Reason_NotInLoS				= 1,
+	Reason_NodeMadeMeFall		= 2,
+	Reason_next					= 4,
+};
+
+- (void)blacklistObject:(WoWObject *)obj withReason:(int)reason;
 - (void)blacklistObject: (WoWObject*)obj;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;

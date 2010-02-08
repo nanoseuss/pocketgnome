@@ -758,6 +758,15 @@ static PlayerDataController* sharedController = nil;
     // bit 29 - feign death 
 }
 
+- (BOOL)isInParty{
+	GUID partyGUID = 0x0;
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"Lua_GetPartyMember"] Buffer: (Byte *)&partyGUID BufLength: sizeof(partyGUID)];
+	
+	if ( partyGUID > 0x0 )
+		return YES;
+	return NO;	
+}
+
 - (BOOL)isInCombat {
     if( ([self stateFlags] & (1 << 19)) == (1 << 19))
         return YES;
@@ -1170,7 +1179,7 @@ static PlayerDataController* sharedController = nil;
         _lastCombatState = combatState;
 		
 		// Lets see which mobs are attacking us!
-		if ( combatState ){
+		if ( combatState || [[combatController combatList] count] > 0 ){
 			[combatController doCombatSearch];
 		}
 		
