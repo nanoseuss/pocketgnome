@@ -14,6 +14,9 @@
 #import "Spell.h"
 #import "PlayerDataController.h"
 #import "OffsetController.h"
+#import "BotController.h"
+
+#import "Action.h"
 
 #pragma mark Note: LastSpellCast/Timer Disabled
 #pragma mark -
@@ -769,12 +772,19 @@ static SpellController *sharedSpells = nil;
 }
 
 // are we able to use this spell (it must be on an action bar!)
-- (BOOL)isUsableAction: (UInt32)actionID{
+- (BOOL)isUsableAction: (UInt32)actionID withType:(int)type{
 	
 	// grab memory
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	if ( !memory )
 		return NO;
+	
+	if ( type == ActionType_Item ){
+		actionID += USE_ITEM_MASK;
+	}
+	else if ( type == ActionType_Macro ){
+		actionID += USE_MACRO_MASK;
+	}
 	
 	// find out where the action is stored
 	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
