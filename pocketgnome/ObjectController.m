@@ -184,7 +184,6 @@
 }
 
 - (void)refreshData {
-	//PGLog(@"reloading data for %@", [self class]);
 }
 
 - (unsigned int)objectCount{
@@ -196,7 +195,6 @@
 }
 			 
 - (void)objectAddedToList:(WoWObject*)obj{
-
 }
 
 - (id)objectWithAddress:(NSNumber*) address inMemory:(MemoryAccess*)memory{

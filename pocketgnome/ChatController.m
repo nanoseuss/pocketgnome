@@ -267,7 +267,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
     if((hotkey < 0) || (hotkey > 128)) return;
     //if(modifier < 0 || modifier > 3) return;
 	
-    PGLog(@"[Chat] Pressing %d with flags 0x%X", hotkey, modifier);
+    //PGLog(@"[Chat] Pressing %d with flags 0x%X", hotkey, modifier);
     
     unsigned int flags = modifier;
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];

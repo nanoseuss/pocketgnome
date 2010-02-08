@@ -1375,7 +1375,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	BOOL matchFound = NO;
 	
 	// priority system for combat
-	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ){
 		
 		// decision "tree"
 		// if in combat, attack nearby
@@ -1643,12 +1643,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
-	// unable to cast, but we're still trying this procedure! Keep going!
-	if ( [[combatController unitsAttackingMe] count] > 0 /*&& [playerController isInCombat]*/ ){
+	// still in combat with people! But not able to cast! (probably b/c insufficient rage/mana/etc...) Keep trying while we're in combat!
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [[combatController combatList] count] > 0 ){
 		
 		PGLog(@"[Procedure] Still being attacked! Continuing combat!");
 		
-		for ( Unit *unit in [combatController unitsAttackingMe] ){
+		for ( Unit *unit in [combatController combatList] ){
 			PGLog(@" %@", unit);
 		}
 		
@@ -1714,6 +1714,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.lastAttemptedUnitToLoot = unit;
 		
         if([unit isValid] && (distanceToUnit <= 5.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+			
+			// stop moving?
+			[movementController pauseMovement];
             
 			[controller setCurrentStatus: @"Bot: Looting"];
 			PGLog(@"[Loot] Looting : %@", unit);
@@ -1881,7 +1884,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			canSkinUpToLevel = (_skinLevel/5);
 		}
 		
-		if ( _doSkinning || _doHerbalism ) {
+		if ( _doSkinning ) {
 			if ( canSkinUpToLevel >= [self.mobToSkin level] ) {
 				
 				_skinAttempt = 0;

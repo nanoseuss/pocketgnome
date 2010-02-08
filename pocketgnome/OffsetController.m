@@ -201,7 +201,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		
 		// can hard code some here
 		
-		[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
 		
 		_offsetsLoaded = YES;
 	}
