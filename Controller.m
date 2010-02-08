@@ -659,7 +659,7 @@ typedef struct NameObjectStruct{
 }
 
 - (IBAction)launchWebsite:(id)sender {
-    [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: @"http://www.savorydeviate.com/pocketgnome"]];
+    [[NSWorkspace sharedWorkspace] openURL: [NSURL URLWithString: @"http://www.savorydeviate.com/pocketgnome/forum/viewforum.php?f=39"]];
 }
 
 - (void)loadView: (NSView*)newView withTitle: (NSString*)title {
