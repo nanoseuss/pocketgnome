@@ -487,12 +487,27 @@
 	}
 	else if ( _currentTab == Tab_Nodes ){
 		
+		// currently selected object
+		if ( [moveToNodePopUpButton selectedTag] == -1 ){
+			WoWObject *obj = [self selectedObject];
+			
+			if ( obj ){
+				[movementController moveToObject:obj andNotify:NO];
+			}
+		}
 		
+		// listed object
+		else{
+			WoWObject *obj = [nodeController closestNodeWithName:[[moveToNodePopUpButton selectedItem] representedObject]];
+			if ( obj ){
+				[movementController moveToObject:obj andNotify:NO];
+			}
+		}	
 	}	
 }
 
 - (IBAction)moveToStop: (id)sender{
-	
+	[movementController setPatrolRoute: nil];
 }
 
 - (IBAction)resetObjects: (id)sender{

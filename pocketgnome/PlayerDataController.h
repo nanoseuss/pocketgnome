@@ -154,6 +154,7 @@ enum ePlayer_RuneTypes {
 - (UInt64)focusGUID;
 - (UInt64)comboPointUID;
 
+- (BOOL)isInParty;
 - (BOOL)isInCombat;
 - (BOOL)isLooting;
 - (BOOL)isCasting;

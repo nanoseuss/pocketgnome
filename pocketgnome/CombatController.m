@@ -160,7 +160,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// don't blacklist if melee + moving to!
 		if ( ! ([botController.theBehavior meleeCombat] && [movementController moveToObject] == _castingUnit ) ){
 			PGLog(@"[Combat] Out of range/LOS, blacklisting %@", _castingUnit);
-			[blacklistController blacklistObject: _castingUnit];
+			[blacklistController blacklistObject: _castingUnit withReason:Reason_NotInLoS];
 		}
 		else{
 			PGLog(@"BLACKLIST [Combat] Moving to unit, not blacklisting");
@@ -183,6 +183,22 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 	
 #pragma mark Public
+
+- (NSArray*)unitsAttackingMe{
+	
+	NSMutableArray *units = [NSMutableArray array];
+	
+	if ( [_unitsAttackingMe count] ){
+		[units addObjectsFromArray:_unitsAttackingMe];
+	}
+	
+	// add our add
+	if ( _addUnit != nil && ![units containsObject:_addUnit] ){
+		[units addObject:_addUnit];
+	}
+
+	return [[units retain] autorelease];
+}
 
 // list of units we're in combat with, NO friendlies
 - (NSArray*)combatList{
@@ -882,6 +898,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // find all units we are in combat with
 - (void)doCombatSearch{
 	
+	if ( [[playerData player] isDead] ){
+		
+		PGLog(@"[Combat] Dead, removing all objects!");
+		
+		[_unitsAttackingMe removeAllObjects];
+		
+		return;
+	}
+	
 	// add all mobs + players
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
@@ -958,7 +983,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[_unitsAttackingMe removeObjectsInArray:unitsToRemove];
 	}
 	
-	//PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	PGLog(@"[Combat] In combat with %d units", [_unitsAttackingMe count]);
 	
 	/*for ( Unit *unit in _unitsAttackingMe ){
 		PGLog(@" [Combat] %@", unit);

@@ -403,6 +403,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
+	// check to see if we can even cast this spell
+	if ( ![spellController isUsableAction:[[rule action] actionID]] ){
+		PGLog(@"[Rule] Action %d isn't usable!", [[rule action] actionID]);
+		return NO;
+	}
+	
 	// check to see if the spell is on cooldown, obviously the rule will fail!
 	if ( [[rule action] type] == ActionType_Spell ){
 		if ( [spellController isSpellOnCooldown:[[rule action] actionID]] ){
@@ -410,14 +416,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return NO;
 		}
 	}
-	
-	// check to see if we can even cast this spell
-	if ( ![spellController isUsableAction:[[rule action] actionID]] ){
-		PGLog(@"[Rule] Action %d isn't usable!", [[rule action] actionID]);
-		return NO;
-	}
     
-    for(Condition *condition in [rule conditions]) {
+    for ( Condition *condition in [rule conditions] ) {
         //PGLog(@"Checking condition: %@", condition);
         
         if(![condition enabled]) continue;  // skip disabled conditions
@@ -1373,6 +1373,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Rule *rule = nil;
 	int i = 0;
 	BOOL matchFound = NO;
+	
 	// priority system for combat
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
 		
@@ -1408,7 +1409,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			for ( i = 0; i < ruleCount; i++ ) {
 				rule = [procedure ruleAtIndex: i];
 				
-				PGLog(@"[Procedure] Evaluating rule %@", rule);
+				//PGLog(@"[Procedure] Evaluating rule %@", rule);
 				
 				// make sure our rule hasn't continuously failed!
 				NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
@@ -1637,15 +1638,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
 								target,											@"Target", nil]
-				   afterDelay: 0.1f];
+				   afterDelay: 0.1f]; 
 		PGLog(@"[Procedure] Rule executed, trying for more rules!");
 		return;
 	}
 	
-	/*
-	// we could get here by lets say, having no mana (or rage/energy), but we're still fighting something. So continue!
-	if ( [[combatController combatList] count] > 0 ){
-		PGLog(@"[Procedure] We still have units in combat! Why are we quitting! O noes trying to kill more!");
+	// unable to cast, but we're still trying this procedure! Keep going!
+	if ( [[combatController unitsAttackingMe] count] > 0 /*&& [playerController isInCombat]*/ ){
+		
+		PGLog(@"[Procedure] Still being attacked! Continuing combat!");
+		
+		for ( Unit *unit in [combatController unitsAttackingMe] ){
+			PGLog(@" %@", unit);
+		}
 		
 		[self performSelector: _cmd
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -1655,7 +1660,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								nil,											@"Target", nil]
 				   afterDelay: 0.1f];
 		return;
-	}*/
+	}
 
 	// we're done
 	PGLog(@"[Procedure] Done! Finishing!");
@@ -2865,7 +2870,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// the count represents 0.1 second intervals after we fall from our mount (so if we fall far, we don't want to try that node again!)
 					if ( [count intValue] > 5 ){
 						PGLog(@"[Loot] Failed to acquire node %@ after dismounting, ignoring...", nodeToLoot);
-						[blacklistController blacklistObject:nodeToLoot withCount:5];
+						[blacklistController blacklistObject:nodeToLoot withReason:Reason_NodeMadeMeFall];
 					}
 					
 				}

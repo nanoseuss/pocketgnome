@@ -174,107 +174,11 @@ static MobController* sharedController = nil;
     return [[_objectList retain] autorelease];
 }
 
-
 - (void)addAddresses: (NSArray*)addresses {
-	
 	[super addAddresses: addresses];
 
     [self updateTracking: nil];
 }
-
-/*
-- (IBAction)resetMobList: (id)sender {
-    [self resetAllMobs];
-    [mobTable reloadData];
-}
-
-- (IBAction)targetMob: (id)sender {
-    int selectedRow = [mobTable selectedRow];
-    if(selectedRow == -1) return;
-    
-    if(selectedRow >= [_mobDataList count]) return;
-    Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
-	[playerData setPrimaryTarget:mob];
-}
-
-- (IBAction)faceMob: (id)sender {
-    int selectedRow = [mobTable selectedRow];
-    if(selectedRow == -1) return;
-    
-    if(selectedRow >= [_mobDataList count]) return;
-    Mob *mob = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
-
-    [movementController turnTowardObject: mob];
-}
-
-- (IBAction)additionalStart: (id)sender {
-    int tag = [additionalList selectedTag];
-    if(tag <= 0) return;
-    
-    Mob *mobToMove = nil;
-    
-    if(tag == 1) {
-        
-        int selectedRow = [mobTable selectedRow];
-        if(selectedRow == -1 || selectedRow >= [_mobDataList count]) {
-            NSBeep();
-            return;
-        }
-        
-        mobToMove = [[_mobDataList objectAtIndex: selectedRow] objectForKey: @"Mob"];
-    } else {
-        // create a list of all out grumpy peons and their distance from us
-        NSMutableArray *mobList = [NSMutableArray array];
-        Position *playerPosition = [(PlayerDataController*)playerData position];
-        for(Mob *mob in _objectList) {
-            if([mob entryID] == tag) { 
-                
-                float distance = [playerPosition distanceToPosition: [mob position]];
-                [mobList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-                                     mob,                                                  @"Mob",
-                                     [NSNumber numberWithFloat: distance],                 @"Distance", nil]];
-            }
-        }
-        PGLog(@"Found %d mobs of type %d.", [mobList count], tag);
-        
-        // sort the list by distance
-        [mobList sortUsingDescriptors: [NSArray arrayWithObject: [[[NSSortDescriptor alloc] initWithKey: @"Distance" ascending: YES] autorelease]]];
-        
-        // pick our closest mob and move to it
-        if([mobList count]) {
-            if(tag == 23311) { // 23311 = Disobedient Dragonmaw Peon
-                for(NSDictionary *dict in mobList) {
-                    Mob *closestPeon = [dict objectForKey: @"Mob"];
-                    
-                    // check to see that this Peon has an appropriate GrumpyBuff.
-                    if( [auraController unit: closestPeon hasDebuff: 40735] || [auraController unit: closestPeon hasDebuff: 40732] || [auraController unit: closestPeon hasDebuff: 40714]) {                    
-                        mobToMove = closestPeon;
-                        break;
-                    }
-                }
-            } else {
-                if([mobList count])
-                    mobToMove = [[mobList objectAtIndex: 0] objectForKey: @"Mob"];
-            }
-        }
-    }
-    
-    if(mobToMove) {
-		[playerData setPrimaryTarget:mobToMove];
-        //Position *mobPosition = [mobToMove position];
-        //if(tag == 23311)    // adjust the height for peons
-        //    [mobPosition setZPosition: [mobPosition zPosition] + 20.0f];
-        
-        // PGLog(@"Moving to mob: %@", mobToMove);
-        
-        [movementController moveToObject: mobToMove andNotify: NO];
-    }
-}
-
-- (IBAction)additionalStop: (id)sender {
-    
-    [movementController setPatrolRoute: nil];
-}*/
 
 #pragma mark -
 

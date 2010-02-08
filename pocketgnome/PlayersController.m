@@ -233,36 +233,6 @@ static PlayersController *sharedPlayers = nil;
 	return NO;
 }
 
-
-#pragma mark IBActions
-
-/*
-- (IBAction)facePlayer: (id)sender {
-
-    int selectedRow = [playerTable selectedRow];
-    if(selectedRow == -1) return;
-    
-    if(selectedRow >= [_playerDataList count]) return;
-    Player *player = [[_playerDataList objectAtIndex: selectedRow] objectForKey: @"Player"];
-    
-    [movementController turnTowardObject: player];
-}
-
-- (IBAction)targetPlayer: (id)sender {
-
-    int selectedRow = [playerTable selectedRow];
-    if(selectedRow == -1) return;
-    
-    if(selectedRow >= [_playerDataList count]) return;
-    Player *player = [[_playerDataList objectAtIndex: selectedRow] objectForKey: @"Player"];
-    [playerData setPrimaryTarget: player];
-}
-
-- (IBAction)resetPlayerList: (id)sender {
-    [self resetAllPlayers];
-    [playerTable reloadData];
-}*/
-
 - (void)updateTracking: (id)sender{
 	
     if ( ![playerData playerIsValid:self] ) return;
