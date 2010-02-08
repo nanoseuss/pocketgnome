@@ -184,22 +184,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 #pragma mark Public
 
-- (NSArray*)unitsAttackingMe{
-	
-	NSMutableArray *units = [NSMutableArray array];
-	
-	if ( [_unitsAttackingMe count] ){
-		[units addObjectsFromArray:_unitsAttackingMe];
-	}
-	
-	// add our add
-	if ( _addUnit != nil && ![units containsObject:_addUnit] ){
-		[units addObject:_addUnit];
-	}
-
-	return [[units retain] autorelease];
-}
-
 // list of units we're in combat with, NO friendlies
 - (NSArray*)combatList{
 	

@@ -100,7 +100,4 @@
 - (void)showCombatPanel;
 - (void)updateCombatTable;
 
-// OUTPUT: units attacking me + the add if it exists
-- (NSArray*)unitsAttackingMe;
-
 @end
