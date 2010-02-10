@@ -122,8 +122,8 @@
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	self = [self init];
-	if(self) {
+	self = [super initWithCoder:decoder];
+	if ( self ) {
         self.entries = [decoder decodeObjectForKey: @"IgnoreList"] ? [decoder decodeObjectForKey: @"IgnoreList"] : [NSArray array];
 
         self.name = [decoder decodeObjectForKey: @"Name"];
@@ -165,6 +165,8 @@
 
 -(void)encodeWithCoder:(NSCoder *)coder
 {
+	[super encodeWithCoder:coder];
+	
     [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: [NSNumber numberWithBool: self.combatEnabled] forKey: @"CombatEnabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.onlyRespond] forKey: @"OnlyRespond"];

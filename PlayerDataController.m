@@ -29,9 +29,6 @@
 
 #import <Growl/GrowlApplicationBridge.h>
 
-#define StrandGateOfTheBlueSapphire		190724
-#define StrandGateOfTheGreenEmerald		190722
-
 @interface PlayerDataController ()
 @property (readwrite, retain) Position *deathPosition;
 @property float xPosition;

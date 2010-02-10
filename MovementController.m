@@ -459,6 +459,18 @@ typedef enum MovementType {
 		_isStuck++;
 	}
 	
+	// atttempted fix for flying straight up in a deathspiral
+	float vertDistance = [playerPosition zPosition] - [self.lastAttemptedPosition zPosition];
+	PGLog(@"[Move] Vertical distance: %0.2f", vertDistance);
+	if ( vertDistance < 0.0f ) vertDistance *= -1.0f;
+	if ( vertDistance > 100.0f ){
+		PGLog(@"[Move] Are we flying straight up in a death spiral?");
+		
+		NSBeep();
+		
+		[self moveUpStop];
+	}
+	
 	// make sure we're focusing the right direction!
 	float horizontalAngleToward = [playerPosition angleTo:self.lastAttemptedPosition];
 	float directionFacing = [playerData directionFacing];

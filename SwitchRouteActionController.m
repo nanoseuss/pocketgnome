@@ -66,7 +66,11 @@
 - (void)setStateFromAction: (Action*)action{
 	
 	for ( NSMenuItem *item in [routePopUp itemArray] ){
+		
+		//PGLog(@"not equal? %@ %@", [(RouteSet*)[item representedObject] UUID], action.value);
+		
 		if ( [[(RouteSet*)[item representedObject] UUID] isEqualToString:action.value] ){
+			//PGLog(@"ZOMG EQUAL!");
 			[routePopUp selectItem:item];
 			break;
 		}

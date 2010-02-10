@@ -38,6 +38,13 @@
 
 #define ZoneStrandOfTheAncients		4384
 
+#define StrandGateOfTheBlueSapphire		190724
+#define StrandGateOfTheGreenEmerald		190722
+#define StrandGateOfThePurpleAmethyst	190723
+#define StrandGateOfTheRedSun			190726
+#define StrandGateOfTheYellowMoon		190727
+#define StrandChamberOfAncientRelics	192549
+
 #define BGNone			0
 #define BGQueued		1
 #define BGWaiting		2

@@ -76,6 +76,8 @@ typedef enum eGameObjectTypes {
 - (UInt32)nodeType;
 - (NodeFlags)flags;
 
+- (UInt8)objectHealth;
+
 - (UInt16)alpha;
 //- (void)monitor;
 

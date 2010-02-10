@@ -43,8 +43,8 @@
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	self = [super init];
-	if(self) {
+	self = [super initWithCoder:decoder];
+	if ( self ) {
         self.name = [decoder decodeObjectForKey: @"Name"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
         
@@ -60,6 +60,8 @@
 
 -(void)encodeWithCoder:(NSCoder *)coder
 {
+	[super encodeWithCoder:coder];
+	
     [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 }

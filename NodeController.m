@@ -443,6 +443,7 @@ typedef enum {
                                    [NSNumber numberWithFloat: distance],                        @"Distance",
                                    type,                                                        @"Type",
                                    [node imageForNodeType: [node nodeType]],                    @"NameIcon",
+								   [NSNumber numberWithUnsignedInt:[node objectHealth]],		@"Health",		// probably wrong, dunno
                                    nil]];
     }
 	

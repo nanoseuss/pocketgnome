@@ -480,6 +480,7 @@
 
 // Called whenever ANY item is looted
 - (void)fishLooted: (NSNotification*)notification {
+	
 	if ( !_isFishing )
 		return;
 	
