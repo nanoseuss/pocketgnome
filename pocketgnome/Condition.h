@@ -36,6 +36,8 @@ typedef enum Variety {
 	VarietyInventoryFree	= 22,
 	VarietyDurability		= 23,
 	VarietyMobsKilled		= 24,
+	VarietyGate				= 25,
+	VarietyStrandStatus		= 26,
 	
 } ConditionVariety;
 
@@ -82,6 +84,16 @@ typedef enum QualityComponents {
 	QualityRuneUnholy	= 22,
 	QualityRuneFrost	= 23,
 	QualityRuneDeath	= 24,
+	
+	QualityBlueGate		= 25,
+	QualityGreenGate	= 26,
+	QualityPurpleGate	= 27,
+	QualityRedGate		= 28,
+	QualityYellowGate	= 29,
+	QualityChamber		= 30,
+	
+	QualityAttacking	= 31,
+	QualityDefending	= 32,
 	
 } ConditionQuality;
 

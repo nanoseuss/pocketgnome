@@ -74,6 +74,10 @@
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
 		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
 		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
+		03BB221A112258A00048DE7B /* GateConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BB2219112258A00048DE7B /* GateConditionController.m */; };
+		03BB222A11225E410048DE7B /* GateCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03BB222911225E410048DE7B /* GateCondition.xib */; };
+		03BB227B1122F1160048DE7B /* StrandStatus.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03BB227A1122F1160048DE7B /* StrandStatus.xib */; };
+		03BB227E1122F1240048DE7B /* StrandStatusConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BB227D1122F1240048DE7B /* StrandStatusConditionController.m */; };
 		03BD330E11120A7A00941971 /* BindingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BD330D11120A7A00941971 /* BindingsController.m */; };
 		03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
 		03C42CCA1096839E0085E888 /* Macros.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03C42CC91096839E0085E888 /* Macros.plist */; };
@@ -477,6 +481,12 @@
 		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
 		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
 		03B6D26110F626EA00EC6EFF /* RuneConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RuneConditionController.m; sourceTree = "<group>"; };
+		03BB2218112258A00048DE7B /* GateConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GateConditionController.h; sourceTree = "<group>"; };
+		03BB2219112258A00048DE7B /* GateConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GateConditionController.m; sourceTree = "<group>"; };
+		03BB222911225E410048DE7B /* GateCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = GateCondition.xib; sourceTree = "<group>"; };
+		03BB227A1122F1160048DE7B /* StrandStatus.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StrandStatus.xib; sourceTree = "<group>"; };
+		03BB227C1122F1240048DE7B /* StrandStatusConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StrandStatusConditionController.h; sourceTree = "<group>"; };
+		03BB227D1122F1240048DE7B /* StrandStatusConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StrandStatusConditionController.m; sourceTree = "<group>"; };
 		03BD330C11120A7A00941971 /* BindingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BindingsController.h; sourceTree = "<group>"; };
 		03BD330D11120A7A00941971 /* BindingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BindingsController.m; sourceTree = "<group>"; };
 		03C42CC91096839E0085E888 /* Macros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Macros.plist; sourceTree = "<group>"; };
@@ -876,6 +886,8 @@
 		03168DCA10FE8D0B00EF241B /* Waypoint Actions */ = {
 			isa = PBXGroup;
 			children = (
+				03BB227A1122F1160048DE7B /* StrandStatus.xib */,
+				03BB222911225E410048DE7B /* GateCondition.xib */,
 				0393F52F110A558F00296CF8 /* MailAction.xib */,
 				0393F52B110A558200296CF8 /* ReverseRouteAction.xib */,
 				0393F52C110A558200296CF8 /* VendorAction.xib */,
@@ -1419,6 +1431,10 @@
 				03168E2910FE975E00EF241B /* InventoryFreeConditionController.m */,
 				03FFD46C110B930F0046AEDF /* MobsKilledConditionController.h */,
 				03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */,
+				03BB2218112258A00048DE7B /* GateConditionController.h */,
+				03BB2219112258A00048DE7B /* GateConditionController.m */,
+				03BB227C1122F1240048DE7B /* StrandStatusConditionController.h */,
+				03BB227D1122F1240048DE7B /* StrandStatusConditionController.m */,
 			);
 			name = Conditions;
 			sourceTree = "<group>";
@@ -1909,6 +1925,8 @@
 				03FFD59A110CB55A0046AEDF /* InteractNPCAction.xib in Resources */,
 				03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */,
 				0341DD60111B0F6B00074CED /* Objects.xib in Resources */,
+				03BB222A11225E410048DE7B /* GateCondition.xib in Resources */,
+				03BB227B1122F1160048DE7B /* StrandStatus.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2049,6 +2067,8 @@
 				03BD330E11120A7A00941971 /* BindingsController.m in Sources */,
 				0341DD66111B0FBE00074CED /* ObjectsController.m in Sources */,
 				0341DDDA111B21D700074CED /* ObjectController.m in Sources */,
+				03BB221A112258A00048DE7B /* GateConditionController.m in Sources */,
+				03BB227E1122F1240048DE7B /* StrandStatusConditionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

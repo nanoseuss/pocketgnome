@@ -435,7 +435,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		   [condition variety] != VarietyRouteRunTime && 
 		   [condition variety] != VarietyInventoryFree && 
 		   [condition variety] != VarietyDurability &&
-		   [condition variety] != VarietyMobsKilled
+		   [condition variety] != VarietyMobsKilled && 
+		   [condition variety] != VarietyGate && 
+		   [condition variety] != VarietyStrandStatus
 		   ) goto loopEnd;
 
         
@@ -1137,7 +1139,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				break;
 				
 				/* ******************************** */
-                /* Durability Condition				*/
+                /* Mobs Killed Condition				*/
                 /* ******************************** */
             case VarietyMobsKilled:;
 				if(test) PGLog(@"Doing mobs killed condition...");
@@ -1157,6 +1159,63 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                     conditionEval = ( realKillCount < killCount ) ? YES : NO;
                     PGLog(@"  %d < %d is %d", realKillCount, killCount, conditionEval);
                 } else goto loopEnd;
+				
+				break;
+				
+				/* ******************************** */
+                /* Gate Condition				*/
+                /* ******************************** */
+            case VarietyGate:;
+				/*if(test)*/PGLog(@"Doing gate condition...");
+				
+				// grab our gate ID
+				int quality = [condition quality];
+				int gateEntryID = 0;
+				if ( quality == QualityBlueGate )
+					gateEntryID = StrandGateOfTheBlueSapphire;
+				else if ( quality == QualityGreenGate )
+					gateEntryID = StrandGateOfTheGreenEmerald;
+				else if ( quality == QualityPurpleGate )
+					gateEntryID = StrandGateOfThePurpleAmethyst;
+				else if ( quality == QualityRedGate )
+					gateEntryID = StrandGateOfTheRedSun;
+				else if ( quality == QualityYellowGate)
+					gateEntryID = StrandGateOfTheYellowMoon;
+				else if ( quality == QualityChamber)
+					gateEntryID = StrandChamberOfAncientRelics;
+				
+				Node *gate = [nodeController nodeWithEntryID:gateEntryID];
+				if ( !gate ){
+					goto loopEnd;
+				}
+				
+				BOOL destroyed = ([gate objectHealth] == 0) ? YES : NO;
+				
+				if ( [condition comparator] == CompareIs ) {
+					conditionEval = destroyed;
+					PGLog(@"  %d is destroyed? %d", gateEntryID, conditionEval);
+				}
+				else if ( [condition comparator] == CompareIsNot ) {
+					conditionEval = !destroyed;
+					PGLog(@"  %d is not destroyed? %d", gateEntryID, conditionEval);
+				} else goto loopEnd;
+
+				break;
+				
+				/* ******************************** */
+                /* Strand Status Condition				*/
+                /* ******************************** */
+            case VarietyStrandStatus:;
+				/*if(test)*/PGLog(@"Doing battleground status condition...");
+				
+				if ( [condition quality] == QualityAttacking ){
+					conditionEval = _attackingInStrand;
+					PGLog(@"  checking if we're attacking in strand? %d", conditionEval);
+				}
+				else if ( [condition quality] == QualityDefending ){
+					conditionEval = !_attackingInStrand;
+					PGLog(@"  checking if we're defending in strand? %d", conditionEval);
+				} else goto loopEnd;
 				
 				break;
 				
@@ -1352,6 +1411,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// We don't want to cast if our GCD is active!
 	if ( [spellController isGCDActive] ){
+		PGLog(@"[Procedure] GCD is active, trying again shortly...");
 		[self performSelector: _cmd
                    withObject: state 
                    afterDelay: RULE_EVAL_DELAY_SHORT];
@@ -1397,6 +1457,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ( [inCombatUnits count] == 0 ){
 				doCombatProcedure = NO;
 				PGLog(@"[Procedure] Not executing combat procedure!");
+				
+				for ( Unit *unit in inCombatUnits ){
+					PGLog(@" %@", unit);
+				}
 			}
 			else{
 				PGLog(@"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
@@ -4668,6 +4732,9 @@ NSMutableDictionary *_diffDict = nil;
 	else if ( [errorMessage isEqualToString:YOU_ARE_MOUNTED] ){
 		return ErrYouAreMounted;
 	}
+	else if ( [errorMessage isEqualToString:TARGET_DEAD] ){
+		return ErrInvalidTarget;
+	}
 
 	return ErrNotFound;
 }
@@ -5213,10 +5280,11 @@ NSMutableDictionary *_diffDict = nil;
 
 - (IBAction)test: (id)sender{
 	
-
+	double val = 0.800000011920929f;
 	
+	PGLog(@"0x%X", val);
 	
-	[bindingsController executeBindingForKey:BindingPrimaryHotkey];
+	//[bindingsController executeBindingForKey:BindingPrimaryHotkey];
 	
 	//MULTIACTIONBAR1BUTTON1
 	//INTERACTMOUSEOVER

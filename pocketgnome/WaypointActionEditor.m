@@ -26,6 +26,8 @@
 #import "RouteRunCountConditionController.h"
 #import "InventoryFreeConditionController.h"
 #import "MobsKilledConditionController.h"
+#import "GateConditionController.h"
+#import "StrandStatusConditionController.h"
 
 #import "SwitchRouteActionController.h"
 #import "RepairActionController.h"
@@ -108,6 +110,8 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == VarietyRouteRunCount )	newCondition = [[[RouteRunCountConditionController alloc] init] autorelease];
 	else if ( type == VarietyInventoryFree )	newCondition = [[[InventoryFreeConditionController alloc] init] autorelease];
 	else if ( type == VarietyMobsKilled )		newCondition = [[[MobsKilledConditionController alloc] init] autorelease];
+	else if ( type == VarietyGate )				newCondition = [[[GateConditionController alloc] init] autorelease];
+	else if ( type == VarietyStrandStatus )		newCondition = [[[StrandStatusConditionController alloc] init] autorelease];
 	
     if ( newCondition ) {
         [_conditionList addObject: newCondition];

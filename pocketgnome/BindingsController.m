@@ -287,12 +287,11 @@ typedef struct WoWBinding {
 		// only one command!
 		if ( splitIndex == -1 ){
 			command1 = [key lowercaseString];
-			
-			
-			NSString *binding = [[_bindings objectForKey:key] lowercaseString];
+
+			/*NSString *binding = [[_bindings objectForKey:key] lowercaseString];
 			if ( [binding isEqualToString:[[NSString stringWithFormat:@"MULTIACTIONBAR1BUTTON1"] lowercaseString]] ){
 				PGLog(@" %@", command1);
-			}
+			}*/
 		}
 		// 2 commands
 		else{
@@ -468,7 +467,7 @@ typedef struct WoWBinding {
 		PGLog(@"[Bindings] Found binding for lower left action bar: %d 0x%X 0x%X", code, modifier, offset);
 	}
 	// try normal bar (I could try more after this, but if they don't have either bound, they shouldn't be using this bot)
-	else if ( [self bindingForCommand:@"ACTIONBUTTON1"] >= 0 ){
+	else if ( [self codeForBinding:@"ACTIONBUTTON1"] >= 0 ){
 		code = [self codeForBinding:@"ACTIONBUTTON1"];
 		modifier = [self modifierForBinding:@"ACTIONBUTTON1"];
 		offset = BAR1_OFFSET;

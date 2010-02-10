@@ -602,9 +602,48 @@
 											<int key="NSTag">5</int>
 											<reference key="NSTarget" ref="1016011523"/>
 										</object>
+										<object class="NSMenuItem" id="285369580">
+											<reference key="NSMenu" ref="623131397"/>
+											<bool key="NSIsDisabled">YES</bool>
+											<string key="NSTitle">Battlegrounds</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<reference key="NSTarget" ref="1016011523"/>
+										</object>
+										<object class="NSMenuItem" id="113822471">
+											<reference key="NSMenu" ref="623131397"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Gate Status</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">25</int>
+											<reference key="NSTarget" ref="1016011523"/>
+										</object>
+										<object class="NSMenuItem" id="663530184">
+											<reference key="NSMenu" ref="623131397"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Strand Status</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">26</int>
+											<reference key="NSTarget" ref="1016011523"/>
+										</object>
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
+								<int key="NSSelectedIndex">15</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -961,7 +1000,6 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">8</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1563,6 +1601,9 @@
 							<reference ref="187860124"/>
 							<reference ref="465664775"/>
 							<reference ref="955093318"/>
+							<reference ref="285369580"/>
+							<reference ref="113822471"/>
+							<reference ref="663530184"/>
 						</object>
 						<reference key="parent" ref="1016011523"/>
 					</object>
@@ -1775,6 +1816,21 @@
 						<reference key="object" ref="275977461"/>
 						<reference key="parent" ref="229823351"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">748</int>
+						<reference key="object" ref="285369580"/>
+						<reference key="parent" ref="623131397"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">749</int>
+						<reference key="object" ref="113822471"/>
+						<reference key="parent" ref="623131397"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">750</int>
+						<reference key="object" ref="663530184"/>
+						<reference key="parent" ref="623131397"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1871,15 +1927,18 @@
 					<string>745.IBPluginDependency</string>
 					<string>746.IBPluginDependency</string>
 					<string>747.IBPluginDependency</string>
+					<string>748.IBPluginDependency</string>
+					<string>749.IBPluginDependency</string>
+					<string>750.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{323, 322}, {705, 336}}</string>
+					<string>{{509, 268}, {705, 336}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{323, 322}, {705, 336}}</string>
+					<string>{{509, 268}, {705, 336}}</string>
 					<integer value="0"/>
 					<string>{{745, 155}, {429, 399}}</string>
 					<boolean value="YES"/>
@@ -1903,7 +1962,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{849, 128}, {167, 383}}</string>
+					<string>{{1035, 74}, {167, 383}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1923,7 +1982,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{849, 377}, {196, 263}}</string>
+					<string>{{1035, 263}, {196, 323}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1946,6 +2005,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>BetterTableView</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1982,7 +2044,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">747</int>
+			<int key="maxID">750</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2030,6 +2092,29 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="5752308">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">BetterTableView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BindingsController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>chatController</string>
+							<string>controller</string>
+							<string>offsetController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>ChatController</string>
+							<string>Controller</string>
+							<string>OffsetController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">BindingsController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -2102,6 +2187,7 @@
 							<string>auraController</string>
 							<string>autoJoinWG</string>
 							<string>behaviorPopup</string>
+							<string>bindingsController</string>
 							<string>blacklistController</string>
 							<string>chatController</string>
 							<string>chatLogController</string>
@@ -2147,7 +2233,6 @@
 							<string>mobController</string>
 							<string>mountCheckbox</string>
 							<string>mountType</string>
-							<string>mouseOverRecorder</string>
 							<string>movementController</string>
 							<string>netherwingEggCheckbox</string>
 							<string>nodeController</string>
@@ -2159,7 +2244,6 @@
 							<string>nodeIgnoreMobDistanceText</string>
 							<string>offsetController</string>
 							<string>overlayWindow</string>
-							<string>petAttackRecorder</string>
 							<string>playerController</string>
 							<string>playersController</string>
 							<string>procedureController</string>
@@ -2173,7 +2257,6 @@
 							<string>routePopup</string>
 							<string>runningTimer</string>
 							<string>scanGrid</string>
-							<string>shortcutRecorder</string>
 							<string>skinningCheckbox</string>
 							<string>skinningSkillText</string>
 							<string>spellController</string>
@@ -2192,6 +2275,7 @@
 							<string>AuraController</string>
 							<string>NSButton</string>
 							<string>id</string>
+							<string>BindingsController</string>
 							<string>BlacklistController</string>
 							<string>ChatController</string>
 							<string>ChatLogController</string>
@@ -2237,7 +2321,6 @@
 							<string>MobController</string>
 							<string>NSButton</string>
 							<string>NSPopUpButton</string>
-							<string>SRRecorderControl</string>
 							<string>MovementController</string>
 							<string>NSButton</string>
 							<string>NodeController</string>
@@ -2249,7 +2332,6 @@
 							<string>NSTextField</string>
 							<string>OffsetController</string>
 							<string>NSWindow</string>
-							<string>SRRecorderControl</string>
 							<string>PlayerDataController</string>
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
@@ -2263,7 +2345,6 @@
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>ScanGridView</string>
-							<string>SRRecorderControl</string>
 							<string>NSButton</string>
 							<string>id</string>
 							<string>SpellController</string>
@@ -2389,7 +2470,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">CombatProfileEditor</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -2503,11 +2584,11 @@
 							<string>botToolbarItem</string>
 							<string>chatLogController</string>
 							<string>chatLogToolbarItem</string>
+							<string>combatProfileEditor</string>
 							<string>corpseController</string>
 							<string>currentStatusText</string>
 							<string>disableGUIScriptCheckbox</string>
 							<string>itemController</string>
-							<string>itemsToolbarItem</string>
 							<string>mainBackgroundBox</string>
 							<string>mainToolbar</string>
 							<string>mainWindow</string>
@@ -2517,17 +2598,16 @@
 							<string>memoryToolbarItem</string>
 							<string>memoryViewController</string>
 							<string>mobController</string>
-							<string>mobsToolbarItem</string>
 							<string>newIdentifierField</string>
 							<string>newNameField</string>
 							<string>newSignatureField</string>
 							<string>nodeController</string>
-							<string>nodesToolbarItem</string>
+							<string>objectsController</string>
+							<string>objectsToolbarItem</string>
 							<string>offsetController</string>
 							<string>playerData</string>
 							<string>playerToolbarItem</string>
 							<string>playersController</string>
-							<string>playersToolbarItem</string>
 							<string>prefsToolbarItem</string>
 							<string>routeController</string>
 							<string>routesToolbarItem</string>
@@ -2549,11 +2629,11 @@
 							<string>NSToolbarItem</string>
 							<string>ChatLogController</string>
 							<string>NSToolbarItem</string>
+							<string>CombatProfileEditor</string>
 							<string>CorpseController</string>
 							<string>id</string>
 							<string>NSButton</string>
 							<string>InventoryController</string>
-							<string>NSToolbarItem</string>
 							<string>id</string>
 							<string>NSToolbar</string>
 							<string>id</string>
@@ -2563,17 +2643,16 @@
 							<string>NSToolbarItem</string>
 							<string>MemoryViewController</string>
 							<string>MobController</string>
-							<string>NSToolbarItem</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NSTextField</string>
 							<string>NodeController</string>
+							<string>ObjectsController</string>
 							<string>NSToolbarItem</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 							<string>NSToolbarItem</string>
 							<string>PlayersController</string>
-							<string>NSToolbarItem</string>
 							<string>NSToolbarItem</string>
 							<string>WaypointController</string>
 							<string>NSToolbarItem</string>
@@ -2638,24 +2717,18 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">InventoryController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">ObjectController</string>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>controller</string>
-							<string>itemTable</string>
 							<string>memoryViewController</string>
-							<string>playerData</string>
-							<string>view</string>
+							<string>objectsController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>Controller</string>
-							<string>NSTableView</string>
 							<string>MemoryViewController</string>
-							<string>PlayerDataController</string>
-							<string>NSView</string>
+							<string>ObjectsController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -2833,29 +2906,10 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">MobController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">ObjectController</string>
 					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>additionalStart:</string>
-							<string>additionalStop:</string>
-							<string>faceMob:</string>
-							<string>filterMobs:</string>
-							<string>resetMobList:</string>
-							<string>targetMob:</string>
-							<string>updateTracking:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
+						<string key="NS.key.0">updateTracking:</string>
+						<string key="NS.object.0">id</string>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2865,17 +2919,13 @@
 							<string>auraController</string>
 							<string>botController</string>
 							<string>combatController</string>
-							<string>controller</string>
 							<string>memoryViewController</string>
-							<string>mobColorByLevel</string>
-							<string>mobTable</string>
 							<string>movementController</string>
-							<string>playerData</string>
+							<string>objectsController</string>
 							<string>spellController</string>
 							<string>trackFriendlyMenuItem</string>
 							<string>trackHostileMenuItem</string>
 							<string>trackNeutralMenuItem</string>
-							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2885,11 +2935,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+							<string>ObjectsController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -2983,21 +3029,79 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NodeController</string>
+					<string key="superclassName">ObjectController</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>memoryViewController</string>
+							<string>moveToList</string>
+							<string>movementController</string>
+							<string>objectsController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>NSPopUpButton</string>
+							<string>id</string>
+							<string>ObjectsController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">NodeController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ObjectController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">tableDoubleClick:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>controller</string>
+							<string>playerData</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>Controller</string>
+							<string>PlayerDataController</string>
+							<string>NSView</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ObjectController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ObjectsController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>faceNode:</string>
-							<string>filterList:</string>
-							<string>filterNodes:</string>
+							<string>faceObject:</string>
+							<string>filter:</string>
 							<string>moveToStart:</string>
 							<string>moveToStop:</string>
-							<string>resetList:</string>
-							<string>targetNode:</string>
+							<string>refreshData:</string>
+							<string>reloadNames:</string>
+							<string>resetObjects:</string>
+							<string>targetObject:</string>
+							<string>updateTracking:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3011,30 +3115,46 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>botController</string>
 							<string>controller</string>
+							<string>itemController</string>
+							<string>itemTable</string>
 							<string>memoryViewController</string>
-							<string>moveToList</string>
+							<string>mobController</string>
+							<string>mobTable</string>
+							<string>moveToMobPopUpButton</string>
+							<string>moveToNodePopUpButton</string>
 							<string>movementController</string>
+							<string>nodeController</string>
 							<string>nodeTable</string>
 							<string>playerController</string>
+							<string>playersController</string>
+							<string>playersTable</string>
+							<string>tabView</string>
 							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
+							<string>Controller</string>
+							<string>InventoryController</string>
+							<string>NSTableView</string>
+							<string>MemoryViewController</string>
+							<string>MobController</string>
+							<string>NSTableView</string>
 							<string>NSPopUpButton</string>
-							<string>id</string>
-							<string>id</string>
+							<string>NSPopUpButton</string>
+							<string>MovementController</string>
+							<string>NodeController</string>
+							<string>NSTableView</string>
 							<string>PlayerDataController</string>
+							<string>PlayersController</string>
+							<string>NSTableView</string>
+							<string>NSTabView</string>
 							<string>NSView</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">NodeController.h</string>
+						<string key="minorKey">ObjectsController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -3113,51 +3233,26 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">PlayersController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">ObjectController</string>
 					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>facePlayer:</string>
-							<string>reloadNames:</string>
-							<string>resetPlayerList:</string>
-							<string>targetPlayer:</string>
-							<string>updateTracking:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-						</object>
+						<string key="NS.key.0">updateTracking:</string>
+						<string key="NS.object.0">id</string>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>controller</string>
 							<string>memoryViewController</string>
 							<string>movementController</string>
+							<string>objectsController</string>
 							<string>playerColorByLevel</string>
-							<string>playerData</string>
-							<string>playerTable</string>
-							<string>trackFriendly</string>
-							<string>trackHostile</string>
-							<string>view</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>Controller</string>
 							<string>MemoryViewController</string>
 							<string>MovementController</string>
+							<string>ObjectsController</string>
 							<string>NSButton</string>
-							<string>PlayerDataController</string>
-							<string>NSTableView</string>
-							<string>id</string>
-							<string>id</string>
-							<string>NSView</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -3167,22 +3262,19 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ProcedureController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addRule:</string>
-							<string>closeExportPanel:</string>
 							<string>closeRename:</string>
 							<string>createBehavior:</string>
 							<string>deleteRule:</string>
 							<string>duplicateBehavior:</string>
 							<string>exportBehavior:</string>
-							<string>exportBehaviors:</string>
 							<string>importBehavior:</string>
 							<string>loadBehavior:</string>
-							<string>openExportPanel:</string>
 							<string>removeBehavior:</string>
 							<string>renameBehavior:</string>
 							<string>setBehaviorEvent:</string>
@@ -3204,9 +3296,6 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -3215,7 +3304,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>actionMenu</string>
 							<string>combatPriorityTextField</string>
-							<string>exportPanel</string>
 							<string>itemController</string>
 							<string>procedureEventSegment</string>
 							<string>renamePanel</string>
@@ -3228,7 +3316,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
 							<string>NSTextField</string>
-							<string>NSPanel</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSPanel</string>
@@ -3270,6 +3357,18 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">RouteVisualizationView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">SaveData</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">showInFinder:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">SaveData.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -3435,7 +3534,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WaypointController</string>
-					<string key="superclassName">NSObject</string>
+					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -3459,7 +3558,6 @@
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
-							<string>showInFinder:</string>
 							<string>startStopAutomator:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
@@ -3468,7 +3566,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

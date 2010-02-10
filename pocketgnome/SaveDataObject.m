@@ -23,6 +23,7 @@
 		
 		// create a new UUID
 		self.UUID = [self generateUUID];
+		//PGLog(@"created a NEW UUID %@", self.UUID);
 	}
 		
     return self;
@@ -39,6 +40,7 @@
 		// create a new UUID?
 		if ( !self.UUID || [self.UUID length] == 0 ){
 			self.UUID = [self generateUUID];
+			//PGLog(@"created a NEW UUID2 %@", self.UUID);
 			_changed = YES;
 		}
 	}

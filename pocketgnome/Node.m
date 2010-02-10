@@ -148,6 +148,16 @@ enum eNodeNameStructFields {
     return 0;
 }
 
+// this could be ENTIRELY wrong, but just my guess, from 0-255
+//	I use it for the gates in strand
+- (UInt8)objectHealth{
+    UInt8 value = 0;
+    if([_memory loadDataForObject: self atAddress: ([self infoAddress] + GAMEOBJECT_BYTES_1 + 0x3) Buffer: (Byte *)&value BufLength: sizeof(value)]) {
+        return value;
+    }
+    return -1;
+}
+
 - (UInt32)nodeType {
     UInt32 value = 0;
     if([_memory loadDataForObject: self atAddress: ([self infoAddress] + GAMEOBJECT_BYTES_1) Buffer: (Byte *)&value BufLength: sizeof(value)]) {

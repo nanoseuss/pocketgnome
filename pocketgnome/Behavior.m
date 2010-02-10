@@ -53,8 +53,8 @@
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	self = [super init];
-	if(self) {
+	self = [super initWithCoder:decoder];
+	if ( self ) {
         self.name = [decoder decodeObjectForKey: @"Name"];
         self.procedures = [decoder decodeObjectForKey: @"Procedures"] ? [decoder decodeObjectForKey: @"Procedures"] : [NSDictionary dictionary];
         
@@ -83,6 +83,8 @@
 
 -(void)encodeWithCoder:(NSCoder *)coder
 {
+	[super encodeWithCoder:coder];
+	
     [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.procedures forKey: @"Procedures"];
     [coder encodeObject: [NSNumber numberWithBool: self.meleeCombat] forKey: @"MeleeCombat"];
