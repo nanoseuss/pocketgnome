@@ -18,6 +18,24 @@
 
 @implementation SaveData	
 
+- (id) init {
+    self = [super init];
+    if ( self != nil ) {
+
+		// create directory?
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+		NSString *folder = APPLICATION_SUPPORT_FOLDER;
+		
+		// create folder?
+		folder = [folder stringByExpandingTildeInPath];
+		if ( [fileManager fileExistsAtPath: folder] == NO ) {
+			PGLog(@"[FileManager] Save data folder does not exist! Creating %@", folder);
+			[fileManager createDirectoryAtPath: folder attributes: nil];
+		}
+	}
+	
+    return self;
+}
 
 - (NSString*)objectExtension{
 	
