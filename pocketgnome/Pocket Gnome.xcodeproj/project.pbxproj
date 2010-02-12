@@ -60,6 +60,7 @@
 		03685FAD1103D768001CE552 /* QuestGrabActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03685FAC1103D768001CE552 /* QuestGrabActionController.m */; };
 		03685FB01103D77A001CE552 /* QuestTurnInActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */; };
 		038709BA10D576E100DF5B90 /* BlacklistController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038709B910D576E100DF5B90 /* BlacklistController.m */; };
+		038769151124532000B2C571 /* RouteCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 038769141124532000B2C571 /* RouteCollection.m */; };
 		038A4B4610E9656D00577D8F /* LastSpellCast.xib in Resources */ = {isa = PBXBuildFile; fileRef = 038A4B4510E9656D00577D8F /* LastSpellCast.xib */; };
 		038A4B4910E9657900577D8F /* LastSpellCastConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */; };
 		0393F413110A205800296CF8 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 0393F412110A205800296CF8 /* libcrypto.dylib */; };
@@ -461,6 +462,8 @@
 		03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuestTurnInActionController.m; sourceTree = "<group>"; };
 		038709B810D576E100DF5B90 /* BlacklistController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlacklistController.h; sourceTree = "<group>"; };
 		038709B910D576E100DF5B90 /* BlacklistController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BlacklistController.m; sourceTree = "<group>"; };
+		038769131124532000B2C571 /* RouteCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RouteCollection.h; sourceTree = "<group>"; };
+		038769141124532000B2C571 /* RouteCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RouteCollection.m; sourceTree = "<group>"; };
 		038A4B4510E9656D00577D8F /* LastSpellCast.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = LastSpellCast.xib; sourceTree = "<group>"; };
 		038A4B4710E9657900577D8F /* LastSpellCastConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LastSpellCastConditionController.h; sourceTree = "<group>"; };
 		038A4B4810E9657900577D8F /* LastSpellCastConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LastSpellCastConditionController.m; sourceTree = "<group>"; };
@@ -1465,6 +1468,8 @@
 				7DD03F370D163FF8000CC1A6 /* Waypoint.m */,
 				7D1659890D455F6500BDF5CA /* RouteSet.h */,
 				7D16598A0D455F6500BDF5CA /* RouteSet.m */,
+				038769131124532000B2C571 /* RouteCollection.h */,
+				038769141124532000B2C571 /* RouteCollection.m */,
 			);
 			name = "Waypoints & Routes";
 			sourceTree = "<group>";
@@ -2069,6 +2074,7 @@
 				0341DDDA111B21D700074CED /* ObjectController.m in Sources */,
 				03BB221A112258A00048DE7B /* GateConditionController.m in Sources */,
 				03BB227E1122F1240048DE7B /* StrandStatusConditionController.m in Sources */,
+				038769151124532000B2C571 /* RouteCollection.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

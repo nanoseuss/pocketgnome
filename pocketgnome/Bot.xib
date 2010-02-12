@@ -21,7 +21,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1"/>
+			<integer value="917"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1089,7 +1089,7 @@
 									<object class="NSTextField" id="362447065">
 										<reference key="NSNextResponder" ref="1011511294"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{8, 17}, {61, 17}}</string>
+										<string key="NSFrame">{{22, 17}, {61, 17}}</string>
 										<reference key="NSSuperview" ref="1011511294"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="974308849">
@@ -1105,7 +1105,7 @@
 									<object class="NSPopUpButton" id="195129388">
 										<reference key="NSNextResponder" ref="1011511294"/>
 										<int key="NSvFlags">264</int>
-										<string key="NSFrame">{{72, 11}, {212, 26}}</string>
+										<string key="NSFrame">{{86, 11}, {212, 26}}</string>
 										<reference key="NSSuperview" ref="1011511294"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSPopUpButtonCell" key="NSCell" id="498165406">
@@ -1170,13 +1170,13 @@
 									<object class="NSTextField" id="556768590">
 										<reference key="NSNextResponder" ref="1011511294"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{15, 48}, {54, 17}}</string>
+										<string key="NSFrame">{{15, 48}, {68, 17}}</string>
 										<reference key="NSSuperview" ref="1011511294"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="808345567">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">71304192</int>
-											<string key="NSContents">Route:</string>
+											<string key="NSContents">Route Set:</string>
 											<reference key="NSSupport" ref="950502722"/>
 											<reference key="NSControlView" ref="556768590"/>
 											<reference key="NSBackgroundColor" ref="1028096058"/>
@@ -1186,7 +1186,7 @@
 									<object class="NSPopUpButton" id="577210047">
 										<reference key="NSNextResponder" ref="1011511294"/>
 										<int key="NSvFlags">264</int>
-										<string key="NSFrame">{{72, 42}, {212, 26}}</string>
+										<string key="NSFrame">{{86, 42}, {212, 26}}</string>
 										<reference key="NSSuperview" ref="1011511294"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSPopUpButtonCell" key="NSCell" id="581633368">
@@ -1251,7 +1251,7 @@
 									<object class="NSButton" id="485156075">
 										<reference key="NSNextResponder" ref="1011511294"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{287, 47}, {153, 18}}</string>
+										<string key="NSFrame">{{301, 47}, {153, 18}}</string>
 										<reference key="NSSuperview" ref="1011511294"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSButtonCell" key="NSCell" id="686898499">
@@ -3102,22 +3102,6 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 					<int key="connectionID">72</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">content: waypointController.routes</string>
-						<reference key="source" ref="577210047"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="1038916541">
-							<reference key="NSSource" ref="577210047"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">content: waypointController.routes</string>
-							<string key="NSBinding">content</string>
-							<string key="NSKeyPath">waypointController.routes</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">156</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
 						<string key="label">routePopup</string>
 						<reference key="source" ref="1001"/>
@@ -4029,57 +4013,6 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 						</object>
 					</object>
 					<int key="connectionID">883</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">contentObjects: waypointController.routes</string>
-						<reference key="source" ref="577210047"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="375553478">
-							<reference key="NSSource" ref="577210047"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">contentObjects: waypointController.routes</string>
-							<string key="NSBinding">contentObjects</string>
-							<string key="NSKeyPath">waypointController.routes</string>
-							<reference key="NSPreviousConnector" ref="1038916541"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">887</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">contentValues: waypointController.routes.name</string>
-						<reference key="source" ref="577210047"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="734756376">
-							<reference key="NSSource" ref="577210047"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">contentValues: waypointController.routes.name</string>
-							<string key="NSBinding">contentValues</string>
-							<string key="NSKeyPath">waypointController.routes.name</string>
-							<reference key="NSPreviousConnector" ref="375553478"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">888</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">selectedValue: values.Route</string>
-						<reference key="source" ref="577210047"/>
-						<reference key="destination" ref="406132312"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="577210047"/>
-							<reference key="NSDestination" ref="406132312"/>
-							<string key="NSLabel">selectedValue: values.Route</string>
-							<string key="NSBinding">selectedValue</string>
-							<string key="NSKeyPath">values.Route</string>
-							<reference key="NSPreviousConnector" ref="734756376"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">889</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -5212,6 +5145,73 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 					</object>
 					<int key="connectionID">1430</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">content: waypointController.routeCollections</string>
+						<reference key="source" ref="577210047"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector" id="1053326623">
+							<reference key="NSSource" ref="577210047"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">content: waypointController.routeCollections</string>
+							<string key="NSBinding">content</string>
+							<string key="NSKeyPath">waypointController.routeCollections</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1434</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">contentObjects: waypointController.routeCollections</string>
+						<reference key="source" ref="577210047"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector" id="929784016">
+							<reference key="NSSource" ref="577210047"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">contentObjects: waypointController.routeCollections</string>
+							<string key="NSBinding">contentObjects</string>
+							<string key="NSKeyPath">waypointController.routeCollections</string>
+							<reference key="NSPreviousConnector" ref="1053326623"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1438</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">contentValues: waypointController.routeCollections.name</string>
+						<reference key="source" ref="577210047"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector" id="591795632">
+							<reference key="NSSource" ref="577210047"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">contentValues: waypointController.routeCollections.name</string>
+							<string key="NSBinding">contentValues</string>
+							<string key="NSKeyPath">waypointController.routeCollections.name</string>
+							<reference key="NSPreviousConnector" ref="929784016"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1441</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">selectedValue: values.Route</string>
+						<reference key="source" ref="577210047"/>
+						<reference key="destination" ref="406132312"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="577210047"/>
+							<reference key="NSDestination" ref="406132312"/>
+							<string key="NSLabel">selectedValue: values.Route</string>
+							<string key="NSBinding">selectedValue</string>
+							<string key="NSKeyPath">values.Route</string>
+							<reference key="NSPreviousConnector" ref="591795632"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">1442</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -6029,14 +6029,14 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 						<reference key="object" ref="81871165"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="556768590"/>
-							<reference ref="577210047"/>
-							<reference ref="362447065"/>
-							<reference ref="195129388"/>
 							<reference ref="865428426"/>
 							<reference ref="187912884"/>
-							<reference ref="485156075"/>
 							<reference ref="41810493"/>
+							<reference ref="362447065"/>
+							<reference ref="195129388"/>
+							<reference ref="556768590"/>
+							<reference ref="577210047"/>
+							<reference ref="485156075"/>
 						</object>
 						<reference key="parent" ref="1005"/>
 					</object>
@@ -7246,7 +7246,7 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{395, 491}, {749, 465}}</string>
+					<string>{{613, 68}, {749, 465}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{84, 448}, {600, 442}}</string>
@@ -7533,7 +7533,7 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1433</int>
+			<int key="maxID">1442</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -8974,13 +8974,16 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addRouteCollection:</string>
+							<string>addRouteSet:</string>
 							<string>addWaypoint:</string>
 							<string>closeAutomatorPanel:</string>
 							<string>closeDescription:</string>
+							<string>closeHelpPanel:</string>
 							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closestWaypoint:</string>
-							<string>createRoute:</string>
+							<string>deleteRoute:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
 							<string>exportRoute:</string>
@@ -8994,6 +8997,7 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
 							<string>startStopAutomator:</string>
+							<string>startingRouteClicked:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
 							<string>visualize:</string>
@@ -9001,6 +9005,10 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -9042,18 +9050,22 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 							<string>combatController</string>
 							<string>controller</string>
 							<string>descriptionPanel</string>
+							<string>helpPanel</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
 							<string>renamePanel</string>
 							<string>routeTypeSegment</string>
+							<string>routesTable</string>
 							<string>scrollWithRoute</string>
 							<string>shortcutRecorder</string>
+							<string>startingRouteButton</string>
 							<string>testingMenu</string>
 							<string>view</string>
 							<string>visualizePanel</string>
 							<string>visualizeView</string>
 							<string>waypointSectionTitle</string>
+							<string>waypointTabView</string>
 							<string>waypointTable</string>
 							<string>wpActionDelayText</string>
 							<string>wpActionIDPopUp</string>
@@ -9074,18 +9086,22 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 							<string>id</string>
 							<string>Controller</string>
 							<string>NSPanel</string>
+							<string>NSPanel</string>
 							<string>id</string>
 							<string>id</string>
 							<string>PlayerDataController</string>
 							<string>NSPanel</string>
 							<string>id</string>
+							<string>NSOutlineView</string>
 							<string>NSButton</string>
 							<string>SRRecorderControl</string>
+							<string>NSButton</string>
 							<string>NSMenu</string>
 							<string>NSView</string>
 							<string>NSPanel</string>
 							<string>RouteVisualizationView</string>
 							<string>NSTextField</string>
+							<string>NSTabView</string>
 							<string>BetterTableView</string>
 							<string>NSTextField</string>
 							<string>NSPopUpButton</string>
@@ -9352,7 +9368,7 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="428891274">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSOutlineView.h</string>
 					</object>
@@ -9560,6 +9576,11 @@ IGZvciB0aGUgSG90a2V5IHNlY3Rpb24gYXQgdGhlIGJvdHRvbS4KCg</string>
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSObjectController.h</string>
 					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSOutlineView</string>
+					<string key="superclassName">NSTableView</string>
+					<reference key="sourceIdentifier" ref="428891274"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSPanel</string>

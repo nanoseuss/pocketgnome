@@ -8,7 +8,7 @@
 
 #import "RouteSet.h"
 #import "SaveDataObject.h"
-#include <openssl/md5.h>
+#import "RouteCollection.h"
 
 @interface RouteSet ()
 @property (readwrite, retain) NSDictionary *routes;
@@ -22,6 +22,7 @@
     if (self != nil) {
         self.name = nil;
         self.routes = [NSMutableDictionary dictionary];
+		self.parent = nil;
     }
     return self;
 }
@@ -38,7 +39,9 @@
 }
 
 + (id)routeSetWithName: (NSString*)name {
-    return [[[RouteSet alloc] initWithName: name] autorelease];
+	RouteSet *route = [[[RouteSet alloc] initWithName: name] autorelease];
+	route.changed = YES;
+    return route;
 }
 
 - (id)initWithCoder:(NSCoder *)decoder
@@ -47,6 +50,7 @@
 	if ( self ) {
         self.name = [decoder decodeObjectForKey: @"Name"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
+		self.parent = [decoder decodeObjectForKey: @"Parent"];
         
         // make sure we have a route object for every type
         if( ![self routeForKey: PrimaryRoute])
@@ -64,6 +68,7 @@
 	
     [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.routes forKey: @"Routes"];
+	[coder encodeObject: self.parent forKey: @"Parent"];
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -72,6 +77,9 @@
     
     copy.routes = self.routes;
 	copy.changed = YES;
+	copy.parent = self.parent;
+	
+	PGLog(@"copying the routeSet?");
 
     return copy;
 }
@@ -80,6 +88,7 @@
 {
     self.name = nil;
     self.routes = nil;
+	self.parent = nil;
     [super dealloc];
 }
 
@@ -89,9 +98,9 @@
     return [NSString stringWithFormat: @"<RouteSet %@ %@>", [self name], [self UUID]];
 }
 
+@synthesize parent = _parent;
 @synthesize name = _name;
 @synthesize routes = _routes;
-@synthesize UUID = _UUID;
 
 - (void)setRoutes: (NSDictionary*)routes {
     [_routes autorelease];
@@ -113,5 +122,13 @@
     }
 }
 
+
+- (void)setParent:(RouteCollection*)myParent{
+	
+	//PGLog(@"SETTING PARENT OF %@ TO %@", self, myParent);
+	[_parent release];
+	_parent = [myParent retain];
+	
+}
 
 @end

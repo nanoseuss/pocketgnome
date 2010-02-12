@@ -11,6 +11,24 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>routecollection</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>pgRoute</string>
+			<key>CFBundleTypeName</key>
+			<string>Route Collection</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSDocumentClass</key>
+			<string>RouteCollection</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>XML</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>combatProfile</string>
 				<string>combatprofile</string>
 			</array>

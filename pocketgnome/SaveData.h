@@ -18,6 +18,7 @@
 - (void)deleteObjectWithName:(NSString*)name;	// delete an object (needed for renames)
 - (void)saveObject: (id)object;					// save an object
 - (NSArray*)loadAllObjects;						// return an array w/all objects found in the app support folder
+- (void)deleteAllObjects;
 
 // UI
 - (IBAction)showInFinder: (id)sender;

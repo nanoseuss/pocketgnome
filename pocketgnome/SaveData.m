@@ -39,9 +39,13 @@
 
 - (NSString*)objectExtension{
 	
-	/*// route
-	if ( [obj isKindOfClass:[RouteSet class]] ){
+	// route
+	/*if ( [obj isKindOfClass:[RouteSet class]] ){
 		return @"route";
+	}
+	// route collection
+	else if ( [obj isKindOfClass:[RouteCollection class]] ){
+		return @"routecollection";
 	}
 	// combat profile
 	else if ( [obj isKindOfClass:[CombatProfile class]] ){
@@ -93,6 +97,37 @@
 	}
 	
 	return [NSString stringWithFormat:@"%@.%@", filePathWithoutExt, ext];
+}
+
+// delete all objects
+- (void)deleteAllObjects{
+	NSError *error = nil;
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSString *dir = [self pathForObjectName:nil withExtension:NO];
+	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:dir error:&error];
+	if ( error ){
+		PGLog(@"[FileManager] Error when deleting your objects from %@! %@", directoryList, error);
+		return;
+	}
+	
+	// if we get here then we're good!
+	if ( directoryList && [directoryList count] ){
+		
+		// loop through directory list
+		for ( NSString *fileName in directoryList ){
+			
+			// valid object file
+			if ( [[fileName pathExtension] isEqualToString: [self objectExtension]] ){
+				
+				NSString *filePath = [dir stringByAppendingPathComponent: fileName];
+				
+				PGLog(@"[FileManager] Removing %@", filePath);
+				if ( ![fileManager removeItemAtPath:filePath error:&error] ){
+					PGLog(@"[FileManager] Error %@ when trying to delete object %@", error, filePath);
+				}
+			}
+		}
+	}
 }
 
 // delete the object
@@ -182,6 +217,8 @@
 			if ( [[fileName pathExtension] isEqualToString: [self objectExtension]] ){
 				
 				id object = [self getObjectFromDisk:fileName];
+				
+				PGLog(@" Object Class: %@", [object className]);
 				
 				// valid route - add it!
 				if ( object != nil ){
