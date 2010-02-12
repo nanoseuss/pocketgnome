@@ -11,6 +11,7 @@
 
 @class Route;
 @class RouteSet;
+@class RouteCollection;
 @class Waypoint;
 @class Controller;
 @class PlayerDataController;
@@ -33,6 +34,7 @@
     IBOutlet id combatController;
 
     IBOutlet BetterTableView *waypointTable;
+	IBOutlet NSOutlineView *routesTable;
     
     IBOutlet NSView *view;
     IBOutlet RouteVisualizationView *visualizeView;
@@ -64,7 +66,6 @@
 	Route *_currentRoute;
     PTHotKey *addWaypointGlobalHotkey;
 	PTHotKey *automatorGlobalHotkey;
-    NSMutableArray *_routes;
     BOOL validSelection, validWaypointCount;
 	BOOL isAutomatorRunning, disableGrowl;
     NSSize minSectionSize, maxSectionSize;
@@ -77,11 +78,25 @@
 	
 	IBOutlet NSButton		*scrollWithRoute;
 	IBOutlet NSTextField	*waypointSectionTitle;
+	
+	// temp for route collections
+	NSMutableArray *_routeCollectionList;
+	RouteCollection *_currentRouteCollection;
+	BOOL _validRouteSelection;
+	BOOL _myHackVariable;	// cry
+	IBOutlet NSButton *startingRouteButton;
+	IBOutlet NSTabView *waypointTabView;
+	
+	BOOL _validRouteSetSelected;
+	BOOL _validRouteCollectionSelected;
+	
+	// for teh n00bs
+	BOOL _firstTimeEverOnTheNewRouteCollections;
+	IBOutlet NSPanel *helpPanel;
 }
 
 - (void)saveRoutes;
 
-- (NSArray*)routes;
 @property (readonly) NSView *view;
 @property (readonly) NSString *sectionTitle;
 @property NSSize minSectionSize;
@@ -93,11 +108,18 @@
 @property BOOL disableGrowl;
 @property (readonly) Route *currentRoute;
 @property (readwrite, retain) RouteSet *currentRouteSet;
+@property (readonly, retain) RouteCollection *currentRouteCollection;
 @property (readwrite, retain) NSString *descriptionMultiRows;
+
+@property BOOL validRouteSelection;
+@property BOOL validRouteSetSelected;
+@property BOOL validRouteCollectionSelected;
+
+- (NSArray*)routeCollections;
+- (NSArray*)routes;
 
 // route actions
 - (IBAction)setRouteType: (id)sender;
-- (IBAction)createRoute: (id)sender;
 - (IBAction)loadRoute: (id)sender;
 - (IBAction)removeRoute: (id)sender;
 - (IBAction)renameRoute: (id)sender;
@@ -132,5 +154,14 @@
 
 // new action/conditions
 - (void)selectCurrentWaypoint:(int)index;
+
+// new Route Collection stuff
+- (IBAction)deleteRoute: (id)sender;
+- (IBAction)addRouteSet: (id)sender;
+- (IBAction)addRouteCollection: (id)sender;
+- (IBAction)closeHelpPanel: (id)sender;
+- (IBAction)startingRouteClicked: (id)sender;
+
+// TO DO: add import/export/show/duplicate
 
 @end

@@ -38,6 +38,7 @@
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
 #import "Behavior.h"
+#import "RouteCollection.h"
 #import "RouteSet.h"
 #import "Condition.h"
 #import "Mob.h"
@@ -95,6 +96,8 @@
 @property (readwrite, retain) WoWObject *unitToLoot;
 @property (readwrite, retain) WoWObject *lastAttemptedUnitToLoot;
 @property (readwrite, retain) Unit *preCombatUnit;
+
+@property (readwrite, retain) RouteCollection *theRouteCollection;
 
 // pvp
 @property (readwrite, assign) BOOL pvpPlayWarning;
@@ -214,6 +217,7 @@
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitEnteredCombat:) name: UnitEnteredCombat object: nil];
 		
+		_theRouteCollection = nil;
         _procedureInProgress = nil;
 		_lastProcedureExecuted = nil;
         _didPreCombatProcedure = NO;
@@ -309,6 +313,7 @@
     [self updateStatus: nil];
 }
 
+@synthesize theRouteCollection = _theRouteCollection;
 @synthesize theRoute;
 @synthesize theBehavior;
 @synthesize theCombatProfile;
@@ -2403,8 +2408,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)finishedRoute: (Route*)route {
     if( ![self isBotting]) return;
     
-    if(self.theRoute) {
-        if(route == [self.theRoute routeForKey: CorpseRunRoute]) {
+    if ( self.theRoute ) {
+        if ( route == [self.theRoute routeForKey: CorpseRunRoute] ) {
             PGLog(@"Finished Corpse Run. Begin search for body...");
             [controller setCurrentStatus: @"Bot: Searching for body..."];
             [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
@@ -3246,16 +3251,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (IBAction)startBot: (id)sender {
      BOOL ignoreRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"IgnoreRoute"] boolValue];
     
-    // gather appropriate information to start the bot
-    if(ignoreRoute) {
+    // grab route info
+    if ( ignoreRoute ) {
         self.theRoute = nil;
-    } else {
-        self.theRoute = [[routePopup selectedItem] representedObject];
+		self.theRouteCollection = nil;
     }
+	else {
+		self.theRouteCollection = [[routePopup selectedItem] representedObject];
+        self.theRoute = [_theRouteCollection startingRoute];
+    }
+	
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
-	PGLog(@"[Bot] Starting with attack range of %0.2f to %0.2f", [self.theCombatProfile engageRange], [self.theCombatProfile attackRange]);
-    
+
     self.doLooting = [lootCheckbox state];
     self.gatherDistance = [gatherDistText floatValue];
 	
@@ -3294,8 +3302,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( !self.theRoute && !ignoreRoute ) {
         NSBeep();
         PGLog(@"[Bot] The current route is not valid.");
-        NSRunAlertPanel(@"Route is not valid", @"You must select a valid route before starting the bot.  If you removed or renamed a route, please select an alternative.", @"Okay", NULL, NULL);
-        
+        NSRunAlertPanel(@"Route is not valid", @"You must select a valid route before starting the bot.  If you removed or renamed a route, please select an alternative. And make sure you have a starting route selected on the route tab!", @"Okay", NULL, NULL);
+
         return;
     }
     
@@ -3310,6 +3318,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         PGLog(@"[Bot] The current combat profile is not valid.");
         NSBeep();
         NSRunAlertPanel(@"Combat Profile is not valid", @"You must select a valid combat profile before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
+        return;
+    }
+	
+	if ( !self.theRouteCollection ) {
+        PGLog(@"[Bot] The current route set is not valid.");
+        NSBeep();
+        NSRunAlertPanel(@"Route Set is not valid", @"You must select a valid route set before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
         return;
     }
 	
@@ -3880,6 +3895,12 @@ NSMutableDictionary *_diffDict = nil;
 	if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnDeath"] boolValue] ){
 		[[NSSound soundNamed: @"alarm"] play];
 		PGLog(@"Playing alarm, you have died!");
+	}
+	
+	// do we need to switch our route back?
+	if ( [self.theRouteCollection startRouteOnDeath] ){
+		self.theRoute = [self.theRouteCollection startingRoute];
+		PGLog(@"[Bot] Died, switching to main starting route! %@", self.theRoute);
 	}
 }
 

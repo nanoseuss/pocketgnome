@@ -19,6 +19,7 @@
 @class Waypoint;
 @class Route;
 @class RouteSet;
+@class RouteCollection;
 @class CombatProfile;
 
 @class PTHotKey;
@@ -95,6 +96,7 @@
 	
     IBOutlet NSView *view;
     
+	RouteCollection *_theRouteCollection;
     RouteSet *theRoute;
     Behavior *theBehavior;
     CombatProfile *theCombatProfile;
@@ -267,6 +269,7 @@
 @property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
 
+@property (readonly, retain) RouteCollection *theRouteCollection;
 @property (readwrite, retain) RouteSet *theRoute;
 @property (readonly, retain) Behavior *theBehavior;
 @property (readwrite, retain) CombatProfile *theCombatProfile;

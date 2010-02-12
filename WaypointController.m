@@ -18,6 +18,7 @@
 
 #import "WaypointActionEditor.h"
 
+#import "RouteCollection.h"
 #import "RouteSet.h"
 #import "Route.h"
 #import "Waypoint.h"
@@ -45,6 +46,14 @@ enum AutomatorIntervalType {
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
 - (void)automatorPulse;
+- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID;
+- (id)selectedRouteObject;
+- (void)selectItemInOutlineViewToEdit:(id)item;
+- (void)setViewTitle;
+@end
+
+@interface WaypointController ()
+@property (readwrite, retain) RouteCollection *currentRouteCollection;
 @end
 
 @implementation WaypointController
@@ -64,13 +73,49 @@ enum AutomatorIntervalType {
 		_selectedRows = nil;
 		_nameBeforeRename = nil;
 		
-		// old way
-		_routes = [[self loadAllDataForKey:@"Routes" withClass:[RouteSet class]] retain];
+		_firstTimeEverOnTheNewRouteCollections = NO;
+		_validRouteSelection = NO;
+		_validRouteSetSelected = NO;
+		_validRouteCollectionSelected = NO;
+		_currentRouteCollection = nil;
+		_routeCollectionList = [[NSMutableArray array] retain];
 		
-		// new way!
-		if ( !_routes ){
-			_routes = [[self loadAllObjects] retain];
+		// pull data from the .plist file
+		NSArray *routes = [[self loadAllDataForKey:@"Routes" withClass:[RouteSet class]] retain];
+		
+		// pull routes from .route files
+		_myHackVariable = YES;
+		if ( !routes ){
+			routes = [[self loadAllObjects] retain];
 		}
+		
+		// delete old files!
+		if ( [routes count] > 0 ){
+			PGLog(@"[Routes] Converting all routes to the new format! Removing old files!");
+			[self deleteAllObjects];
+		}
+		
+		// stop using .route
+		_myHackVariable = NO;
+		
+		// then we need to convert our routes above, I love how much I change things QQ
+		if ( [routes count] > 0 ){
+			
+			for ( RouteSet *route in routes ){
+				RouteCollection *rc = [RouteCollection routeCollectionWithName:[route name]];
+				[rc addRouteSet:route];
+				[rc setStartRoute:route];
+				
+				[_routeCollectionList addObject:rc];		
+			}
+			
+			_firstTimeEverOnTheNewRouteCollections = YES;
+		}
+		else{
+			_routeCollectionList = [[self loadAllObjects] retain];
+		}
+		
+		PGLog(@"We now have %d objects of route collection", [_routeCollectionList count]);
 		
         // listen for notification
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
@@ -88,11 +133,13 @@ enum AutomatorIntervalType {
     self.maxSectionSize = NSZeroSize;
 
     [waypointTable registerForDraggedTypes: [NSArray arrayWithObjects: @"WaypointIndexesType", @"WaypointArrayType", nil]];
+	[routesTable registerForDraggedTypes: [NSArray arrayWithObjects: @"RouteSets", nil]];
 
-    if( !self.currentRoute && [_routes count]) {
+	// TO DO - auto select first one?
+    /*if ( !self.currentRoute && [_routes count]) {
         [self setCurrentRouteSet: [_routes objectAtIndex: 0]];
         [waypointTable reloadData];
-    }
+    }*/
     
     // Automator isn't running!
     self.isAutomatorRunning = NO;
@@ -124,9 +171,16 @@ enum AutomatorIntervalType {
 - (void)saveRoutes {
 	
 	// lets save our routes if they've changed!
-	for ( RouteSet *route in _routes ){
+	/*for ( RouteSet *route in _routes ){
 		if ( route.changed ){
 			[self saveObject:route];
+		}
+	}*/
+	
+	// lets save our collections!
+	for ( RouteCollection *rc in _routeCollectionList ){
+		if ( rc.changed ){
+			[self saveObject:rc];
 		}
 	}
 	
@@ -155,12 +209,17 @@ enum AutomatorIntervalType {
 @synthesize maxSectionSize;
 @synthesize currentRoute = _currentRoute;
 @synthesize currentRouteSet = _currentRouteSet;
+@synthesize currentRouteCollection = _currentRouteCollection;
 @synthesize descriptionMultiRows = _descriptionMultiRows;
 
 @synthesize disableGrowl;
 @synthesize validSelection;
 @synthesize validWaypointCount;
 @synthesize isAutomatorRunning;
+
+@synthesize validRouteSelection = _validRouteSelection;
+@synthesize validRouteSetSelected = _validRouteSetSelected;
+@synthesize validRouteCollectionSelected = _validRouteCollectionSelected;
 
 - (NSString*)sectionTitle {
     return @"Routes & Waypoints";
@@ -174,8 +233,31 @@ enum AutomatorIntervalType {
     return @"";
 }
 
-- (NSArray*)routes {
-    return [[_routes retain] autorelease];
+- (NSArray*)routeCollections{
+	return [[_routeCollectionList retain] autorelease];
+}
+
+// this is literally a compilation of ALL routes
+- (NSArray*)routes{
+	
+	
+	
+	NSMutableArray *allRoutes = [NSMutableArray array];
+	
+	for ( RouteCollection *rc in _routeCollectionList ){
+		[allRoutes addObjectsFromArray:[rc routes]];
+	}
+	
+	/*PGLog(@"total: %d", [allRoutes count]);
+	
+	for ( id item in allRoutes ){
+		PGLog(@"%@", item);
+	}
+	
+	
+	return nil;*/
+	
+	return allRoutes;
 }
 
 - (Route*)currentRoute {
@@ -194,7 +276,7 @@ enum AutomatorIntervalType {
 #pragma mark -
 #pragma mark Route Actions
 
-
+/*
 - (void)addRoute: (RouteSet*)routeSet {
     int num = 2;
     BOOL done = NO;
@@ -228,20 +310,7 @@ enum AutomatorIntervalType {
 	[self currentRouteSet].changed = YES;
     
     // PGLog(@"Added route: %@", [routeSet name]);
-}
-
-- (IBAction)createRoute: (id)sender {
-    // make sure we have a valid name
-    NSString *routeName = [sender stringValue];
-    if( [routeName length] == 0) {
-        NSBeep();
-        return;
-    }
-    
-    // create a new route
-    [self addRoute: [RouteSet routeSetWithName: routeName]];
-    [sender setStringValue: @""];
-}
+}*/
 
 - (IBAction)loadRoute: (id)sender {
     [waypointTable reloadData];
@@ -255,7 +324,7 @@ enum AutomatorIntervalType {
 - (IBAction)removeRoute: (id)sender {
     if([self currentRouteSet]) {
         
-        int ret = NSRunAlertPanel(@"Delete Route?", [NSString stringWithFormat: @"Are you sure you want to delete the route \"%@\"?", [[self currentRouteSet] name]], @"Delete", @"Cancel", NULL);
+       /* int ret = NSRunAlertPanel(@"Delete Route?", [NSString stringWithFormat: @"Are you sure you want to delete the route \"%@\"?", [[self currentRouteSet] name]], @"Delete", @"Cancel", NULL);
         if(ret == NSAlertDefaultReturn) {
 			
             [self willChangeValueForKey: @"routes"];
@@ -271,12 +340,12 @@ enum AutomatorIntervalType {
             [self didChangeValueForKey: @"routes"];
             
             [waypointTable reloadData];
-        }
+        }*/
     }
 }
 
 - (IBAction)duplicateRoute: (id)sender {
-    [self addRoute: [self.currentRouteSet copy]];
+   // [self addRoute: [self.currentRouteSet copy]];
 }
 
 - (IBAction)renameRoute: (id)sender {
@@ -317,14 +386,14 @@ enum AutomatorIntervalType {
 		PGLog(@"%@", importedRoute);
 		
         if ( [importedRoute isKindOfClass: [RouteSet class]] ) {
-            [self addRoute: importedRoute];
+            //[self addRoute: importedRoute];
 		}
 		else if ( [importedRoute isKindOfClass: [NSDictionary class]] ) {
-			[self addRoute:[importedRoute objectForKey:@"Route"]];	
+			//[self addRoute:[importedRoute objectForKey:@"Route"]];	
         }
 		else if ( [importedRoute isKindOfClass: [NSArray class]] ) {
             for ( RouteSet *route in importedRoute) {
-                [self addRoute: route];
+               // [self addRoute: route];
             }
         }
 		else {
@@ -640,180 +709,221 @@ enum AutomatorIntervalType {
     }
 }
 
+#pragma mark TabView Delgate
+
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem{
+	
+	[self setViewTitle];
+}
+
 #pragma mark -
 #pragma mark NSTableView Delesource
 
 - (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-    return [[self currentRoute] waypointCount];
+	
+	if ( aTableView == waypointTable )
+		return [[self currentRoute] waypointCount];
+	
+	return 0;
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)aTableColumn row:(int)rowIndex {
-    if(rowIndex == -1) return nil;
-    
-    Waypoint *wp = [[self currentRoute] waypointAtIndex: rowIndex];
-    if( [[aTableColumn identifier] isEqualToString: @"Step"] ) {
-        return [NSNumber numberWithInt: rowIndex+1];
-    }
-    
-    if( [[aTableColumn identifier] isEqualToString: @"Type"] ) {
+    if ( rowIndex == -1 ) return nil;
+	
+	if ( aTableView == waypointTable ){
 		
-		int type = 0;
-		
-		// now we have a list of actions, choose the first one
-		if ( [wp.actions count] > 0 ){
-			
-			Action *action = [wp.actions objectAtIndex:0];
-			
-			if ( action.type > ActionType_None && action.type < ActionType_Max ){
-				type = action.type;
-			}
+		Waypoint *wp = [[self currentRoute] waypointAtIndex: rowIndex];
+		if ( [[aTableColumn identifier] isEqualToString: @"Step"] ){
+			return [NSNumber numberWithInt: rowIndex+1];
 		}
 		
-        return [NSNumber numberWithInt: type];
-    }
-    
-    
-    if([[aTableColumn identifier] isEqualToString: @"Coordinates"]) {
-        return [NSString stringWithFormat: @"X: %.1f; Y: %.1f; Z: %.1f", [[wp position] xPosition], [[wp position] yPosition], [[wp position] zPosition]];
-    }
-    
-    if([[aTableColumn identifier] isEqualToString: @"Distance"]) {
-        Waypoint *prevWP = (rowIndex == 0) ? ([[self currentRoute] waypointAtIndex: [[self currentRoute] waypointCount] - 1]) : ([[self currentRoute] waypointAtIndex: rowIndex-1]);
-        float distance = [[wp position] distanceToPosition: [prevWP position]];
-        return [NSString stringWithFormat: @"%.2f yards", distance];
-    }
-	
-	if([[aTableColumn identifier] isEqualToString: @"Description"]) {
-		return wp.title;
+		if( [[aTableColumn identifier] isEqualToString: @"Type"] ){
+			
+			int type = 0;
+			
+			// now we have a list of actions, choose the first one
+			if ( [wp.actions count] > 0 ){
+				
+				Action *action = [wp.actions objectAtIndex:0];
+				
+				if ( action.type > ActionType_None && action.type < ActionType_Max ){
+					type = action.type;
+				}
+			}
+			
+			return [NSNumber numberWithInt: type];
+		}
+		
+		
+		if ( [[aTableColumn identifier] isEqualToString: @"Coordinates"] ){
+			return [NSString stringWithFormat: @"X: %.1f; Y: %.1f; Z: %.1f", [[wp position] xPosition], [[wp position] yPosition], [[wp position] zPosition]];
+		}
+		
+		if ( [[aTableColumn identifier] isEqualToString: @"Distance"] ){
+			Waypoint *prevWP = (rowIndex == 0) ? ([[self currentRoute] waypointAtIndex: [[self currentRoute] waypointCount] - 1]) : ([[self currentRoute] waypointAtIndex: rowIndex-1]);
+			float distance = [[wp position] distanceToPosition: [prevWP position]];
+			return [NSString stringWithFormat: @"%.2f yards", distance];
+		}
+		
+		if ( [[aTableColumn identifier] isEqualToString: @"Description"] ){
+			return wp.title;
+		}
 	}
     
     return nil;
 }
 
 - (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
-	if(rowIndex == -1) return;
+	if ( rowIndex == -1 ) return;
 	
-
-	if ( [[aTableColumn identifier] isEqualToString:@"Description"] ){
-		Waypoint *wp = [[self currentRoute] waypointAtIndex: rowIndex];
-		if ( wp.title != anObject ){
-			wp.title = anObject;
+	if ( aTableView == waypointTable ){
+		if ( [[aTableColumn identifier] isEqualToString:@"Description"] ){
+			Waypoint *wp = [[self currentRoute] waypointAtIndex: rowIndex];
+			if ( wp.title != anObject ){
+				wp.title = anObject;
+			}
 		}
 	}
 }
 
 - (BOOL)tableView:(NSTableView *)aTableView shouldEditTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
 	
-	if([[aTableColumn identifier] isEqualToString: @"Type"] )
-        return YES;
-	else if([[aTableColumn identifier] isEqualToString: @"Description"] )
-        return YES;
-	
+	if ( aTableView == waypointTable ){
+		if([[aTableColumn identifier] isEqualToString: @"Type"] )
+			return YES;
+		else if([[aTableColumn identifier] isEqualToString: @"Description"] )
+			return YES;
+	}
+
     return NO;
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification {
+	
+	//PGLog(@" %@ %@", aNotification, [aNotification object]);
+	
     [self validateBindings];
 }
 
-- (void)tableView: (NSTableView*)tableView deleteKeyPressedOnRowIndexes: (NSIndexSet*)rowIndexes {
-    [self removeWaypoint: nil];
+- (void)tableView: (NSTableView*)aTableView deleteKeyPressedOnRowIndexes: (NSIndexSet*)rowIndexes {
+	
+	if ( aTableView == waypointTable ){
+		[self removeWaypoint: nil];
+	}
 }
 
-- (BOOL)tableViewCopy: (NSTableView*)tableView {
-    NSIndexSet *rowIndexes = [tableView selectedRowIndexes];
-    if([rowIndexes count] == 0) {
-        return NO;
-    }
-    NSPasteboard *pboard = [NSPasteboard generalPasteboard];
-    [pboard declareTypes: [NSArray arrayWithObjects: NSStringPboardType, @"WaypointArrayType", nil] owner: nil];
-
-    // create list of our waypoints
-    NSMutableArray *waypointList = [NSMutableArray arrayWithCapacity: [rowIndexes count]];
-    int aRow = [rowIndexes firstIndex];
-    while (aRow != NSNotFound) {
-        [waypointList addObject: [[self currentRoute] waypointAtIndex: aRow]];
-        aRow = [rowIndexes indexGreaterThanIndex: aRow];
-    }
-    [pboard setData: [NSKeyedArchiver archivedDataWithRootObject: waypointList] forType: @"WaypointArrayType"];
-    
-    NSMutableString *stringVal = [NSMutableString string];
-    for(Waypoint *wp in waypointList) {
-        [stringVal appendFormat: @"{ %.2f, %.2f, %.2f }\n", wp.position.xPosition, wp.position.yPosition, wp.position.zPosition ];
-    }
-    [pboard setString: stringVal forType: NSStringPboardType];
-    
-    return YES;
+- (BOOL)tableViewCopy: (NSTableView*)aTableView {
+	
+	if ( aTableView == waypointTable ){
+		NSIndexSet *rowIndexes = [aTableView selectedRowIndexes];
+		if([rowIndexes count] == 0) {
+			return NO;
+		}
+		NSPasteboard *pboard = [NSPasteboard generalPasteboard];
+		[pboard declareTypes: [NSArray arrayWithObjects: NSStringPboardType, @"WaypointArrayType", nil] owner: nil];
+		
+		// create list of our waypoints
+		NSMutableArray *waypointList = [NSMutableArray arrayWithCapacity: [rowIndexes count]];
+		int aRow = [rowIndexes firstIndex];
+		while (aRow != NSNotFound) {
+			[waypointList addObject: [[self currentRoute] waypointAtIndex: aRow]];
+			aRow = [rowIndexes indexGreaterThanIndex: aRow];
+		}
+		[pboard setData: [NSKeyedArchiver archivedDataWithRootObject: waypointList] forType: @"WaypointArrayType"];
+		
+		NSMutableString *stringVal = [NSMutableString string];
+		for(Waypoint *wp in waypointList) {
+			[stringVal appendFormat: @"{ %.2f, %.2f, %.2f }\n", wp.position.xPosition, wp.position.yPosition, wp.position.zPosition ];
+		}
+		[pboard setString: stringVal forType: NSStringPboardType];
+		
+		return YES;
+	}
+	
+	return NO;
 }
 
-- (BOOL)tableViewPaste: (NSTableView*)tableView {
-    NSPasteboard* pboard = [NSPasteboard generalPasteboard];
-    NSData *data = [pboard dataForType: @"WaypointArrayType"];
-    if(!data) return NO;
-    
-    NSArray *copiedWaypoints = [NSKeyedUnarchiver unarchiveObjectWithData: data];
-    
-    if( !copiedWaypoints || ![self currentRoute] ) {
-        return NO;
-    }
-    
-    int index = [[tableView selectedRowIndexes] firstIndex];
-    if(index == NSNotFound) index = [[self currentRoute] waypointCount];
-    
-    // insert waypoints in reverse order
-    for (Waypoint *wp in [copiedWaypoints reverseObjectEnumerator]) {
-        [[self currentRoute] insertWaypoint: wp atIndex: index];
-    }
-    
-    // reload and select the pasted routes
-    [tableView reloadData];
-    [tableView selectRowIndexes: [NSIndexSet indexSetWithIndexesInRange: NSMakeRange(index, [copiedWaypoints count])] byExtendingSelection: NO];
-    
-    return YES;
+- (BOOL)tableViewPaste: (NSTableView*)aTableView {
+	
+	if ( aTableView == waypointTable ){
+		NSPasteboard* pboard = [NSPasteboard generalPasteboard];
+		NSData *data = [pboard dataForType: @"WaypointArrayType"];
+		if(!data) return NO;
+		
+		NSArray *copiedWaypoints = [NSKeyedUnarchiver unarchiveObjectWithData: data];
+		
+		if( !copiedWaypoints || ![self currentRoute] ) {
+			return NO;
+		}
+		
+		int index = [[aTableView selectedRowIndexes] firstIndex];
+		if(index == NSNotFound) index = [[self currentRoute] waypointCount];
+		
+		// insert waypoints in reverse order
+		for (Waypoint *wp in [copiedWaypoints reverseObjectEnumerator]) {
+			[[self currentRoute] insertWaypoint: wp atIndex: index];
+		}
+		
+		// reload and select the pasted routes
+		[aTableView reloadData];
+		[aTableView selectRowIndexes: [NSIndexSet indexSetWithIndexesInRange: NSMakeRange(index, [copiedWaypoints count])] byExtendingSelection: NO];
+		
+		return YES;
+	}
+	
+	return NO;
 }
 
-- (BOOL)tableViewCut: (NSTableView*)tableView {
-    if( [self tableViewCopy: tableView] ) {
-        [self removeWaypoint: nil];
-        return YES;
-    }
+- (BOOL)tableViewCut: (NSTableView*)aTableView {
+	if ( aTableView == waypointTable ){
+		if ( [self tableViewCopy: aTableView] ){
+			[self removeWaypoint: nil];
+			return YES;
+		}
+	}
     return NO;
 }
 
 #pragma mark Table Drag & Drop
 
 // begin drag operation, save row index
-- (BOOL)tableView:(NSTableView *)tv writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard*)pboard {
-    // Copy the row numbers to the pasteboard.
-    [pboard declareTypes: [NSArray arrayWithObjects: @"WaypointIndexesType", nil] owner: self];
-    [pboard setData: [NSKeyedArchiver archivedDataWithRootObject: rowIndexes] forType: @"WaypointIndexesType"];
-
-    return YES;
+- (BOOL)tableView:(NSTableView *)aTableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard*)pboard {
+	
+	if ( aTableView == waypointTable ){
+		// Copy the row numbers to the pasteboard.
+		[pboard declareTypes: [NSArray arrayWithObjects: @"WaypointIndexesType", nil] owner: self];
+		[pboard setData: [NSKeyedArchiver archivedDataWithRootObject: rowIndexes] forType: @"WaypointIndexesType"];
+		
+		return YES;
+	}
+	
+	return NO;
 }
 
 // validate drag operation
-- (NSDragOperation) tableView: (NSTableView*) tableView
+- (NSDragOperation) tableView: (NSTableView*) aTableView
                  validateDrop: (id ) info
                   proposedRow: (int) row
         proposedDropOperation: (NSTableViewDropOperation) op
 {
     int result = NSDragOperationNone;
     
-    if (op == NSTableViewDropAbove) {
-        result = NSDragOperationMove;
-        
-        /*NSPasteboard* pboard = [info draggingPasteboard];
-        NSData* rowData = [pboard dataForType: @"WaypointType"];
-        NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
-        int dragRow = [rowIndexes firstIndex];
-        
-        if(dragRow == row || dragRow == row-1) {
-            result = NSDragOperationNone;
-        }*/
-    }
+	if ( aTableView == waypointTable ){
+		if (op == NSTableViewDropAbove) {
+			result = NSDragOperationMove;
+			
+			/*NSPasteboard* pboard = [info draggingPasteboard];
+			 NSData* rowData = [pboard dataForType: @"WaypointType"];
+			 NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+			 int dragRow = [rowIndexes firstIndex];
+			 
+			 if(dragRow == row || dragRow == row-1) {
+			 result = NSDragOperationNone;
+			 }*/
+		}
+	}
     
     return (result);
-    
 }
 
 // accept the drop
@@ -822,68 +932,476 @@ enum AutomatorIntervalType {
               row: (int)row 
     dropOperation: (NSTableViewDropOperation)operation {
     
-    NSPasteboard* pboard = [info draggingPasteboard];
-    NSData *data = [pboard dataForType: @"WaypointIndexesType"];
-    if(!data) return NO;
-    NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData: data];
-    if(!rowIndexes ) {
-        PGLog(@"Error dragging waypoints. Indexes invalid.");
-        return NO;
-    }
+	if ( aTableView == waypointTable ){
+		NSPasteboard* pboard = [info draggingPasteboard];
+		NSData *data = [pboard dataForType: @"WaypointIndexesType"];
+		if(!data) return NO;
+		NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData: data];
+		if(!rowIndexes ) {
+			PGLog(@"Error dragging waypoints. Indexes invalid.");
+			return NO;
+		}
+		
+		// PGLog(@"Draggin %d rows to above row %d", [rowIndexes count], row);
+		
+		Waypoint *targetWP = [[self currentRoute] waypointAtIndex: row];
+		NSMutableArray *wpToInsert = [NSMutableArray arrayWithCapacity: [rowIndexes count]];
+		
+		// save and remove all waypoints we are moving.
+		// do it in reverse order so as to not mess up earlier indexes
+		int aRow = [rowIndexes lastIndex];
+		while (aRow != NSNotFound) {
+			[wpToInsert addObject: [[self currentRoute] waypointAtIndex: aRow]];
+			[[self currentRoute] removeWaypointAtIndex: aRow];
+			aRow = [rowIndexes indexLessThanIndex: aRow];
+		}
+		
+		// now, find the current index of the saved waypoint
+		int index = [[[self currentRoute] waypoints] indexOfObjectIdenticalTo: targetWP];
+		if(index == NSNotFound) index = [[self currentRoute] waypointCount];
+		// PGLog(@"Target index: %d", index);
+		
+		// don't need to reverseEnum because the order is already reversed
+		for (Waypoint *wp in wpToInsert) {
+			[[self currentRoute] insertWaypoint: wp atIndex: index];
+		}
+		
+		
+		/*
+		 int numIns = 0;
+		 int dragRow = [rowIndexes firstIndex];
+		 if(dragRow < row) { 
+		 PGLog(@" --> Decrementing row to %d because dragRow (%d) < row (%d)", row-1, dragRow, row);
+		 row--;
+		 }
+		 
+		 // at this point, "row" is index of the waypoint above where we want to move everything
+		 
+		 //while (dragRow != NSNotFound) {
+		 // Move the specified row to its new location...
+		 Waypoint *dragWaypoint = [[self currentRoute] waypointAtIndex: dragRow];
+		 [[self currentRoute] removeWaypointAtIndex: dragRow];
+		 [[self currentRoute] insertWaypoint: dragWaypoint atIndex: (row + numIns)];
+		 
+		 PGLog(@" --> Moving row %d to %d", dragRow, (row + numIns));
+		 
+		 numIns++;
+		 dragRow = [rowIndexes indexGreaterThanIndex: dragRow];
+		 //}
+		 */
+		
+		// reload and select rows
+		[aTableView reloadData];
+		[aTableView selectRowIndexes: [NSIndexSet indexSetWithIndexesInRange: NSMakeRange(index, [wpToInsert count])] byExtendingSelection: NO];
+		
+		return YES;
+	}
 
-    // PGLog(@"Draggin %d rows to above row %d", [rowIndexes count], row);
-    
-    Waypoint *targetWP = [[self currentRoute] waypointAtIndex: row];
-    NSMutableArray *wpToInsert = [NSMutableArray arrayWithCapacity: [rowIndexes count]];
-    
-    // save and remove all waypoints we are moving.
-    // do it in reverse order so as to not mess up earlier indexes
-    int aRow = [rowIndexes lastIndex];
-    while (aRow != NSNotFound) {
-        [wpToInsert addObject: [[self currentRoute] waypointAtIndex: aRow]];
-        [[self currentRoute] removeWaypointAtIndex: aRow];
-        aRow = [rowIndexes indexLessThanIndex: aRow];
-    }
-    
-    // now, find the current index of the saved waypoint
-    int index = [[[self currentRoute] waypoints] indexOfObjectIdenticalTo: targetWP];
-    if(index == NSNotFound) index = [[self currentRoute] waypointCount];
-    // PGLog(@"Target index: %d", index);
+	return NO;
+}
 
-    // don't need to reverseEnum because the order is already reversed
-    for (Waypoint *wp in wpToInsert) {
-        [[self currentRoute] insertWaypoint: wp atIndex: index];
-    }
-    
-    
-    /*
-    int numIns = 0;
-    int dragRow = [rowIndexes firstIndex];
-    if(dragRow < row) { 
-        PGLog(@" --> Decrementing row to %d because dragRow (%d) < row (%d)", row-1, dragRow, row);
-        row--;
-    }
-    
-    // at this point, "row" is index of the waypoint above where we want to move everything
-    
-    //while (dragRow != NSNotFound) {
-        // Move the specified row to its new location...
-        Waypoint *dragWaypoint = [[self currentRoute] waypointAtIndex: dragRow];
-        [[self currentRoute] removeWaypointAtIndex: dragRow];
-        [[self currentRoute] insertWaypoint: dragWaypoint atIndex: (row + numIns)];
-        
-        PGLog(@" --> Moving row %d to %d", dragRow, (row + numIns));
-        
-        numIns++;
-        dragRow = [rowIndexes indexGreaterThanIndex: dragRow];
-    //}
-    */
-    
-    // reload and select rows
-    [aTableView reloadData];
-    [aTableView selectRowIndexes: [NSIndexSet indexSetWithIndexesInRange: NSMakeRange(index, [wpToInsert count])] byExtendingSelection: NO];
-    
-    return YES;
+#pragma mark Outline View
+
+- (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item{
+	
+	// root
+	if ( item == nil ){
+		return [_routeCollectionList count];
+	}
+	// child
+	else if ( [item isKindOfClass:[RouteCollection class]] ){
+		return [[item routes] count];
+	}
+	
+	return 0;
+}
+
+- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item{
+	
+
+	// root
+	if ( item == nil ){
+		
+		if ( index > [_routeCollectionList count] ){
+			return nil;
+		}
+		
+		return [_routeCollectionList objectAtIndex:index];
+	}
+	// child
+	else{
+		NSArray *routes = [(RouteCollection*)item routes];
+		
+		if ( index >= [routes count] ){
+			return nil;
+		}
+		
+		RouteCollection *parent = [(RouteSet*)[routes objectAtIndex:index] parent];
+		
+		if ( parent != item ){
+			return nil;
+		}
+
+		return [routes objectAtIndex:index];
+	}
+
+	return nil;	
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item{
+
+	if ( [item isKindOfClass:[RouteCollection class]] ){
+		return YES;
+	}
+	
+	return NO;
+}
+
+- (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(id)item{
+	
+	if ( [item isKindOfClass:[RouteCollection class]] ){
+		return [item name];
+	}
+	
+	else if ( [item isKindOfClass:[RouteSet class]] ){
+		return [item name];
+	}
+	
+	// weird
+	if ( item == nil ){
+		return @"WTF ERROR TELL TANARIS4!";
+	}
+	
+	return nil;
+}
+
+- (void)outlineView:(NSOutlineView *)outlineView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn byItem:(id)item{
+	
+	// in theory should always be
+	if ( [object isKindOfClass:[NSString class]] ){
+		
+		// rename the object
+		if ( [item isKindOfClass:[RouteSet class]] )
+			[(RouteSet*)item setName:object];
+		else if ( [item isKindOfClass:[RouteCollection class]] )
+			[(RouteCollection*)item setName:object];
+	}
+}
+
+// called whenever the selection changes!
+- (void)outlineViewSelectionDidChange:(NSNotification *)notification{
+	
+	NSOutlineView *outlineView = [notification object];
+	
+	if ( outlineView == routesTable ){
+		
+		id selectedItem = [self selectedRouteObject];
+		
+		// valid selection?
+		if ( selectedItem ){
+
+			if ( [selectedItem isKindOfClass:[RouteSet class]] ){
+				self.currentRouteSet = selectedItem;
+				[waypointTable reloadData];
+			}
+			else{
+				self.currentRouteSet = nil;
+				[waypointTable reloadData];
+			}
+			
+			// bindings?
+			
+			[self willChangeValueForKey: @"validRouteSelection"];
+			
+			// if it's of type RouteSet, yes we can delete
+			if ( [selectedItem isKindOfClass:[RouteSet class]] ){
+				self.validRouteSelection = YES;
+			}
+			// need to make sure the route collection has NO route sets
+			else if ( [selectedItem isKindOfClass:[RouteCollection class]] && [[(RouteCollection*)selectedItem routes] count] == 0 ){
+				self.validRouteSelection = YES;
+			}
+			// otherwise we can't delete :(
+			else{
+				self.validRouteSelection = NO;
+			}
+
+			[self didChangeValueForKey: @"validRouteSelection"];
+		}
+		
+		// update our selected route collection!
+		if ( [selectedItem isKindOfClass:[RouteCollection class]] ){
+			self.currentRouteCollection = selectedItem;
+		}
+		else{
+			self.currentRouteCollection = nil;
+		}
+		
+		// check the box if we need to?
+		if ( [selectedItem isKindOfClass:[RouteSet class]] ){
+			RouteCollection *parentRC = [(RouteSet*)selectedItem parent];
+			
+			[startingRouteButton setState:[parentRC isStartingRoute:selectedItem]];
+		}
+		
+		// is a RouteSet selected?
+		[self willChangeValueForKey: @"validRouteSetSelected"];
+		if ( [selectedItem isKindOfClass:[RouteSet class]] )
+			self.validRouteSetSelected = YES;
+		else
+			self.validRouteSetSelected = NO;
+		[self didChangeValueForKey: @"validRouteSetSelected"];
+		
+		// is a RouteCollection selected?
+		[self willChangeValueForKey: @"validRouteCollectionSelected"];
+		if ( [selectedItem isKindOfClass:[RouteCollection class]] )
+			self.validRouteCollectionSelected = YES;
+		else
+			self.validRouteCollectionSelected = NO;
+		[self didChangeValueForKey: @"validRouteCollectionSelected"];
+		
+		// update our title
+		[self setViewTitle];
+	}
+}
+
+// do we allow pasting?
+- (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard{
+	
+	// we don't move route collections! (for now)
+	for ( id item in items ){
+
+		if ( [item isKindOfClass:[RouteCollection class]] ){
+			return NO;
+		}
+	}
+
+	if ( outlineView == routesTable ){
+		[pboard declareTypes: [NSArray arrayWithObjects: @"RouteSets", nil] owner: self];
+		[pboard setData: [NSKeyedArchiver archivedDataWithRootObject: items] forType: @"RouteSets"];
+
+		return YES;
+	}
+
+	return NO;
+}
+
+// is this a valid drop target?
+- (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id < NSDraggingInfo >)info proposedItem:(id)item proposedChildIndex:(NSInteger)index{
+	
+	//PGLog(@"VALIDATE: %d %@ %@", index, item, info);
+	
+	// can't copy a RouteSet into a RouteSet!
+	if ( [item isKindOfClass:[RouteSet class]] ){
+		return NSDragOperationNone;
+	}
+	
+	// always allow a move!
+	return NSDragOperationMove;	  
+}
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id < NSDraggingInfo >)info item:(id)item childIndex:(NSInteger)index{
+	
+	//PGLog(@"ACCEPT: %d %@ %@", index, item, info);
+	
+	if ( outlineView == routesTable ){
+		
+		if ( ![item isKindOfClass:[RouteCollection class]] ){
+			return NO;
+		}
+	
+		// note to self, the objects here are COPIES, not the originals, so act accordingly
+		NSPasteboard* pboard = [info draggingPasteboard];
+		NSData *data = [pboard dataForType: @"RouteSets"];
+		
+		if ( data ){
+
+			NSArray *routes = [NSKeyedUnarchiver unarchiveObjectWithData: data];
+			
+			// now add these routes to their new home and remove from their old one :(
+			for ( id route in routes ){
+					
+				if ( [route isKindOfClass:[RouteSet class]] ){
+
+					// grab the old route collection
+					RouteCollection *oldCollection = [(RouteSet*)route parent];
+					
+					// actually find it in the current list
+					oldCollection = [self routeCollectionForUUID:[oldCollection UUID]];
+					
+					// remove the route
+					[oldCollection removeRouteSet:route];
+					
+					// add to new!
+					[(RouteCollection*)item addRouteSet:route];
+				}
+			}
+			
+			// reload the table
+			[outlineView reloadData];
+			
+			return YES;
+		}
+
+	}
+	
+	return NO;
+}
+
+#pragma mark RouteCollection UI stuff
+
+- (IBAction)deleteRoute: (id)sender{
+	
+	[self willChangeValueForKey: @"routeCollections"];
+	
+	id selectedItem = [self selectedRouteObject];
+	
+	if ( [selectedItem isKindOfClass:[RouteSet class]] ){
+		
+		RouteCollection *rc = [(RouteSet*)selectedItem parent];
+		
+		[rc removeRouteSet:selectedItem];
+		
+		[routesTable reloadData];
+		
+		// select the parent
+		int row = [routesTable rowForItem:rc];
+		
+		// select the new item!
+		[routesTable selectRow:row byExtendingSelection:NO];
+		[routesTable scrollRowToVisible:row];
+	}
+	else if ( [selectedItem isKindOfClass:[RouteCollection class]] ){
+		
+		RouteCollection *rc = selectedItem;
+		
+		if ( [[rc routes] count] == 0 ){
+			[_routeCollectionList removeObject:rc];
+			
+			// delete the file from our disk!
+			[self deleteObject:rc];
+			 
+			[routesTable reloadData];
+		}
+		else{
+			NSBeep();
+			NSRunAlertPanel(@"Unable to delete", @"You cannot delete a set until the routes are first removed!", @"Okay", NULL, NULL);
+		}		
+	}
+	
+	[self didChangeValueForKey: @"routeCollections"];
+}
+
+- (IBAction)addRouteSet: (id)sender{
+	
+	id selectedItem = [self selectedRouteObject];
+	
+	// nothing is selected
+	if ( selectedItem == nil ){
+		NSBeep();
+		NSRunAlertPanel(@"Select a Route Collection", @"Please select a route collection to add your route to! (you may have to create a new route collection first!)", @"Okay", NULL, NULL);
+	}
+	else{
+		
+		// we want the collection, not the set!
+		if ( [selectedItem isKindOfClass:[RouteSet class]] ){
+			selectedItem = [(RouteSet*)selectedItem parent];
+		}
+
+		// in theory this should always be the case
+		if ( [selectedItem isKindOfClass:[RouteCollection class]] ){
+			RouteSet *route = [RouteSet routeSetWithName:@"New Route"];
+			[selectedItem addRouteSet:route];
+			[selectedItem setChanged:YES];
+			[routesTable reloadData];
+			
+			// expand our collection
+			[routesTable expandItem:selectedItem];
+
+			[self selectItemInOutlineViewToEdit:route];
+		}
+		else{
+			PGLog(@"[Routes] Error when adding a set! Report to Tanaris4! %@", selectedItem);
+			NSBeep();
+			NSRunAlertPanel(@"Error when adding route", @"Error when adding route! Report to Tanaris4 + give him logs!", @"Okay", NULL, NULL);
+		}
+	}
+}
+
+- (IBAction)addRouteCollection: (id)sender{
+	
+	[self willChangeValueForKey: @"routeCollections"];
+	
+	// add item and reload the table!
+	RouteCollection *rc = [RouteCollection routeCollectionWithName:@"New Set"];
+	[_routeCollectionList addObject:rc];
+	[routesTable reloadData];
+	
+	[self selectItemInOutlineViewToEdit:rc];
+	
+	[self didChangeValueForKey: @"routeCollections"];
+}
+
+- (IBAction)startingRouteClicked: (id)sender{
+	
+	RouteCollection *parentRC = [[self currentRouteSet] parent];
+	
+	if ( [startingRouteButton state] )
+		[parentRC setStartRoute:[self currentRouteSet]];
+	else
+		[parentRC setStartRoute:nil];
+}
+
+#pragma mark RouteCollection helpers
+
+- (void)selectItemInOutlineViewToEdit:(id)item{
+
+	// get the row of our new route!
+	int row = [routesTable rowForItem:item];
+	
+	// select the new item!
+	[routesTable selectRow:row byExtendingSelection:NO];
+	[routesTable scrollRowToVisible:row];
+	
+	// edit the new item!
+	[routesTable editColumn:0 row:row withEvent:nil select:YES];
+}
+
+- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID{
+	
+	for ( RouteCollection *rc in _routeCollectionList ){
+		if ( [[rc UUID] isEqualToString:UUID] ){
+			return rc;
+		}
+	}
+	return nil;
+}
+
+- (id)selectedRouteObject{
+	
+	// make sure only 1 item is selected!
+	if ( [routesTable numberOfSelectedRows] == 1 ){
+		return [routesTable itemAtRow:[routesTable selectedRow]];
+	}
+	
+	return nil;		
+}
+
+#pragma mark Help
+
+- (void)showHelpPanel{
+	
+	[NSApp beginSheet: helpPanel
+	   modalForWindow: [self.view window]
+		modalDelegate: nil
+	   didEndSelector: nil
+		  contextInfo: nil];
+}
+
+- (IBAction)closeHelpPanel: (id)sender{
+	[[sender window] makeFirstResponder: [[sender window] contentView]];
+	[NSApp endSheet: helpPanel returnCode: 1];
+    [helpPanel orderOut: nil];
 }
 
 #pragma mark ShortcutRecorder Delegate
@@ -901,6 +1419,11 @@ enum AutomatorIntervalType {
             [self toggleGlobalHotKey: shortcutRecorder];
         }
     }
+	
+	// display a guide?
+	if ( [notification object] == self.view && _firstTimeEverOnTheNewRouteCollections ) {
+		[self showHelpPanel];
+	}
 }
 
 - (void)toggleGlobalHotKey:(id)sender
@@ -1036,26 +1559,52 @@ enum AutomatorIntervalType {
 	}
 }
 
-- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem{
+// sets our NSLabel that is above the tabs!
+- (void)setViewTitle{
 	
-	// waypoints
-	if ( [[tabViewItem identifier] intValue] == 0 ) {
-		[waypointSectionTitle setStringValue:[NSString stringWithFormat:@"Waypoints for: %@", [self.currentRouteSet name]]];
+	if ( [[[waypointTabView selectedTabViewItem] identifier] intValue] == 0 ) {
+		
+		if ( self.currentRouteSet )
+			[waypointSectionTitle setStringValue:[NSString stringWithFormat:@"Waypoints for: %@", [self.currentRouteSet name]]];
+		else
+			[waypointSectionTitle setStringValue:@"No route selected"];
 	}
-	// overall actions
-	else {
-		[waypointSectionTitle setStringValue:[NSString stringWithFormat:@"Overall actions for: %@", [self.currentRouteSet name]]];
+	else if ( [[[waypointTabView selectedTabViewItem] identifier] intValue] == 1 ) {
+		
+		NSString *name = nil;
+		if ( self.currentRouteCollection ){
+			name = [self.currentRouteCollection name];			
+		}
+		else if ( self.currentRouteSet ){
+			RouteCollection *parentRC = [self.currentRouteSet parent];
+			name = [parentRC name];
+		}
+		
+		if ( name )
+			[waypointSectionTitle setStringValue:[NSString stringWithFormat:@"Options for: %@", name]];
+		else
+			[waypointSectionTitle setStringValue:@"No route set selected"];
 	}
 }
 
 #pragma mark SaveData
+
 // for saving
 - (NSString*)objectExtension{
-	return @"route";
+	// just to load old data
+	if ( _myHackVariable ){
+		return @"route";
+	}
+	
+	return @"routecollection";
 }
 
 - (NSString*)objectName:(id)object{
-	return [(RouteSet*)object name];
+	if ( _myHackVariable ){
+		return [(RouteSet*)object name];
+	}
+	
+	return [(RouteCollection*)object name];
 }
 
 @end
