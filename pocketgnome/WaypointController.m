@@ -50,6 +50,7 @@ enum AutomatorIntervalType {
 - (id)selectedRouteObject;
 - (void)selectItemInOutlineViewToEdit:(id)item;
 - (void)setViewTitle;
+- (void)deleteRoute:(id)selectedItem;
 @end
 
 @interface WaypointController ()
@@ -170,13 +171,6 @@ enum AutomatorIntervalType {
 
 - (void)saveRoutes {
 	
-	// lets save our routes if they've changed!
-	/*for ( RouteSet *route in _routes ){
-		if ( route.changed ){
-			[self saveObject:route];
-		}
-	}*/
-	
 	// lets save our collections!
 	for ( RouteCollection *rc in _routeCollectionList ){
 		if ( rc.changed ){
@@ -276,42 +270,6 @@ enum AutomatorIntervalType {
 #pragma mark -
 #pragma mark Route Actions
 
-/*
-- (void)addRoute: (RouteSet*)routeSet {
-    int num = 2;
-    BOOL done = NO;
-    if(![routeSet isKindOfClass: [RouteSet class]]) return;
-    if(![[routeSet name] length]) return;
-    
-    // check to see if a route exists with this name
-    NSString *originalName = [routeSet name];
-    while(!done) {
-        BOOL conflict = NO;
-        for(RouteSet *route in self.routes) {
-            if( [[route name] isEqualToString: [routeSet name]]) {
-                [routeSet setName: [NSString stringWithFormat: @"%@ %d", originalName, num++]];
-                conflict = YES;
-                break;
-            }
-        }
-        if(!conflict) done = YES;
-    }
-    
-    // save this route into our array
-    [self willChangeValueForKey: @"routes"];
-    [_routes addObject: routeSet];
-    [self didChangeValueForKey: @"routes"];
-
-    // update the current route
-    [self setCurrentRouteSet: routeSet];
-    [waypointTable reloadData];
-	
-	// so we know to save this route later!
-	[self currentRouteSet].changed = YES;
-    
-    // PGLog(@"Added route: %@", [routeSet name]);
-}*/
-
 - (IBAction)loadRoute: (id)sender {
     [waypointTable reloadData];
 }
@@ -321,54 +279,86 @@ enum AutomatorIntervalType {
     [self validateBindings];
 }
 
-- (IBAction)removeRoute: (id)sender {
-    if([self currentRouteSet]) {
-        
-       /* int ret = NSRunAlertPanel(@"Delete Route?", [NSString stringWithFormat: @"Are you sure you want to delete the route \"%@\"?", [[self currentRouteSet] name]], @"Delete", @"Cancel", NULL);
-        if(ret == NSAlertDefaultReturn) {
-			
-            [self willChangeValueForKey: @"routes"];
-            [_routes removeObject: [self currentRouteSet]];
-			
-			[self deleteObject:[self currentRouteSet]];
-            
-            if([_routes count])
-                [self setCurrentRouteSet: [_routes objectAtIndex: 0]];
-            else
-                [self setCurrentRouteSet: nil];
-                
-            [self didChangeValueForKey: @"routes"];
-            
-            [waypointTable reloadData];
-        }*/
-    }
-}
-
-- (IBAction)duplicateRoute: (id)sender {
-   // [self addRoute: [self.currentRouteSet copy]];
-}
-
-- (IBAction)renameRoute: (id)sender {
+- (NSString*)nonDuplicateName:(id)object{
 	
-	_nameBeforeRename = [[self.currentRouteSet name] copy];
-	
-	[NSApp beginSheet: renamePanel
-	   modalForWindow: [self.view window]
-		modalDelegate: nil
-	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
-		  contextInfo: nil];
-}
-
-- (IBAction)closeRename: (id)sender {
-    [[sender window] makeFirstResponder: [[sender window] contentView]];
-    [NSApp endSheet: renamePanel returnCode: 1];
-    [renamePanel orderOut: nil];
-	
-	// did the name change?
-	if ( ![_nameBeforeRename isEqualToString:[[self currentRouteSet] name]] ){
-		[self currentRouteSet].changed = YES;
-		[self deleteObjectWithName:_nameBeforeRename];
+	// check for name conflict + rename if we need to
+	int numToGive = 2;
+	BOOL doneRenaming = NO;
+	NSString *originalName = [object name];
+	NSString *newName = [object name];
+	while ( !doneRenaming ){
+		BOOL conflict = NO;
+		
+		// do we need to rename the route collection?
+		if ( [object isKindOfClass:[RouteCollection class]] ){
+			for ( RouteCollection *rc in _routeCollectionList ){
+				if ( [[rc name] isEqualToString: newName] ){
+					newName = [NSString stringWithFormat:@"%@ %d", originalName, numToGive++];
+					conflict = YES;
+					break;					
+				}
+			}	
+			if ( !conflict ) doneRenaming = YES;
+		}
+		// check for routeset!
+		else{
+			RouteCollection *parentRC = [(RouteSet*)object parent];
+			for ( RouteSet *route in [parentRC routes] ){
+				if ( [[route name] isEqualToString: newName] ){
+					newName = [NSString stringWithFormat:@"%@ %d", originalName, numToGive++];
+					conflict = YES;
+					break;
+				}
+			}
+			if ( !conflict ) doneRenaming = YES;
+		}
 	}
+	
+	return newName;
+}
+
+// add a new route (via import)
+- (void)addRoute: (id)object {
+	
+	// not of type RouteSet or RouteCollection? not sure how we would get here
+	if ( ![object isKindOfClass:[RouteSet class]] && ![object isKindOfClass:[RouteCollection class]] ){
+		PGLog(@"[Routes] Unable to import route of type %@ (Obj:%@)", [object class], object);
+		return;
+	}
+	
+	// update our name if we have to!
+	if ( [object isKindOfClass:[RouteCollection class]] )
+		[(RouteCollection*)object setName:[self nonDuplicateName:object]];
+
+	[self willChangeValueForKey: @"routeCollections"];
+	// add a new route collection
+	if ( [object isKindOfClass:[RouteCollection class]] ){
+		[(RouteCollection*)object setChanged:YES];
+		[_routeCollectionList addObject:object];		
+	}
+	// add a new route set to a new RC
+	else{
+		RouteCollection *newRC = [RouteCollection routeCollectionWithName:@"New Route"];
+		[newRC setName:[self nonDuplicateName:newRC]];
+		[newRC addRouteSet:object];
+		newRC.changed = YES;
+		[_routeCollectionList addObject:newRC];
+		
+		// only doing this so selection works!
+		object = newRC;
+	}
+	[self didChangeValueForKey: @"routeCollections"];
+
+	// reload data
+	[routesTable reloadData];
+	[routesTable expandItem:object];
+	
+	// select object
+	int row = [routesTable rowForItem:object];
+	
+	// select the new item!
+	[routesTable selectRow:row byExtendingSelection:NO];
+	[routesTable scrollRowToVisible:row];
 }
 
 #pragma mark -
@@ -381,19 +371,27 @@ enum AutomatorIntervalType {
         importedRoute = nil;
     } NS_ENDHANDLER
     
-    if(importedRoute) {
+    if ( importedRoute ) {
 		
 		PGLog(@"%@", importedRoute);
 		
+		// single RouteSet
         if ( [importedRoute isKindOfClass: [RouteSet class]] ) {
-            //[self addRoute: importedRoute];
+			[self addRoute: importedRoute];
 		}
+		// single RouteCollection
+		else if ( [importedRoute isKindOfClass:[RouteCollection class]] ){
+			[self addRoute: importedRoute];
+		}
+		// single RouteSet (I'm an idiot)
 		else if ( [importedRoute isKindOfClass: [NSDictionary class]] ) {
-			//[self addRoute:[importedRoute objectForKey:@"Route"]];	
+			[self addRoute:[importedRoute objectForKey:@"Route"]];	
         }
+		// multiple!
 		else if ( [importedRoute isKindOfClass: [NSArray class]] ) {
-            for ( RouteSet *route in importedRoute) {
-               // [self addRoute: route];
+			// could be of type RouteSet or RouteCollection
+            for ( id route in importedRoute ) {
+				[self addRoute: route];
             }
         }
 		else {
@@ -402,40 +400,7 @@ enum AutomatorIntervalType {
     }
     
     if(!importedRoute) {
-        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route or route set.", path], @"Okay", NULL, NULL);
-    }
-}
-
-- (IBAction)importRoute: (id)sender {
-	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-
-	[openPanel setCanChooseDirectories: NO];
-	[openPanel setCanCreateDirectories: NO];
-	[openPanel setPrompt: @"Import Route"];
-	[openPanel setCanChooseFiles: YES];
-    [openPanel setAllowsMultipleSelection: YES];
-	
-	int ret = [openPanel runModalForTypes: [NSArray arrayWithObjects: @"route", @"routeset", nil]];
-    
-	if(ret == NSFileHandlingPanelOKButton) {
-        for(NSString *routePath in [openPanel filenames]) {
-            [self importRouteAtPath: routePath];
-        }
-	}
-}
-
-- (IBAction)exportRoute: (id)sender {
-
-    NSSavePanel *savePanel = [NSSavePanel savePanel];
-    [savePanel setCanCreateDirectories: YES];
-    [savePanel setTitle: @"Export Route"];
-    [savePanel setMessage: @"Please choose a destination for this route."];
-    int ret = [savePanel runModalForDirectory: @"~/" file: [[[self currentRouteSet] name] stringByAppendingPathExtension: @"route"]];
-    
-	if(ret == NSFileHandlingPanelOKButton) {
-        NSString *saveLocation = [savePanel filename];
-        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: [self currentRouteSet]];
-        [data writeToFile: saveLocation atomically: YES];
+        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route, route set or route collection.", path], @"Okay", NULL, NULL);
     }
 }
 
@@ -799,9 +764,6 @@ enum AutomatorIntervalType {
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification *)aNotification {
-	
-	//PGLog(@" %@ %@", aNotification, [aNotification object]);
-	
     [self validateBindings];
 }
 
@@ -1189,8 +1151,6 @@ enum AutomatorIntervalType {
 // is this a valid drop target?
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id < NSDraggingInfo >)info proposedItem:(id)item proposedChildIndex:(NSInteger)index{
 	
-	//PGLog(@"VALIDATE: %d %@ %@", index, item, info);
-	
 	// can't copy a RouteSet into a RouteSet!
 	if ( [item isKindOfClass:[RouteSet class]] ){
 		return NSDragOperationNone;
@@ -1202,11 +1162,11 @@ enum AutomatorIntervalType {
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView acceptDrop:(id < NSDraggingInfo >)info item:(id)item childIndex:(NSInteger)index{
 	
-	//PGLog(@"ACCEPT: %d %@ %@", index, item, info);
 	
 	if ( outlineView == routesTable ){
 		
 		if ( ![item isKindOfClass:[RouteCollection class]] ){
+			PGLog(@"Not doing anything with %@", item);
 			return NO;
 		}
 	
@@ -1217,7 +1177,7 @@ enum AutomatorIntervalType {
 		if ( data ){
 
 			NSArray *routes = [NSKeyedUnarchiver unarchiveObjectWithData: data];
-			
+
 			// now add these routes to their new home and remove from their old one :(
 			for ( id route in routes ){
 					
@@ -1229,11 +1189,24 @@ enum AutomatorIntervalType {
 					// actually find it in the current list
 					oldCollection = [self routeCollectionForUUID:[oldCollection UUID]];
 					
-					// remove the route
-					[oldCollection removeRouteSet:route];
+					// moving within the existing route collection
+					if ( [[oldCollection UUID] isEqualToString:[(RouteCollection*)item UUID]] ){
+						
+						// it will be equal if the item is dropped after the last item
+						if ( index == [[(RouteCollection*)item routes] count] ){
+							index--;
+						}
+						
+						[(RouteCollection*)item moveRouteSet:route toLocation:index];
+					}
+					// moving to a new route collection
+					else{
+						// remove the route
+						[oldCollection removeRouteSet:route];
 					
-					// add to new!
-					[(RouteCollection*)item addRouteSet:route];
+						// add to new!
+						[(RouteCollection*)item addRouteSet:route];
+					}
 				}
 			}
 			
@@ -1250,46 +1223,16 @@ enum AutomatorIntervalType {
 
 #pragma mark RouteCollection UI stuff
 
-- (IBAction)deleteRoute: (id)sender{
-	
-	[self willChangeValueForKey: @"routeCollections"];
-	
-	id selectedItem = [self selectedRouteObject];
-	
-	if ( [selectedItem isKindOfClass:[RouteSet class]] ){
-		
-		RouteCollection *rc = [(RouteSet*)selectedItem parent];
-		
-		[rc removeRouteSet:selectedItem];
-		
-		[routesTable reloadData];
-		
-		// select the parent
-		int row = [routesTable rowForItem:rc];
-		
-		// select the new item!
-		[routesTable selectRow:row byExtendingSelection:NO];
-		[routesTable scrollRowToVisible:row];
-	}
-	else if ( [selectedItem isKindOfClass:[RouteCollection class]] ){
-		
-		RouteCollection *rc = selectedItem;
-		
-		if ( [[rc routes] count] == 0 ){
-			[_routeCollectionList removeObject:rc];
-			
-			// delete the file from our disk!
-			[self deleteObject:rc];
-			 
-			[routesTable reloadData];
-		}
-		else{
-			NSBeep();
-			NSRunAlertPanel(@"Unable to delete", @"You cannot delete a set until the routes are first removed!", @"Okay", NULL, NULL);
-		}		
-	}
-	
-	[self didChangeValueForKey: @"routeCollections"];
+// choosing the selected row
+- (IBAction)deleteRouteButton: (id)sender{
+	id object = [self selectedRouteObject];
+	[self deleteRoute:object];
+}
+
+// choosing the clicked row
+- (IBAction)deleteRouteMenu: (id)sender{
+	id object = [routesTable itemAtRow:[routesTable clickedRow]];
+	[self deleteRoute:object];
 }
 
 - (IBAction)addRouteSet: (id)sender{
@@ -1299,7 +1242,7 @@ enum AutomatorIntervalType {
 	// nothing is selected
 	if ( selectedItem == nil ){
 		NSBeep();
-		NSRunAlertPanel(@"Select a Route Collection", @"Please select a route collection to add your route to! (you may have to create a new route collection first!)", @"Okay", NULL, NULL);
+		NSRunAlertPanel(@"Select a Route Collection", @"Please select a route set to add your route to! (you may have to create a new route set first!)", @"Okay", NULL, NULL);
 	}
 	else{
 		
@@ -1354,6 +1297,46 @@ enum AutomatorIntervalType {
 
 #pragma mark RouteCollection helpers
 
+- (void)deleteRoute:(id)selectedItem{
+	
+	[self willChangeValueForKey: @"routeCollections"];
+	
+	if ( [selectedItem isKindOfClass:[RouteSet class]] ){
+		
+		RouteCollection *rc = [(RouteSet*)selectedItem parent];
+		
+		[rc removeRouteSet:selectedItem];
+		
+		[routesTable reloadData];
+		
+		// select the parent
+		int row = [routesTable rowForItem:rc];
+		
+		// select the new item!
+		[routesTable selectRow:row byExtendingSelection:NO];
+		[routesTable scrollRowToVisible:row];
+	}
+	else if ( [selectedItem isKindOfClass:[RouteCollection class]] ){
+		
+		RouteCollection *rc = selectedItem;
+		
+		if ( [[rc routes] count] == 0 ){
+			[_routeCollectionList removeObject:rc];
+			
+			// delete the file from our disk!
+			[self deleteObject:rc];
+			
+			[routesTable reloadData];
+		}
+		else{
+			NSBeep();
+			NSRunAlertPanel(@"Unable to delete", @"You cannot delete a route set until the routes within are first removed!", @"Okay", NULL, NULL);
+		}		
+	}
+	
+	[self didChangeValueForKey: @"routeCollections"];
+}
+
 - (void)selectItemInOutlineViewToEdit:(id)item{
 
 	// get the row of our new route!
@@ -1385,6 +1368,79 @@ enum AutomatorIntervalType {
 	}
 	
 	return nil;		
+}
+
+#pragma mark Route Collection UI
+
+- (IBAction)test: (id)sender{
+		
+	for ( RouteCollection *rc in _routeCollectionList ){
+		
+		PGLog(@"%@", rc);
+		
+		for ( RouteSet *route in [rc routes] ){
+			PGLog(@" %@", route);
+		}
+		
+	}
+}
+
+- (IBAction)duplicateRoute: (id)sender {
+	
+	// get the clicked object
+	id object = [routesTable itemAtRow:[routesTable clickedRow]];
+	
+	// copy it
+	id newObject = [object copy];
+	
+	// add it!
+	[self addRoute:newObject];
+}
+
+- (IBAction)renameRoute: (id)sender {
+	id object = [routesTable itemAtRow:[routesTable clickedRow]];
+	[self selectItemInOutlineViewToEdit:object];
+}
+
+- (IBAction)importRoute: (id)sender {
+	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	
+	[openPanel setCanChooseDirectories: NO];
+	[openPanel setCanCreateDirectories: NO];
+	[openPanel setPrompt: @"Import Route"];
+	[openPanel setCanChooseFiles: YES];
+    [openPanel setAllowsMultipleSelection: YES];
+	[openPanel setDirectory:@"~/Desktop"];
+	
+	int ret = [openPanel runModalForTypes: [NSArray arrayWithObjects: @"route", @"routeset", @"routecollection", nil]];
+    
+	if ( ret == NSFileHandlingPanelOKButton ) {
+        for ( NSString *routePath in [openPanel filenames] ) {
+            [self importRouteAtPath: routePath];
+        }
+	}
+}
+
+- (IBAction)exportRoute: (id)sender {
+	
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    [savePanel setCanCreateDirectories: YES];
+    [savePanel setTitle: @"Export Route"];
+    [savePanel setMessage: @"Please choose a destination for this route."];
+	
+	id object = [routesTable itemAtRow:[routesTable clickedRow]];
+	NSString *extension = @"route";
+	if ( [object isKindOfClass:[RouteCollection class]] ){
+		extension = @"routecollection";
+	}
+	
+    int ret = [savePanel runModalForDirectory: @"~/Desktop" file: [[object name] stringByAppendingPathExtension: extension]];
+    
+	if ( ret == NSFileHandlingPanelOKButton ) {
+        NSString *saveLocation = [savePanel filename];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: object];
+        [data writeToFile: saveLocation atomically: YES];
+    }
 }
 
 #pragma mark Help

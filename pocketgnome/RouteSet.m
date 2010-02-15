@@ -78,8 +78,6 @@
     copy.routes = self.routes;
 	copy.changed = YES;
 	copy.parent = self.parent;
-	
-	PGLog(@"copying the routeSet?");
 
     return copy;
 }
