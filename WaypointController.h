@@ -41,8 +41,7 @@
     IBOutlet NSPanel *visualizePanel;
     IBOutlet NSMenu *actionMenu;
     IBOutlet NSMenu *testingMenu;
-    IBOutlet NSPanel *renamePanel;
-    
+
     // waypoint action editor
     IBOutlet NSPanel *wpActionPanel;
     IBOutlet NSTabView *wpActionTabs;
@@ -121,17 +120,11 @@
 // route actions
 - (IBAction)setRouteType: (id)sender;
 - (IBAction)loadRoute: (id)sender;
-- (IBAction)removeRoute: (id)sender;
-- (IBAction)renameRoute: (id)sender;
-- (IBAction)closeRename: (id)sender;
-- (IBAction)duplicateRoute: (id)sender;
 - (IBAction)waypointMenuAction: (id)sender;
 - (IBAction)closeDescription: (id)sender;
 
 // importing/exporting
 - (void)importRouteAtPath: (NSString*)path;
-- (IBAction)importRoute: (id)sender;
-- (IBAction)exportRoute: (id)sender;
 
 - (IBAction)visualize: (id)sender;
 - (IBAction)closeVisualize: (id)sender;
@@ -156,11 +149,18 @@
 - (void)selectCurrentWaypoint:(int)index;
 
 // new Route Collection stuff
-- (IBAction)deleteRoute: (id)sender;
+- (IBAction)deleteRouteButton: (id)sender;
+- (IBAction)deleteRouteMenu: (id)sender;
 - (IBAction)addRouteSet: (id)sender;
 - (IBAction)addRouteCollection: (id)sender;
 - (IBAction)closeHelpPanel: (id)sender;
 - (IBAction)startingRouteClicked: (id)sender;
+- (IBAction)importRoute: (id)sender;
+- (IBAction)exportRoute: (id)sender;
+- (IBAction)renameRoute: (id)sender;
+- (IBAction)duplicateRoute: (id)sender;
+
+- (IBAction)test: (id)sender;
 
 // TO DO: add import/export/show/duplicate
 

@@ -26,6 +26,7 @@
 @property (readwrite, copy) NSString *name;
 @property BOOL startRouteOnDeath;
 
+- (void)moveRouteSet:(RouteSet*)route toLocation:(int)index;
 - (void)addRouteSet:(RouteSet*)route;
 - (BOOL)removeRouteSet:(RouteSet*)route;
 - (BOOL)containsRouteSet:(RouteSet*)route;

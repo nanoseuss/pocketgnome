@@ -44,8 +44,7 @@
     return rc;
 }
 
-- (id)initWithCoder:(NSCoder *)decoder
-{
+- (id)initWithCoder:(NSCoder *)decoder{
 	self = [super initWithCoder:decoder];
 	if ( self ) {
         self.name = [decoder decodeObjectForKey: @"Name"];
@@ -56,8 +55,7 @@
 	return self;
 }
 
--(void)encodeWithCoder:(NSCoder *)coder
-{
+-(void)encodeWithCoder:(NSCoder *)coder{
 	[super encodeWithCoder:coder];
 	
     [coder encodeObject: self.name forKey: @"Name"];
@@ -66,14 +64,17 @@
 	[coder encodeObject: [NSNumber numberWithBool:self.startRouteOnDeath] forKey: @"StartRouteOnDeath"];
 }
 
-- (id)copyWithZone:(NSZone *)zone
-{
+- (id)copyWithZone:(NSZone *)zone{
     RouteCollection *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
-    copy.routes = self.routes;
 	copy.changed = YES;
 	copy.startUUID = self.startUUID;
 	copy.startRouteOnDeath = self.startRouteOnDeath;
+
+	// add copies! Not originals! (we want a new UUID)
+	for ( RouteSet *route in self.routes ){
+		[copy addRouteSet:[route copy]];
+	}
 	
     return copy;
 }
@@ -94,6 +95,23 @@
 
 - (NSString*)description {
     return [NSString stringWithFormat: @"<RouteCollection %@ %@>", [self name], [self UUID]];
+}
+
+- (void)moveRouteSet:(RouteSet*)route toLocation:(int)index{
+
+	RouteSet *routeToMove = nil;
+	for ( RouteSet *tmp in _routes ){
+		if ( [[tmp UUID] isEqualToString:[route UUID]] ){
+			routeToMove = [tmp retain];
+			break;
+		}
+	}
+	
+	// route found! remove + re insert!
+	if ( routeToMove ){
+		[_routes removeObject:routeToMove];
+		[_routes insertObject:routeToMove atIndex:index];
+	}
 }
 
 - (void)addRouteSet:(RouteSet*)route{
