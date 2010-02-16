@@ -39,6 +39,8 @@
 #import "PTHeader.h"
 #import "Position.h"
 
+#import <Sparkle/Sparkle.h>
+
 #import <Foundation/foundation.h>
 #import <SecurityFoundation/SFAuthorization.h>
 #import <Security/AuthorizationTags.h>
@@ -100,7 +102,7 @@ typedef enum {
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
     
-    [[NSUserDefaults standardUserDefaults] setObject: @"http://www.savorydeviate.com/pocketgnome/appcast.xml" forKey: @"SUFeedURL"];
+    [[NSUserDefaults standardUserDefaults] setObject: @"http://pg.savorydeviate.com/appcast.xml" forKey: @"SUFeedURL"];
 }
 
 static Controller* sharedController = nil;
@@ -188,7 +190,7 @@ static Controller* sharedController = nil;
 }
 
 - (void)finalizeUserDefaults {
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey: @"SUFeedURL"];
+    //[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"SUFeedURL"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
@@ -1457,47 +1459,21 @@ typedef struct NameObjectStruct{
     return [[NSApp applicationIconImage] TIFFRepresentation];
 }
 
-#pragma mark -
-#pragma mark Security
-
-- (void)doQuickAlertSheetWithTitle: (NSString*)title text: (NSString*)text style: (NSAlertStyle)style {
-    NSAlert *alert = [NSAlert alertWithMessageText: title 
-                                     defaultButton: @"Okay" 
-                                   alternateButton: nil
-                                       otherButton: nil 
-                         informativeTextWithFormat: text];
-    [alert setAlertStyle: style]; 
-    [alert beginSheetModalForWindow: mainWindow modalDelegate: self didEndSelector: nil contextInfo: nil];
-}
-
-// Sparkle delegate
+#pragma mark Sparkle - Auto Updater
 
 // Sent when a valid update is found by the update driver.
-//- (void)updater:(SUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
-//    PGLog(@"[Update] didFindValidUpdate: %@", [update fileURL]);
-//}
+/*- (void)updater:(SUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
+    PGLog(@"[Update] didFindValidUpdate: %@", [update fileURL]);
+}
 
-//- (void)updater:(SUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
-//    PGLog(@"[Update] willInstallUpdate: %@", [update fileURL]);
-//}
+- (void)updater:(SUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
+    PGLog(@"[Update] willInstallUpdate: %@", [update fileURL]);
+}*/
 
-// If you're using special logic or extensions in your appcast, implement this to use your own logic for finding
-// a valid update, if any, in the given appcast.
-/*- (SUAppcastItem *)bestValidUpdateInAppcast:(SUAppcast *)appcast forUpdater:(SUUpdater *)bundle {
-    // Find the first update we can actually use.
-    NSEnumerator *updateEnumerator = [[appcast items] objectEnumerator];
- do {
- item = [updateEnumerator nextObject];
- } while (item && ![self hostSupportsItem:item]);
- }*/
-
-/*
-- (BOOL)updater: (SUUpdater *)updater
-shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
-  untilInvoking: (NSInvocation *)invocation
-{
+- (BOOL)updater: (SUUpdater *)updater shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update untilInvoking: (NSInvocation *)invocation {
+	
     if( ![[self appName] isEqualToString: @"Pocket Gnome"] ) {
-       // PGLog(@"[Update] We've been renamed.");
+		// PGLog(@"[Update] We've been renamed.");
         
         NSAlert *alert = [NSAlert alertWithMessageText: @"SECURITY ALERT: PLEASE BE AWARE" 
                                          defaultButton: @"Understood" 
@@ -1513,28 +1489,25 @@ shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update
     }
     //PGLog(@"[Update] Relaunching as expected.");
     return NO;
-}*/
+}
 
 - (void)updateAlertConfirmed:(NSAlert *)alert returnCode:(int)returnCode contextInfo:(void *)contextInfo {
     NSInvocation *invocation = (NSInvocation*)contextInfo;
     [invocation invoke];
 }
 
-/*
- - (SUUpdateAlertChoice)userChoseAction:(SUUpdateAlertChoice)action forUpdate:(SUAppcastItem *)update toHostBundle:(NSBundle *)bundle {
- if( ![[self appName] isEqualToString: @"Pocket Gnome"] ) {
-        if(action == SUInstallUpdateChoice) {
-            [[NSWorkspace sharedWorkspace] openURL: [update fileURL]];
-            NSBeep();
-            [self doQuickAlertSheetWithTitle: @"Downloading New Version"
-                                        text: [NSString stringWithFormat: @"Version %@ of Pocket Gnome is currently being downloaded by your web browser.\n\nThis is happening because a name-changed version of Pocket Gnome cannot perform the automatic update process like an unmodified version.\n\nOnce the new version is downloaded, quit this copy of Pocket Gnome (and WoW if it is open), and perform a \"Match Existing Application\" rename operation from the \"Settings > Security\" section of the new version.", [update versionString]] 
-                                       style: NSInformationalAlertStyle];
-            return SURemindMeLaterChoice;
-        }
-    }
-    
-    return action;
-}*/
+#pragma mark -
+#pragma mark Security
+
+- (void)doQuickAlertSheetWithTitle: (NSString*)title text: (NSString*)text style: (NSAlertStyle)style {
+    NSAlert *alert = [NSAlert alertWithMessageText: title 
+                                     defaultButton: @"Okay" 
+                                   alternateButton: nil
+                                       otherButton: nil 
+                         informativeTextWithFormat: text];
+    [alert setAlertStyle: style]; 
+    [alert beginSheetModalForWindow: mainWindow modalDelegate: self didEndSelector: nil contextInfo: nil];
+}
 
 - (IBAction)toggleGUIScripting: (id)sender {
     [NSApp setAllowAccessibility: (self.isRegistered && ![disableGUIScriptCheckbox state])];
