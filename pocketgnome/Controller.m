@@ -187,6 +187,7 @@ static Controller* sharedController = nil;
     } else {
         PGLog(@"Growl not running.");
     }*/
+	
 }
 
 - (void)finalizeUserDefaults {
@@ -214,6 +215,9 @@ static Controller* sharedController = nil;
 		[mainWindow makeKeyAndOrderFront: nil];
 	}
     _appFinishedLaunching = YES;
+	
+	// check for update?
+	[[SUUpdater sharedUpdater] checkForUpdatesInBackground];
     
     // validate game version
     //if(![self isWoWVersionValid]) {
