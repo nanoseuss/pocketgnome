@@ -217,7 +217,7 @@ static Controller* sharedController = nil;
     _appFinishedLaunching = YES;
 	
 	// check for update?
-	[[SUUpdater sharedUpdater] checkForUpdatesInBackground];
+	//[[SUUpdater sharedUpdater] checkForUpdatesInBackground];
     
     // validate game version
     //if(![self isWoWVersionValid]) {
