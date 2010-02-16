@@ -516,6 +516,7 @@ static SpellController *sharedSpells = nil;
 
 // Pull in latest CD info
 - (void)reloadCooldownInfo{
+	
 	// Why are we updating the table if we can't see it??
 	if ( ![[cooldownPanelTable window] isVisible] ){
 		return;
@@ -544,6 +545,24 @@ static SpellController *sharedSpells = nil;
 		if ( cd.startNotUsed > cd.startTime )
 			realStartTime = cd.startNotUsed;
 		
+		
+		/*
+		 typedef struct WoWCooldown {
+		 UInt32 unk;					// 0x0
+		 UInt32 nextObjectAddress;	// 0x4
+		 UInt32 spellID;				// 0x8
+		 UInt32 unk3;				// 0xC (always 0 when the spell is a player spell)
+		 UInt32 startTime;			// 0x10 (start time of the spell, stored in milliseconds)
+		 long cooldown;				// 0x14
+		 UInt32 unk4;				// 0x18
+		 UInt32 startNotUsed;		// 0x1C	(the same as 0x10 always I believe?)
+		 long cooldown2;				// 0x20
+		 UInt32 enabled;				// 0x24 (0 if spell is enabled, 1 if it's not)
+		 UInt32 unk5;				// 0x28
+		 UInt32 gcd;					// 0x2C
+		 } WoWCooldown;
+		 */
+		
 		// Save it!
 		[_playerCooldowns addObject: [NSDictionary dictionaryWithObjectsAndKeys:
 									  [NSNumber numberWithInt: row],							@"ID",
@@ -551,6 +570,17 @@ static SpellController *sharedSpells = nil;
 									  [NSNumber numberWithInt: realStartTime],					@"StartTime",
 									  [NSNumber numberWithInt: realCD],                         @"Cooldown",
 									  [NSNumber numberWithInt: cd.gcd],							@"GCD",
+									  [NSNumber numberWithInt: cd.unk],							@"Unk",
+									  [NSNumber numberWithInt: cd.unk3],						@"Unk3",
+									  [NSNumber numberWithInt: cd.unk4],						@"Unk4",
+									  [NSNumber numberWithInt: cd.unk5],						@"Unk5",
+									  [NSNumber numberWithInt: cd.startTime],					@"OriginalStartTime",
+									  [NSNumber numberWithInt: cd.startNotUsed],				@"StartNotUsed",
+									  [NSNumber numberWithLong: cd.cooldown],					@"CD1",
+									  [NSNumber numberWithLong: cd.cooldown2],					@"CD2",
+									  [NSNumber numberWithInt: cd.enabled],						@"Enabled",
+									  [NSNumber numberWithInt: cd.gcd],							@"GCD",
+									  
 									  nil]];
 
 		if ( reachedEnd )

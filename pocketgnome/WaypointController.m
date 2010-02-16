@@ -1071,8 +1071,7 @@ enum AutomatorIntervalType {
 				[waypointTable reloadData];
 			}
 			
-			// bindings?
-			
+			// bindings
 			[self willChangeValueForKey: @"validRouteSelection"];
 			
 			// if it's of type RouteSet, yes we can delete
@@ -1371,19 +1370,6 @@ enum AutomatorIntervalType {
 }
 
 #pragma mark Route Collection UI
-
-- (IBAction)test: (id)sender{
-		
-	for ( RouteCollection *rc in _routeCollectionList ){
-		
-		PGLog(@"%@", rc);
-		
-		for ( RouteSet *route in [rc routes] ){
-			PGLog(@" %@", route);
-		}
-		
-	}
-}
 
 - (IBAction)duplicateRoute: (id)sender {
 	
