@@ -160,8 +160,6 @@
 - (IBAction)renameRoute: (id)sender;
 - (IBAction)duplicateRoute: (id)sender;
 
-- (IBAction)test: (id)sender;
-
 // TO DO: add import/export/show/duplicate
 
 @end

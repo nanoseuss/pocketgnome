@@ -460,7 +460,7 @@ typedef enum MovementType {
 	}
 	
 	// atttempted fix for flying straight up in a deathspiral
-	float vertDistance = [playerPosition zPosition] - [self.lastAttemptedPosition zPosition];
+	/*float vertDistance = [playerPosition zPosition] - [self.lastAttemptedPosition zPosition];
 	//PGLog(@"[Move] Vertical distance: %0.2f", vertDistance);
 	if ( vertDistance < 0.0f ) vertDistance *= -1.0f;
 	if ( vertDistance > 100.0f ){
@@ -469,7 +469,7 @@ typedef enum MovementType {
 		NSBeep();
 		
 		[self moveUpStop];
-	}
+	}*/
 	
 	// make sure we're focusing the right direction!
 	float horizontalAngleToward = [playerPosition angleTo:self.lastAttemptedPosition];
