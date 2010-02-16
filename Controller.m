@@ -248,7 +248,7 @@ static Controller* sharedController = nil;
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename {
     
-    if ( [[filename pathExtension] isEqualToString: @"route"] || [[filename pathExtension] isEqualToString: @"routeset"] ) {
+    if ( [[filename pathExtension] isEqualToString: @"route"] || [[filename pathExtension] isEqualToString: @"routeset"] || [[filename pathExtension] isEqualToString: @"routecollection"] ) {
         [routeController importRouteAtPath: filename];
         [self toolbarItemSelected: routesToolbarItem];
         [mainToolbar setSelectedItemIdentifier: [routesToolbarItem itemIdentifier]];
