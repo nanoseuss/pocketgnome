@@ -1325,13 +1325,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             [self evaluateSituation];
         }
     }
-	
-	// after PostCombat, lets evaluate
-	if([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
-		PGLog(@"[Eval] After PostCombat");
-        [self evaluateSituation];
-    }
-	
     
     // if we did the Patrolling procdure, go back to evaluate
     if([[state objectForKey: @"Procedure"] isEqualToString: PatrollingProcedure]) {
