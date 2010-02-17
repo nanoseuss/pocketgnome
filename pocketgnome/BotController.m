@@ -1315,8 +1315,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     // if we did any regen, wait 30 seconds before re-evaluating the situation
-    if([[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure]) {
-        if( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
+    if ( [[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure] ) {
+        if ( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
 			PGLog(@"[Procedure] Starting regen!");
             [self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 2.0];
         } else {
@@ -1381,6 +1381,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Unit *originalTarget = target;
     int completed = [[state objectForKey: @"CompletedRules"] intValue];
     int attempts = [[state objectForKey: @"RuleAttempts"] intValue];
+	int actionsPerformed = [[state objectForKey: @"ActionsPerformed"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
 	if ( rulesTried == nil ){
 		//PGLog(@"[Procedure^^^^^^^^^^^^^] Creating dictionary to track our tried rules!");
@@ -1648,7 +1649,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// do it!
 					int actionResult = [self performAction:actionID];
-					PGLog(@"[Procedure] Action %d taken with result: %d", actionID, actionResult);
+					PGLog(@"[Procedure] Action %u taken with result: %d", actionID, actionResult);
 					
 					// error of some kind :/
 					if ( actionResult != ErrNone ){
@@ -1678,6 +1679,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// success!
 					else{
 						completed++;
+						actionsPerformed++;
 					}
 				}
 				else{
@@ -1699,6 +1701,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt: completed],            @"CompletedRules",
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
+								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
 								target,											@"Target", nil]
 				   afterDelay: 0.1f]; 
 		PGLog(@"[Procedure] Rule executed, trying for more rules!");
@@ -1719,6 +1722,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[state objectForKey: @"Procedure"],				@"Procedure",
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
+								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
 								nil,											@"Target", nil]
 				   afterDelay: 0.1f];
 		return;
@@ -3314,7 +3318,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         return;
     }
 	
-	if ( !self.theRouteCollection ) {
+	if ( !self.theRouteCollection && !ignoreRoute ) {
         PGLog(@"[Bot] The current route set is not valid.");
         NSBeep();
         NSRunAlertPanel(@"Route Set is not valid", @"You must select a valid route set before starting the bot.  If you removed or renamed a profile, please select an alternative.", @"Okay", NULL, NULL);
