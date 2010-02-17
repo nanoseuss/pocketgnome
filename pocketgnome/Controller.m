@@ -78,7 +78,14 @@ typedef enum {
 @implementation Controller
 
 + (void)initialize {
-
+	
+	// fix for saving the mount dropdown
+	id mountObject = [[NSUserDefaults standardUserDefaults] objectForKey: @"MountType"];
+	if ( [mountObject isKindOfClass:[NSString class]] ){
+		[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"MountType"];
+		 [[NSUserDefaults standardUserDefaults] synchronize];
+	}
+	
     // initialize our value transformer
     NSNumberToHexString *hexTransformer = [[[NSNumberToHexString alloc] init] autorelease];
     [NSValueTransformer setValueTransformer: hexTransformer forName: @"NSNumberToHexString"];
@@ -96,6 +103,7 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityPreferencesUnreadable",
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
+								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];
     // NSLog(@"%d, %d", getuid(), geteuid());
