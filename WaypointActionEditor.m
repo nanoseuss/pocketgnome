@@ -11,6 +11,8 @@
 #import "Waypoint.h"
 #import "Rule.h"
 #import "Spell.h"
+#import "RouteCollection.h"
+#import "RouteSet.h"
 
 #import "Action.h"
 #import "Condition.h"
@@ -126,8 +128,11 @@ static WaypointActionEditor *sharedEditor = nil;
 - (void)addActionWithType:(int)type andAction:(Action*)action{
 	ActionController *newAction = nil;
 	
+	RouteSet *currentRoute = [waypointController currentRouteSet];
+	RouteCollection *parentRC = [currentRoute parent];
+	
 	if ( type == ActionType_Repair )				newAction = [[[RepairActionController alloc] init] autorelease];
-	else if ( type == ActionType_SwitchRoute )		newAction = [SwitchRouteActionController switchRouteActionControllerWithRoutes:[waypointController routes]];
+	else if ( type == ActionType_SwitchRoute )		newAction = [SwitchRouteActionController switchRouteActionControllerWithRoutes:[parentRC routes]];
 	else if ( type == ActionType_Spell )			newAction = [SpellActionController spellActionControllerWithSpells:[spellController playerSpells]];
 	else if ( type == ActionType_Item )				newAction = [ItemActionController itemActionControllerWithItems:[inventoryController useableItems]];
 	else if ( type == ActionType_Macro)				newAction = [MacroActionController macroActionControllerWithMacros:[macroController macros]];
