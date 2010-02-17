@@ -472,6 +472,19 @@
 											<int key="NSTag">17</int>
 											<reference key="NSTarget" ref="1016011523"/>
 										</object>
+										<object class="NSMenuItem" id="39811562">
+											<reference key="NSMenu" ref="623131397"/>
+											<int key="NSIndent">1</int>
+											<string key="NSTitle">Player Aura</string>
+											<string key="NSKeyEquiv"/>
+											<int key="NSKeyEquivModMask">1048576</int>
+											<int key="NSMnemonicLoc">2147483647</int>
+											<reference key="NSOnImage" ref="715644622"/>
+											<reference key="NSMixedImage" ref="496503712"/>
+											<string key="NSAction">_popUpItemAction:</string>
+											<int key="NSTag">3</int>
+											<reference key="NSTarget" ref="1016011523"/>
+										</object>
 										<object class="NSMenuItem" id="187860124">
 											<reference key="NSMenu" ref="623131397"/>
 											<int key="NSIndent">1</int>
@@ -643,7 +656,7 @@
 									</object>
 									<bool key="NSNoAutoenable">YES</bool>
 								</object>
-								<int key="NSSelectedIndex">15</int>
+								<int key="NSSelectedIndex">3</int>
 								<bool key="NSPullDown">YES</bool>
 								<int key="NSPreferredEdge">1</int>
 								<bool key="NSUsesItemFromMenu">YES</bool>
@@ -1604,6 +1617,7 @@
 							<reference ref="285369580"/>
 							<reference ref="113822471"/>
 							<reference ref="663530184"/>
+							<reference ref="39811562"/>
 						</object>
 						<reference key="parent" ref="1016011523"/>
 					</object>
@@ -1831,6 +1845,11 @@
 						<reference key="object" ref="663530184"/>
 						<reference key="parent" ref="623131397"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">751</int>
+						<reference key="object" ref="39811562"/>
+						<reference key="parent" ref="623131397"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1930,6 +1949,7 @@
 					<string>748.IBPluginDependency</string>
 					<string>749.IBPluginDependency</string>
 					<string>750.IBPluginDependency</string>
+					<string>751.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1982,7 +2002,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1035, 263}, {196, 323}}</string>
+					<string>{{1035, 243}, {196, 343}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -2026,6 +2046,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -2044,7 +2065,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">750</int>
+			<int key="maxID">751</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2120,6 +2141,19 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">BlacklistController</string>
 					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>mobController</string>
+							<string>playersController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>MobController</string>
+							<string>PlayersController</string>
+						</object>
+					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">BlacklistController.h</string>
@@ -3539,13 +3573,16 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addRouteCollection:</string>
+							<string>addRouteSet:</string>
 							<string>addWaypoint:</string>
 							<string>closeAutomatorPanel:</string>
 							<string>closeDescription:</string>
-							<string>closeRename:</string>
+							<string>closeHelpPanel:</string>
 							<string>closeVisualize:</string>
 							<string>closestWaypoint:</string>
-							<string>createRoute:</string>
+							<string>deleteRouteButton:</string>
+							<string>deleteRouteMenu:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
 							<string>exportRoute:</string>
@@ -3553,12 +3590,12 @@
 							<string>loadRoute:</string>
 							<string>moveToWaypoint:</string>
 							<string>openAutomatorPanel:</string>
-							<string>removeRoute:</string>
 							<string>removeWaypoint:</string>
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
 							<string>startStopAutomator:</string>
+							<string>startingRouteClicked:</string>
 							<string>stopMovement:</string>
 							<string>testWaypointSequence:</string>
 							<string>visualize:</string>
@@ -3566,6 +3603,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3607,18 +3647,21 @@
 							<string>combatController</string>
 							<string>controller</string>
 							<string>descriptionPanel</string>
+							<string>helpPanel</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
-							<string>renamePanel</string>
 							<string>routeTypeSegment</string>
+							<string>routesTable</string>
 							<string>scrollWithRoute</string>
 							<string>shortcutRecorder</string>
+							<string>startingRouteButton</string>
 							<string>testingMenu</string>
 							<string>view</string>
 							<string>visualizePanel</string>
 							<string>visualizeView</string>
 							<string>waypointSectionTitle</string>
+							<string>waypointTabView</string>
 							<string>waypointTable</string>
 							<string>wpActionDelayText</string>
 							<string>wpActionIDPopUp</string>
@@ -3639,18 +3682,21 @@
 							<string>id</string>
 							<string>Controller</string>
 							<string>NSPanel</string>
+							<string>NSPanel</string>
 							<string>id</string>
 							<string>id</string>
 							<string>PlayerDataController</string>
-							<string>NSPanel</string>
 							<string>id</string>
+							<string>NSOutlineView</string>
 							<string>NSButton</string>
 							<string>SRRecorderControl</string>
+							<string>NSButton</string>
 							<string>NSMenu</string>
 							<string>NSView</string>
 							<string>NSPanel</string>
 							<string>RouteVisualizationView</string>
 							<string>NSTextField</string>
+							<string>NSTabView</string>
 							<string>BetterTableView</string>
 							<string>NSTextField</string>
 							<string>NSPopUpButton</string>
@@ -3901,7 +3947,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="714364676">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSOutlineView.h</string>
 					</object>
@@ -4103,12 +4149,31 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Sparkle.framework/Headers/SUAppcast.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Sparkle.framework/Headers/SUUpdater.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObjectController</string>
 					<string key="superclassName">NSController</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSObjectController.h</string>
 					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSOutlineView</string>
+					<string key="superclassName">NSTableView</string>
+					<reference key="sourceIdentifier" ref="714364676"/>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSPanel</string>
