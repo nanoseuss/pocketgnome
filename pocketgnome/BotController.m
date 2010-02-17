@@ -1779,7 +1779,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		self.lastAttemptedUnitToLoot = unit;
 		
-        if([unit isValid] && (distanceToUnit <= 5.0)) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+        if ( [unit isValid] && (distanceToUnit <= 5.0) ) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
 			
 			// stop moving?
 			[movementController pauseMovement];
@@ -1806,6 +1806,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				//[nodeController finishedNode: (Node*)self.unitToLoot];
 			}
 			else{
+				PGLog(@"[Loot] Removing mob %@ from loot list", self.unitToLoot);
 				[_mobsToLoot removeObject: self.unitToLoot];
 			}
 			
@@ -2282,69 +2283,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self cancelCurrentProcedure];*/
 }
 
-/*
-- (void)finishUnit: (Unit*)unit {
-	
-	
-
-    // we only need to loot this if it's a mob and if was one we were directed to attack
-    if( [unit isNPC] ) {
-        if(wasInQueue) {
-            if([movementController moveToObject] == unit) {
-                // PGLog(@"finishUnit says stop moving to this unit.");
-                [movementController finishMovingToObject: unit];
-            }
-            
-            if([unit isDead]) {
-                if(self.doLooting) {
-                    // make sure this mob is even lootable
-                    // sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
-                    usleep(500000);
-                    if([(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable]) {
-                        if ([_mobsToLoot containsObject: unit]) {
-                            PGLog(@"[Loot] %@ was already in the loot list, removing first", unit);
-                            [_mobsToLoot removeObject: unit];
-                        }
-                        PGLog(@"[Loot] Adding %@ to loot list.", unit);
-                        [_mobsToLoot addObject: (Mob*)unit];
-                    }
-					else{
-						PGLog(@"[Loot] Mob %@ isn't lootable, ignoring", unit);
-					}
-                }
-            }
-			else{
-				PGLog(@"[Loot] Unit %@ finished, but not dead! Health: %d", unit, [unit currentHealth]);
-			}
-            
-            // if we're in the middle of a combat procedure, end it
-            if([[self procedureInProgress] isEqualToString: CombatProcedure])
-                [self cancelCurrentProcedure];
-        }
-        return;
-    }
-    
-    if( [unit isPlayer] ) {
-        [self evaluateSituation];
-    }
-    
-}*/
-
-/*
-- (void)lootNodeWhenOnGround: (WoWObject*)unit{
-	
-	PGLog(@"[Bot] Movement flags 0x%x %d", [playerController movementFlags], [playerController movementFlags] & 0x0);
-	
-	// Is our player on the ground?
-	if ( ( [playerController movementFlags] & 0x0 ) == 0x0 ){
-		[self lootUnit: unit];
-		return;
-	}
-	
-	// Wait for fall time!
-	[self performSelector: @selector(lootNodeWhenOnGround:) withObject: unit afterDelay:0.1f];
-}*/
-
 #pragma mark -
 #pragma mark [Input] MovementController
 
@@ -2552,11 +2490,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         // find a valid mob to loot
         for ( mobToLoot in _mobsToLoot ) {
-            if ( mobToLoot && [mobToLoot isValid] && ![blacklistController isBlacklisted:mobToLoot] ) {
-                return mobToLoot;
+            if ( mobToLoot && [mobToLoot isValid] ) {
+				
+				if ( ![blacklistController isBlacklisted:mobToLoot] )
+					return mobToLoot;
+				else {
+					PGLog(@"[Loot] Found unit to loot but it's blacklisted! %@", mobToLoot);
+				}
             }
         }
     }
+	
+	PGLog(@"[Loot] %d units left to loot!", [_mobsToLoot count]);
     
     return nil;
 }
