@@ -107,7 +107,7 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>10.5</string>
 	<key>NSAppleScriptEnabled</key>
-	<string>NO</string>
+	<true/>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

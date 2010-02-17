@@ -90,10 +90,10 @@
 - (Waypoint*)waypointClosestToPosition: (Position*)position {
     Waypoint *closestWP = nil;
     float minDist = INFINITY, tempDist = 0;
-    for(Waypoint *waypoint in [self waypoints]) {
+    for ( Waypoint *waypoint in [self waypoints] ) {
         tempDist = [position distanceToPosition: [waypoint position]];
 		//PGLog(@" %0.2f < %0.2f  %@", tempDist, minDist, waypoint);
-        if( (tempDist < minDist) && (tempDist >= 0.0f)) {
+        if ( (tempDist < minDist) && (tempDist >= 0.0f) ) {
             minDist = tempDist;
             closestWP = waypoint;
         }
