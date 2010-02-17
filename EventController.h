@@ -15,11 +15,13 @@
 @class PlayerDataController;
 
 @interface EventController : NSObject {
-	IBOutlet Controller *controller;
-	IBOutlet PlayerDataController *playerController;
+	IBOutlet Controller				*controller;
+	IBOutlet BotController			*botController;
+	IBOutlet PlayerDataController	*playerController;
 	
 	NSTimer *_uberQuickTimer;
 	NSTimer *_fiveSecondTimer;
+	NSTimer *_twentySecondTimer;
 	
 	int _lastPlayerZone;
 	int _lastBGStatus;

@@ -2,6 +2,27 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>PartyGreedLoot</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click GroupLootFrame1GreedButton</string>
+		<key>Description</key>
+		<string>Roll greed on an item</string>
+	</dict>
+	<key>PartyNeedLoot</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click GroupLootFrame1RollButton</string>
+		<key>Description</key>
+		<string>Roll need on an item</string>
+	</dict>
+	<key>PartyDisenchantLoot</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click GroupLootFrame1DisenchantButton</string>
+		<key>Description</key>
+		<string>Roll disenchant on an item</string>
+	</dict>
 	<key>QuestCancel</key>
 	<dict>
 		<key>Macro</key>
@@ -238,7 +259,7 @@
 		<key>Macro</key>
 		<string>/run if StaticPopup1:IsVisible() then StaticPopup_OnClick(StaticPopup1, 1) end</string>
 		<key>Description</key>
-		<string>This will click a dialogue box. (useful for auto-joining WG)</string>
+		<string>This will click a dialogue box. (useful for auto-joining WG or accepting a BoP button)</string>
 	</dict>
 </dict>
 </plist>

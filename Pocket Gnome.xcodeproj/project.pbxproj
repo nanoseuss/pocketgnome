@@ -73,6 +73,8 @@
 		03981D8E112AEC870081835F /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03981D8D112AEC860081835F /* Sparkle.framework */; };
 		03981DA6112AECA80081835F /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 03981D8D112AEC860081835F /* Sparkle.framework */; };
 		03981DE9112B22E90081835F /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 03981DE8112B22E90081835F /* dsa_pub.pem */; };
+		03981E78112B898E0081835F /* MovementController2.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981E77112B898E0081835F /* MovementController2.m */; };
+		03981F38112C819E0081835F /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981F37112C819E0081835F /* LogController.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
@@ -482,6 +484,10 @@
 		0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReverseRouteActionController.m; sourceTree = "<group>"; };
 		03981D8D112AEC860081835F /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		03981DE8112B22E90081835F /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
+		03981E76112B898E0081835F /* MovementController2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovementController2.h; sourceTree = "<group>"; };
+		03981E77112B898E0081835F /* MovementController2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovementController2.m; sourceTree = "<group>"; };
+		03981F36112C819E0081835F /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
+		03981F37112C819E0081835F /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -1008,6 +1014,8 @@
 				7DD3D40A0D1B2FEB0023D097 /* SpellController.m */,
 				03567AAB10DDAB52001ACE43 /* CombatController.h */,
 				03567AAC10DDAB52001ACE43 /* CombatController.m */,
+				03981E76112B898E0081835F /* MovementController2.h */,
+				03981E77112B898E0081835F /* MovementController2.m */,
 				7D220E610D1662F70026DF75 /* MovementController.h */,
 				7D220E620D1662F70026DF75 /* MovementController.m */,
 				7D06F0400D23058B00DA4E99 /* AuraController.h */,
@@ -1034,6 +1042,8 @@
 				038709B910D576E100DF5B90 /* BlacklistController.m */,
 				03BD330C11120A7A00941971 /* BindingsController.h */,
 				03BD330D11120A7A00941971 /* BindingsController.m */,
+				03981F36112C819E0081835F /* LogController.h */,
+				03981F37112C819E0081835F /* LogController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2073,6 +2083,8 @@
 				03BB221A112258A00048DE7B /* GateConditionController.m in Sources */,
 				03BB227E1122F1240048DE7B /* StrandStatusConditionController.m in Sources */,
 				038769151124532000B2C571 /* RouteCollection.m in Sources */,
+				03981E78112B898E0081835F /* MovementController2.m in Sources */,
+				03981F38112C819E0081835F /* LogController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
