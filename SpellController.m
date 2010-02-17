@@ -565,21 +565,20 @@ static SpellController *sharedSpells = nil;
 		
 		// Save it!
 		[_playerCooldowns addObject: [NSDictionary dictionaryWithObjectsAndKeys:
-									  [NSNumber numberWithInt: row],							@"ID",
-									  [NSNumber numberWithInt: cd.spellID],						@"SpellID",
-									  [NSNumber numberWithInt: realStartTime],					@"StartTime",
-									  [NSNumber numberWithInt: realCD],                         @"Cooldown",
-									  [NSNumber numberWithInt: cd.gcd],							@"GCD",
-									  [NSNumber numberWithInt: cd.unk],							@"Unk",
-									  [NSNumber numberWithInt: cd.unk3],						@"Unk3",
-									  [NSNumber numberWithInt: cd.unk4],						@"Unk4",
-									  [NSNumber numberWithInt: cd.unk5],						@"Unk5",
-									  [NSNumber numberWithInt: cd.startTime],					@"OriginalStartTime",
-									  [NSNumber numberWithInt: cd.startNotUsed],				@"StartNotUsed",
-									  [NSNumber numberWithLong: cd.cooldown],					@"CD1",
-									  [NSNumber numberWithLong: cd.cooldown2],					@"CD2",
-									  [NSNumber numberWithInt: cd.enabled],						@"Enabled",
-									  [NSNumber numberWithInt: cd.gcd],							@"GCD",
+									  [NSNumber numberWithUnsignedLong: row],							@"ID",
+									  [NSNumber numberWithUnsignedLong: cd.spellID],					@"SpellID",
+									  [NSNumber numberWithUnsignedLong: realStartTime],					@"StartTime",
+									  [NSNumber numberWithUnsignedLong: realCD],                        @"Cooldown",
+									  [NSNumber numberWithUnsignedLong: cd.gcd],						@"GCD",
+									  [NSNumber numberWithUnsignedLong: cd.unk],						@"Unk",
+									  [NSNumber numberWithUnsignedLong: cd.unk3],						@"Unk3",
+									  [NSNumber numberWithUnsignedLong: cd.unk4],						@"Unk4",
+									  [NSNumber numberWithUnsignedLong: cd.unk5],						@"Unk5",
+									  [NSNumber numberWithUnsignedLong: cd.startTime],					@"OriginalStartTime",
+									  [NSNumber numberWithUnsignedLong: cd.startNotUsed],				@"StartNotUsed",
+									  [NSNumber numberWithUnsignedLong: cd.cooldown],					@"CD1",
+									  [NSNumber numberWithUnsignedLong: cd.cooldown2],					@"CD2",
+									  [NSNumber numberWithUnsignedLong: cd.enabled],					@"Enabled",
 									  
 									  nil]];
 
@@ -616,14 +615,16 @@ static SpellController *sharedSpells = nil;
             return [NSString stringWithFormat: @"%.0f min", secRemaining/60.0f];
         } else if(secRemaining < 86400.0f) {
             return [NSString stringWithFormat: @"%.0f hour", secRemaining/3600.0f];
+		} else if(secRemaining < 604800.0f ) {
+            return [NSString stringWithFormat: @"%.0f days", secRemaining/86400.0f];
 		}
 	}
 	
 	if([[aTableColumn identifier] isEqualToString: @"TimeRemaining"]) {
-        float cd = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"Cooldown"] floatValue];
-		float currentTime = (float) [playerController currentTime];
-		float startTime = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"StartTime"] floatValue];
-		float secRemaining = ((startTime + cd)-currentTime)/1000.0f;
+        double cd = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"Cooldown"] floatValue];
+		double currentTime = (float) [playerController currentTime];
+		double startTime = [[[_playerCooldowns objectAtIndex: rowIndex] objectForKey: @"StartTime"] floatValue];
+		double secRemaining = ((startTime + cd)-currentTime)/1000.0f;
 		
 		//if ( secRemaining < 0.0f ) secRemaining = 0.0f;
 		
@@ -633,6 +634,8 @@ static SpellController *sharedSpells = nil;
             return [NSString stringWithFormat: @"%.0f min", secRemaining/60.0f];
         } else if(secRemaining < 86400.0f) {
             return [NSString stringWithFormat: @"%.0f hour", secRemaining/3600.0f];
+		} else if(secRemaining < 604800.0f ) {
+            return [NSString stringWithFormat: @"%.0f days", secRemaining/86400.0f];
 		}
 	}
 		
@@ -687,7 +690,7 @@ static SpellController *sharedSpells = nil;
 			realStartTime = cd.startNotUsed;
 			
 		// is gcd active?
-		if ( realStartTime + cd.gcd > currentTime ){
+		if ( cd.gcd != 0 && realStartTime + cd.gcd > currentTime ){
 			return YES;
 		}
 		

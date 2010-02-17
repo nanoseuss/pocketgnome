@@ -110,6 +110,9 @@ enum AutomatorIntervalType {
 				[_routeCollectionList addObject:rc];		
 			}
 			
+			// save for the first time
+			[self saveRoutes];
+			
 			_firstTimeEverOnTheNewRouteCollections = YES;
 		}
 		else{

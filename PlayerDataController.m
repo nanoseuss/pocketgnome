@@ -568,7 +568,7 @@ static PlayerDataController* sharedController = nil;
     [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_Facing_Horizontal) Buffer: (Byte*)&direction BufLength: sizeof(direction)];
 }
 
-- (void)setMovementFlags:(UInt32)movementFlags {
+- (void)setMovementFlags:(UInt8)movementFlags {
     [[controller wowMemoryAccess] saveDataForAddress: ([self baselineAddress] + BaseField_MovementFlags) Buffer: (Byte*)&movementFlags BufLength: sizeof(movementFlags)];
 }
 

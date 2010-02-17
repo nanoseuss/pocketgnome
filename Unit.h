@@ -25,94 +25,6 @@ enum eUnitBaseFields {
     BaseField_Facing_Vertical           = 0x7A0,  // 3.0.9: 0x7D0  // [-pi/2, pi/2]
     
     BaseField_MovementFlags             = 0x7C0,  // 3.0.9: 0x7F0
-    // 0x80000001 - move forward
-    // 0x80000002 - move backward
-    // 0x80000004 - strafe left
-    // 0x80000008 - strafe right
-    
-    // 0x80000010 - turn left
-    // 0x80000020 - turn left
-    
-    // 0x80001000 - jumping
-    
-    // 0x80200000 - swimming
-    
-    // 0x81000000 - air mounted, on the ground
-    // 0x83000400 - air mounted, in the air
-    // 0x83400400 - air mounted, going up (spacebar)
-    // 0x83800400 - air mounted, going down (sit key)
-    // among others...
-	
-	
-	// 0x1			- moving forward
-	// 0x2			- moving backward
-	// 0x4			- strafe left
-	// 0x8			- strafe right
-	// 0x1000		- in air, not mounted
-	
-	// 0x3400000	- moving up, on air mount
-	// 0x3800000	- moving down, on air mount
-	
-	
-	// 0x1000000 - air mounted, on ground
-	// 0x3000000 - air mounted, in the air
-	/*from Ascent Emulator,
-	 enum MovementFlags
-	 {
-	 // Byte 1 (Resets on Movement Key Press)
-	 MOVEFLAG_MOVE_STOP                  = 0x00,            //verified
-	 MOVEFLAG_MOVE_FORWARD                = 0x01,            //verified
-	 MOVEFLAG_MOVE_BACKWARD                = 0x02,            //verified
-	 MOVEFLAG_STRAFE_LEFT                = 0x04,            //verified
-	 MOVEFLAG_STRAFE_RIGHT                = 0x08,            //verified
-	 MOVEFLAG_TURN_LEFT                    = 0x10,            //verified
-	 MOVEFLAG_TURN_RIGHT                    = 0x20,            //verified
-	 MOVEFLAG_PITCH_DOWN                    = 0x40,            //Unconfirmed
-	 MOVEFLAG_PITCH_UP                    = 0x80,            //Unconfirmed
-	 
-	 // Byte 2 (Resets on Situation Change)
-	 MOVEFLAG_WALK                        = 0x100,        //verified
-	 MOVEFLAG_TAXI                        = 0x200,        
-	 MOVEFLAG_NO_COLLISION                = 0x400,
-	 MOVEFLAG_FLYING                        = 0x800,        //verified
-	 MOVEFLAG_REDIRECTED                    = 0x1000,        //Unconfirmed
-	 MOVEFLAG_FALLING                    = 0x2000,       //verified
-	 MOVEFLAG_FALLING_FAR                = 0x4000,        //verified
-	 MOVEFLAG_FREE_FALLING                = 0x8000,        //half verified
-	 
-	 // Byte 3 (Set by server. TB = Third Byte. Completely unconfirmed.)
-	 MOVEFLAG_TB_PENDING_STOP            = 0x10000,        // (MOVEFLAG_PENDING_STOP)
-	 MOVEFLAG_TB_PENDING_UNSTRAFE        = 0x20000,        // (MOVEFLAG_PENDING_UNSTRAFE)
-	 MOVEFLAG_TB_PENDING_FALL            = 0x40000,        // (MOVEFLAG_PENDING_FALL)
-	 MOVEFLAG_TB_PENDING_FORWARD            = 0x80000,        // (MOVEFLAG_PENDING_FORWARD)
-	 MOVEFLAG_TB_PENDING_BACKWARD        = 0x100000,        // (MOVEFLAG_PENDING_BACKWARD)
-	 MOVEFLAG_SWIMMING                      = 0x200000,        //  verified
-	 MOVEFLAG_FLYING_PITCH_UP            = 0x400000,        // (half confirmed)(MOVEFLAG_PENDING_STR_RGHT)
-	 MOVEFLAG_TB_MOVED                    = 0x800000,        // (half confirmed) gets called when landing (MOVEFLAG_MOVED)
-	 
-	 // Byte 4 (Script Based Flags. Never reset, only turned on or off.)
-	 MOVEFLAG_AIR_SUSPENSION                    = 0x1000000,    // confirmed allow body air suspension(good name? lol).
-	 MOVEFLAG_AIR_SWIMMING                = 0x2000000,    // confirmed while flying.
-	 MOVEFLAG_SPLINE_MOVER                = 0x4000000,    // Unconfirmed
-	 MOVEFLAG_IMMOBILIZED                = 0x8000000,
-	 MOVEFLAG_WATER_WALK                    = 0x10000000,
-	 MOVEFLAG_FEATHER_FALL                = 0x20000000,    // Does not negate fall damage.
-	 MOVEFLAG_LEVITATE                    = 0x40000000,
-	 MOVEFLAG_LOCAL                        = 0x80000000,    // This flag defaults to on. (Assumption)
-	 
-	 // Masks
-	 MOVEFLAG_MOVING_MASK                = 0x03,
-	 MOVEFLAG_STRAFING_MASK                = 0x0C,
-	 MOVEFLAG_TURNING_MASK                = 0x30,
-	 MOVEFLAG_FALLING_MASK                = 0x6000,
-	 MOVEFLAG_MOTION_MASK                = 0xE00F,        // Forwards, Backwards, Strafing, Falling
-	 MOVEFLAG_PENDING_MASK                = 0x7F0000,
-	 MOVEFLAG_PENDING_STRAFE_MASK        = 0x600000,
-	 MOVEFLAG_PENDING_MOVE_MASK            = 0x180000,
-	 MOVEFLAG_FULL_FALLING_MASK            = 0xE000,
-	 };
-*/	 
-
     
     BaseField_RunSpeed_Current          = 0x808,	// 3.0.9: 0x838
     BaseField_RunSpeed_Walk             = 0x80C,	// (you sure this is runspeed walk? - i noticed it was 2.5, yet current speed when walking was 7.0) 3.0.9: 0x83C
@@ -478,7 +390,7 @@ typedef enum MovementFlag {
     // 0x8000, 0x10000, 0x20000, 0x40000, 0x80000, 0x100000
     MovementFlag_Swimming           = (1 << 21),    // 0x00200000 - can appear with Fly flag?
     MovementFlag_FlyUp              = (1 << 22),    // 0x00400000
-    MovementFlag_CanFly             = (1 << 23),    // 0x00800000
+    MovementFlag_FlyDown            = (1 << 23),    // 0x00800000
     MovementFlag_Flying1            = (1 << 24),    // 0x01000000 - flying, but not in the air 
     MovementFlag_Flying2            = (1 << 25),    // 0x02000000 - actually in the air
     MovementFlag_Spline1            = (1 << 26),    // 0x04000000 - used for flight paths
@@ -489,6 +401,89 @@ typedef enum MovementFlag {
     // the last bit (31) is sometimes on, sometimes not.
     // i think it's fair to say that it is not used and shouldn't matter.
     
+	
+	// 0x80000001 - move forward
+    // 0x80000002 - move backward
+    // 0x80000004 - strafe left
+    // 0x80000008 - strafe right
+    
+    // 0x80000010 - turn left
+    // 0x80000020 - turn left
+    
+    // 0x80001000 - jumping
+    
+    // 0x80200000 - swimming
+    
+    // 0x81000000 - air mounted, on the ground
+    // 0x83000400 - air mounted, in the air
+    // 0x83400400 - air mounted, going up (spacebar)
+    // 0x83800400 - air mounted, going down (sit key)
+    // among others...
+	
+	/*from Ascent Emulator,
+	 enum MovementFlags
+	 {
+	 // Byte 1 (Resets on Movement Key Press)
+	 MOVEFLAG_MOVE_STOP                  = 0x00,            //verified
+	 MOVEFLAG_MOVE_FORWARD                = 0x01,            //verified
+	 MOVEFLAG_MOVE_BACKWARD                = 0x02,            //verified
+	 MOVEFLAG_STRAFE_LEFT                = 0x04,            //verified
+	 MOVEFLAG_STRAFE_RIGHT                = 0x08,            //verified
+	 MOVEFLAG_TURN_LEFT                    = 0x10,            //verified
+	 MOVEFLAG_TURN_RIGHT                    = 0x20,            //verified
+	 MOVEFLAG_PITCH_DOWN                    = 0x40,            //Unconfirmed
+	 MOVEFLAG_PITCH_UP                    = 0x80,            //Unconfirmed
+	 
+	 // Byte 2 (Resets on Situation Change)
+	 MOVEFLAG_WALK                        = 0x100,        //verified
+	 MOVEFLAG_TAXI                        = 0x200,        
+	 MOVEFLAG_NO_COLLISION                = 0x400,
+	 MOVEFLAG_FLYING                        = 0x800,        //verified
+	 MOVEFLAG_REDIRECTED                    = 0x1000,        //Unconfirmed
+	 MOVEFLAG_FALLING                    = 0x2000,       //verified
+	 MOVEFLAG_FALLING_FAR                = 0x4000,        //verified
+	 MOVEFLAG_FREE_FALLING                = 0x8000,        //half verified
+	 
+	 // Byte 3 (Set by server. TB = Third Byte. Completely unconfirmed.)
+	 MOVEFLAG_TB_PENDING_STOP            = 0x10000,        // (MOVEFLAG_PENDING_STOP)
+	 MOVEFLAG_TB_PENDING_UNSTRAFE        = 0x20000,        // (MOVEFLAG_PENDING_UNSTRAFE)
+	 MOVEFLAG_TB_PENDING_FALL            = 0x40000,        // (MOVEFLAG_PENDING_FALL)
+	 MOVEFLAG_TB_PENDING_FORWARD            = 0x80000,        // (MOVEFLAG_PENDING_FORWARD)
+	 MOVEFLAG_TB_PENDING_BACKWARD        = 0x100000,        // (MOVEFLAG_PENDING_BACKWARD)
+	 MOVEFLAG_SWIMMING                      = 0x200000,        //  verified
+	 MOVEFLAG_FLYING_PITCH_UP            = 0x400000,        // (half confirmed)(MOVEFLAG_PENDING_STR_RGHT)
+	 MOVEFLAG_TB_MOVED                    = 0x800000,        // (half confirmed) gets called when landing (MOVEFLAG_MOVED)
+	 
+	 // Byte 4 (Script Based Flags. Never reset, only turned on or off.)
+	 MOVEFLAG_AIR_SUSPENSION                    = 0x1000000,    // confirmed allow body air suspension(good name? lol).
+	 MOVEFLAG_AIR_SWIMMING                = 0x2000000,    // confirmed while flying.
+	 MOVEFLAG_SPLINE_MOVER                = 0x4000000,    // Unconfirmed
+	 MOVEFLAG_IMMOBILIZED                = 0x8000000,
+	 MOVEFLAG_WATER_WALK                    = 0x10000000,
+	 MOVEFLAG_FEATHER_FALL                = 0x20000000,    // Does not negate fall damage.
+	 MOVEFLAG_LEVITATE                    = 0x40000000,
+	 MOVEFLAG_LOCAL                        = 0x80000000,    // This flag defaults to on. (Assumption)
+	 
+	 // Masks
+	 MOVEFLAG_MOVING_MASK                = 0x03,
+	 MOVEFLAG_STRAFING_MASK                = 0x0C,
+	 MOVEFLAG_TURNING_MASK                = 0x30,
+	 MOVEFLAG_FALLING_MASK                = 0x6000,
+	 MOVEFLAG_MOTION_MASK                = 0xE00F,        // Forwards, Backwards, Strafing, Falling
+	 MOVEFLAG_PENDING_MASK                = 0x7F0000,
+	 MOVEFLAG_PENDING_STRAFE_MASK        = 0x600000,
+	 MOVEFLAG_PENDING_MOVE_MASK            = 0x180000,
+	 MOVEFLAG_FULL_FALLING_MASK            = 0xE000,
+	 };
+	 */	 
+	
+	
+	
+	
+	
+	
+	
+	
     MovementFlag_Max                = (1 << 31),
 } MovementFlag;
 
