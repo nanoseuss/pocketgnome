@@ -7,6 +7,9 @@
 //
 
 #import "BlacklistController.h"
+#import "MobController.h"
+#import "PlayersController.h"
+#import "CombatController.h"
 
 #import "WoWObject.h"
 #import "Unit.h"
@@ -26,6 +29,11 @@
     self = [super init];
     if (self != nil) {
 		_blacklist = [[NSMutableDictionary alloc] init];
+		
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(unitDied:) 
+                                                     name: UnitDiedNotification 
+                                                   object: nil];
     }
     return self;
 }
@@ -131,6 +139,7 @@
 		}
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
 		else if ( reason == Reason_NodeMadeMeFall ){
+			PGLog(@"[Blacklist] Blacklisted %@ for making us fall!", obj);
 			return YES;
 		}
 	}
@@ -140,8 +149,10 @@
 		PGLog(@"[Blacklist] Unit %@ blacklisted for total count!", obj);
 		return YES;
 	}
+	
+	PGLog(@"[Blacklist] Not blacklisted but %d infractions", [infractions count]);
 
-    return YES;
+    return NO;
 }
 
 - (void)removeAllUnits{
@@ -152,15 +163,33 @@
 	int removedObjects = 0;
 	for ( NSNumber *num in allKeys ){
 		
-		// need to do more here, but i'm lazy right now
+		Mob *mob = [mobController mobWithGUID:[num unsignedLongLongValue]];
+		if ( mob ){
+			[_blacklist removeObjectForKey:num];
+			continue;
+		}
 		
-		/*if ( [obj isKindOfClass: [Unit class]] || [obj isKindOfClass: [Player class]] || [obj isKindOfClass: [Mob class]] ){
-			[_blacklist removeObjectForKey:obj];
-			removedObjects++;
-		}*/
+		Player *player = [playersController playerWithGUID:[num unsignedLongLongValue]];
+		if ( player ){
+			[_blacklist removeObjectForKey:num];
+		}
 	}
 	
 	PGLog(@"[Blacklist] Removed %d objects of type Unit/Mob/Player", removedObjects);
+}
+
+#pragma mark Notifications
+
+- (void)unitDied: (NSNotification*)notification{
+	Unit *unit = [notification object];
+	
+	// remove the object from the blacklist!
+	if ( unit ){
+		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit GUID]];
+	
+		if ( [_blacklist objectForKey:guid] )
+			[_blacklist removeObjectForKey:guid];
+	}
 }
 
 @end

@@ -12,7 +12,14 @@
 
 @class WoWObject;
 
+@class MobController;
+@class PlayersController;
+
 @interface BlacklistController : NSObject {
+	
+	IBOutlet MobController		*mobController;
+	IBOutlet PlayersController	*playersController;
+	
 
 	NSMutableDictionary *_blacklist;
 
