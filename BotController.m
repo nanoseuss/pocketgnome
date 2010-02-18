@@ -3603,6 +3603,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(self.isPvPing) {
         PGLog(@"[Bot] Bot stopped but PvP is ongoing...");
     }
+	
+	// make sure we're not fishing
+	[fishController stopFishing];
     
     [startStopButton setTitle: @"Start Bot"];
 }
