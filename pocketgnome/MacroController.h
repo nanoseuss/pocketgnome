@@ -49,6 +49,8 @@
 - (BOOL)useMacroWithCommand: (NSString*)macroCommand;
 
 - (NSArray*)macros;
+
+- (NSString*)nameForID:(UInt32)macroID;
 /*
  "Swift Flight Form" >>> "Forme de vol rapide"
  "Flight Form" >>> "Forme de vol"

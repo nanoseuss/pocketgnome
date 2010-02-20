@@ -232,6 +232,26 @@
 	return nil;
 }
 
+// return a macro's name based on the ID!
+- (NSString*)nameForID:(UInt32)macroID{
+	
+	// update our internal macro list first!
+	[self reloadMacros];
+	
+	if ( _playerMacros ){
+		
+		// now lets loop through all of our player macros!
+		for ( Macro *macro in _playerMacros ){
+			
+			if ( [[macro number] unsignedIntValue] == macroID ){
+				return [[[macro name] retain] autorelease];
+			}
+		}
+	}
+	
+	return nil;
+}
+
 // check to see if a macro exists with the following command IN it
 - (int)macroIDForCommand: (NSString*)command{
 	

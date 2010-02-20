@@ -373,6 +373,8 @@ enum AutomatorIntervalType {
     } NS_HANDLER {
         importedRoute = nil;
     } NS_ENDHANDLER
+	
+	id oldImportedRoute = importedRoute;
     
     if ( importedRoute ) {
 		
@@ -403,7 +405,7 @@ enum AutomatorIntervalType {
     }
     
     if(!importedRoute) {
-        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid route, route set or route collection.", path], @"Okay", NULL, NULL);
+        NSRunAlertPanel(@"Route not Valid", [NSString stringWithFormat: @"The file at %@ <%@> cannot be imported because it does not contain a valid route, route set or route collection.", path, oldImportedRoute], @"Okay", NULL, NULL);
     }
 }
 

@@ -12,6 +12,7 @@
 #define EventBattlegroundStatusChange		@"EventBattlegroundStatusChange"
 
 @class Controller;
+@class BotController;
 @class PlayerDataController;
 
 @interface EventController : NSObject {

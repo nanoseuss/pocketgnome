@@ -14,6 +14,11 @@
 #import "Spell.h"
 #import "PlayerDataController.h"
 #import "OffsetController.h"
+#import "MacroController.h"
+#import "InventoryController.h"
+#import "BotController.h"
+
+#import "Behavior.h"
 
 #pragma mark Note: LastSpellCast/Timer Disabled
 #pragma mark -
@@ -755,30 +760,7 @@ static SpellController *sharedSpells = nil;
 	return 0;
 }
 
-- (NSArray*)allActionIDsOnActionBars{
-	
-	// grab memory
-	MemoryAccess *memory = [controller wowMemoryAccess];
-	if ( !memory )
-		return NO;
-	
-	NSMutableArray *allActionIDs = [NSMutableArray array];
-	
-	// find out where the action is stored
-	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
-	
-	// find where the spell is on our bar
-	UInt32 hotbarActionIDs[MAXIMUM_SPELLS_IN_BARS] = {0};
-	if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset Buffer: (Byte *)&hotbarActionIDs BufLength: sizeof(hotbarActionIDs)] ){
-		
-		int i;
-		for ( i = 0; i < MAXIMUM_SPELLS_IN_BARS; i++ ){
-			[allActionIDs addObject:[NSNumber numberWithInt:hotbarActionIDs[i]]];
-		}
-	}
-	
-	return [[allActionIDs retain] autorelease];
-}
+#pragma mark Spell Usable?
 
 - (BOOL)isUsableActionWithSlot: (int)slot{
 	
@@ -922,6 +904,153 @@ static SpellController *sharedSpells = nil;
 		}
 		return result;
 	}*/
+}
+
+#pragma mark All Spells ready for the bot to start?
+
+- (NSArray*)allActionIDsOnActionBars{
+	
+	// grab memory
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory )
+		return NO;
+	
+	NSMutableArray *allActionIDs = [NSMutableArray array];
+	
+	// find out where the action is stored
+	UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
+	
+	// find where the spell is on our bar
+	UInt32 hotbarActionIDs[MAXIMUM_SPELLS_IN_BARS] = {0};
+	if ( [memory loadDataForObject: self atAddress: hotbarBaseOffset Buffer: (Byte *)&hotbarActionIDs BufLength: sizeof(hotbarActionIDs)] ){
+		
+		int i;
+		for ( i = 0; i < MAXIMUM_SPELLS_IN_BARS; i++ ){
+			[allActionIDs addObject:[NSNumber numberWithInt:hotbarActionIDs[i]]];
+		}
+	}
+	
+	return [[allActionIDs retain] autorelease];
+}
+
+// return all actions (items, spells, macros) that are used in a procedure
+- (NSArray*)spellsInProcedure:(Behavior*)behavior{
+	
+	NSArray *allProcedures = [behavior allProcedures];
+	NSMutableArray *allActions = [NSMutableArray array];
+	if ( allProcedures && [allProcedures count] ){
+		
+		// look at each procedure
+		for ( Procedure *procedure in allProcedures ){
+			
+			// look at each rule
+			int i;
+			for ( i = 0; i < [procedure ruleCount]; i++ ) {
+				Rule *rule = [procedure ruleAtIndex: i];
+				
+				// an action exists!
+				if ( [[rule action] actionID] ){
+					
+					// action id changes based on type
+					switch([rule resultType]) {
+						case ActionType_Item: 
+							[allActions addObject:[NSNumber numberWithInt:USE_ITEM_MASK + [[rule action] actionID]]];
+							break;
+						case ActionType_Macro:
+							[allActions addObject:[NSNumber numberWithInt:USE_MACRO_MASK + [[rule action] actionID]]];
+							break;
+						case ActionType_Spell:
+							[allActions addObject:[NSNumber numberWithInt:[[rule action] actionID]]];
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		}
+	}
+	
+	return allActions;
+}
+
+- (NSString*)spellsReadyForBotting{
+	
+	NSMutableArray *allActions = [NSMutableArray arrayWithArray:[self spellsInProcedure:[botController theBehavior]]];
+	
+	// remove the actions that are on our bars
+	NSArray *actionBarActions = [self allActionIDsOnActionBars];
+	for ( NSNumber *actionID in actionBarActions ){
+		
+		// then all are found!
+		if ( [allActions count] == 0 )
+			break;
+		
+		if ( [allActions containsObject:actionID] ){
+			[allActions removeObject:actionID];
+		}
+	}
+	
+	// remove duplicates
+	NSMutableArray *finalActions = [NSMutableArray array];
+	for ( NSNumber *action in allActions ){
+		if ( ![finalActions containsObject:action] ){
+			[finalActions addObject:action];
+		}
+	}
+	
+	// any left here aren't on any bar, throw an error!
+	if ( [finalActions count] > 0 ){
+		NSMutableString *error = [NSMutableString string];
+		[error appendString:@"The following spells/macros/items are not on any action bar, please add them to a bar:\n\n"];
+		
+		for ( NSNumber *actionID in finalActions ){
+			UInt32 iActionID = [actionID unsignedLongValue];
+
+			// item
+			if ( iActionID & USE_ITEM_MASK ){
+				Item *item = [itemController itemForID:[NSNumber numberWithUnsignedLong:iActionID - USE_ITEM_MASK]];
+				
+				if ( item ){
+					[error appendString:[NSString stringWithFormat:@"Item: %@ <%u>\n", [item name], iActionID - USE_ITEM_MASK]];
+				}
+				else{
+					[error appendString:[NSString stringWithFormat:@"Item ID: <%u>\n", iActionID - USE_ITEM_MASK]];
+				}
+			}
+			// macro
+			else if ( iActionID & USE_MACRO_MASK ){
+				NSString *macroName = [macroController nameForID:iActionID - USE_MACRO_MASK];
+				
+				if ( macroName && [macroName length] ){
+					[error appendString:[NSString stringWithFormat:@"Macro: %@ <%u>\n", macroName, iActionID - USE_MACRO_MASK]];
+				}
+				else{
+					[error appendString:[NSString stringWithFormat:@"Macro: <%u>\n", iActionID - USE_MACRO_MASK]];
+				}
+			}
+			// spell
+			else{
+				Spell *spell = [self spellForID:actionID];
+				
+				if ( spell ){
+					NSString *rank = @"";
+					if ( [spell rank] ){
+						rank = [NSString stringWithFormat:@" Rank: %@", [spell rank]];
+					}
+					[error appendString:[NSString stringWithFormat:@"Spell: %@ <%@>%@\n", [spell name], actionID, rank]];
+				}
+				else{
+					[error appendString:[NSString stringWithFormat:@"Spell: <%@>\n", actionID]];
+				}
+			}
+		}
+		
+		[error appendString:@"\nI would recommend using Bartender4 to better organize your spells (the bars can be hidden)\n\nSpell/Item name not listed?  Try adding it to the end of these URLS:\nhttp://wowhead.com/?spell=\nhttp://wowhead.com/?item="];
+		
+		return [[error retain] autorelease];
+	}
+	
+	return nil;	
 }
 
 @end

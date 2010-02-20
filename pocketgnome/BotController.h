@@ -8,9 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#define USE_ITEM_MASK       0x80000000
-#define USE_MACRO_MASK      0x40000000
-
 @class Mob;
 @class Unit;
 @class Rule;
