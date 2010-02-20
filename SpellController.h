@@ -12,14 +12,18 @@
 
 @class Controller;
 @class BotController;
+@class MacroController;
 @class PlayerDataController;
 @class OffsetController;
+@class InventoryController;
 
 @interface SpellController : NSObject {
     IBOutlet Controller				*controller;
     IBOutlet BotController			*botController;
     IBOutlet PlayerDataController	*playerController;
 	IBOutlet OffsetController		*offsetController;
+	IBOutlet MacroController		*macroController;
+	IBOutlet InventoryController	*itemController;
 
     IBOutlet id spellDropDown;
     IBOutlet id spellLoadingProgress;
@@ -79,6 +83,8 @@
 
 - (BOOL)isUsableAction: (UInt32)actionID;
 - (BOOL)isUsableActionWithSlot: (int)slot;
-- (NSArray*)allActionIDsOnActionBars;
+
+// returns nil if ready! Otherwise an error string
+- (NSString*)spellsReadyForBotting;
 
 @end

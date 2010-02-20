@@ -32,10 +32,7 @@
 #import <ShortcutRecorder/ShortcutRecorder.h>
 #import <ScreenSaver/ScreenSaver.h>
 
-#define USE_ITEM_MASK       0x80000000
-
 #define ITEM_REINFORCED_CRATE	44475
-
 
 #define OFFSET_MOVED			0xB4		// When this is 1 the bobber has moved!  Offset from the base address
 #define OFFSET_STATUS			0xB6		// This is 132 when the bobber is normal, shortly after it moves it's 148, then finally finishes at 133 (is it animation state?)

@@ -3370,78 +3370,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// make sure our spells are on our action bars!
-	NSArray *allProcedures = [self.theBehavior allProcedures];
-	NSMutableArray *allActions = [NSMutableArray array];
-	if ( allProcedures && [allProcedures count] ){
-		
-		// look at each procedure
-		for ( Procedure *procedure in allProcedures ){
-			
-			// look at each rule
-			int i;
-			for ( i = 0; i < [procedure ruleCount]; i++ ) {
-				Rule *rule = [procedure ruleAtIndex: i];
-				
-				// an action exists!
-				if ( [[rule action] actionID] ){
-					
-					// action id changes based on type
-					switch([rule resultType]) {
-						case ActionType_Item: 
-							[allActions addObject:[NSNumber numberWithInt:USE_ITEM_MASK + [[rule action] actionID]]];
-							break;
-						case ActionType_Macro:
-							[allActions addObject:[NSNumber numberWithInt:USE_MACRO_MASK + [[rule action] actionID]]];
-							break;
-						case ActionType_Spell:
-							[allActions addObject:[NSNumber numberWithInt:[[rule action] actionID]]];
-							break;
-						default:
-							break;
-					}
-				}
-			}
-		}
-	}
-	
-	// remove the actions that are on our bars
-	NSArray *actionBarActions = [spellController allActionIDsOnActionBars];
-	for ( NSNumber *actionID in actionBarActions ){
-		
-		// then all are found!
-		if ( [allActions count] == 0 )
-			break;
-		
-		if ( [allActions containsObject:actionID] ){
-			[allActions removeObject:actionID];
-		}
-	}
-	
-	// any left here aren't on any bar, throw an error!
-	if ( [allActions count] > 0 ){
-		NSMutableString *error = [NSMutableString string];
-		[error appendString:@"The following spells/macros/items are not on any action bar, please add them to a bar:\n\n"];
-		
-		for ( NSNumber *actionID in allActions ){
-			
-			Spell *spell = [spellController spellForID:actionID];
-			
-			if ( [spellController isPlayerSpell:spell] ){
-				[error appendString:[NSString stringWithFormat:@"Spell: %@ <%@>\n", [spell name], actionID]];
-			}
-			else{
-				[error appendString:[NSString stringWithFormat:@"Item or Macro: %d\n", [actionID intValue]]];
-			}
-		}
-		
-		[error appendString:@"\nI would recommend using Bartender4 to better organize your spells (the bars can be hidden)"];
-		
+	NSString *spellError = [spellController spellsReadyForBotting];
+	if ( spellError && [spellError length] ){
 		PGLog(@"[Bot] Your spells/macros/items need to be on your action bars!");
 		NSBeep();
-		NSRunAlertPanel(@"Your spells/macros/items need to be on your action bars!", error, @"Okay", NULL, NULL);
+		NSRunAlertPanel(@"Your spells/macros/items need to be on your action bars!", spellError, @"Okay", NULL, NULL);
 		return;
 	}
-
+	
+	// not really sure how this could be possible hmmm
     if( [self isBotting])
         [self stopBot: nil];
     
@@ -5244,11 +5181,101 @@ NSMutableDictionary *_diffDict = nil;
  }
 */ 
 
+typedef struct WoWClientDb {
+    UInt32    _vtable;		// 0x0
+    UInt32  isLoaded;		// 0x4
+    UInt32  numRows;		// 0x8
+    UInt32  maxIndex;		// 0xC
+    UInt32  minIndex;		// 0x10
+	UInt32  stringTablePtr;	// 0x14
+	UInt32 _vtable2;		// 0x18
+	// array of row pointers after this...
+	UInt32 row1;			// 0x1C
+	UInt32 row2;			// 0x20
+	UInt32 row3;			// 0x24
+	UInt32 row4;			// 0x28
+	
+} WoWClientDb;
+
 - (IBAction)test: (id)sender{
 	
-	double val = 0.800000011920929f;
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 spellPtr = 0xD87980;
 	
-	PGLog(@"0x%X", val);
+	WoWClientDb db;
+	[memory loadDataForObject: self atAddress: spellPtr Buffer:(Byte*)&db BufLength: sizeof(db)];
+	
+	if ( db.stringTablePtr ){
+		
+		
+		int index;
+		for ( index = 0; index < 40; index++ ){
+			UInt32 addressOfString = db.row2 + ( 4 * ( index - db.minIndex ) );
+			
+			UInt32 tmp = 0x0;
+			[memory loadDataForObject: self atAddress: addressOfString Buffer:(Byte*)&tmp BufLength: sizeof(tmp)];
+			
+			
+			
+			
+			PGLog(@"[Read] 0x%X 0x%X", addressOfString, tmp);
+			
+			
+			
+		}
+		
+		
+		/*
+		int index;
+		for ( index = 0; index < 40; index++ ){
+			UInt32 addressOfString = db.row2 + ( 4 * ( index - db.maxIndex ) );
+			
+			PGLog(@"[Read] 0x%X", addressOfString);
+			
+			if ( addressOfString ){
+				UInt32 nextAddr = 0x0;
+				[memory loadDataForObject: self atAddress: addressOfString Buffer:(Byte*)&nextAddr BufLength: sizeof(nextAddr)];
+			
+				if ( nextAddr ){
+					
+					PGLog(@" Finding string at base 0x%X", nextAddr);
+					
+					NSString *str = [memory stringForAddress:nextAddr + 0x70 withSize:50];
+					
+					PGLog(@"String %@ at 0x%X", str, nextAddr);
+				}
+			}
+		}*/
+		/*
+		
+		
+		int index;
+		for ( index = 0; index < 10; index ++ ){
+			
+			if ( index >= db.minIndex && index <= db.maxIndex ){
+				
+				UInt32 address = db.rows + ((index - db.minIndex) * 4);
+				
+				PGLog(@"Reading 0x%X", address);
+			}
+		}*/
+	}
+		
+		
+		/*public Row GetRow(int index)
+		{
+			if (index >= MinIndex && index <= MaxIndex)
+			{
+				//g_CreatureFamilyDB.Rows[result - g_CreatureFamilyDB.minIndex];
+				return new Row(Memory.Read<IntPtr>((IntPtr) (_nativeDb.Rows.ToInt64() + ((index - MinIndex) * 4))));
+			}
+			return new Row(IntPtr.Zero);
+		}*/
+		
+
+	
+	
+
 	
 	//[bindingsController executeBindingForKey:BindingPrimaryHotkey];
 	
@@ -5260,7 +5287,7 @@ NSMutableDictionary *_diffDict = nil;
 	return;
 	
 	// ugh why won't the below work!	
-	MemoryAccess *memory = [controller wowMemoryAccess];
+	//MemoryAccess *memory = [controller wowMemoryAccess];
 	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];

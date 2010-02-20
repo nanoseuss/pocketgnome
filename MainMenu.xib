@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1956"/>
 			<integer value="57"/>
+			<integer value="1956"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -10639,6 +10639,22 @@
 					</object>
 					<int key="connectionID">4254</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">macroController</string>
+						<reference key="source" ref="191514424"/>
+						<reference key="destination" ref="305775892"/>
+					</object>
+					<int key="connectionID">4255</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">itemController</string>
+						<reference key="source" ref="191514424"/>
+						<reference key="destination" ref="201772977"/>
+					</object>
+					<int key="connectionID">4256</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -15556,7 +15572,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4254</int>
+			<int key="maxID">4256</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -17100,6 +17116,8 @@
 							<string>controller</string>
 							<string>cooldownPanel</string>
 							<string>cooldownPanelTable</string>
+							<string>itemController</string>
+							<string>macroController</string>
 							<string>offsetController</string>
 							<string>playerController</string>
 							<string>spellDropDown</string>
@@ -17112,6 +17130,8 @@
 							<string>Controller</string>
 							<string>NSPanel</string>
 							<string>NSTableView</string>
+							<string>InventoryController</string>
+							<string>MacroController</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 							<string>id</string>

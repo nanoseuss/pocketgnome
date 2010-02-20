@@ -62,7 +62,7 @@
 
 #pragma mark Timers
 
-- (void)fiveSecondTimer: (NSTimer*)timer {
+- (void)twentySecondTimer: (NSTimer*)timer {
 		
 	// we will use this to auto-loot for us :-)
 	if ( [botController isBotting] ){

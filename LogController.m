@@ -14,7 +14,10 @@
 + (BOOL) canLog:(char*)type_s, ...
 {
 	NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
-	return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+	
+	
+	return YES;
+	//return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
 }
 
 + (NSString*) log:(char*)type_s, ...
