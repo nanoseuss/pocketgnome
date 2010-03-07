@@ -3558,6 +3558,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [self cancelCurrentProcedure];
 	[movementController resetMovementState];
     [combatController resetAllCombat];
+	[blacklistController clearAll];
 
     [_mobsToLoot removeAllObjects];
     self.isBotting = NO;

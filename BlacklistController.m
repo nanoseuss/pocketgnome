@@ -156,6 +156,11 @@
     return NO;
 }
 
+- (void)clearAll{
+	[_blacklist removeAllObjects];
+	[_attemptList removeAllObjects];	
+}
+
 - (void)removeAllUnits{
 	PGLog(@"[Blacklist] Removing all units...");
 	

@@ -39,10 +39,13 @@
 @property (readwrite, retain) Position *lastPlayerPosition;
 
 @property (readwrite, retain) NSDate *movementExpiration;
+@property (readwrite, retain) NSDate *lastJumpTime;
 
 @property (readwrite, retain) id unstickifyTarget;
 
 @property (readwrite, retain) NSDate *lastDirectionCorrection;
+
+@property (readwrite, assign) int jumpCooldown;
 @end
 
 @interface MovementController (Internal)
@@ -116,8 +119,10 @@ typedef enum MovementState{
 		_stuckCounter = 0;
 		_unstickifyTry = 0;
 		_unstickifyTarget = nil;
+		_jumpCooldown = 3;
 		
-		_lastDirectionCorrection = [[NSDate date] retain];
+		self.lastJumpTime = [NSDate distantPast];
+		self.lastDirectionCorrection = [NSDate distantPast];
 		
 		_movingUp = NO;
 		_afkPressForward = NO;
@@ -152,6 +157,8 @@ typedef enum MovementState{
 @synthesize unstickifyTarget = _unstickifyTarget;
 @synthesize lastDirectionCorrection = _lastDirectionCorrection;
 @synthesize movementExpiration = _movementExpiration;
+@synthesize jumpCooldown = _jumpCooldown;
+@synthesize lastJumpTime = _lastJumpTime;
 
 - (void)beginPatrol: (BOOL)stopAtEnd{
 	[self resumeMovement];
@@ -252,6 +259,7 @@ typedef enum MovementState{
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	}
 	
+	self.lastJumpTime = [NSDate date];
 	[self resumeMovement];
 }
 
@@ -631,6 +639,18 @@ typedef enum MovementState{
 		}
 	}
 	
+	// should we jump?
+	PGLog(@" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
+	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] ){
+		
+		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ){
+			[self jump];
+		}
+	}
+	else {
+		[self correctDirection: NO];
+	}
+	
 	// *******************************************************
 	// if we we get here, we're not close enough :(
 	// *******************************************************
@@ -693,17 +713,6 @@ typedef enum MovementState{
 		
 		[self resumeMovement];
 		return;
-	}
-	
-	if ( _lastDistanceToDestination > 0.0f && distanceToDestination > _lastDistanceToDestination ){
-		PGLog(@"[Move] Interesting, we're moving away from our destination?");
-		PGLog(@"[Move] Interesting, we're moving away from our destination?");
-		PGLog(@"[Move] Interesting, we're moving away from our destination?");
-		PGLog(@"[Move] Interesting, we're moving away from our destination?");
-		PGLog(@"[Move] Interesting, we're moving away from our destination?");
-		
-		[self moveUpStop];
-		[self resumeMovement];
 	}
 
     /*
@@ -1142,7 +1151,7 @@ typedef enum MovementState{
 	self.currentRouteKey = CorpseRunRoute;
 	self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	
-	if ( self.currentRoute ){
+	if ( self.currentRoute && [[self.currentRoute waypoints] count] > 0  ){
 		PGLog(@"[Move] Using corpse route!");
 		[self resumeMovement];
 	}
@@ -1344,13 +1353,6 @@ typedef enum MovementState{
 		return YES;
 		
 	return NO;
-}
-
-- (void)jump{
-	[self moveUpStart];
-    usleep(100000);
-    [self moveUpStop];
-    usleep(30000);
 }
 
 - (void)antiAFK{
@@ -1644,6 +1646,23 @@ typedef enum MovementState{
     }
 	
 	return NO;	
+}
+
+- (void)jump {
+	
+    // correct direction
+    [self correctDirection: YES];
+    
+    // update variables
+    self.lastJumpTime = [NSDate date];
+    int min = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"MovementMinJumpTime"] intValue];
+    int max = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"MovementMaxJumpTime"] intValue];
+    self.jumpCooldown = SSRandomIntBetween(min, max);
+	
+	[self moveUpStart];
+    usleep(100000);
+    [self moveUpStop];
+    usleep(30000);
 }
 
 #pragma mark Waypoint Actions

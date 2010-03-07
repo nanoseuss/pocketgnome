@@ -75,6 +75,9 @@ typedef enum MovementType {
 	int			_unstickifyTry;
 	
 	NSDate *_movementExpiration;
+	NSDate *_lastJumpTime;
+	
+	int _jumpCooldown;
 	
 	BOOL _movingUp;
 	BOOL _afkPressForward;
