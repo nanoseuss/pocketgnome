@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="57"/>
 			<integer value="1957"/>
+			<integer value="2378"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2421,7 +2421,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="754616829">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3107,7 +3107,7 @@
 							<object class="NSTabViewItem" id="957034982">
 								<string key="NSIdentifier">2</string>
 								<object class="NSView" key="NSView" id="148440446">
-									<reference key="NSNextResponder" ref="895177953"/>
+									<nil key="NSNextResponder"/>
 									<int key="NSvFlags">256</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3377,7 +3377,6 @@
 										</object>
 									</object>
 									<string key="NSFrame">{{10, 33}, {694, 351}}</string>
-									<reference key="NSSuperview" ref="895177953"/>
 								</object>
 								<string key="NSLabel">Combat</string>
 								<reference key="NSColor" ref="1031085640"/>
@@ -3805,7 +3804,7 @@
 							<object class="NSTabViewItem" id="83364149">
 								<string key="NSIdentifier">Item 2</string>
 								<object class="NSView" key="NSView" id="326515954">
-									<nil key="NSNextResponder"/>
+									<reference key="NSNextResponder" ref="895177953"/>
 									<int key="NSvFlags">256</int>
 									<object class="NSMutableArray" key="NSSubviews">
 										<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4332,6 +4331,7 @@
 										</object>
 									</object>
 									<string key="NSFrame">{{10, 33}, {694, 351}}</string>
+									<reference key="NSSuperview" ref="895177953"/>
 								</object>
 								<string key="NSLabel">Log Out</string>
 								<reference key="NSColor" ref="1031085640"/>
@@ -4975,18 +4975,19 @@
 								<reference key="NSTabView" ref="895177953"/>
 							</object>
 						</object>
-						<reference key="NSSelectedTabViewItem" ref="957034982"/>
+						<reference key="NSSelectedTabViewItem" ref="83364149"/>
 						<reference key="NSFont" ref="699098009"/>
 						<int key="NSTvFlags">0</int>
 						<bool key="NSAllowTruncatedLabels">YES</bool>
 						<bool key="NSDrawsBackground">YES</bool>
 						<object class="NSMutableArray" key="NSSubviews">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="148440446"/>
+							<reference ref="326515954"/>
 						</object>
 					</object>
 				</object>
 				<string key="NSFrameSize">{740, 413}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
@@ -9340,14 +9341,6 @@
 					<int key="connectionID">3310</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">movementType</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="726342372"/>
-					</object>
-					<int key="connectionID">3317</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">selectedTag: values.MovementType</string>
 						<reference key="source" ref="726342372"/>
@@ -10181,14 +10174,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">logOutStuckAttemptsTextField</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="536991074"/>
-					</object>
-					<int key="connectionID">4050</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">combatProfileEditor</string>
 						<reference key="source" ref="94147614"/>
 						<reference key="destination" ref="165867882"/>
@@ -10722,6 +10707,22 @@
 						<reference key="destination" ref="538288452"/>
 					</object>
 					<int key="connectionID">4263</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">movementTypePopUp</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="726342372"/>
+					</object>
+					<int key="connectionID">4264</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">logOutStuckAttemptsTextField</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="536991074"/>
+					</object>
+					<int key="connectionID">4265</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -15107,9 +15108,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{296, 483}, {749, 200}}</string>
+					<string>{{450, 483}, {749, 200}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{296, 483}, {749, 200}}</string>
+					<string>{{450, 483}, {749, 200}}</string>
 					<integer value="1"/>
 					<string>{{49, 661}, {640, 200}}</string>
 					<integer value="1"/>
@@ -15197,7 +15198,7 @@
 					<string>{{627, 403}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{422, 211}, {607, 197}}</string>
-					<string>{{340, 235}, {740, 413}}</string>
+					<string>{{533, 177}, {740, 413}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{0, 92}, {588, 290}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15317,7 +15318,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{0, 836}, {302, 20}}</string>
+					<string>{{450, 836}, {302, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{74, 862}</string>
@@ -15437,7 +15438,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{803, 354}, {290, 54}}</string>
+					<string>{{580, 388}, {290, 54}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15619,7 +15620,7 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{12, 633}, {233, 203}}</string>
+					<string>{{462, 633}, {233, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{18, 776}, {236, 203}}</string>
@@ -15653,7 +15654,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4263</int>
+			<int key="maxID">4265</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -16668,6 +16669,7 @@
 							<string>auraController</string>
 							<string>botController</string>
 							<string>controller</string>
+							<string>logOutStuckAttemptsTextField</string>
 							<string>macroController</string>
 							<string>movementTypePopUp</string>
 							<string>offsetController</string>
@@ -16678,6 +16680,7 @@
 							<string>AuraController</string>
 							<string>BotController</string>
 							<string>Controller</string>
+							<string>NSTextField</string>
 							<string>MacroController</string>
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>

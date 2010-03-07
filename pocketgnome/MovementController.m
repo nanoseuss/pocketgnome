@@ -14,6 +14,7 @@
 #import "Route.h"
 #import "RouteSet.h"
 #import "RouteCollection.h"
+#import "Mob.h"
 
 #import "Controller.h"
 #import "BotController.h"
@@ -198,7 +199,29 @@ typedef enum MovementState{
 	self.moveToObject = object;
 	[self moveToPosition:[object position]];
 	
+	if ( [self.moveToObject isKindOfClass:[Mob class]] || [self.moveToObject isKindOfClass:[Player class]] ){
+		[self performSelector:@selector(stayWithObject:) withObject:self.moveToObject afterDelay:0.1f];
+	}
+	
 	return YES;
+}
+
+// in case the object moves
+- (void)stayWithObject:(WoWObject*)obj{
+	
+	if ( ![obj isValid] || obj != self.moveToObject ){
+		return;
+	}
+	
+	float distance = [self.lastAttemptedPosition distanceToPosition:[obj position]];
+	
+	if ( distance > 5.0f ){
+		PGLog(@"[Move] %@ moved away, re-positioning %0.2f", obj, distance);
+		[self moveToObject:obj];
+		return;
+	}
+	
+	[self performSelector:@selector(stayWithObject:) withObject:self.moveToObject afterDelay:0.1f];
 }
 
 - (WoWObject*)moveToObject{
@@ -343,10 +366,7 @@ typedef enum MovementState{
 }
 
 - (int)movementType{
-	
-	// only until i have things working how I'd like them!
-	return MovementType_CTM;
-	//return [movementTypePopUp state];
+	return [movementTypePopUp selectedTag];
 }
 
 #pragma mark Waypoints
@@ -491,12 +511,12 @@ typedef enum MovementState{
 	//self.lastDirectionCorrection = [NSDate date];
     self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
 	
-	
 	// actually move!
 	if ( [self movementType] == MovementType_Keyboard ){
-		if(!self.isMoving)  [self moveForwardStop];
+		UInt32 movementFlags = [playerData movementFlags];
+		if ( !(movementFlags & MovementFlag_Forward) )  [self moveForwardStop];
         [self correctDirection: YES];
-        if(!self.isMoving)  [self moveForwardStart];
+        if ( !(movementFlags & MovementFlag_Forward) )  [self moveForwardStart];
 	}
 	else if ( [self movementType] == MovementType_Mouse ){
 		[self moveForwardStop];
@@ -732,6 +752,31 @@ typedef enum MovementState{
 
 - (void)unStickify{
 	
+	// *************************************************
+	// Check for alarm/log out
+	// *************************************************
+	
+	// should we play an alarm?
+	if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnStuck"] boolValue] ){
+		int stuckThreshold = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnStuckAttempts"] intValue];
+		if ( _unstickifyTry > stuckThreshold ){
+			PGLog(@"[Bot] We're stuck, playing an alarm!");
+			[[NSSound soundNamed: @"alarm"] play];
+		}
+	}
+	
+	// check to see if we should log out!
+	if ( [[botController logOutAfterStuckCheckbox] state] ){
+		int stuckTries = [logOutStuckAttemptsTextField intValue];
+		
+		if ( _unstickifyTry > stuckTries ){
+			PGLog(@"[Bot] We're stuck, closing wow!");
+			[botController logOut];
+			[controller setCurrentStatus: @"Bot: Logged out due to being stuck"];
+			return;
+		}
+	}
+	
 	// set our stuck counter to 0!
 	_stuckCounter = 0;
 	
@@ -758,6 +803,8 @@ typedef enum MovementState{
 		
 		// player is flying and is stuck :(  makes me sad, lets move up a bit
 		if ( [[playerData player] isFlyingMounted] ){
+			
+			PGLog(@"[Move] Moving up since we're flying mounted!");
 			
 			// move up for 1 second!
 			[self moveUpStop];
@@ -812,6 +859,7 @@ typedef enum MovementState{
 	self.lastAttemptedPosition		= nil;
 	self.lastAttemptedPositionTime	= nil;
 	self.lastPlayerPosition			= nil;
+	_isMovingFromKeyboard = NO;
 	[_stuckDictionary removeAllObjects];
 	
 	[self resetMovementTimer];
@@ -836,10 +884,7 @@ typedef enum MovementState{
 		[self turnToward: [self.destinationWaypoint position]];
 	}
 	
-	
 	return;
-	
-	
 	/*
 	
     if ( force ){
@@ -1035,10 +1080,35 @@ typedef enum MovementState{
                 if(printTurnInfo) PGLog(@"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
                 
             }
-        } else /*if ( [movementType selectedTag] == MOVE_MOUSE )*/{
-            if(printTurnInfo) PGLog(@"Doing sharp turn to %.2f", [playerPosition angleTo: position]);
+        }
+		else{
+            if ( printTurnInfo ) PGLog(@"DOING SHARP TURN to %.2f", [playerPosition angleTo: position]);
             [playerData faceToward: position];
-            usleep([controller refreshDelay]);
+            usleep([controller refreshDelay]*2);
+			
+			/*
+			// check player facing vs. unit position
+            float playerDirection = [playerData directionFacing];
+            float theAngle = [playerPosition angleTo: position];
+			
+			PGLog(@"CHANGING DIRECTION");
+			PGLog(@"CHANGING DIRECTION1");
+			PGLog(@"CHANGING DIRECTION2");
+			PGLog(@" fabsf ( %0.2f ) > %0.2f = %0.2f", theAngle - playerDirection, M_PI, fabsf( theAngle - playerDirection ));
+			
+            if ( fabsf( theAngle - playerDirection ) > M_PI ){
+                if ( theAngle < playerDirection )	theAngle += (M_PI*2);
+                else								playerDirection += (M_PI*2);
+            }
+            
+            // find the difference between the angles
+            float angleTo = (theAngle - playerDirection);
+			
+			PGLog(@" The angle to: %0.2f", angleTo);
+			
+			if ( angleTo > 0.785f ){  // changed to be ~45 degrees
+
+			}*/
         }
     } else {
         if(printTurnInfo) PGLog(@"Skipping turn because right mouse button is down.");
@@ -1108,6 +1178,8 @@ typedef enum MovementState{
 - (void)moveForwardStart{
     _isMovingFromKeyboard = YES;
 	
+	PGLog(@"moveForwardStart");
+	
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_UpArrow, TRUE);
     if(wKeyDown) {
@@ -1141,6 +1213,8 @@ typedef enum MovementState{
 
 - (void)moveForwardStop {
 	_isMovingFromKeyboard = NO;
+	
+	PGLog(@"moveForwardStop");
 	
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
