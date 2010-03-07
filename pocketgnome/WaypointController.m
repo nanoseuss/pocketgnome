@@ -46,7 +46,6 @@ enum AutomatorIntervalType {
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
 - (void)automatorPulse;
-- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID;
 - (id)selectedRouteObject;
 - (void)selectItemInOutlineViewToEdit:(id)item;
 - (void)setViewTitle;
@@ -182,6 +181,7 @@ enum AutomatorIntervalType {
 	}
 	
 	// we no longer use this anymore! Yay!
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"IgnoreRoute"];
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"Routes"];
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -228,6 +228,16 @@ enum AutomatorIntervalType {
     if( [routeTypeSegment selectedTag] == 1 )
         return CorpseRunRoute;
     return @"";
+}
+
+- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID{
+	for ( RouteCollection *rc in _routeCollectionList ){
+		if ( [UUID isEqualToString:[rc UUID]] ){
+			return [[rc retain] autorelease];
+		}
+	}
+
+	return nil;
 }
 
 - (NSArray*)routeCollections{
@@ -415,7 +425,7 @@ enum AutomatorIntervalType {
 - (void)selectCurrentWaypoint:(int)index{
 	
 	if ( [[waypointTable window] isVisible] && [scrollWithRoute state] ) {
-		if ( self.currentRouteSet == botController.theRoute ){
+		if ( self.currentRouteSet == botController.theRouteSet ){
 			[waypointTable selectRow:index byExtendingSelection:NO];
 			[waypointTable scrollRowToVisible:index];
 		}
@@ -550,13 +560,13 @@ enum AutomatorIntervalType {
 
 - (IBAction)testWaypointSequence: (id)sender {
     if(![self currentRoute] || ![[self currentRoute] waypointCount])    return;
-    
-    [movementController setPatrolRoute: [self currentRoute]];
-    [movementController beginPatrol: 1];
+	
+	[movementController setCurrentRouteSet: [self currentRouteSet]];
+	[movementController beginPatrol:YES];
 }
 
 - (IBAction)stopMovement: (id)sender {
-    [movementController setPatrolRoute: nil];
+	[movementController setCurrentRouteSet: nil];
 }
 
 #pragma mark -
@@ -1352,16 +1362,6 @@ enum AutomatorIntervalType {
 	
 	// edit the new item!
 	[routesTable editColumn:0 row:row withEvent:nil select:YES];
-}
-
-- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID{
-	
-	for ( RouteCollection *rc in _routeCollectionList ){
-		if ( [[rc UUID] isEqualToString:UUID] ){
-			return rc;
-		}
-	}
-	return nil;
 }
 
 - (id)selectedRouteObject{

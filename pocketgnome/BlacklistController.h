@@ -22,6 +22,7 @@
 	
 
 	NSMutableDictionary *_blacklist;
+	NSMutableDictionary *_attemptList;
 
 }
 
@@ -37,5 +38,11 @@ enum{
 - (void)blacklistObject: (WoWObject*)obj;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;
+
+// sick of putting more dictionaries in bot controller, will just use this
+- (int)attemptsForObject:(WoWObject*)obj;
+- (void)incrementAttemptForObject:(WoWObject*)obj;
+- (void)clearAttemptsForObject:(WoWObject*)obj;
+- (void)clearAttempts;
 
 @end

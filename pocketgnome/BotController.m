@@ -34,6 +34,7 @@
 #import "BlacklistController.h"
 #import "StatisticsController.h"
 #import "BindingsController.h"
+#import "PvPController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -52,6 +53,7 @@
 #import "CombatProfileEditor.h"
 #import "CombatProfile.h"
 #import "Errors.h"
+#import "PvPBehavior.h"
 
 #import "ScanGridView.h"
 #import "TransparentWindow.h"
@@ -88,6 +90,7 @@
 @interface BotController ()
 
 @property (readwrite, retain) Behavior *theBehavior;
+@property (readwrite, retain) PvPBehavior *pvpBehavior;
 @property (readwrite, retain) NSDate *lootStartTime;
 @property (readwrite, retain) NSDate *skinStartTime;
     
@@ -152,7 +155,8 @@
 + (void)initialize {
     
     NSDictionary *defaultValues = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    [NSNumber numberWithBool: NO],      @"IgnoreRoute",
+								   [NSNumber numberWithBool:NO],		@"UsePvPBehavior",
+								   [NSNumber numberWithBool:YES],		@"UseRoute",
                                    [NSNumber numberWithBool: YES],      @"AttackAnyLevel",
                                    [NSNumber numberWithFloat: 50.0],    @"GatheringDistance",
                                    [NSNumber numberWithInt: NSOnState], @"PvPAddonAutoJoin",
@@ -165,7 +169,7 @@
 								   [NSNumber numberWithInt:20],		    @"LogOutOnBrokenItemsPercentage",
 								   [NSNumber numberWithBool:NO],		@"DisableReleasingOnDeath",
                                    nil];
-    
+	
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
 }
@@ -216,8 +220,10 @@
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitEnteredCombat:) name: UnitEnteredCombat object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachedObject:) name: ReachedObjectNotification object: nil];
 		
 		_theRouteCollection = nil;
+		_pvpBehavior = nil;
         _procedureInProgress = nil;
 		_lastProcedureExecuted = nil;
         _didPreCombatProcedure = NO;
@@ -231,7 +237,6 @@
 		_pvpIsInBG = NO;
 		self.lootStartTime = nil;
 		self.skinStartTime = nil;
-		_lootAttempt = 0;
 		_lootMacroAttempt = 0;
 		_zoneBeforeHearth = -1;
 		_attackingInStrand = NO;
@@ -241,7 +246,7 @@
 		_lastSpellCast = 0;
         _mountAttempt = 0;
 		_movingTowardMobCount = 0;
-		_lootDismountAttempt = nil;
+		_lootDismountCount = [[NSMutableDictionary dictionary] retain];
 		_mountLastAttempt = nil;
 		
 		_routesChecked = [[NSMutableArray array] retain];
@@ -309,13 +314,23 @@
     if([overlayWindow respondsToSelector: @selector(setCollectionBehavior:)]) {
         [overlayWindow setCollectionBehavior: NSWindowCollectionBehaviorMoveToActiveSpace];
     }
+	
+	//pvpBehaviorPopUp
     
+	// auto select if we need to
+	if ( [[NSUserDefaults standardUserDefaults] objectForKey: @"PvPBehavior"] == nil ) {
+		if ( [[pvpController behaviors] count] ){
+			[pvpBehaviorPopUp selectItemAtIndex:0];
+		}
+	}
+	
     [self updateStatus: nil];
 }
 
 @synthesize theRouteCollection = _theRouteCollection;
-@synthesize theRoute;
+@synthesize theRouteSet;
 @synthesize theBehavior;
+@synthesize pvpBehavior = _pvpBehavior;
 @synthesize theCombatProfile;
 @synthesize lootStartTime;
 @synthesize skinStartTime;
@@ -1736,61 +1751,58 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark Loot Helpers
 
-- (void)lootNode: (WoWObject*) unit{
-	
-	// Loot if we're on the ground!
-	if ( [playerController isOnGround] ){
-		PGLog(@"[Loot] Player on ground, looting %@", unit);
-		[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:0.5f];	
-	}
-	
-	// Try again shortly
-	else {
-		// macro failed for me once, so adding this here just in case
+- (void)lootUnit: (WoWObject*) unit{
+   
+	// are we still in the air?  shit we can't loot yet!
+	if ( ![playerController isOnGround] ){
+
+		// once the macro failed, so dismount if we need to
 		if ( [[playerController player] isMounted] )
 			[movementController dismount];
 		
-		NSNumber *count = [[_lootDismountAttempt objectForKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]] retain];
-		if ( count ){
-			[_lootDismountAttempt release]; _lootDismountAttempt = nil;
-			_lootDismountAttempt = [[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:[count intValue]+1],		[NSNumber numberWithUnsignedLongLong:[unit GUID]], nil] retain];
+		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit cachedGUID]];
+		NSNumber *count = [_lootDismountCount objectForKey:guid];
+		if ( !count ){
+			count = [NSNumber numberWithInt:1];
 		}
 		else{
-			PGLog(@"[Loot] Error, we're dropping from the wrong node?!?? %@", unit);
+			count = [NSNumber numberWithInt:[count intValue] + 1];
 		}
+		[_lootDismountCount setObject:count forKey:guid];
 		
-		PGLog(@"[Loot] Player sill in air, waiting to reach the ground. Attempt %d", _lootDismountAttempt);
+		PGLog(@"[Loot] Player is still in the air, waiting to loot. Attempt %@", count);
 		
-		[self performSelector: @selector(lootNode:) withObject: unit afterDelay:0.1f];	
+		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
+		return;
 	}
 	
-	// We should do a check to see if the player is casting after an attempted loot! if they're not we could keep trying!??
-}
-
-
-- (void)lootUnit: (WoWObject*) unit{
-    BOOL isNode = [unit isKindOfClass: [Node class]];
+	// playr moving, wait to loot
+	if ( [movementController isMoving] ){
+		PGLog(@"[Loot] Still moving, waiting to loot");
+		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
+		return;
+	}
 	
+	BOOL isNode = [unit isKindOfClass: [Node class]];
+	
+	// looting?
     if ( self.doLooting || isNode ) {
         Position *playerPosition = [playerController position];
         float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
-		[movementController pauseMovement];
         [movementController turnTowardObject: unit];
 		
 		self.lastAttemptedUnitToLoot = unit;
 		
-        if ( [unit isValid] && (distanceToUnit <= 5.0) ) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
-			
-			// stop moving?
-			[movementController pauseMovement];
-            
+        if ( [unit isValid] && ( distanceToUnit <= 5.0 ) ) { //  && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+
 			[controller setCurrentStatus: @"Bot: Looting"];
 			PGLog(@"[Loot] Looting : %@", unit);
 			
 			self.lootStartTime = [NSDate date];
 			self.unitToLoot = unit;
 			self.mobToSkin = (Mob*)unit;
-			_lootAttempt++;
+			[blacklistController incrementAttemptForObject:unit];
+			PGLog(@"[Loot] Attempt incremented to %d!", [blacklistController attemptsForObject:unit]);
 			
 			// Lets do this instead of the loot hotkey!
 			[self interactWithMouseoverGUID: [unit GUID]];
@@ -1799,19 +1811,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
         } 
 		else {
-			PGLog(@"[Bot] Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", [unit isValid], distanceToUnit <= 5.0, unit );
+			PGLog(@"[Bot] Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit <= 5.0, ![unit isValid], unit );
 			
-			// This will ensure we won't try to loot this node again - /cry
-			if ( [self.unitToLoot isKindOfClass: [Node class]] ){
-				//[nodeController finishedNode: (Node*)self.unitToLoot];
-			}
-			else{
-				PGLog(@"[Loot] Removing mob %@ from loot list", self.unitToLoot);
+			// remove from list
+			if ( ![self.unitToLoot isKindOfClass: [Node class]] ){
 				[_mobsToLoot removeObject: self.unitToLoot];
 			}
 			
 			// Not 100% sure why we need this, but it seems important?
-			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
+			//[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
 			
 			PGLog(@"[Eval] lootUnit");
 			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];	
@@ -1871,19 +1879,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.unitToLoot ){
 		NSDate *currentTime = [NSDate date];
 		
+		int attempts = [blacklistController attemptsForObject:self.unitToLoot];
+
 		// Unit was looted, remove from list!
 		if ( [self.unitToLoot isKindOfClass: [Node class]] ){
 			//[nodeController finishedNode: (Node*)self.unitToLoot];
 			self.mobToSkin = nil;
-			PGLog(@"[Loot] Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s");
+			PGLog(@"[Loot] Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s");
 		}
 		else{
 			[_mobsToLoot removeObject: self.unitToLoot];
-			PGLog(@"[Loot] Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], _lootAttempt, _lootAttempt == 1 ? @"" : @"s", [_mobsToLoot count]);
+			PGLog(@"[Loot] Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
+		
+		// clear the attempts since it was successful
+		[blacklistController clearAttemptsForObject:self.unitToLoot];
 
 		// Not 100% sure why we need this, but it seems important?
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
+		//[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(reachedUnit:) object: self.unitToLoot];
 	}
 	// Here from skinning!
 	else if ( self.mobToSkin ){
@@ -1972,7 +1985,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		PGLog(@"[Loot] All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
 		
 		// Reset our attempt variables!
-		_lootAttempt = 0;
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 		
@@ -2078,8 +2090,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	//	To prevent weird shit, lets not move to PostCombat if we're in combat!
 	PGLog(@"[Bot] Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
 	
-	//if(self.theRoute) [movementController pauseMovement];
-	[movementController resetUnit];
+	//if(self.theRouteSet) [movementController stopMovement];
+	[movementController resetMoveToObject];
 	
 	PGLog(@"[Bot] should we evaluate after resetting the unit?");
 
@@ -2177,19 +2189,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ( distance > 5.0f ){
 				PGLog(@"[Bot] Still %0.2f away, moving to %@", distance, unit);
 				
-				[movementController moveToObject:unit andNotify:YES];
+				[movementController moveToObject:unit];		//andNotify:YES
 			}
 			// we're in range
 			else{
 				PGLog(@"[Bot] In range, attacking! (should we pause here? don't think it's needed)");
 				readyToAttack = YES;
-				//[movementController pauseMovement];
+				//[movementController stopMovement];
 			}
 
         } else {
 			PGLog(@"[Bot] Don't need to be in melee, pausing movement!");
             // if we don't need to be in melee, pause
-            [movementController pauseMovement];
+            [movementController stopMovement];
 			readyToAttack = YES;
         }
 		
@@ -2251,7 +2263,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	PGLog(@"[Bot] Unit %@ killed %@", unit, [unit class]);
 	
 	// unit dead, reset!
-	[movementController resetUnit];
+	[movementController resetMoveToObject];
 	
 	if ( [unit isNPC] ){
 		PGLog(@"[Bot] Flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
@@ -2286,69 +2298,41 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark [Input] MovementController
 
-- (void)reachedUnit: (WoWObject*)unit {
-	
-	PGLog(@"[Bot] Reached unit! %@", unit);
-    
-    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: unit];
-    [movementController pauseMovement];
-	
-	// no longer moving toward unit
-	[movementController resetUnit];
-	
-    // if it's a player, or a non-dead NPC, we must be doing melee combat
-    if( [unit isPlayer] || ([unit isNPC] && ![(Unit*)unit isDead])) {
-        PGLog(@"[Bot] Reached melee range with %@", unit);
-        return;
-    }
-	
-	// If it's a node, we'll need to dismount (in case we are flying) - then we need to have a delay (for fall time)
-	if ( [unit isKindOfClass: [Node class]] && [[playerController player] isMounted] ){
-		
-		// In case we didn't stop? Sometimes this happens, it makes me a sad panda
-		[movementController pauseMovement];
-		
-		Position *playerPosition = [playerController position];
-		float distance = [playerPosition distanceToPosition: [unit position]];
-		float distance2D = [playerPosition distanceToPosition2D: [unit position]];
-		float vertDist = [playerPosition verticalDistanceToPosition:[unit position]];
+- (void)reachedObject: (NSNotification*)notification{
 
+	WoWObject *object = [notification object];
+	
+	// reached a node!
+	if ( [object isKindOfClass: [Node class]] ){
 		
-		PGLog(@"[Bot] 3D:%0.2f   2D:%0.2f   Vertical:%0.2f", distance, distance2D, vertDist);
-		
-		// Get off our mount (this could be called if our movement failed, we don't want to get off our mount!)!
-		if ( distance <= NODE_DISTANCE_UNTIL_DISMOUNT){
-			
-			[_lootDismountAttempt release]; _lootDismountAttempt = nil;
-			_lootDismountAttempt = [[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInt:0],		[NSNumber numberWithUnsignedLongLong:[unit GUID]], nil] retain];
+		// dismount if we need to
+		if ( [[playerController player] isMounted] ){
 			[movementController dismount];
-			[self lootNode: unit];
-		}
-		else{
-			// This node is "done" - this is a sort of blacklist, we just don't want it anymore!
-			//[nodeController finishedNode: (Node*)self.unitToLoot];
-			
-			// Resume movement!
-			[movementController resumeMovementToNearestWaypoint];
 		}
 		
-
-		//[self performSelector: @selector(lootUnit:) withObject: unit afterDelay:2.5f];
+		[self lootUnit:object];
 	}
 	else{
-		[self lootUnit: unit];
+	
+		// if it's a player, or a non-dead NPC, we must be doing melee combat
+		if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) ){
+			PGLog(@"[Bot] Reached melee range with %@", object);
+			return;
+		}
 	}
 }
 
+// should the notification be here?  or in movementcontroller?
 - (void)finishedRoute: (Route*)route {
     if( ![self isBotting]) return;
     
-    if ( self.theRoute ) {
-        if ( route == [self.theRoute routeForKey: CorpseRunRoute] ) {
+    if ( self.theRouteSet ) {
+        if ( route == [self.theRouteSet routeForKey: CorpseRunRoute] ) {
             PGLog(@"Finished Corpse Run. Begin search for body...");
             [controller setCurrentStatus: @"Bot: Searching for body..."];
-            [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
-            [movementController beginPatrol: 1];
+
+            //[movementController setPatrolRoute: [self.theRouteSet routeForKey: PrimaryRoute]];
+            //[movementController beginPatrol: 1];
         } else {
             //PGLog(@"Finished something else...");
         }
@@ -2391,7 +2375,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         //if(!needToPause) PGLog(@"[Bot] NOT pausing to perform Patrol Procedure.");
         
         // only pause if we are performing something non instant
-        if(needToPause) [movementController pauseMovement];
+        if(needToPause) [movementController stopMovement];
 
         [self performSelector: @selector(performProcedureWithState:) 
                    withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -2501,8 +2485,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         }
     }
 	
-	PGLog(@"[Loot] %d units left to loot!", [_mobsToLoot count]);
-    
     return nil;
 }
 
@@ -2511,7 +2493,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if(![self isBotting])						return NO;
     if(![playerController playerIsValid:self])  return NO;
 	
-	//PGLog(@"[Bot] Evaluate Situation");
+	PGLog(@"[Bot] Evaluate Situation");
     
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 	
@@ -2519,7 +2501,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.isPvPing && [pvpWaitForPreparationBuff state] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
 		
 		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
-		[movementController pauseMovement];
+		[movementController stopMovement];
 	
 		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 		
@@ -2529,7 +2511,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// wait for boat to settle!
 	if ( self.isPvPing && _strandDelay ){
 		[controller setCurrentStatus: @"PvP: Waiting for boat to arrive..."];
-		[movementController pauseMovement];
+		[movementController stopMovement];
 		
 		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 		
@@ -2555,8 +2537,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			pos = [Position positionWithX:5.88f Y:-25.1f Z:5.3f];
 		}
 		
-		// start moving
-		[movementController setClickToMove:pos andType:ctmWalkTo andGUID:0x0];
+		[movementController moveToPosition:pos];
 
 		[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
 		
@@ -2583,7 +2564,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         if( [playerController corpsePosition] && [playerPosition distanceToPosition: [playerController corpsePosition]] < 26.0 ) {
             // we found our corpse
             [controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
-            [movementController pauseMovement];
+            [movementController stopMovement];
             
             // set our next-revive wait timer
             if(!_reviveAttempt) _reviveAttempt = 1;
@@ -2608,7 +2589,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
 			usleep(200000);
 			PGLog(@"[Bot] Player on ground, jumping!");
-			[chatController jump];
+			[movementController jump];
 			usleep(10000);
 		}
 		
@@ -2709,7 +2690,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			[self actOnUnit:bestUnit];
 			
-			[movementController pauseMovement];
+			[movementController stopMovement];
 			
 			return YES;
 		}
@@ -2763,10 +2744,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ( mobToLoot && (mobToLootDist < unitToActOnDist ) ) {
 		PGLog(@"[Bot] Mob is closer to loot! %0.2f < %0.2f", mobToLootDist, unitToActOnDist);
 		
-		
 		// if the mob is close, just loot it!
 		if ( mobToLootDist <= 5.0 ) {
-			[self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
+			PGLog(@"[Bot] Used to call reachedUnit here");
+			//[self performSelector: @selector(reachedUnit:) withObject: mobToLoot afterDelay: 0.1f];
 			
 			return YES;
 		}
@@ -2776,18 +2757,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
             if ( [mobToLoot isValid] && (mobToLootDist < INFINITY) ) {
 				
+				int attempts = [blacklistController attemptsForObject:mobToLoot];
+				
 				// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
-				if ( self.lastAttemptedUnitToLoot == mobToLoot && _lootAttempt >= 3 ){
-					PGLog(@"[Loot] Unable to loot %@, removing from loot list", self.lastAttemptedUnitToLoot);
+				if ( self.lastAttemptedUnitToLoot == mobToLoot && attempts >= 3 ){
+					PGLog(@"[Loot] Unable to loot %@ after %d attempts, removing from loot list", self.lastAttemptedUnitToLoot, attempts);
 					[_mobsToLoot removeObject: self.unitToLoot];
-					
-					// potential fix to just stopping?  thanks wowpew
-					[movementController resetUnit];
 				}
 				else{
 					_movingTowardMobCount = 0;
 					PGLog(@"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					[movementController moveToObject: mobToLoot andNotify: YES];
+					[movementController moveToObject: mobToLoot];		// andNotify: YES
 					return YES;
 				}
             }
@@ -2806,7 +2786,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 			else{
 				PGLog(@"[Loot] Unable to reach %@, removing from loot list", mobToLoot);
-				[movementController resetUnit];
+				[movementController resetMoveToObject];
 				[_mobsToLoot removeObject:mobToLoot];
 			}
 		}
@@ -2856,7 +2836,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             self.preCombatUnit = nil;
         }
     }
-	
+
     // check for mining and herbalism
     if(![movementController moveToObject]) {
         NSMutableArray *nodes = [NSMutableArray array];
@@ -2878,18 +2858,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					continue;
 				}
 				
-				if ( _lootDismountAttempt && [_lootDismountAttempt objectForKey:[NSNumber numberWithUnsignedLongLong:[nodeToLoot GUID]]] ){
-					NSNumber *count = [_lootDismountAttempt objectForKey:[NSNumber numberWithUnsignedLongLong:[nodeToLoot GUID]]];
-					
-					// the count represents 0.1 second intervals after we fall from our mount (so if we fall far, we don't want to try that node again!)
-					if ( [count intValue] > 5 ){
+				NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[nodeToLoot cachedGUID]];
+				NSNumber *count = [_lootDismountCount objectForKey:guid];
+				if ( count ){
+					// took .5 seconds or longer to fall!
+					if ( [count intValue] > 4 ){
 						PGLog(@"[Loot] Failed to acquire node %@ after dismounting, ignoring...", nodeToLoot);
 						[blacklistController blacklistObject:nodeToLoot withReason:Reason_NodeMadeMeFall];
 					}
-					
 				}
 				
-                if(nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot]) {
+                if ( nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot] ){
                     nodeDist = [playerPosition distanceToPosition: [nodeToLoot position]];
                     break;
                 }
@@ -2903,15 +2882,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if ( !nearbyScaryUnits ){
 					[controller setCurrentStatus: @"Bot: Moving to node"];
 					
-					[movementController pauseMovement];
+					[movementController stopMovement];
 					PGLog(@"[Loot] Found closest node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
-					if(nodeDist <= NODE_DISTANCE_UNTIL_DISMOUNT){
-						if ( self.lastAttemptedUnitToLoot == nodeToLoot && _lootAttempt >= 3 ){
+					
+					int attempts = [blacklistController attemptsForObject:nodeToLoot];
+					
+					if ( nodeDist <= DistanceUntilDismountByNode ){
+						if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= 3 ){
 							
 							PGLog(@"[Loot] Unable to loot %@, should we add this to a blacklist?", self.lastAttemptedUnitToLoot);
+							
+							[self lootUnit:nodeToLoot];
+							[blacklistController blacklistObject:nodeToLoot];
 						}
 						else{
-							[self reachedUnit: nodeToLoot];
+							PGLog(@"[Bot] Used to call reachedUnit for node here");
+							[self lootUnit:nodeToLoot];
 							return YES;
 						}
 					}
@@ -2923,7 +2909,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 					// Safe to move to the node!
 					else{
-						[movementController moveToObject: nodeToLoot andNotify: YES];
+						[movementController moveToObject: nodeToLoot];		//andNotify: YES
 					}
 					return YES;
 				}
@@ -2966,14 +2952,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// we have a valid node!
 					if ( [nodeToFish isValid] && (nodeDist != INFINITY) && !nearbyScaryUnits ) {
-						[movementController pauseMovement];
+						[movementController stopMovement];
 						
 						PGLog(@"[Bot] Found closest school %@ at dist %.2f", nodeToFish, nodeDist);
 						if(nodeDist <= NODE_DISTANCE_UNTIL_FISH){
 							
 							// turn toward
 							[movementController turnTowardObject:nodeToFish];
-							[movementController backEstablishPosition];
 							
 							// add some blacklisting logic here...
 							
@@ -3042,23 +3027,37 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
     
     // if there's nothing to do, make sure we keep moving if we aren't
-    if(self.theRoute) {
-        if([movementController isPatrolling] && ([movementController patrolRoute] == [self.theRoute routeForKey: PrimaryRoute])) {
+    if ( self.theRouteSet ) {
+		
+		PGLog(@"should we resume movement?");
+		
+		// resume movement if we're not moving!
+		if ( ![movementController isMoving] && ![movementController isPatrolling] ){
+			[movementController resumeMovement];
+		}
+		
+		/*
+        if([movementController isPatrolling] && ([movementController patrolRoute] == [self.theRouteSet routeForKey: PrimaryRoute])) {
 			//PGLog(@"[Bot] Eval: resuming movement");
             [movementController resumeMovementToNearestWaypoint];
         } else {
-            [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
+            [movementController setPatrolRoute: [self.theRouteSet routeForKey: PrimaryRoute]];
             [movementController beginPatrol: 0];
-        }
+        }*/
         [controller setCurrentStatus: @"Bot: Patrolling"];
     } else {
         [controller setCurrentStatus: @"Bot: Enabled"];
         [self performSelector: _cmd withObject: nil afterDelay: 0.1];
     }
+	
+	PGLog(@"[Bot] Eval - nothing to do!");
+	
     return NO;
 }
 
 -(BOOL)mountNow{
+	
+	
 	
 	// some error checking
 	if ( _mountAttempt > 8 ){
@@ -3088,7 +3087,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( mount ){
 			
 			// stop moving if we need to!
-			[movementController pauseMovement];
+			[movementController stopMovement];
 			usleep(100000);
 			
 			// Time to cast!
@@ -3098,10 +3097,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				PGLog(@"[Bot] Mounting started! No errors!");
 				
 				_mountAttempt = 0;
-				
-				return YES;
 			}
-			PGLog(@"[Bot] Mounting failed! Error: %d", errID);
+			else{
+				PGLog(@"[Bot] Mounting failed! Error: %d", errID);
+			}
+			
+			return YES;
 		}
 		else{
 			PGLog(@"[Bot] No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
@@ -3191,16 +3192,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 - (IBAction)startBot: (id)sender {
-     BOOL ignoreRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"IgnoreRoute"] boolValue];
+     BOOL ignoreRoute = ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue];
     
     // grab route info
     if ( ignoreRoute ) {
-        self.theRoute = nil;
+        self.theRouteSet = nil;
 		self.theRouteCollection = nil;
     }
 	else {
 		self.theRouteCollection = [[routePopup selectedItem] representedObject];
-        self.theRoute = [_theRouteCollection startingRoute];
+        self.theRouteSet = [_theRouteCollection startingRoute];
     }
 	
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
@@ -3240,8 +3241,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         NSRunAlertPanel(@"Player not valid or cannot be detected", @"You must be logged into the game before you can start the bot.", @"Okay", NULL, NULL);
         return;
     }
+	
+	if ( !self.theRouteSet && self.theRouteCollection && !ignoreRoute ){
+        NSBeep();
+        PGLog(@"[Bot] You don't have a starting route selected!");
+        NSRunAlertPanel(@"Starting route is not selected", @"You must select a starting route for your route set! Go to the route tab and select one,", @"Okay", NULL, NULL);
+		
+        return;
+    }
     
-    if( !self.theRoute && !ignoreRoute ) {
+    if( !self.theRouteSet && !ignoreRoute ) {
         NSBeep();
         PGLog(@"[Bot] The current route is not valid.");
         NSRunAlertPanel(@"Route is not valid", @"You must select a valid route before starting the bot.  If you removed or renamed a route, please select an alternative. And make sure you have a starting route selected on the route tab!", @"Okay", NULL, NULL);
@@ -3358,9 +3367,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// make sure the route will work!
-	if ( self.theRoute ){
+	if ( self.theRouteSet ){
 		[_routesChecked removeAllObjects];
-		NSString *error = [self isRouteSetSound:self.theRoute];
+		NSString *error = [self isRouteSetSound:self.theRouteSet];
 		if ( error && [error length] > 0 ){
 			PGLog(@"[Bot] Your route is not configured correctly!");
 			NSBeep();
@@ -3378,11 +3387,25 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
+	// PvP Checks
+	/*if ( [[[NSUserDefaults standardUserDefaults] objectForKey: @"UsePvPBehavior"] boolValue] ){
+		
+		self.pvpBehavior = [[pvpBehaviorPopUp selectedItem] representedObject];
+			
+		// make sure the behavior is usable!
+		if ( ![self.pvpBehavior isValid] ){
+			PGLog(@"[Bot] Your PvP Behavior isn't valid!");
+			NSBeep();
+			NSRunAlertPanel(@"PvP Behavior is invalid", @"You need to make sure at least one BG is enabled and has a route selected", @"Okay", NULL, NULL);
+			return;
+		}
+	}*/
+	
 	// not really sure how this could be possible hmmm
     if( [self isBotting])
         [self stopBot: nil];
     
-    if(self.theCombatProfile && self.theBehavior ) {
+    if ( self.theCombatProfile && self.theBehavior ) {
         PGLog(@"[Bot] Starting.");
         [spellController reloadPlayerSpells];
         
@@ -3443,11 +3466,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( !self.isPvPing || self.startDate == nil ){
 			self.startDate = [[NSDate date] retain];
 		}
+		
+		if ( self.theRouteSet ){
+			[movementController patrolWithRouteSet:self.theRouteSet];
+			[movementController resumeMovement];
+		}
         
-        if( [playerController isGhost] && self.theRoute) {
+		/*
+        if( [playerController isGhost] && self.theRouteSet) {
             Position *playerPosition = [playerController position];
-            Route *primaryRoute  = [self.theRoute routeForKey: PrimaryRoute];
-            Route *corpseRunRoute = [self.theRoute routeForKey: CorpseRunRoute];
+            Route *primaryRoute  = [self.theRouteSet routeForKey: PrimaryRoute];
+            Route *corpseRunRoute = [self.theRouteSet routeForKey: CorpseRunRoute];
             
             PGLog(@"[Bot] Started the bot, but we're a ghost!");
             
@@ -3461,7 +3490,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             
             [movementController beginPatrol: 1];
             return;
-        }
+        }*/
         
         if( [playerController isDead]) {
             PGLog(@"[Bot] Started the bot, but we're dead! Will try to release. (%d:%d:%d:%d)", [playerController health], [playerController isGhost], [playerController maxHealth], [[playerController player] maxHealth] );
@@ -3471,7 +3500,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         
         [controller setCurrentStatus: @"Bot: Enabled"];
         //[combatController setCombatEnabled: self.theCombatProfile.combatEnabled];
-        // [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
+        // [movementController setPatrolRoute: [self.theRouteSet routeForKey: PrimaryRoute]];
         
 		/*
         // if we're in combat when we start, have the mobController update
@@ -3524,7 +3553,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	PGLog(@"Bot Stopped: %@", sender);
     [self cancelCurrentProcedure];
-    [movementController setPatrolRoute: nil];
+	[movementController resetMovementState];
     [combatController resetAllCombat];
 
     [_mobsToLoot removeAllObjects];
@@ -3729,11 +3758,11 @@ NSMutableDictionary *_diffDict = nil;
     // [mobController enumerateAllMobs];
     
     // reset our route and then pause again
-    if(self.theRoute) {
-        [movementController setPatrolRoute: [self.theRoute routeForKey: PrimaryRoute]];
+    /*if(self.theRouteSet) {
+        [movementController setPatrolRoute: [self.theRouteSet routeForKey: PrimaryRoute]];
         [movementController beginPatrol: 0];
-        [movementController pauseMovement];
-    }
+        [movementController stopMovement];
+    }*/
     
     // perform post combat
     [self performSelector: @selector(performProcedureWithState:) 
@@ -3752,7 +3781,7 @@ NSMutableDictionary *_diffDict = nil;
     [controller setCurrentStatus: @"Bot: Player has Died"];
     
     [self cancelCurrentProcedure];              // this wipes all bot state (except pvp)
-    [movementController setPatrolRoute: nil];   // this wipes all movement state
+    //[movementController setPatrolRoute: nil];   // this wipes all movement state
     [combatController resetAllCombat];         // this wipes all combat state
 	
 	_shouldFollow = YES;
@@ -3781,8 +3810,8 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// do we need to switch our route back?
 	if ( [self.theRouteCollection startRouteOnDeath] ){
-		self.theRoute = [self.theRouteCollection startingRoute];
-		PGLog(@"[Bot] Died, switching to main starting route! %@", self.theRoute);
+		self.theRouteSet = [self.theRouteCollection startingRoute];
+		PGLog(@"[Bot] Died, switching to main starting route! %@", self.theRouteSet);
 	}
 }
 
@@ -3815,20 +3844,22 @@ NSMutableDictionary *_diffDict = nil;
 		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 5.0];
 	}
 	
+	/*
 	// We're a ghost w00t! Lets start the route!
 	else{
+		
 		// run back if we have a route
 		if(!self.isPvPing) {
-			if([self.theRoute routeForKey: CorpseRunRoute] && ![playerController isInBG:[playerController zone]]) {
+			if([self.theRouteSet routeForKey: CorpseRunRoute] && ![playerController isInBG:[playerController zone]]) {
 				PGLog(@"[Bot] Starting Corpse Run...");
 				[controller setCurrentStatus: @"Bot: Running back from graveyard..."];
-				[movementController setPatrolRoute: [self.theRoute routeForKey: CorpseRunRoute]];
+				[movementController setPatrolRoute: [self.theRouteSet routeForKey: CorpseRunRoute]];
 				[movementController beginPatrolAndStopAtLastPoint];
 			}
 		} else {
 			PGLog(@"[PvP] Ignoring Corpse Run route because we are PvPing.");
 		}
-	}
+	}*/
 }
 
 - (void)playerIsInvalid: (NSNotification*)not {
@@ -3884,7 +3915,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		// if we are waiting to rez, pause the bot (incase it is not)
         if( spellID == WaitingToRezSpellID ) {
-            [movementController pauseMovement];
+            [movementController stopMovement];
 			
         }
 		
@@ -3909,7 +3940,7 @@ NSMutableDictionary *_diffDict = nil;
 			// Only checking for the delay!
 			if ( [playerController isOnBoatInStrand] && [playerController zone] == ZoneStrandOfTheAncients ){
 				// We want to pause, and not move until the boat stops!  Delay 10 seconds?
-				[movementController pauseMovement];
+				[movementController stopMovement];
 				
 				_strandDelay = YES;
 				
@@ -4042,7 +4073,7 @@ NSMutableDictionary *_diffDict = nil;
 			[self stopBot: nil];
 		}
 		
-		[movementController pauseMovement];
+		[movementController stopMovement];
 		
 		// Only requeue if we're PvPing!
 		if ( self.isPvPing ){
@@ -4415,18 +4446,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // call this to prevent afk!
 - (void)noAFK{
-	// move backward!
-	if ( _lastPressedWasForward ){
-		[movementController moveBackwardStop];
-		_lastPressedWasForward = NO;
-		//PGLog(@"[AFK] Moving backward!");
-	}
-	// move forward!
-	else{
-		[movementController moveForwardStop];
-		_lastPressedWasForward = YES;
-		//PGLog(@"[AFK] Moving forward!");
-	}
+	[movementController antiAFK];
 }
 
 - (void)wgTimer: (NSTimer*)timer {
@@ -4794,7 +4814,7 @@ NSMutableDictionary *_diffDict = nil;
 
 // set the new route + select it in the dropdown!
 - (void)changeRouteSet:(RouteSet*)route{
-	self.theRoute = route;
+	self.theRouteSet = route;
 	
 	for ( NSMenuItem *item in [routePopup itemArray] ){
 		if ( [[(RouteSet*)[item representedObject] name] isEqualToString:[route name]] ){
@@ -5184,13 +5204,13 @@ NSMutableDictionary *_diffDict = nil;
 typedef struct WoWClientDb {
     UInt32    _vtable;		// 0x0
     UInt32  isLoaded;		// 0x4
-    UInt32  numRows;		// 0x8
-    UInt32  maxIndex;		// 0xC
-    UInt32  minIndex;		// 0x10
+    UInt32  numRows;		// 0x8				// 49379
+    UInt32  maxIndex;		// 0xC				// 74445
+    UInt32  minIndex;		// 0x10				// 1
 	UInt32  stringTablePtr;	// 0x14
 	UInt32 _vtable2;		// 0x18
 	// array of row pointers after this...
-	UInt32 row1;			// 0x1C
+	UInt32 firstRow;		// 0x1C
 	UInt32 row2;			// 0x20
 	UInt32 row3;			// 0x24
 	UInt32 row4;			// 0x28
@@ -5200,29 +5220,64 @@ typedef struct WoWClientDb {
 - (IBAction)test: (id)sender{
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	UInt32 spellPtr = 0xD87980;
+
+	// hooked the spell function which was passed: 0xD87980 0xA8D268 0x194
+	UInt32 spellPtr = 0xD87980;//;
 	
 	WoWClientDb db;
 	[memory loadDataForObject: self atAddress: spellPtr Buffer:(Byte*)&db BufLength: sizeof(db)];
 	
 	if ( db.stringTablePtr ){
-		
-		
 		int index;
-		for ( index = 0; index < 40; index++ ){
-			UInt32 addressOfString = db.row2 + ( 4 * ( index - db.minIndex ) );
+		for ( index = 0; index < db.numRows; index++ ){
 			
-			UInt32 tmp = 0x0;
-			[memory loadDataForObject: self atAddress: addressOfString Buffer:(Byte*)&tmp BufLength: sizeof(tmp)];
+			UInt32 rowPtr = db.row2 + ( 4 * ( index - db.minIndex ) );
+			UInt32 addressOfSpellStruct = 0x0;
+			[memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&addressOfSpellStruct BufLength: sizeof(addressOfSpellStruct)];
 			
+			if ( addressOfSpellStruct ){
 			
+				UInt32 spellID = 0x0;
+				[memory loadDataForObject: self atAddress: addressOfSpellStruct Buffer:(Byte*)&spellID BufLength: sizeof(spellID)];
 			
-			
-			PGLog(@"[Read] 0x%X 0x%X", addressOfString, tmp);
-			
-			
-			
+				// valid spell ID
+				if ( spellID <= db.maxIndex ){
+					PGLog(@"[%d:0x%X]  %d", index, addressOfSpellStruct, spellID);
+				}
+			}
 		}
+		
+		
+		
+		
+		
+		/*
+		 
+		 UInt32 addr = 0x18A060 + 0x9C;		// offset ptr
+		 // offset + 0x8  (0xA4)
+		 UInt32 lowest = 0x220D970C;
+		 int i = 0;
+		 for ( i = 0; i < 100; i++ ){
+		 
+		 UInt32 ptr = 0, offset = 0;
+		 [memory loadDataForObject: self atAddress: addr Buffer:(Byte*)&ptr BufLength: sizeof(ptr)];
+		 [memory loadDataForObject: self atAddress: addr + 0x8 Buffer:(Byte*)&offset BufLength: sizeof(offset)];
+		 
+		 PGLog(@"[%d:0x%X] 0x%X:0x%X", i, addr, offset, ptr);
+		 
+		 UInt32 tmp = 0;
+		 [memory loadDataForObject: self atAddress: ptr Buffer:(Byte*)&tmp BufLength: sizeof(tmp)];
+		 if ( tmp < lowest && tmp > 0x0 ){
+		 //PGLog(@" found 0x%X at %d", tmp, i);
+		 lowest = tmp;
+		 }
+		 
+		 addr += 0xA4;
+		 }
+		 
+		 PGLog(@"Lowest: 0x%X", lowest);*/
+		
+		
 		
 		
 		/*
