@@ -32,9 +32,17 @@
 			PGLog(@"[FileManager] Save data folder does not exist! Creating %@", folder);
 			[fileManager createDirectoryAtPath: folder attributes: nil];
 		}
+		
+		_objects = [[self loadAllObjects] retain];
 	}
 	
     return self;
+}
+
+- (void) dealloc{
+	[_objects release];
+	
+    [super dealloc];
 }
 
 - (NSString*)objectExtension{
@@ -161,7 +169,7 @@
 - (void)saveObject: (id)object { 
 	NSString *filePath = [self pathForObjectName:[self objectName:object] withExtension:YES];
 	
-	//PGLog(@"[FileManager] Saving %@ to %@", object, filePath);
+	PGLog(@"[FileManager] Saving %@ to %@", object, filePath);
 	[NSKeyedArchiver archiveRootObject: object toFile: filePath];
 }
 
@@ -218,7 +226,8 @@
 				
 				id object = [self getObjectFromDisk:fileName];
 				
-				PGLog(@" Object Class: %@", [object className]);
+				// we JUST loaded this from the disk, we need to make sure we know it's not changed
+				[(SaveDataObject*)object setChanged:NO];
 				
 				// valid route - add it!
 				if ( object != nil ){
@@ -228,7 +237,8 @@
 		}
 	}
 	
-	PGLog(@"[FileManager] Loaded %d objects of type %@", [objectList count], [self objectExtension]);
+	if ( [objectList count] )
+		PGLog(@"[FileManager] Loaded %d objects of type %@", [objectList count], [self objectExtension]);
 	
 	return [objectList retain];
 }
@@ -271,12 +281,15 @@
 	
 	NSString *filePath = [NSString stringWithFormat:@"%@/", [self pathForObjectName:nil withExtension:NO]];
 	
-	PGLog(@"%@", filePath);
-	
 	// show in finder!
 	NSWorkspace *ws = [NSWorkspace sharedWorkspace];
 	[ws openFile: filePath];
 }
 
+- (IBAction)saveAllObjects: (id)sender{
+	for ( SaveDataObject *obj in _objects ){
+		[self saveObject:obj];
+	}
+}
 
 @end

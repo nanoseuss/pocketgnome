@@ -547,6 +547,7 @@ typedef enum MovementFlag {
 - (BOOL)isMounted;
 - (BOOL)isOnGround;
 - (BOOL)isSwimming;
+- (BOOL)isFlyingMounted;
 
 - (UInt32)stateFlags;
 - (BOOL)isPVP;

@@ -116,6 +116,7 @@
 
 - (NSArray*)routeCollections;
 - (NSArray*)routes;
+- (RouteCollection*)routeCollectionForUUID: (NSString*)UUID;
 
 // route actions
 - (IBAction)setRouteType: (id)sender;

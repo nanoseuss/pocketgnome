@@ -29,6 +29,7 @@
     self = [super init];
     if (self != nil) {
 		_blacklist = [[NSMutableDictionary alloc] init];
+		_attemptList = [[NSMutableDictionary alloc] init];
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(unitDied:) 
@@ -190,6 +191,41 @@
 		if ( [_blacklist objectForKey:guid] )
 			[_blacklist removeObjectForKey:guid];
 	}
+}
+
+#pragma mark Attempts
+
+- (int)attemptsForObject:(WoWObject*)obj{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
+	NSNumber *count = [_attemptList objectForKey:guid];
+	if ( count ){
+		return [count intValue];
+	}
+	
+	return 0;
+}
+
+- (void)incrementAttemptForObject:(WoWObject*)obj{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
+	NSNumber *count = [_attemptList objectForKey:guid];
+	if ( count ){
+		count = [NSNumber numberWithInt:[count intValue] + 1];
+	}
+	else{
+		count = [NSNumber numberWithInt:1];
+	}
+	
+	PGLog(@"[Blacklist] Incremented to %@ for %@", count, obj);
+	[_attemptList setObject:count forKey:guid];
+}
+
+- (void)clearAttemptsForObject:(WoWObject*)obj{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
+	[_attemptList removeObjectForKey:guid];
+}
+
+- (void)clearAttempts{
+	[_attemptList removeAllObjects];
 }
 
 @end

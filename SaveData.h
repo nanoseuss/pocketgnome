@@ -11,6 +11,7 @@
 
 @interface SaveData : NSObject {
 
+	NSMutableArray *_objects;
 }
 
 // should not be implemented by the subclass, only called!
@@ -22,6 +23,7 @@
 
 // UI
 - (IBAction)showInFinder: (id)sender;
+- (IBAction)saveAllObjects: (id)sender;
 
 // should be implemented by the subclass
 - (NSString*)objectExtension;

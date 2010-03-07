@@ -141,7 +141,7 @@ enum ePlayer_RuneTypes {
 - (Position*)deathPosition;
 - (float)directionFacing;
 - (void)setDirectionFacing: (float)direction;
-- (void)setMovementFlags:(UInt32)movementFlags;
+- (void)setMovementFlags:(UInt8)movementFlags;
 - (UInt32)movementFlags;
 - (UInt64)movementFlags64;
 - (void)faceToward: (Position*)position;

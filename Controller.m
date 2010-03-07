@@ -24,6 +24,7 @@
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
 #import "ObjectsController.h"
+#import "PvPController.h"
 
 #import "CGSPrivate.h"
 
@@ -278,6 +279,12 @@ static Controller* sharedController = nil;
 			[[CombatProfileEditor sharedEditor] showEditorOnWindow: [[botController view] window] 
 												   forProfileNamed: [(CombatProfile*)combatProfile name]];
 		}
+        return YES;
+    }
+	else if ( [[filename pathExtension] isEqualToString: @"pvpbehavior"] ) {
+        [pvpController importBehaviorAtPath: filename];
+        [self toolbarItemSelected: pvpToolbarItem];
+        [mainToolbar setSelectedItemIdentifier: [pvpToolbarItem itemIdentifier]];
         return YES;
     }
     
@@ -771,6 +778,12 @@ typedef struct NameObjectStruct{
         minSize = [objectsController minSectionSize];
         maxSize = [objectsController maxSectionSize];
     }
+	if ( [sender tag] == 16 ){
+		newView = [pvpController view];
+        addToTitle = [pvpController sectionTitle];
+        minSize = [pvpController minSectionSize];
+        maxSize = [pvpController maxSectionSize];
+	}
 	
     if(newView) {
         [self loadView: newView withTitle: addToTitle];
@@ -1420,6 +1433,7 @@ typedef struct NameObjectStruct{
             NSToolbarSpaceItemIdentifier,
 			[objectsToolbarItem itemIdentifier], 
             NSToolbarSpaceItemIdentifier,
+			[pvpToolbarItem itemIdentifier],
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
             NSToolbarFlexibleSpaceItemIdentifier,
@@ -1440,7 +1454,8 @@ typedef struct NameObjectStruct{
             [prefsToolbarItem itemIdentifier],
             [chatLogToolbarItem itemIdentifier], 
 			[statisticsToolbarItem itemIdentifier],
-			[objectsToolbarItem itemIdentifier],nil];
+			[objectsToolbarItem itemIdentifier],
+			[pvpToolbarItem itemIdentifier], nil];
 }
 
 #pragma mark -

@@ -170,7 +170,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)targetNotInFront: (NSNotification*)notification {
 	PGLog(@"[Combat] Target not in front!");
-	[movementController backEstablishPosition];
+	[movementController establishPlayerPosition];
 }
 
 - (void)unitDied: (NSNotification*)notification{
@@ -402,13 +402,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		PGLog(@"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
 		
 		// set player facing and establish position
-		BOOL useSmooth = [movementController useSmoothTurning];
+		//BOOL useSmooth = [movementController useSmoothTurning];
 		
-		if(!isCasting) [movementController pauseMovement];
+		//if(!isCasting) [movementController pauseMovement];
 		[movementController turnTowardObject: _castingUnit];
-		if(!isCasting && !useSmooth) {
-			[movementController backEstablishPosition];
-		}
+		//if(!isCasting && !useSmooth) {
+		//	[movementController backEstablishPosition];
+		//}
 	}
 	
 	if( !isCasting ) {
@@ -430,7 +430,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( [playerPosition distanceToPosition: [_castingUnit position]] > 5.0f ){
 				PGLog(@"[Combat] Moving to %@", _castingUnit);
 				
-				[movementController moveToObject:_castingUnit andNotify: NO];
+				[movementController moveToObject:_castingUnit];	//andNotify: NO
 			}
 		}
 	}

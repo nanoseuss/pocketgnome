@@ -400,14 +400,13 @@
     [savePanel setCanCreateDirectories: YES];
     [savePanel setTitle: @"Export Behavior"];
     [savePanel setMessage: @"Please choose a destination for this behavior."];
-    int ret = [savePanel runModalForDirectory: @"~/" file: [[[self currentBehavior] name] stringByAppendingPathExtension: @"behavior"]];
+    int ret = [savePanel runModalForDirectory: @"~/Desktop" file: [[[self currentBehavior] name] stringByAppendingPathExtension: @"behavior"]];
     
 	if(ret == NSFileHandlingPanelOKButton) {
         NSString *saveLocation = [savePanel filename];
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject: [self currentBehavior]];
         [data writeToFile: saveLocation atomically: YES];
     }
-    
 }
 
 #pragma mark -

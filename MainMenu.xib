@@ -13,7 +13,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="57"/>
-			<integer value="1956"/>
+			<integer value="1957"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -616,6 +616,7 @@
 							<string>1AB5F1BB-1F41-4416-ABA3-968123DB2AA9</string>
 							<string>1EC440B1-046C-46D8-8B82-5AFAE091B652</string>
 							<string>9EE3016C-0962-4579-8A78-D9D7C0ADB621</string>
+							<string>A203409D-7D49-42C3-9426-D16B9D2DA37A</string>
 							<string>A3C977D0-AC84-4970-ADF4-9EE1E7EE4C52</string>
 							<string>AC3CE7D1-FD9A-4988-8CAE-0407AAD23ADF</string>
 							<string>B2A74294-0FE0-4D41-B504-51CA3ED45339</string>
@@ -714,6 +715,28 @@
 								<bool key="NSToolbarItemEnabled">YES</bool>
 								<bool key="NSToolbarItemAutovalidates">YES</bool>
 								<int key="NSToolbarItemTag">1</int>
+								<bool key="NSToolbarIsUserRemovable">YES</bool>
+								<int key="NSToolbarItemVisibilityPriority">0</int>
+							</object>
+							<object class="NSToolbarItem" id="684506935">
+								<object class="NSMutableString" key="NSToolbarItemIdentifier">
+									<characters key="NS.bytes">A203409D-7D49-42C3-9426-D16B9D2DA37A</characters>
+								</object>
+								<string key="NSToolbarItemLabel">PvP</string>
+								<string key="NSToolbarItemPaletteLabel">PvP</string>
+								<string key="NSToolbarItemToolTip"/>
+								<nil key="NSToolbarItemView"/>
+								<object class="NSCustomResource" key="NSToolbarItemImage">
+									<string key="NSClassName">NSImage</string>
+									<string key="NSResourceName">PVP</string>
+								</object>
+								<nil key="NSToolbarItemTarget"/>
+								<nil key="NSToolbarItemAction"/>
+								<string key="NSToolbarItemMinSize">{0, 0}</string>
+								<string key="NSToolbarItemMaxSize">{0, 0}</string>
+								<bool key="NSToolbarItemEnabled">YES</bool>
+								<bool key="NSToolbarItemAutovalidates">YES</bool>
+								<int key="NSToolbarItemTag">16</int>
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
@@ -968,6 +991,7 @@
 						<reference ref="840386585"/>
 						<reference ref="499189514"/>
 						<reference ref="109537716"/>
+						<reference ref="684506935"/>
 					</object>
 					<object class="NSMutableArray" key="NSToolbarIBDefaultItems">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -980,6 +1004,7 @@
 						<reference ref="805655019"/>
 						<reference ref="271453216"/>
 						<reference ref="805655019"/>
+						<reference ref="684506935"/>
 						<reference ref="944730264"/>
 						<reference ref="515029510"/>
 						<reference ref="840386585"/>
@@ -6415,6 +6440,9 @@
 			<object class="NSCustomObject" id="1016274730">
 				<string key="NSClassName">SUUpdater</string>
 			</object>
+			<object class="NSCustomObject" id="538288452">
+				<string key="NSClassName">PvPController</string>
+			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
 			<object class="NSMutableArray" key="connectionRecords">
@@ -10655,6 +10683,46 @@
 					</object>
 					<int key="connectionID">4256</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toolbarItemSelected:</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="684506935"/>
+					</object>
+					<int key="connectionID">4258</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">pvpController</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="538288452"/>
+					</object>
+					<int key="connectionID">4260</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">pvpToolbarItem</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="684506935"/>
+					</object>
+					<int key="connectionID">4261</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">waypointController</string>
+						<reference key="source" ref="538288452"/>
+						<reference key="destination" ref="980198522"/>
+					</object>
+					<int key="connectionID">4262</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">pvpController</string>
+						<reference key="source" ref="94147614"/>
+						<reference key="destination" ref="538288452"/>
+					</object>
+					<int key="connectionID">4263</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -11413,6 +11481,7 @@
 							<reference ref="484822692"/>
 							<reference ref="499189514"/>
 							<reference ref="271453216"/>
+							<reference ref="684506935"/>
 						</object>
 						<reference key="parent" ref="836553576"/>
 					</object>
@@ -14362,6 +14431,16 @@
 						<reference key="object" ref="967218900"/>
 						<reference key="parent" ref="110575045"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4257</int>
+						<reference key="object" ref="684506935"/>
+						<reference key="parent" ref="591372859"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4259</int>
+						<reference key="object" ref="538288452"/>
+						<reference key="parent" ref="0"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -14934,6 +15013,7 @@
 					<string>4241.IBPluginDependency</string>
 					<string>4248.IBPluginDependency</string>
 					<string>4248.ImportedFromIB2</string>
+					<string>4257.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -15027,15 +15107,15 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{272, 95}, {749, 200}}</string>
+					<string>{{296, 483}, {749, 200}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{272, 95}, {749, 200}}</string>
+					<string>{{296, 483}, {749, 200}}</string>
 					<integer value="1"/>
 					<string>{{49, 661}, {640, 200}}</string>
 					<integer value="1"/>
 					<string>{700, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{338, 295}, {617, 0}}</string>
+					<string>{{362, 683}, {617, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{57, 707}, {616, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15237,7 +15317,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{0, 986}, {302, 20}}</string>
+					<string>{{0, 836}, {302, 20}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{74, 862}</string>
@@ -15535,10 +15615,11 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{12, 783}, {233, 203}}</string>
+					<string>{{12, 633}, {233, 203}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>{{18, 776}, {236, 203}}</string>
@@ -15572,7 +15653,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4256</int>
+			<int key="maxID">4263</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15848,6 +15929,8 @@
 							<string>procedureController</string>
 							<string>pvpBMSelectPanel</string>
 							<string>pvpBannerImage</string>
+							<string>pvpBehaviorPopUp</string>
+							<string>pvpController</string>
 							<string>pvpLeaveInactiveCheckbox</string>
 							<string>pvpPlayWarningCheckbox</string>
 							<string>pvpStartStopButton</string>
@@ -15936,6 +16019,8 @@
 							<string>ProcedureController</string>
 							<string>NSPanel</string>
 							<string>NSImageView</string>
+							<string>NSPopUpButton</string>
+							<string>PvPController</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
@@ -16208,6 +16293,8 @@
 							<string>playerToolbarItem</string>
 							<string>playersController</string>
 							<string>prefsToolbarItem</string>
+							<string>pvpController</string>
+							<string>pvpToolbarItem</string>
 							<string>routeController</string>
 							<string>routesToolbarItem</string>
 							<string>settingsView</string>
@@ -16252,6 +16339,8 @@
 							<string>PlayerDataController</string>
 							<string>NSToolbarItem</string>
 							<string>PlayersController</string>
+							<string>NSToolbarItem</string>
+							<string>PvPController</string>
 							<string>NSToolbarItem</string>
 							<string>WaypointController</string>
 							<string>NSToolbarItem</string>
@@ -16572,47 +16661,27 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">MovementController</string>
 					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">prefsChanged:</string>
-						<string key="NS.object.0">id</string>
-					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>auraController</string>
-							<string>blacklistController</string>
 							<string>botController</string>
-							<string>chatController</string>
-							<string>combatController</string>
-							<string>combatProfileEditor</string>
 							<string>controller</string>
-							<string>logOutStuckAttemptsTextField</string>
 							<string>macroController</string>
-							<string>mobController</string>
-							<string>movementType</string>
+							<string>movementTypePopUp</string>
 							<string>offsetController</string>
 							<string>playerData</string>
-							<string>statisticsController</string>
-							<string>waypointController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
-							<string>BlacklistController</string>
 							<string>BotController</string>
-							<string>id</string>
-							<string>id</string>
-							<string>CombatProfileEditor</string>
-							<string>id</string>
-							<string>NSTextField</string>
+							<string>Controller</string>
 							<string>MacroController</string>
-							<string>id</string>
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
-							<string>StatisticsController</string>
-							<string>WaypointController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -16980,6 +17049,54 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">PvPController</string>
+					<string key="superclassName">SaveData</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>closeRename:</string>
+							<string>createBehavior:</string>
+							<string>deleteBehavior:</string>
+							<string>duplicateBehavior:</string>
+							<string>exportBehavior:</string>
+							<string>importBehavior:</string>
+							<string>renameBehavior:</string>
+							<string>test:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>renamePanel</string>
+							<string>view</string>
+							<string>waypointController</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSPanel</string>
+							<string>NSView</string>
+							<string>WaypointController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">PvPController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">QuestController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -17076,8 +17193,17 @@
 					<string key="className">SaveData</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">showInFinder:</string>
-						<string key="NS.object.0">id</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>saveAllObjects:</string>
+							<string>showInFinder:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
