@@ -169,7 +169,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
-	PGLog(@"[Combat] Target not in front!");
+	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
 	[movementController establishPlayerPosition];
 }
 
