@@ -45,4 +45,6 @@ enum{
 - (void)clearAttemptsForObject:(WoWObject*)obj;
 - (void)clearAttempts;
 
+- (void)clearAll;
+
 @end
