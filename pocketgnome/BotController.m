@@ -3032,29 +3032,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if there's nothing to do, make sure we keep moving if we aren't
     if ( self.theRouteSet ) {
 		
-		PGLog(@"should we resume movement?");
-		
 		// resume movement if we're not moving!
 		if ( ![movementController isMoving] && ![movementController isPatrolling] ){
 			[movementController resumeMovement];
 		}
 		
-		/*
-        if([movementController isPatrolling] && ([movementController patrolRoute] == [self.theRouteSet routeForKey: PrimaryRoute])) {
-			//PGLog(@"[Bot] Eval: resuming movement");
-            [movementController resumeMovementToNearestWaypoint];
-        } else {
-            [movementController setPatrolRoute: [self.theRouteSet routeForKey: PrimaryRoute]];
-            [movementController beginPatrol: 0];
-        }*/
         [controller setCurrentStatus: @"Bot: Patrolling"];
-    } else {
+    }
+	else{
         [controller setCurrentStatus: @"Bot: Enabled"];
         [self performSelector: _cmd withObject: nil afterDelay: 0.1];
     }
-	
-	PGLog(@"[Bot] Eval - nothing to do!");
-	
+
     return NO;
 }
 

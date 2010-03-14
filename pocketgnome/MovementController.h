@@ -14,6 +14,7 @@
 @class PlayerDataController;
 @class AuraController;
 @class MacroController;
+@class BlacklistController;
 
 @class Route;
 @class Waypoint;
@@ -43,6 +44,7 @@ typedef enum MovementType {
 	IBOutlet PlayerDataController	*playerData;
 	IBOutlet AuraController			*auraController;
 	IBOutlet MacroController		*macroController;
+	IBOutlet BlacklistController	*blacklistController;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementTypePopUp;

@@ -22,6 +22,7 @@
 #import "PlayerDataController.h"
 #import "AuraController.h"
 #import "MacroController.h"
+#import "BlacklistController.h"
 
 #import "Offsets.h"
 
@@ -222,7 +223,7 @@ typedef enum MovementState{
 	
 	float distance = [self.lastAttemptedPosition distanceToPosition:[obj position]];
 	
-	if ( distance > 5.0f ){
+	if ( distance > 2.5f ){
 		PGLog(@"[Move] %@ moved away, re-positioning %0.2f", obj, distance);
 		[self moveToObject:obj];
 		return;
@@ -640,7 +641,7 @@ typedef enum MovementState{
 	}
 	
 	// should we jump?
-	PGLog(@" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
+	//PGLog(@" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
 	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] ){
 		
 		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ){
@@ -656,7 +657,7 @@ typedef enum MovementState{
 	// *******************************************************
 	
 	// make sure we're still moving
-	if ( _positionCheck > 3 && ![self isMoving] ){
+	if ( _positionCheck > 3 && _stuckCounter < 3 && ![self isMoving] ){
 		PGLog(@"[Move] For some reason we're not moving! Let's start moving again!");
 		
 		[self resumeMovement];
@@ -810,6 +811,20 @@ typedef enum MovementState{
 	// anti-stuck for moving to an object!
 	if ( self.moveToObject ){
 		
+		
+		if ( _unstickifyTry > 5 ){
+			
+			PGLog(@"[Move] Unable to reach %@, blacklisting", self.moveToObject);
+			
+			[blacklistController blacklistObject:self.moveToObject withReason:Reason_CantReachObject];
+			
+			self.moveToObject = nil;
+			
+			[self resumeMovement];
+			
+			return;			
+		}
+		
 		// player is flying and is stuck :(  makes me sad, lets move up a bit
 		if ( [[playerData player] isFlyingMounted] ){
 			
@@ -870,6 +885,9 @@ typedef enum MovementState{
 	self.lastPlayerPosition			= nil;
 	_isMovingFromKeyboard = NO;
 	[_stuckDictionary removeAllObjects];
+	
+	_unstickifyTry = 0;
+	_stuckCounter = 0;
 	
 	[self resetMovementTimer];
 	
@@ -970,7 +988,7 @@ typedef enum MovementState{
 	 return;
 	 }*/
 	
-    BOOL printTurnInfo = YES;
+    BOOL printTurnInfo = NO;
 	
 	// don't change position if the right mouse button is down
     if ( ![controller isWoWFront] || ( ( GetCurrentButtonState() & 0x2 ) != 0x2 ) ) {
@@ -1094,30 +1112,6 @@ typedef enum MovementState{
             if ( printTurnInfo ) PGLog(@"DOING SHARP TURN to %.2f", [playerPosition angleTo: position]);
             [playerData faceToward: position];
             usleep([controller refreshDelay]*2);
-			
-			/*
-			// check player facing vs. unit position
-            float playerDirection = [playerData directionFacing];
-            float theAngle = [playerPosition angleTo: position];
-			
-			PGLog(@"CHANGING DIRECTION");
-			PGLog(@"CHANGING DIRECTION1");
-			PGLog(@"CHANGING DIRECTION2");
-			PGLog(@" fabsf ( %0.2f ) > %0.2f = %0.2f", theAngle - playerDirection, M_PI, fabsf( theAngle - playerDirection ));
-			
-            if ( fabsf( theAngle - playerDirection ) > M_PI ){
-                if ( theAngle < playerDirection )	theAngle += (M_PI*2);
-                else								playerDirection += (M_PI*2);
-            }
-            
-            // find the difference between the angles
-            float angleTo = (theAngle - playerDirection);
-			
-			PGLog(@" The angle to: %0.2f", angleTo);
-			
-			if ( angleTo > 0.785f ){  // changed to be ~45 degrees
-
-			}*/
         }
     } else {
         if(printTurnInfo) PGLog(@"Skipping turn because right mouse button is down.");

@@ -31,7 +31,8 @@ enum{
 	Reason_None					= 0,
 	Reason_NotInLoS				= 1,
 	Reason_NodeMadeMeFall		= 2,
-	Reason_next					= 4,
+	Reason_CantReachObject		= 4,
+	
 };
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason;
