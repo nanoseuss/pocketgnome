@@ -339,6 +339,5 @@
 
 // from movement controller (for new WP actions!)
 - (void)changeCombatProfile:(CombatProfile*)profile;
-- (void)changeRouteSet:(RouteSet*)route;
 
 @end

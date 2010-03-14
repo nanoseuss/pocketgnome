@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2378"/>
 			<integer value="1957"/>
+			<integer value="2378"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -4991,10 +4991,6 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>MovementShouldJump</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSCustomObject" id="771133398">
@@ -6766,22 +6762,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">mobController</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="1065682814"/>
-					</object>
-					<int key="connectionID">837</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">combatController</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="983345874"/>
-					</object>
-					<int key="connectionID">838</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">movementController</string>
 						<reference key="source" ref="983345874"/>
 						<reference key="destination" ref="290834434"/>
@@ -7809,14 +7789,6 @@
 						<reference key="destination" ref="148782052"/>
 					</object>
 					<int key="connectionID">2554</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">chatController</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="115843792"/>
-					</object>
-					<int key="connectionID">2556</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -10329,22 +10301,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">combatProfileEditor</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="165867882"/>
-					</object>
-					<int key="connectionID">4169</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">statisticsController</string>
-						<reference key="source" ref="290834434"/>
-						<reference key="destination" ref="506723390"/>
-					</object>
-					<int key="connectionID">4182</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">statisticsController</string>
 						<reference key="source" ref="94147614"/>
 						<reference key="destination" ref="506723390"/>
@@ -10702,6 +10658,30 @@
 						</object>
 					</object>
 					<int key="connectionID">4274</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">mobController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="1065682814"/>
+					</object>
+					<int key="connectionID">4275</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">combatProfileEditor</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="165867882"/>
+					</object>
+					<int key="connectionID">4276</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">statisticsController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="506723390"/>
+					</object>
+					<int key="connectionID">4277</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -15633,7 +15613,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4274</int>
+			<int key="maxID">4277</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -16646,24 +16626,34 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>auraController</string>
+							<string>blacklistController</string>
 							<string>botController</string>
+							<string>combatProfileEditor</string>
 							<string>controller</string>
 							<string>logOutStuckAttemptsTextField</string>
 							<string>macroController</string>
+							<string>mobController</string>
 							<string>movementTypePopUp</string>
 							<string>offsetController</string>
 							<string>playerData</string>
+							<string>statisticsController</string>
+							<string>waypointController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
+							<string>BlacklistController</string>
 							<string>BotController</string>
+							<string>CombatProfileEditor</string>
 							<string>Controller</string>
 							<string>NSTextField</string>
 							<string>MacroController</string>
+							<string>MobController</string>
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
+							<string>StatisticsController</string>
+							<string>WaypointController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">

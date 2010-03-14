@@ -84,7 +84,7 @@ enum AutomatorIntervalType {
 		NSArray *routes = [[self loadAllDataForKey:@"Routes" withClass:[RouteSet class]] retain];
 		
 		// pull routes from .route files
-		_myHackVariable = YES;
+		_myHackVariableToLoadOldData = YES;
 		if ( !routes ){
 			routes = [[self loadAllObjects] retain];
 		}
@@ -96,7 +96,7 @@ enum AutomatorIntervalType {
 		}
 		
 		// stop using .route
-		_myHackVariable = NO;
+		_myHackVariableToLoadOldData = NO;
 		
 		// then we need to convert our routes above, I love how much I change things QQ
 		if ( [routes count] > 0 ){
@@ -1639,7 +1639,7 @@ enum AutomatorIntervalType {
 // for saving
 - (NSString*)objectExtension{
 	// just to load old data
-	if ( _myHackVariable ){
+	if ( _myHackVariableToLoadOldData ){
 		return @"route";
 	}
 	
@@ -1647,7 +1647,7 @@ enum AutomatorIntervalType {
 }
 
 - (NSString*)objectName:(id)object{
-	if ( _myHackVariable ){
+	if ( _myHackVariableToLoadOldData ){
 		return [(RouteSet*)object name];
 	}
 	

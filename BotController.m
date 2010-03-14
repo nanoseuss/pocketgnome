@@ -1360,6 +1360,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)performProcedureWithState: (NSDictionary*)state {
 	
+	// player dead?
+	if ( [playerController isDead] ){
+		PGLog(@"[Procedure] Player is dead! Aborting!");
+		[self cancelCurrentProcedure];
+		return;
+	}
+	
     // if there's another procedure running, we gotta stop it
     if( self.procedureInProgress && ![self.procedureInProgress isEqualToString: [state objectForKey: @"Procedure"]]) {
         [self cancelCurrentProcedure];
@@ -3774,7 +3781,6 @@ NSMutableDictionary *_diffDict = nil;
     [controller setCurrentStatus: @"Bot: Player has Died"];
     
     [self cancelCurrentProcedure];              // this wipes all bot state (except pvp)
-    //[movementController setPatrolRoute: nil];   // this wipes all movement state
     [combatController resetAllCombat];         // this wipes all combat state
 	
 	_shouldFollow = YES;
@@ -3800,12 +3806,6 @@ NSMutableDictionary *_diffDict = nil;
 		[[NSSound soundNamed: @"alarm"] play];
 		PGLog(@"Playing alarm, you have died!");
 	}
-	
-	// do we need to switch our route back?
-	if ( [self.theRouteCollection startRouteOnDeath] ){
-		self.theRouteSet = [self.theRouteCollection startingRoute];
-		PGLog(@"[Bot] Died, switching to main starting route! %@", self.theRouteSet);
-	}
 }
 
 - (void)rePop: (NSNumber *)count{
@@ -3817,7 +3817,7 @@ NSMutableDictionary *_diffDict = nil;
 		return;
 	}
 
-	PGLog(@"[Bot] Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
+	PGLog(@"[Bot] AJKSHDKLAJSHDKJASHDKLAJSDHAKS Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
 	
 	// We need to repop!
 	if ( ![playerController isGhost] && [playerController isDead] ) {
@@ -3833,8 +3833,12 @@ NSMutableDictionary *_diffDict = nil;
 		
 		[macroController useMacroOrSendCmd:@"ReleaseCorpse"];
 		
-		// Try again every 5 seconds pls
-		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 5.0];
+		// Try again every few seconds
+		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 1.0];
+	}
+	else{
+		PGLog(@"[Bot] We're a ghost, starting movement!");
+		[movementController resumeMovement];
 	}
 	
 	/*
@@ -4800,18 +4804,6 @@ NSMutableDictionary *_diffDict = nil;
 	for ( NSMenuItem *item in [combatProfilePopup itemArray] ){
 		if ( [[(CombatProfile*)[item representedObject] name] isEqualToString:[profile name]] ){
 			[combatProfilePopup selectItem:item];
-			break;
-		}
-	}
-}
-
-// set the new route + select it in the dropdown!
-- (void)changeRouteSet:(RouteSet*)route{
-	self.theRouteSet = route;
-	
-	for ( NSMenuItem *item in [routePopup itemArray] ){
-		if ( [[(RouteSet*)[item representedObject] name] isEqualToString:[route name]] ){
-			[routePopup selectItem:item];
 			break;
 		}
 	}

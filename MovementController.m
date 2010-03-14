@@ -23,6 +23,13 @@
 #import "AuraController.h"
 #import "MacroController.h"
 #import "BlacklistController.h"
+#import "WaypointController.h"
+#import "MobController.h"
+#import "StatisticsController.h"
+#import "CombatProfileEditor.h"
+
+#import "Action.h"
+#import "Rule.h"
 
 #import "Offsets.h"
 
@@ -64,6 +71,10 @@
 
 - (void)correctDirection: (BOOL)force;
 - (void)turnToward: (Position*)position;
+
+- (void)performActions:(NSDictionary*)dict;
+
+- (void)realMoveToNextWaypoint;
 
 - (void)resetMovementTimer;
 
@@ -391,33 +402,56 @@ typedef enum MovementState{
 
 - (void)moveToNextWaypoint{
 	
+	// do we have an action for the destination we just reached?
+	NSArray *actions = [self.destinationWaypoint actions];
+	if ( actions && [actions count] > 0 ){
+
+		// check if conditions are met
+		Rule *rule = [self.destinationWaypoint rule];
+		if ( rule == nil || [botController evaluateRule: rule withTarget: TargetNone asTest: NO] ){
+			
+			// reset our timer
+			[self resetMovementTimer];
+			
+			PGLog(@"[Waypoint] Performing %d actions", [actions count] );
+			
+			// time to perform actions!
+			NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+								  actions,						@"Actions",
+								  [NSNumber numberWithInt:0],	@"CurrentAction",
+								  nil];
+			
+			[self performActions:dict];
+			
+			return;
+		}
+	}
 	
-	// CHECK FOR ACTIONS FOR THE CURRENT WAYPOINT!
-	// RESET THE TIMER!!
+	[self realMoveToNextWaypoint];	
+}
+
+- (void)realMoveToNextWaypoint{
 	
 	PGLog(@"[Move] Moving to the next waypoint!");
 	
-	
 	NSArray *waypoints = [self.currentRoute waypoints];
-	
 	int index = [waypoints indexOfObject:self.destinationWaypoint];
+	
 	// we have an index! yay!
 	if ( index != NSNotFound ){
 		
 		// at the end of the route
 		if ( index == [waypoints count] - 1 ){
 			PGLog(@"[Move] We've reached the end of the route!");
-			//[self resetMovementState];
-			
-			// move to first WP
-			index = 0;
+
+			[self routeEnded];
 		}
 		
 		// move to the next WP
 		else if ( index < [waypoints count] - 1 ){
 			index++;
 		}
-
+		
 		// increment something here to keep track of how many waypoints we've moved to?
 		
 		self.destinationWaypoint = [waypoints objectAtIndex:index];
@@ -427,51 +461,23 @@ typedef enum MovementState{
 	else{
 		PGLog(@"[Move] Error, there are no waypoints for the current route");
 	}
+}
+
+- (void)routeEnded{
 	
+	// we've reached the end of our corpse route, lets switch to our main route
+	/*if ( self.currentRouteKey == CorpseRunRoute ){
+		
+		PGLog(@"[Move] Switching from corpse to primary route!");
+		
+		self.currentRouteKey = PrimaryRoute;
+		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+	}*/
 	
-	/*
-	// This will reset our "last tried waypoint" variable.  This variable is used to store the last waypoint we tried to move to when we're stuck!
-	//  we only want to reset it once we're moving through our route correctly!
-	_successfulMoves++;
-	if ( _successfulMoves > 10 ){
-		self.lastTriedWaypoint = nil;
-		_unstickAttempt = 0;
-	}
+	self.destinationWaypoint = nil;
 	
-    NSArray *waypoints = [[self patrolRoute] waypoints];
-    if([self isPatrolling] && [self patrolRoute] && [waypoints count]) {
-        
-        int index = [waypoints indexOfObject: [self destination]];
-        if(index != NSNotFound) {
-            
-            if(index == [waypoints count]-1) {   // if we're at the end, loop around
-                if(self.stopAtEnd) {
-                    [self finishRoute];
-                    return;
-                }
-                index = 0;
-            } else if(index < [[[self patrolRoute] waypoints] count]-1)
-                index++;
-            
-            self.waypointDoneCount++;
-            // check to see if we've hit our max WP (this is NOT always accurate, we shouldn't really do this by tracking waypointDoneCount)
-            if(_patrolCount && (self.waypointDoneCount > _patrolCount*[waypoints count]))   {
-                PGLog(@"[Move] Patrol count expired. Ending patrol.");
-                [self finishRoute];
-            } else {
-                [self moveToWaypoint: [waypoints objectAtIndex: index]];
-            }
-        } else {
-            PGLog(@"[Move] Waypoint not found. Ending route.");
-            [self finishRoute];
-        }
-    } else {
-        // otherwise just cancel all movement
-        PGLog(@"[Move] Patrol route or waypoints invalid. Ending patrol.");
-        [self finishRoute];
-    }*/
-	
-	
+	// this will actually switch to the Corpse/Primary route based on which is closer
+	[self resumeMovement];
 }
 
 #pragma mark Actual Movement Shit - Scary
@@ -875,9 +881,9 @@ typedef enum MovementState{
 		[self stopMovement];
 	}
 	
-	self.currentRoute				= nil;
+	/*self.currentRoute				= nil;
 	self.currentRouteSet			= nil;
-	self.currentRouteKey			= nil;
+	self.currentRouteKey			= nil;*/
 	self.moveToObject				= nil;
 	self.destinationWaypoint		= nil;
 	self.lastAttemptedPosition		= nil;
@@ -1124,12 +1130,8 @@ typedef enum MovementState{
 
 - (void)playerHasDied:(NSNotification *)aNotification{
 	
-	// we died - we're not going to try to move now!
-	[self resetMovementTimer];
-	
-	// reset where we are moving to
-	self.destinationWaypoint = nil;
-	self.moveToObject = nil;
+	// reset our movement state!
+	[self resetMovementState];
 	
 	// do nothing
 	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ){
@@ -1142,12 +1144,22 @@ typedef enum MovementState{
 		return;
 	}
 	
-	self.currentRouteKey = CorpseRunRoute;
-	self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+	// switch back to starting route?
+	if ( [botController.theRouteCollection startRouteOnDeath] ){
+		self.currentRouteKey = CorpseRunRoute;
+		self.currentRoute = [[botController.theRouteCollection startingRoute] routeForKey:CorpseRunRoute];
+		PGLog(@"[Move] Died, switching to main starting route! %@", self.currentRoute);
+	}
+	// be normal!
+	else{
+		PGLog(@"[Move] Died, switching to corpse route");
+		self.currentRouteKey = CorpseRunRoute;
+		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+	}
 	
 	if ( self.currentRoute && [[self.currentRoute waypoints] count] > 0  ){
 		PGLog(@"[Move] Using corpse route!");
-		[self resumeMovement];
+		//[self resumeMovement];
 	}
 	else{
 		PGLog(@"[Move] No corpse route! Ending movement");
@@ -1162,8 +1174,14 @@ typedef enum MovementState{
 		return;
 	}
 	
+	// reset movement state
+	[self resetMovementState];
+	
+	// switch our route!
 	self.currentRouteKey = PrimaryRoute;
 	self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+	
+	PGLog(@"[Move] Player revived, switching to %@", self.currentRoute);
 	
 	if ( self.currentRoute ){
 		[self resumeMovement];
@@ -1642,7 +1660,7 @@ typedef enum MovementState{
 	return NO;	
 }
 
-- (void)jump {
+- (void)jump{
 	
     // correct direction
     [self correctDirection: YES];
@@ -1661,7 +1679,271 @@ typedef enum MovementState{
 
 #pragma mark Waypoint Actions
 
+#define INTERACT_RANGE		8.0f
 
+- (void)performActions:(NSDictionary*)dict{
+	
+	// player cast?  try again shortly
+	if ( [playerData isCasting] ){
+		float delayTime = [playerData castTimeRemaining];
+        if ( delayTime < 0.2f) delayTime = 0.2f;
+        PGLog(@"  Player casting. Waiting %.2f to perform next action.", delayTime);
+        
+        [self performSelector: _cmd
+                   withObject: dict 
+                   afterDelay: delayTime];
+		
+		return;
+	}
+	
+	int actionToExecute = [[dict objectForKey:@"CurrentAction"] intValue];
+	NSArray *actions = [dict objectForKey:@"Actions"];
+	float delay = 0.1f;
+	
+	// are we done?
+	if ( actionToExecute >= [actions count] ){
+		PGLog(@"[Waypoint] Action complete, resuming route");
+		[self realMoveToNextWaypoint];
+		return;
+	}
+	
+	// execute our action
+	else {
+		
+		PGLog(@"[Waypoint] Executing action %d", actionToExecute);
+		
+		Action *action = [actions objectAtIndex:actionToExecute];
+		
+		// spell
+		if ( [action type] == ActionType_Spell ){
+			
+			UInt32 spell = [[[action value] objectForKey:@"SpellID"] unsignedIntValue];
+			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
+			PGLog(@"[Waypoint] Casting spell %d", spell);
+			
+			// only pause movement if we have to!
+			if ( !instant )
+				[self stopMovement];
+			
+			[botController performAction:spell];
+		}
+		
+		// item
+		else if ( [action type] == ActionType_Item ){
+			
+			UInt32 itemID = [[[action value] objectForKey:@"ItemID"] unsignedIntValue];
+			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
+			UInt32 actionID = (USE_ITEM_MASK + itemID);
+			
+			PGLog(@"[Waypoint] Using item %d", itemID);
+			
+			// only pause movement if we have to!
+			if ( !instant )
+				[self stopMovement];
+			
+			[botController performAction:actionID];
+		}
+		
+		// macro
+		else if ( [action type] == ActionType_Macro ){
+			
+			UInt32 macroID = [[[action value] objectForKey:@"MacroID"] unsignedIntValue];
+			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
+			UInt32 actionID = (USE_MACRO_MASK + macroID);
+			
+			PGLog(@"[Waypoint] Using macro %d", macroID);
+			
+			// only pause movement if we have to!
+			if ( !instant )
+				[self stopMovement];
+			
+			[botController performAction:actionID];
+		}
+		
+		// delay
+		else if ( [action type] == ActionType_Delay ){
+			
+			delay = [[action value] floatValue];
+			
+			[self stopMovement];
+			
+			PGLog(@"[Waypoint] Delaying for %0.2f seconds", delay);
+		}
+		
+		// jump
+		else if ( [action type] == ActionType_Jump ){
+			
+			[self jump];
+			
+			PGLog(@"[Waypoint] Jumping!");
+		}
+		
+		// switch route
+		else if ( [action type] == ActionType_SwitchRoute ){
+			
+			RouteSet *route = nil;
+			NSString *UUID = [action value];
+			for ( RouteSet *otherRoute in [waypointController routes] ){
+				if ( [UUID isEqualToString:[otherRoute UUID]] ){
+					route = otherRoute;
+					break;
+				}
+			}
+			
+			if ( route == nil ){
+				PGLog(@"[Waypoint] Unable to find route %@ to switch to!", UUID);
+				
+			}
+			else{
+				PGLog(@"[Waypoint] Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
+				
+				// switch the botController's route!
+				[botController setTheRouteSet:route];
+				
+				// start patrolling!
+				[self patrolWithRouteSet:route];
+				return;
+			}
+		}
+		
+		else if ( [action type] == ActionType_QuestGrab || [action type] == ActionType_QuestTurnIn ){
+			
+			// reset mob counts
+			if ( [action type] == ActionType_QuestTurnIn ){
+				[statisticsController resetQuestMobCount];
+			}
+			
+			// get all nearby mobs
+			NSArray *nearbyMobs = [mobController mobsWithinDistance:INTERACT_RANGE levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+			Mob *questNPC = nil;
+			for ( questNPC in nearbyMobs ){
+				
+				if ( [questNPC isQuestGiver] ){
+					
+					[self stopMovement];
+					
+					// might want to make k 3 (but will take longer)
+					
+					PGLog(@"[Waypoint] Turning in/grabbing quests to/from %@", questNPC);
+					
+					int i = 0, k = 1;
+					for ( ; i < 3; i++ ){
+						for ( k = 1; k < 5; k++ ){
+							
+							// interact
+							if ( [botController interactWithMouseoverGUID:[questNPC GUID]] ){
+								usleep(300000);
+								
+								// click the gossip button
+								[macroController useMacroWithKey:@"QuestClickGossip" andInt:k];
+								usleep(10000);
+								
+								// click "continue" (not all quests need this)
+								[macroController useMacro:@"QuestContinue"];
+								usleep(10000);
+								
+								// click "Accept" (this is ONLY needed if we're accepting a quest)
+								[macroController useMacro:@"QuestAccept"];
+								usleep(10000);
+								
+								// click "complete quest"
+								[macroController useMacro:@"QuestComplete"];
+								usleep(10000);
+								
+								// click "cancel" (sometimes we have to in case we just went into a quest we already have!)
+								[macroController useMacro:@"QuestCancel"];
+								usleep(10000);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// interact with NPC
+		else if ( [action type] == ActionType_InteractNPC ){
+			
+			NSNumber *entryID = [action value];
+			PGLog(@"[Waypoint] Interacting with mob %@", entryID);
+			
+			// moving bad, lets pause!
+			[self stopMovement];
+			
+			// interact
+			[botController interactWithMob:[entryID unsignedIntValue]];
+		}
+		
+		// interact with object
+		else if ( [action type] == ActionType_InteractObject ){
+			
+			NSNumber *entryID = [action value];
+			PGLog(@"[Waypoint] Interacting with node %@", entryID);
+			
+			// moving bad, lets pause!
+			[self stopMovement];
+			
+			// interact
+			[botController interactWithNode:[entryID unsignedIntValue]];	
+		}
+		
+		// repair
+		else if ( [action type] == ActionType_Repair ){
+			
+			// get all nearby mobs
+			NSArray *nearbyMobs = [mobController mobsWithinDistance:INTERACT_RANGE levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
+			Mob *repairNPC = nil;
+			for ( repairNPC in nearbyMobs ){
+				if ( [repairNPC canRepair] ){
+					PGLog(@"[Waypoint] Repairing with %@", repairNPC);
+					break;
+				}
+			}
+			
+			// repair
+			if ( repairNPC ){
+				[self stopMovement];
+				if ( [botController interactWithMouseoverGUID:[repairNPC GUID]] ){
+					
+					// sleep some to allow the window to open!
+					usleep(500000);
+					
+					// now send the repair macro
+					[macroController useMacro:@"RepairAll"];	
+					
+					PGLog(@"[Waypoint] All items repaired");
+				}
+			}
+			else{
+				PGLog(@"[Waypoint] Unable to repair, no repair NPC found!");
+			}
+		}
+		
+		// switch combat profile
+		else if ( [action type] == ActionType_CombatProfile ){
+			PGLog(@"[Waypoint] Switching from combat profile %@", botController.theCombatProfile);
+			
+			CombatProfile *profile = nil;
+			NSString *UUID = [action value];
+			for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
+				if ( [UUID isEqualToString:[otherProfile UUID]] ){
+					profile = otherProfile;
+					break;
+				}
+			}
+			
+			[botController changeCombatProfile:profile];
+		}
+	}
+	
+	PGLog(@"[Waypoint] Action %d complete, checking for more!", actionToExecute);
+	
+	[self performSelector: _cmd
+			   withObject: [NSDictionary dictionaryWithObjectsAndKeys:
+							actions,									@"Actions",
+							[NSNumber numberWithInt:++actionToExecute],	@"CurrentAction",
+							nil]
+			   afterDelay: delay];
+}
 
 #pragma mark Temporary
 
