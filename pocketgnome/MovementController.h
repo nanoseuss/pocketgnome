@@ -15,6 +15,10 @@
 @class AuraController;
 @class MacroController;
 @class BlacklistController;
+@class WaypointController;
+@class MobController;
+@class StatisticsController;
+@class CombatProfileEditor;
 
 @class Route;
 @class Waypoint;
@@ -45,6 +49,10 @@ typedef enum MovementType {
 	IBOutlet AuraController			*auraController;
 	IBOutlet MacroController		*macroController;
 	IBOutlet BlacklistController	*blacklistController;
+	IBOutlet WaypointController		*waypointController;
+	IBOutlet MobController			*mobController;
+	IBOutlet StatisticsController	*statisticsController;
+	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementTypePopUp;

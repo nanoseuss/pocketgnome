@@ -25,6 +25,11 @@
 
 #import "ImageAndTextCell.h"
 
+@interface CombatController ()
+@property (readwrite, retain) Unit *attackUnit;
+@property (readwrite, retain) Unit *castingUnit;
+@property (readwrite, retain) Unit *addUnit;
+@end
 
 @interface CombatController (Internal)
 - (NSArray*)friendlyUnits;
@@ -35,7 +40,6 @@
 - (void)updateCombatTable;
 - (void)monitorUnit: (Unit*)unit;
 @end
-
 
 @implementation CombatController
 
@@ -56,6 +60,7 @@
 		_unitsAllCombat = [[NSMutableArray array] retain];
 		_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
 		
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
@@ -137,6 +142,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
     PGLog(@"------ Technically (real) OOC ------");
 	
 	_inCombat = NO;
+	
+	[self cancelAllCombat];
+}
+
+- (void)playerHasDied: (NSNotification*)notification {
+    PGLog(@"[Combat] Player has died!");
 	
 	[self cancelAllCombat];
 }
@@ -453,9 +464,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	//[NSObject cancelPreviousPerformRequestsWithTarget: self];		// we're not calling this as it kills our monitor function + the death might not be fired!
 
 	// reset our variables
-	[_castingUnit release]; _castingUnit = nil;
-	[_attackUnit release];	_attackUnit = nil;
-	[_addUnit release];		_addUnit = nil;
+	self.castingUnit = nil;
+	self.attackUnit = nil;
+	self.addUnit = nil;
 	[_friendUnit release];	_friendUnit =  nil;
 	
 	// remove blacklisted units (TO DO: we should only remove those of type Unit)
@@ -889,6 +900,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		PGLog(@"[Combat] Dead, removing all objects!");
 		
 		[_unitsAttackingMe removeAllObjects];
+		self.attackUnit = nil;
+		self.addUnit = nil;
+		self.castingUnit = nil;
 		
 		return;
 	}
