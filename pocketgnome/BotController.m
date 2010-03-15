@@ -3810,6 +3810,12 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)moveAfterRepop{
+	
+	// don't move if we're PvPing or in a BG
+	if ( self.isPvPing || [playerController isInBG:[playerController zone]] ){
+		return;
+	}
+	
 	if ( [playerController isDead] && [playerController isGhost] ){
 		PGLog(@"[Bot] We're a ghost, starting movement!");
 		[movementController resumeMovement];
@@ -4605,8 +4611,12 @@ NSMutableDictionary *_diffDict = nil;
 			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
 		 }
 		 
+		 PGLog(@"[Bot] Action taken! Result: %d", lastErrorMessage);
+		 
 		 return lastErrorMessage;
 	}
+	
+	PGLog(@"[Bot] Action taken successfully!");
 
 	return ErrNone;
 }
