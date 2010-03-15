@@ -32,6 +32,7 @@ enum{
 	Reason_NotInLoS				= 1,
 	Reason_NodeMadeMeFall		= 2,
 	Reason_CantReachObject		= 4,
+	Reason_NotInCombatAfter10	= 8,
 	
 };
 

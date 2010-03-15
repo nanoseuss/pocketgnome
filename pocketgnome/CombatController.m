@@ -863,7 +863,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 		// not in combat after 10 seconds, blacklist?
 		if ( leftCombatCount > 100 ){
-			PGLog(@"[**********] Unit not in combat - should we ignore + blacklist?");
+			if ( unit == _attackUnit ){
+				PGLog(@"[**********] Unit not in combat after 10 seconds, blacklisting");
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
+				self.attackUnit = nil;				
+			}
 		}
 		
 		// after a minute stop monitoring
