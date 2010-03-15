@@ -207,12 +207,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	// add the other units if we need to
-	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] ){
+	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ){
 		[units addObject:_attackUnit];
 	}
 	
 	// add our add
-	if ( _addUnit != nil && ![units containsObject:_addUnit] ){
+	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] ){
 		[units addObject:_addUnit];
 	}
 	
@@ -860,6 +860,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( ![unit isInCombat] ){
 		PGLog(@"[**********] Unit not in combat! %d", leftCombatCount);
 		leftCombatCount++;
+		
+		// not in combat after 10 seconds, blacklist?
+		if ( leftCombatCount > 100 ){
+			PGLog(@"[**********] Unit not in combat - should we ignore + blacklist?");
+		}
 		
 		// after a minute stop monitoring
 		if ( leftCombatCount > 600 ){

@@ -1747,6 +1747,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
 								nil,											@"Target", nil]
 				   afterDelay: 0.1f];
+
 		return;
 	}
 
@@ -3808,6 +3809,13 @@ NSMutableDictionary *_diffDict = nil;
 	}
 }
 
+- (void)moveAfterRepop{
+	if ( [playerController isDead] && [playerController isGhost] ){
+		PGLog(@"[Bot] We're a ghost, starting movement!");
+		[movementController resumeMovement];
+	}	
+}
+
 - (void)rePop: (NSNumber *)count{
 	if( ![self isBotting]) return;
 	if ( ![playerController playerIsValid:self] ) return;
@@ -3817,13 +3825,13 @@ NSMutableDictionary *_diffDict = nil;
 		return;
 	}
 
-	PGLog(@"[Bot] AJKSHDKLAJSHDKJASHDKLAJSDHAKS Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
+	PGLog(@"[Bot] Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
 	
 	// We need to repop!
 	if ( ![playerController isGhost] && [playerController isDead] ) {
 		int try = [count intValue];
 		// ONLY stop bot if we're not in PvP (we'll auto res in PvP!)
-		if(++try > 10 && !self.isPvPing) {
+		if(++try > 25 && !self.isPvPing) {
 			PGLog(@"[Bot] Repop failed after 10 tries.  Stopping bot.");
 			[self stopBot: nil];
 			[controller setCurrentStatus: @"Bot: Failed to Release. Stopped."];
@@ -3832,13 +3840,10 @@ NSMutableDictionary *_diffDict = nil;
 		PGLog(@"[Bot] Attempting to repop %d.", try);
 		
 		[macroController useMacroOrSendCmd:@"ReleaseCorpse"];
+		[self performSelector: @selector(moveAfterRepop) withObject:nil afterDelay:0.5f];
 		
 		// Try again every few seconds
-		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 1.0];
-	}
-	else{
-		PGLog(@"[Bot] We're a ghost, starting movement!");
-		[movementController resumeMovement];
+		[self performSelector: @selector(rePop:) withObject: [NSNumber numberWithInt:try] afterDelay: 5.0];
 	}
 	
 	/*
