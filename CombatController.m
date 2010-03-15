@@ -209,11 +209,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// add the other units if we need to
 	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ){
 		[units addObject:_attackUnit];
+		PGLog(@"[Bot] Adding attack unit: %@", _attackUnit);
 	}
 	
 	// add our add
 	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] ){
 		[units addObject:_addUnit];
+		PGLog(@"[Bot] Adding add unit: %@", _addUnit);
 	}
 	
 	// sort
