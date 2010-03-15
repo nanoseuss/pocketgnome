@@ -72,6 +72,7 @@
 - (void)correctDirection: (BOOL)force;
 - (void)turnToward: (Position*)position;
 
+- (void)routeEnded;
 - (void)performActions:(NSDictionary*)dict;
 
 - (void)realMoveToNextWaypoint;
@@ -445,6 +446,7 @@ typedef enum MovementState{
 			PGLog(@"[Move] We've reached the end of the route!");
 
 			[self routeEnded];
+			return;
 		}
 		
 		// move to the next WP
@@ -466,15 +468,16 @@ typedef enum MovementState{
 - (void)routeEnded{
 	
 	// we've reached the end of our corpse route, lets switch to our main route
-	/*if ( self.currentRouteKey == CorpseRunRoute ){
+	if ( self.currentRouteKey == CorpseRunRoute ){
 		
 		PGLog(@"[Move] Switching from corpse to primary route!");
 		
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
-	}*/
+	}
 	
-	self.destinationWaypoint = nil;
+	// use the first WP	
+	self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
 	
 	// this will actually switch to the Corpse/Primary route based on which is closer
 	[self resumeMovement];
@@ -483,7 +486,7 @@ typedef enum MovementState{
 #pragma mark Actual Movement Shit - Scary
 
 - (void)moveToPosition: (Position*)position {
-    
+	
 	// reset our timer (that checks if we're at the position)
 	[self resetMovementTimer];
 	

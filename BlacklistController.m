@@ -143,6 +143,9 @@
 			PGLog(@"[Blacklist] Blacklisted %@ for making us fall!", obj);
 			return YES;
 		}
+		else if ( reason == Reason_NotInCombatAfter10 ){
+			return YES;
+		}
 	}
 	
 	// general blacklisting
