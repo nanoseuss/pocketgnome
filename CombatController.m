@@ -866,7 +866,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( unit == _attackUnit ){
 				PGLog(@"[**********] Unit not in combat after 10 seconds, blacklisting");
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
-				self.attackUnit = nil;				
+				self.attackUnit = nil;
+				return;
 			}
 		}
 		
