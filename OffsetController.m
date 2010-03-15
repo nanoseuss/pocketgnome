@@ -203,8 +203,15 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		
 		// world state: 0xC7A350		// 3.3.2
 		
+		// connecting/auth/success = 1,2
+		// char list retreiving = 3
+		// race/faction change (or customize) in progress? = 9
+		// char decline in progress = 8
+		// char rename in progress = 7
+		// game loading = 10?
+		// game loaded = 0
 		
-		
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xC7A350] forKey:@"WorldState"];				// 3.3.2
 		[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
 		
 		_offsetsLoaded = YES;
