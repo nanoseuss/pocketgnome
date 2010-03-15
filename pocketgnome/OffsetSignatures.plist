@@ -192,14 +192,35 @@
 			<string></string>
 		</dict>
 	</dict>
-	<key>LOGIN_STATE</key>
+	<key>WorldState</key>
 	<dict>
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x55\x89\xE5\x83\xEC\x18\xC7\x44\x24\x08\x40\x00\x00\x00\x8B\x45\x08\x89\x44\x24\x04\xC7\x04\x24\x00\x71\x55\x01</string>
+			<string>\xC7\x05\x50\xA3\xC7\x00\x09\x00\x00\x00\xC7\x44\x24\x08\x00\x00\x00\x00\xC7\x44\x24\x04\xFF\xFF\xFF\xFF\xC7\x04\x24\x08\x14\xA9\x00\xE8\xBA\x62\x54\x00</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxxxxxxxxxxxxxxx????</string>
+			<string>xx????xxxxxxxxxxxxxxxxxxxxxxx????x????</string>
+			<key>Comment</key>
+			<string>3.3.2: from sub_2B9000</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
+	<key>LoginState</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\xC7\x44\x24\x08\xFF\xFF\xFF\x7F\xC7\x44\x24\x04\xF0\x12\xA9\x00\xC7\x04\x24\x20\xBD\xD8\x00\xE8\xF4\xD2\xDE\xFF\x85\xC0\x75\x8F</string>
+			<key>Mask</key>
+			<string>xxxxxxxxxxxx%%%%xxx????x????xxxx</string>
+			<key>Comment</key>
+			<string>3.3.2: from sub_2B7C40</string>
 		</dict>
 		<key>ppc</key>
 		<dict>

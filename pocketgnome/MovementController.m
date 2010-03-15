@@ -343,7 +343,8 @@ typedef enum MovementState{
 			// if the player is dead, find the closest WP based on both routes
 			if ( [playerData isDead] ){
 				
-				if ( ![self.currentRouteSet routeForKey:CorpseRunRoute] ){
+				// we switched to a corpse route on death
+				if ( [[self.currentRoute waypoints] count] == 0 ){
 					PGLog(@"[Move] Unable to resume movement, we're dead and there is no corpse route!");
 					return;
 				}
@@ -881,7 +882,9 @@ typedef enum MovementState{
 	PGLog(@"[Move] Resetting movement state");
 	
 	if ( [self isMoving] ){
+		PGLog(@"[Move] Stopping movement!");
 		[self stopMovement];
+		[self setClickToMove:nil andType:ctmIdle andGUID:0x0];
 	}
 	
 	/*self.currentRoute				= nil;
@@ -892,7 +895,7 @@ typedef enum MovementState{
 	self.lastAttemptedPosition		= nil;
 	self.lastAttemptedPositionTime	= nil;
 	self.lastPlayerPosition			= nil;
-	_isMovingFromKeyboard = NO;
+	_isMovingFromKeyboard			= NO;
 	[_stuckDictionary removeAllObjects];
 	
 	_unstickifyTry = 0;
@@ -1150,7 +1153,8 @@ typedef enum MovementState{
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ){
 		self.currentRouteKey = CorpseRunRoute;
-		self.currentRoute = [[botController.theRouteCollection startingRoute] routeForKey:CorpseRunRoute];
+		self.currentRouteSet = [botController.theRouteCollection startingRoute];
+		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 		PGLog(@"[Move] Died, switching to main starting route! %@", self.currentRoute);
 	}
 	// be normal!

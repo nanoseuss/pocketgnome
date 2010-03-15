@@ -82,6 +82,7 @@
 		03981F38112C819E0081835F /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981F37112C819E0081835F /* LogController.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
+		03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
 		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
 		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
@@ -504,6 +505,8 @@
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
+		03A320D3114E88A9000D23EE /* JumpToWaypointActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JumpToWaypointActionController.h; sourceTree = "<group>"; };
+		03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JumpToWaypointActionController.m; sourceTree = "<group>"; };
 		03A4047B0FE148C60087BC0D /* mbobbleicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mbobbleicon.png; sourceTree = "<group>"; };
 		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
 		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
@@ -986,6 +989,8 @@
 				03FFD593110CB5440046AEDF /* InteractNPCActionController.m */,
 				03FFD594110CB5440046AEDF /* InteractObjectActionController.h */,
 				03FFD595110CB5440046AEDF /* InteractObjectActionController.m */,
+				03A320D3114E88A9000D23EE /* JumpToWaypointActionController.h */,
+				03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */,
 			);
 			name = WaypointActions;
 			sourceTree = "<group>";
@@ -2119,6 +2124,7 @@
 				034126C11135706E00BE6819 /* PvPController.m in Sources */,
 				034126E61135774100BE6819 /* Battleground.m in Sources */,
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
+				03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

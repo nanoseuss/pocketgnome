@@ -1404,6 +1404,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     int completed = [[state objectForKey: @"CompletedRules"] intValue];
     int attempts = [[state objectForKey: @"RuleAttempts"] intValue];
 	int actionsPerformed = [[state objectForKey: @"ActionsPerformed"] intValue];
+	int inCombatNoAttack = [[state objectForKey: @"InCombatNoAttack"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
 	if ( rulesTried == nil ){
 		//PGLog(@"[Procedure^^^^^^^^^^^^^] Creating dictionary to track our tried rules!");
@@ -1446,6 +1447,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                    withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
                                 [state objectForKey: @"Procedure"],             @"Procedure",
                                 [NSNumber numberWithInt: completed+1],          @"CompletedRules",
+								[NSNumber numberWithInt: inCombatNoAttack],		@"InCombatNoAttack",
                                 target,                                         @"Target",  nil] 
                    afterDelay: RULE_EVAL_DELAY_SHORT];
         return;
@@ -1733,7 +1735,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// still in combat with people! But not able to cast! (probably b/c insufficient rage/mana/etc...) Keep trying while we're in combat!
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [[combatController combatList] count] > 0 ){
 		
-		PGLog(@"[Procedure] Still being attacked! Continuing combat!");
+		PGLog(@"[Procedure] Still being attacked! Continuing combat! No Combat: %d", inCombatNoAttack);
+		
+		inCombatNoAttack++;
 		
 		for ( Unit *unit in [combatController combatList] ){
 			PGLog(@" %@", unit);
@@ -1745,6 +1749,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
 								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
+								[NSNumber numberWithInt: inCombatNoAttack],		@"InCombatNoAttack",
 								nil,											@"Target", nil]
 				   afterDelay: 0.1f];
 
@@ -3041,7 +3046,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ( self.theRouteSet ) {
 		
 		// resume movement if we're not moving!
-		if ( ![movementController isMoving] && ![movementController isPatrolling] ){
+		if ( /*![movementController isMoving] &&*/ ![movementController isPatrolling] ){
 			[movementController resumeMovement];
 		}
 		

@@ -214,6 +214,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		[offsets setObject:[NSNumber numberWithUnsignedLong:0xC7A350] forKey:@"WorldState"];				// 3.3.2
 		[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
 		
+		// 0xD8BD20 - charselect, login, charcreate, patchdownload
+		
 		_offsetsLoaded = YES;
 	}
 	// technically should never be here
