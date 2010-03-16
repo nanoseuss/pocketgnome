@@ -122,6 +122,7 @@
 	//  making the assumption that ALL infractions are w/in the time frame since we refreshed above
 	int totalNone = 0;
 	int totalFailedToReach = 0;
+	int totalLos = 0;
 	for ( NSDictionary *infraction in infractions ){
 		
 		int reason		= [[infraction objectForKey:@"Reason"] intValue];
@@ -135,8 +136,8 @@
 			
 			// only blacklisted for 5 seconds, since we'll now move, and could potentially get out of LOS?
 			if ( timeSinceBlacklisted <= 5.0f ){
-				PGLog(@"[Blacklist] LOS still blacklisted, has only been %0.2f seconds", timeSinceBlacklisted);
-				return YES;
+				PGLog(@"[Blacklist] LOS , has only been %0.2f seconds", timeSinceBlacklisted);
+				totalLos++;
 			}
 		}
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
@@ -159,6 +160,10 @@
 	}
 	else if ( totalFailedToReach >= 3 ){
 		PGLog(@"[Blacklist] Object %@ blacklisted because we couldn't reach it!", obj);
+		return YES;
+	}
+	else if ( totalLos >= 3 ){
+	PGLog(@"[Blacklist] Object %@ blacklisted due to LOS!", obj);
 		return YES;
 	}
 	

@@ -168,6 +168,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// blacklist?
 	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
 		
+		[blacklistController blacklistObject: _castingUnit withReason:Reason_NotInLoS];
+		
+		/*
 		// don't blacklist if melee + moving to!
 		if ( ! ([botController.theBehavior meleeCombat] && [movementController moveToObject] == _castingUnit ) ){
 			PGLog(@"[Combat] Out of range/LOS, blacklisting %@", _castingUnit);
@@ -175,7 +178,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 		else{
 			PGLog(@"BLACKLIST [Combat] Moving to unit, not blacklisting");
-		}
+		}*/
 	}
 }
 

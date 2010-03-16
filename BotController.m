@@ -1733,27 +1733,43 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// still in combat with people! But not able to cast! (probably b/c insufficient rage/mana/etc...) Keep trying while we're in combat!
-	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [[combatController combatList] count] > 0 ){
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [[combatController combatList] count] > 0 && inCombatNoAttack < 75 ){
 		
 		PGLog(@"[Procedure] Still being attacked! Continuing combat! No Combat: %d", inCombatNoAttack);
 		
 		inCombatNoAttack++;
 		
+		BOOL validCombatUnit = NO;
 		for ( Unit *unit in [combatController combatList] ){
+			if ( ![blacklistController isBlacklisted:unit] ){
+				validCombatUnit = YES;
+			}
 			PGLog(@" %@", unit);
 		}
 		
-		[self performSelector: _cmd
-				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-								[state objectForKey: @"Procedure"],				@"Procedure",
-								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
-								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
-								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
-								[NSNumber numberWithInt: inCombatNoAttack],		@"InCombatNoAttack",
-								nil,											@"Target", nil]
-				   afterDelay: 0.1f];
-
-		return;
+		if ( validCombatUnit ){
+			PGLog(@"[Procedure] Valid unit to attack in the combat list yay!");
+			[self performSelector: _cmd
+					   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+									[state objectForKey: @"Procedure"],				@"Procedure",
+									[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
+									rulesTried,										@"RulesTried",				// track how many times we've tried each rule
+									[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
+									[NSNumber numberWithInt: inCombatNoAttack],		@"InCombatNoAttack",
+									nil,											@"Target", nil]
+					   afterDelay: 0.1f];
+			
+			return;
+		}
+		else{
+			PGLog(@"[Procedure] Combat list units are blacklisted! Ignoring...");
+		}
+	}
+	
+	// blacklist unit - it wasn't in combat after 7.5 seconds!
+	if ( inCombatNoAttack >= 75 ){
+		[blacklistController blacklistObject:target];
+		PGLog(@"[Procedure] Unit not in combat after 7.5 seconds, cancelling combat procedure");
 	}
 
 	// we're done

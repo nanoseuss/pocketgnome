@@ -328,6 +328,12 @@ typedef enum MovementState{
 		// previous waypoint to move to
 		else if ( self.destinationWaypoint ){
 			
+			// check for patrol procedure before we move (thanks slipknot)
+			if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
+				PGLog(@"[Move] Not resuming movement, performing patrol proc");
+				return;
+			}
+			
 			PGLog(@"[Move] Moving to WP: %@", self.destinationWaypoint);
 			[self moveToPosition:[self.destinationWaypoint position]];
 		}
@@ -375,6 +381,13 @@ typedef enum MovementState{
 			if ( newWP ){
 				PGLog(@"[Move] Found waypoint %@ to move to", newWP);
 				self.destinationWaypoint = newWP;
+				
+				// check for patrol procedure before we move (thanks slipknot)
+				if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
+					PGLog(@"[Move] Not resuming movement, performing patrol proc");
+					return;
+				}
+				
 				[self moveToPosition:[newWP position]];
 			}
 			else{
