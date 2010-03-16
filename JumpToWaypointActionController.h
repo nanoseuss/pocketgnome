@@ -11,6 +11,13 @@
 
 @interface JumpToWaypointActionController : ActionController {
 
+	NSMutableArray *_waypoints;
+	
+	IBOutlet NSPopUpButton	*waypointsPopUpButton;
 }
+
++ (id)jumpToWaypointActionControllerWithTotalWaypoints: (int)waypoints;
+
+@property (readwrite, retain) NSArray *waypoints;
 
 @end

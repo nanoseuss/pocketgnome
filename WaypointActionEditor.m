@@ -47,6 +47,7 @@
 #import "VendorActionController.h"
 #import "MailActionController.h"
 #import "ReverseRouteActionController.h"
+#import "JumpToWaypointActionController.h"
 
 #import "WaypointController.h"
 #import "SpellController.h"
@@ -154,6 +155,7 @@ static WaypointActionEditor *sharedEditor = nil;
 		NSArray *nodes = [nodeController nodesWithinDistance:8.0f ofType:AnyNode maxLevel:9000];
 		newAction = [InteractObjectActionController interactObjectActionControllerWithObjects:nodes];
 	}
+	else if ( type == ActionType_JumpToWaypoint)		newAction = [JumpToWaypointActionController jumpToWaypointActionControllerWithTotalWaypoints:[[[waypointController currentRoute] waypoints] count]];
 	
 	if ( action != nil ){
 		[newAction setStateFromAction:action];

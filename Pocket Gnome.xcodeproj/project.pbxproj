@@ -83,6 +83,7 @@
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */; };
+		03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
 		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
 		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
@@ -124,7 +125,6 @@
 		7D2167810DC456A400D5A815 /* PTHotKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D21677A0DC456A400D5A815 /* PTHotKey.m */; };
 		7D2167820DC456A400D5A815 /* PTKeyCombo.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D21677D0DC456A400D5A815 /* PTKeyCombo.m */; };
 		7D2167F40DC4581700D5A815 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D2167F30DC4581700D5A815 /* Carbon.framework */; };
-		7D220E630D1662F70026DF75 /* MovementController4.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D220E620D1662F70026DF75 /* MovementController4.m */; };
 		7D220F150D1691E90026DF75 /* MobController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D220F140D1691E90026DF75 /* MobController.m */; };
 		7D3108E30EFDBCCB00ECFABE /* Bobber.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D3108E20EFDBCCB00ECFABE /* Bobber.png */; };
 		7D3109440EFDCBA700ECFABE /* splash.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7D3109430EFDCBA700ECFABE /* splash.mp3 */; };
@@ -507,6 +507,7 @@
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
 		03A320D3114E88A9000D23EE /* JumpToWaypointActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JumpToWaypointActionController.h; sourceTree = "<group>"; };
 		03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JumpToWaypointActionController.m; sourceTree = "<group>"; };
+		03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JumpToWaypointAction.xib; sourceTree = "<group>"; };
 		03A4047B0FE148C60087BC0D /* mbobbleicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mbobbleicon.png; sourceTree = "<group>"; };
 		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
 		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
@@ -579,8 +580,6 @@
 		7D21677D0DC456A400D5A815 /* PTKeyCombo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PTKeyCombo.m; sourceTree = "<group>"; };
 		7D2167840DC456D100D5A815 /* PTHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PTHeader.h; sourceTree = "<group>"; };
 		7D2167F30DC4581700D5A815 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		7D220E610D1662F70026DF75 /* MovementController4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovementController4.h; sourceTree = "<group>"; };
-		7D220E620D1662F70026DF75 /* MovementController4.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovementController4.m; sourceTree = "<group>"; };
 		7D220F130D1691E90026DF75 /* MobController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobController.h; sourceTree = "<group>"; };
 		7D220F140D1691E90026DF75 /* MobController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobController.m; sourceTree = "<group>"; };
 		7D3108E20EFDBCCB00ECFABE /* Bobber.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Bobber.png; sourceTree = "<group>"; };
@@ -936,6 +935,7 @@
 		03168ED410FF705A00EF241B /* Waypoint Action NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */,
 				0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */,
 				03685FA61103D73B001CE552 /* QuestGrabAction.xib */,
 				03685FA71103D73B001CE552 /* QuestTurnInAction.xib */,
@@ -1045,8 +1045,6 @@
 				03567AAC10DDAB52001ACE43 /* CombatController.m */,
 				03981E76112B898E0081835F /* MovementController.h */,
 				03981E77112B898E0081835F /* MovementController.m */,
-				7D220E610D1662F70026DF75 /* MovementController4.h */,
-				7D220E620D1662F70026DF75 /* MovementController4.m */,
 				7D06F0400D23058B00DA4E99 /* AuraController.h */,
 				7D06F0410D23058B00DA4E99 /* AuraController.m */,
 				7D45A6B80E4461CA008A3601 /* BonjourController.h */,
@@ -1976,6 +1974,7 @@
 				03981DE9112B22E90081835F /* dsa_pub.pem in Resources */,
 				034126C4113570E100BE6819 /* PvP.xib in Resources */,
 				0352F46611376DA5005B28D6 /* PVP.png in Resources */,
+				03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1998,7 +1997,6 @@
 				7DD03F0C0D163F44000CC1A6 /* WaypointController.m in Sources */,
 				7DD03F350D163F9A000CC1A6 /* Route.m in Sources */,
 				7DD03F380D163FF8000CC1A6 /* Waypoint.m in Sources */,
-				7D220E630D1662F70026DF75 /* MovementController4.m in Sources */,
 				7D220F150D1691E90026DF75 /* MobController.m in Sources */,
 				7D8343FB0D17231300853E32 /* Position.m in Sources */,
 				7DD3D40B0D1B2FEB0023D097 /* SpellController.m in Sources */,
