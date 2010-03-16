@@ -480,7 +480,6 @@ typedef enum MovementState{
 	// use the first WP	
 	self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
 	
-	// this will actually switch to the Corpse/Primary route based on which is closer
 	[self resumeMovement];
 }
 
@@ -688,6 +687,8 @@ typedef enum MovementState{
 		// stop this timer
 		[self resetMovementTimer];
 		
+		[controller setCurrentStatus: @"Bot: Stuck, entering anti-stuck routine"];
+		
 		PGLog(@"[Move] Player is stuck, trying anti-stuck routine");
 		
 		[self unStickify];
@@ -725,49 +726,8 @@ typedef enum MovementState{
 		[self resumeMovement];
 		return;
 	}
-
-    /*
 	
-	BOOL isNode = [self.unit isKindOfClass: [Node class]];
-	BOOL isPlayerOnGround = [playerData isOnGround];
-	
-	// if we're near our target, move to the next
-    float playerSpeed = [playerData speed];
-    //if(distance2d < playerSpeed/2.0)  {
-	float distanceToUnit = 5.0f;
-	
-	// ideally for nodes we'd also want to check the 2D distance so we drop RIGHT on the node
-	if ( isNode && !isPlayerOnGround ){
-		distanceToUnit = NODE_DISTANCE_UNTIL_DISMOUNT;
-	}
-	
-	// We're close enough to take action or move to the next waypoint!
-	if( distance <= distanceToUnit )  {
-		// Moving to a waypoint
-        if(!self.unit) {
-            if([botController isBotting]) {
-                if([botController shouldProceedFromWaypoint: [self destination]]) {
-                    [self moveToNextWaypoint];
-                }
-            } else {
-                [self moveToNextWaypoint];
-            }
-        } else {
-            PGLog(@"We're close to the unit. Stopping movement.");
-            [self finishAlt];
-        }
-        return;
-    } else {
-        // if we're far enough away from our target, see if we should jump
-        if( (distance > playerSpeed) && (!self.unit)) {
-            if( self.shouldJump && ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown) ) {
-                [self jump];
-            }
-        } else {
-            [self correctDirection: NO];
-        }
-    }
-	*/
+	// TO DO: moving in the wrong direction check? (can sometimes happen when doing mouse movements based on the speed of the machine)
 }
 
 - (void)unStickify{
@@ -821,7 +781,7 @@ typedef enum MovementState{
 	// anti-stuck for moving to an object!
 	if ( self.moveToObject ){
 		
-		
+		// blacklist unit after 5 tries!
 		if ( _unstickifyTry > 5 ){
 			
 			PGLog(@"[Move] Unable to reach %@, blacklisting", self.moveToObject);
@@ -854,6 +814,19 @@ typedef enum MovementState{
 	
 	// can't reach a waypoint :(
 	else if ( self.destinationWaypoint ){
+		
+		// player is flying and is stuck :(  makes me sad, lets move up a bit
+		if ( [[playerData player] isFlyingMounted] && _unstickifyTry < 5 ){
+			
+			PGLog(@"[Move] Moving up since we're flying mounted!");
+			
+			// move up for 1 second!
+			[self moveUpStop];
+			[self moveUpStart];
+			[self performSelector:@selector(moveUpStop) withObject:nil afterDelay:1.0f];
+			[self performSelector:@selector(resumeMovement) withObject:nil afterDelay:1.1f];
+			return;
+		}
 		
 		if ( _unstickifyTry > 5 ){
 			
