@@ -1137,11 +1137,7 @@ typedef enum MovementState{
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	}
 	
-	if ( self.currentRoute && [[self.currentRoute waypoints] count] > 0  ){
-		PGLog(@"[Move] Using corpse route!");
-		//[self resumeMovement];
-	}
-	else{
+	if ( self.currentRoute && [[self.currentRoute waypoints] count] == 0  ){
 		PGLog(@"[Move] No corpse route! Ending movement");
 		[self stopMovement];
 	}
@@ -1585,15 +1581,7 @@ typedef enum MovementState{
 	}
 	[memory saveDataForAddress: [offsetController offset:@"CTM_DISTANCE"] Buffer: (Byte *)&distance BufLength: sizeof(distance)];
 	
-	/*
-	 // Set these other randoms!  These are set if the player actually clicks, but sometimes they won't when they login!  Then it won't work :(  /cry
-	 float unk = 9.0f;
-	 float unk2 = 14.0f;		// should this be 7.0f?  If only i knew what this was!
-	 [memory saveDataForAddress: CTM_UNKNOWN Buffer: (Byte *)&unk BufLength: sizeof(unk)];
-	 [memory saveDataForAddress: CTM_UNKNOWN2 Buffer: (Byte *)&unk2 BufLength: sizeof(unk2)];
-	 */
-	
-	// Lets start moving!
+	// take action!
 	[memory saveDataForAddress: [offsetController offset:@"CTM_ACTION"] Buffer: (Byte *)&type BufLength: sizeof(type)];
 }
 
