@@ -1940,6 +1940,22 @@ typedef enum MovementState{
 			
 			[botController changeCombatProfile:profile];
 		}
+		
+		// jump to waypoint
+		else if ( [action type] == ActionType_JumpToWaypoint ){
+			
+			int waypointIndex = [[action value] intValue] - 1;
+			NSArray *waypoints = [self.currentRoute waypoints];
+			
+			if ( waypointIndex >= 1 && waypointIndex < [waypoints count] ){
+				self.destinationWaypoint = [waypoints objectAtIndex:waypointIndex];
+				PGLog(@"[Waypoint] Jumping to waypoint %@", self.destinationWaypoint);
+				[self resumeMovement];
+			}
+			else{
+				PGLog(@"[Waypoint] Error, unable to move to waypoint index %d, out of range!", waypointIndex);
+			}
+		}
 	}
 	
 	PGLog(@"[Waypoint] Action %d complete, checking for more!", actionToExecute);
