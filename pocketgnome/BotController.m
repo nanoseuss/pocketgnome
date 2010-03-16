@@ -1531,7 +1531,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				// add
 				else if ( [rule target] == TargetAdd ){
-					
+
 					// only check for an add if we don't have one already!
 					if ( [combatController addUnit] == nil ){
 						for ( target in adds ){
