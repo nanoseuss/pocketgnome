@@ -1429,7 +1429,6 @@ typedef struct NameObjectStruct{
             NSToolbarSpaceItemIdentifier,
             [playerToolbarItem itemIdentifier], 
             [spellsToolbarItem itemIdentifier],
-			[statisticsToolbarItem itemIdentifier],
             NSToolbarSpaceItemIdentifier,
 			[objectsToolbarItem itemIdentifier], 
             NSToolbarSpaceItemIdentifier,
@@ -1437,6 +1436,7 @@ typedef struct NameObjectStruct{
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
             NSToolbarFlexibleSpaceItemIdentifier,
+			[statisticsToolbarItem itemIdentifier],
             [memoryToolbarItem itemIdentifier],
             [prefsToolbarItem itemIdentifier], nil];
 }
