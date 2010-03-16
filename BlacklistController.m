@@ -121,6 +121,7 @@
 	// check each infraction, based on the reason we may not care!
 	//  making the assumption that ALL infractions are w/in the time frame since we refreshed above
 	int totalNone = 0;
+	int totalFailedToReach = 0;
 	for ( NSDictionary *infraction in infractions ){
 		
 		int reason		= [[infraction objectForKey:@"Reason"] intValue];
@@ -143,6 +144,9 @@
 			PGLog(@"[Blacklist] Blacklisted %@ for making us fall!", obj);
 			return YES;
 		}
+		else if ( reason == Reason_CantReachObject ){
+			totalFailedToReach++;
+		}
 		else if ( reason == Reason_NotInCombatAfter10 ){
 			return YES;
 		}
@@ -151,6 +155,10 @@
 	// general blacklisting
 	if ( totalNone >= 3 ){
 		PGLog(@"[Blacklist] Unit %@ blacklisted for total count!", obj);
+		return YES;
+	}
+	else if ( totalFailedToReach >= 3 ){
+		PGLog(@"[Blacklist] Object %@ blacklisted because we couldn't reach it!", obj);
 		return YES;
 	}
 	
