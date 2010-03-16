@@ -15,7 +15,7 @@
 {
     self = [super init];
     if (self != nil){
-		_waypoints = [[NSMutableArray array] retain];
+		_maxWaypoints = 0;
 
         if(![NSBundle loadNibNamed: @"JumpToWaypointAction" owner: self]) {
             PGLog(@"Error loading JumpToWaypointAction.nib.");
@@ -30,12 +30,7 @@
 - (id)initWithWaypoints: (int)waypoints{
     self = [self init];
     if (self != nil) {
-		
-		int i = 0;
-		for ( ; i < waypoints; i++ ){
-			[_waypoints addObject:[NSNumber numberWithInt:i]];
-		}
-		PGLog(@"0x%X TOTAL OF %d waypoints now!", self, [_waypoints count]);
+		_maxWaypoints = waypoints;
     }
     return self;
 }
@@ -44,44 +39,18 @@
 	return [[[JumpToWaypointActionController alloc] initWithWaypoints: waypoints] autorelease];
 }
 
-@synthesize waypoints = _waypoints;
-
-// if we don't remove bindings, it won't leave!
-- (void)removeBindings{
-	
-	// no idea why we have to do this, but yea, removing anyways
-	NSArray *bindings = [waypointsPopUpButton exposedBindings];
-	for ( NSString *binding in bindings ){
-		[waypointsPopUpButton unbind: binding];
-	}
-}
-
-- (NSArray*)waypoints{
-
-	PGLog(@"0x%X total: %d", self, [_waypoints count]);
-	
-	return _waypoints;
-}
-
 - (IBAction)validateState: (id)sender {
 	
+	if ( [waypointNumTextView intValue] > _maxWaypoints || [waypointNumTextView intValue] < 1 ){
+		[waypointNumTextView setStringValue:@"1"];
+	}
 }
 
 - (void)setStateFromAction: (Action*)action{
 	
-	/*NSNumber *spellID = [[action value] objectForKey:@"SpellID"];
-	NSNumber *instant = [[action value] objectForKey:@"Instant"];
+	[waypointNumTextView setIntValue:[[action value] intValue]];
 	
-	for ( NSMenuItem *item in [spellPopUp itemArray] ){
-		if ( [[(Spell*)[item representedObject] ID] intValue] == [spellID intValue] ){
-			[spellPopUp selectItem:item];
-			break;
-		}
-	}
-	
-	[spellInstantButton setState:[instant boolValue]];
-	
-	[super setStateFromAction:action];*/
+	[super setStateFromAction:action];
 }
 
 - (Action*)action {
@@ -90,6 +59,7 @@
     Action *action = [Action actionWithType:ActionType_JumpToWaypoint value:nil];
 	
 	[action setEnabled: self.enabled];
+	[action setValue: [waypointNumTextView stringValue]];
     
     return action;
 }
