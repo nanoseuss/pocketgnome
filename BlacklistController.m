@@ -135,7 +135,7 @@
 			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 			
 			// only blacklisted for 5 seconds, since we'll now move, and could potentially get out of LOS?
-			if ( timeSinceBlacklisted <= 5.0f ){
+			if ( timeSinceBlacklisted <= 15.0f ){
 				PGLog(@"[Blacklist] LOS , has only been %0.2f seconds", timeSinceBlacklisted);
 				totalLos++;
 			}

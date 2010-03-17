@@ -491,7 +491,7 @@ typedef enum MovementState{
 	}
 	
 	// use the first WP	
-	self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
+	//self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
 	
 	[self resumeMovement];
 }
