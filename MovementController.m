@@ -173,10 +173,6 @@ typedef enum MovementState{
 @synthesize jumpCooldown = _jumpCooldown;
 @synthesize lastJumpTime = _lastJumpTime;
 
-- (void)beginPatrol: (BOOL)stopAtEnd{
-	[self resumeMovement];
-}
-
 // checks to see if the player is moving - duh!
 - (BOOL)isMoving{
 	
@@ -258,22 +254,24 @@ typedef enum MovementState{
 }
 
 // being patrol
-- (void)patrolWithRouteSet: (RouteSet*)route{
+- (void)setPatrolRouteSet: (RouteSet*)route{
 	PGLog(@"[Move] Switching from route %@ to %@", _currentRouteSet, route);
 	
 	self.currentRouteSet = route;
 	
-	if ( ![playerData isDead] ){
-		self.currentRouteKey = PrimaryRoute;
-		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
-	}
-	else{
+	// player is dead
+	if ( [playerData isGhost] || [playerData isDead] ){
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	}
+	// normal route
+	else{
+		self.currentRouteKey = PrimaryRoute;
+		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+	}
 	
+	// set our jump time
 	self.lastJumpTime = [NSDate date];
-	[self resumeMovement];
 }
 
 - (void)stopMovement{
@@ -364,11 +362,13 @@ typedef enum MovementState{
 				// use corpse route
 				if ( corpseDistance < primaryDistance ){
 					self.currentRouteKey = CorpseRunRoute;
+					self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 					newWP = closestWaypointCorpseRoute;
 				}
 				// use primary route
 				else {
 					self.currentRouteKey = PrimaryRoute;
+					self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 					newWP = closestWaypointPrimaryRoute;
 				}
 			}
@@ -408,10 +408,12 @@ typedef enum MovementState{
 
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 	
-	PGLog(@"moving to wP?");
+	PGLog(@"[Move] Moving to a waypoint: %@", waypoint);
 	
 	[_destinationWaypoint release];
 	_destinationWaypoint = [waypoint retain];
+	
+	[self moveToPosition:[waypoint position]];
 	
 }
 
@@ -481,6 +483,9 @@ typedef enum MovementState{
 
 - (void)routeEnded{
 	
+	//NSArray *currentWaypoints = [self.currentRoute waypoints];
+	//Waypoint *curWP = [currentWaypoints indexOfObject:self.destinationWaypoint];
+	
 	// we've reached the end of our corpse route, lets switch to our main route
 	if ( self.currentRouteKey == CorpseRunRoute ){
 		
@@ -488,10 +493,14 @@ typedef enum MovementState{
 		
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+		
+		// find the closest WP
 	}
 	
+	//[self.currentRoute waypointClosestToPosition:playerPosition]
+
 	// use the first WP	
-	//self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
+	self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
 	
 	[self resumeMovement];
 }

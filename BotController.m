@@ -2591,7 +2591,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // 8) Resume movement if needed, nothing else to do.
         
     // if the player is a Ghost...
-    if( [playerController isGhost]) {
+    if ( [playerController isGhost]) {
 		
         if( [playerController corpsePosition] && [playerPosition distanceToPosition: [playerController corpsePosition]] < 26.0 ) {
             // we found our corpse
@@ -2612,6 +2612,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             [self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
             return YES;
         }
+		
+		if ( ![movementController isMoving] ){
+			[movementController resumeMovement];
+		}
+		
         return NO;
     }
 	
@@ -3488,10 +3493,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			self.startDate = [[NSDate date] retain];
 		}
 		
+		// set our route
 		if ( self.theRouteSet ){
-			[movementController patrolWithRouteSet:self.theRouteSet];
+			[movementController setPatrolRouteSet:self.theRouteSet];
+		}
+		
+		// player is dead but not a ghost - we need to res!
+		if ( [playerController isDead] && ![playerController isGhost] ){
+			[self rePop:[NSNumber numberWithInt:0]];
+		}
+		// we can move!
+		else{
 			[movementController resumeMovement];
 		}
+		
+
         
 		/*
         if( [playerController isGhost] && self.theRouteSet) {
@@ -3513,11 +3529,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
             return;
         }*/
         
+		/*
         if( [playerController isDead]) {
             PGLog(@"[Bot] Started the bot, but we're dead! Will try to release. (%d:%d:%d:%d)", [playerController health], [playerController isGhost], [playerController maxHealth], [[playerController player] maxHealth] );
             [self playerHasDied: nil];
             return;
-        }
+        }*/
         
         [controller setCurrentStatus: @"Bot: Enabled"];
         //[combatController setCombatEnabled: self.theCombatProfile.combatEnabled];
