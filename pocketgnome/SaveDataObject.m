@@ -23,6 +23,9 @@
 		
 		// create a new UUID
 		self.UUID = [self generateUUID];
+		
+		// start observing! (so we can detect changes)
+		[self performSelector:@selector(addObservers) withObject:nil afterDelay:1.0f];
 	}
 		
     return self;
@@ -67,6 +70,12 @@
 - (void)setChanged:(BOOL)val{
 	//PGLog(@"[Changed] Set from %d to %d for %@", _changed, val, self);
 	_changed = val;
+}
+
+// Observations (to detect when an object changes)
+
+- (void)addObservers{
+	
 }
 
 @end

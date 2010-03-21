@@ -49,6 +49,8 @@
 	[_bgWarsongGulch release];
 	[_name release];
 	
+	//[self removeObserver: self forKeyPath: @"numberOfDays"];
+	
     [super dealloc];
 }
 
@@ -143,6 +145,28 @@
 @synthesize stopHonorTotal = _stopHonorTotal;
 @synthesize leaveIfInactive = _leaveIfInactive;
 
+- (void)addObservers{
+	[self addObserver: self forKeyPath: @"AlteracValley" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"ArathiBasin" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"EyeOfTheStorm" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"IsleOfConquest" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"StrandOfTheAncients" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"WarsongGulch" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"random" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stop" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stopNumOfMarks" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stopMarkType" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stopHonor" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stopHonorTotal" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"leaveIfInactive" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	self.changed = YES;
+}
+
 // little helper
 - (BOOL)isValid{
 	
@@ -185,76 +209,6 @@
 		return YES;
 	
 	return NO;
-}
-
-- (void)setAlteracValley:(Battleground *)bg{
-	_bgAlteracValley = [bg retain];
-	self.changed = YES;
-}
-
-- (void)setArathiBasin:(Battleground *)bg{
-	_bgArathiBasin = [bg retain];
-	self.changed = YES;
-}
-
-- (void)setEyeOfTheStorm:(Battleground *)bg{
-	_bgEyeOfTheStorm = [bg retain];
-	self.changed = YES;
-}
-
-- (void)setIsleOfConquest:(Battleground *)bg{
-	_bgIsleOfConquest = [bg retain];
-	self.changed = YES;
-}
-
-- (void)setStrandOfTheAncients:(Battleground *)bg{
-	_bgStrandOfTheAncients = [bg retain];
-	self.changed = YES;
-}
-
-- (void)setWarsongGulch:(Battleground *)bg{
-	_bgWarsongGulch = [bg retain];
-	self.changed = YES;
-}
-
-- (void)setName:(NSString*)name{
-	_name = [[name copy] retain];
-	self.changed = YES;
-}
-
-- (void)setRandom:(BOOL)random{
-	_random = random;
-	self.changed = YES;
-}
-
-- (void)setStop:(BOOL)stop{
-	_stop = stop;
-	self.changed = YES;
-}
-
-- (void)setStopNumOfMarks:(int)num{
-	_stopNumOfMarks = num;
-	self.changed = YES;
-}
-
-- (void)setStopMarkType:(int)type{
-	_stopMarkType = type;
-	self.changed = YES;
-}
-
-- (void)setStopHonor:(BOOL)stop{
-	_stopHonor = stop;
-	self.changed = YES;
-}
-
-- (void)setStopHonorTotal:(int)total{
-	_stopHonorTotal = total;
-	self.changed = YES;
-}
-
-- (void)setLeaveIfInactive:(BOOL)leaveIfInactive{
-	_leaveIfInactive = leaveIfInactive;
-	self.changed = YES;
 }
 
 - (void)setChanged:(BOOL)changed{

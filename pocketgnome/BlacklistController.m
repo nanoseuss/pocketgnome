@@ -127,18 +127,11 @@
 		
 		int reason		= [[infraction objectForKey:@"Reason"] intValue];
 		NSDate *date	= [infraction objectForKey:@"Date"];
+		float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 		
-		if ( reason == Reason_None ){
-			totalNone++;
-		}
-		else if ( reason == Reason_NotInLoS ){
-			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
-			
-			// only blacklisted for 5 seconds, since we'll now move, and could potentially get out of LOS?
-			if ( timeSinceBlacklisted <= 15.0f ){
-				PGLog(@"[Blacklist] LOS , has only been %0.2f seconds", timeSinceBlacklisted);
-				totalLos++;
-			}
+		if ( reason == Reason_NotInLoS && timeSinceBlacklisted <= 5.0f ){
+			PGLog(@"[Blacklist] LOS , has only been %0.2f seconds", timeSinceBlacklisted);
+			totalLos++;
 		}
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
 		else if ( reason == Reason_NodeMadeMeFall ){
@@ -151,6 +144,9 @@
 		else if ( reason == Reason_NotInCombatAfter10 ){
 			return YES;
 		}
+		else{
+			totalNone++;
+		}
 	}
 	
 	// general blacklisting
@@ -162,10 +158,10 @@
 		PGLog(@"[Blacklist] Object %@ blacklisted because we couldn't reach it!", obj);
 		return YES;
 	}
-	else if ( totalLos >= 3 ){
-	PGLog(@"[Blacklist] Object %@ blacklisted due to LOS!", obj);
+	/*else if ( totalLos >= 2 ){
+		PGLog(@"[Blacklist] Blacklisted due to LOS");
 		return YES;
-	}
+	}*/
 	
 	PGLog(@"[Blacklist] Not blacklisted but %d infractions", [infractions count]);
 

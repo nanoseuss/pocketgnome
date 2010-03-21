@@ -109,7 +109,7 @@ typedef enum MovementType {
 - (BOOL)resetMoveToObject;
 
 // begin patrolling with this routeset and type (type indicates PrimaryRoute or CorpseRunRoute)
-- (void)patrolWithRouteSet: (RouteSet*)route;
+- (void)setPatrolRouteSet: (RouteSet*)route;
 
 // stop all movement
 - (void)stopMovement;
@@ -122,9 +122,6 @@ typedef enum MovementType {
 
 // turn toward the object
 - (void)turnTowardObject:(WoWObject*)obj;
-
-// start the patrol
-- (void)beginPatrol: (BOOL)stopAtEnd;
 
 // dismount the player
 - (BOOL)dismount;

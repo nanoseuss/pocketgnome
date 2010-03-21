@@ -561,12 +561,12 @@ enum AutomatorIntervalType {
 - (IBAction)testWaypointSequence: (id)sender {
     if(![self currentRoute] || ![[self currentRoute] waypointCount])    return;
 	
-	[movementController setCurrentRouteSet: [self currentRouteSet]];
-	[movementController beginPatrol:YES];
+	[movementController setPatrolRouteSet: [self currentRouteSet]];
+	[movementController resumeMovement];
 }
 
 - (IBAction)stopMovement: (id)sender {
-	[movementController setCurrentRouteSet: nil];
+	[movementController stopMovement];
 }
 
 #pragma mark -
