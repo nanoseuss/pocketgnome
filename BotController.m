@@ -432,7 +432,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if (targetUnit != target && [targetUnit isInCombat] && ![targetUnit isDead] && [playerController isHostileWithFaction: [targetUnit factionTemplate]]) {
 					if ([target isKindOfClass: [Mob class]] && [targetUnit isKindOfClass: [Mob class]]) {
 						NSArray *addList = [combatController allAdds];
-						for ( Unit *potentialMatch in addList ) if (target == potentialMatch) return NO;
+						for ( Unit *potentialMatch in addList ) {
+							if (target == potentialMatch) {
+								PGLog(@"[Rule] Target is an add, non add rules do not apply");
+								return NO;
+							}
+						}
 					}
 				}
 			}
@@ -1996,6 +2001,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
+	// Sleep to allow objects to fade
+	// Only do this if there are no more mobs left to loot as that's the only time we rescan for loot
+	if ( ![_mobsToLoot count] ) usleep(500000);
 }
 
 - (void)skinOrFinish{
@@ -2081,10 +2089,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Lets interact w/the mob!
 	[self interactWithMouseoverGUID: [mob GUID]];
-	
-	// Sleep to allow the skinned mobs to fade, this keeps us from reskinning when we're updating the loot table
-	// Only do this if there are no more mobs left to loot as that's the only time we rescan for loot
-	if ( ![_mobsToLoot count] ) usleep(50000);
 	
 	// In the off chance that no items are actually looted
 	//[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
