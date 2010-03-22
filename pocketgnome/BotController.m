@@ -421,6 +421,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [rule target] == TargetSelf ){
 			target = thePlayer;
 		}
+
+		// if this is an add and the rule is not for adds then return no
+		// this can not exclude picking up an add when our target dies
+		if ([rule target] != TargetAdd && !test) {
+			GUID targetID = [playerController targetID];
+			Unit *targetUnit = [[MobController sharedController] mobWithGUID: targetID];
+			if (targetUnit) {
+				// Make sure our current target is alive, in combat and hostile
+				if (targetUnit != target && [targetUnit isInCombat] && ![targetUnit isDead] && [playerController isHostileWithFaction: [targetUnit factionTemplate]]) {
+					if ([target isKindOfClass: [Mob class]] && [targetUnit isKindOfClass: [Mob class]]) {
+						NSArray *addList = [combatController allAdds];
+						for ( Unit *potentialMatch in addList ) if (target == potentialMatch) return NO;
+					}
+				}
+			}
+		}
+
 	}
 	
 	// check to see if we can even cast this spell
