@@ -2513,23 +2513,27 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 - (Mob*)mobToLoot {
-	
+
+	// check for lootable mobs not in our list. this fixes looting after death.
+	// in some situations mobs aren't added to the loot list so this will catch them.
+	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
+	for (Mob *mob in mobs) {
+		if ([mob isLootable] && [mob isDead] && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
+			PGLog(@"[Loot] Adding %@ to loot list.", mob);
+			[_mobsToLoot addObject: mob];
+		}
+	}
+
     if ( [_mobsToLoot count] ){
-    
-        Mob *mobToLoot = nil;
-        
+		Mob *mobToLoot = nil;
         // sort the loot list by distance
         [_mobsToLoot sortUsingFunction: DistanceFromPositionCompare context: [playerController position]];
         
         // find a valid mob to loot
         for ( mobToLoot in _mobsToLoot ) {
             if ( mobToLoot && [mobToLoot isValid] ) {
-				
-				if ( ![blacklistController isBlacklisted:mobToLoot] )
-					return mobToLoot;
-				else {
-					PGLog(@"[Loot] Found unit to loot but it's blacklisted! %@", mobToLoot);
-				}
+				if ( ![blacklistController isBlacklisted:mobToLoot] ) return mobToLoot;
+				else PGLog(@"[Loot] Found unit to loot but it's blacklisted! %@", mobToLoot);
             }
         }
     }
