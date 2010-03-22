@@ -1502,12 +1502,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ( [inCombatUnits count] == 0 ){
 				doCombatProcedure = NO;
 				PGLog(@"[Procedure] Not executing combat procedure!");
-				
-				for ( Unit *unit in inCombatUnits ){
-					PGLog(@" %@", unit);
+				for ( Unit *unit in inCombatUnits ) PGLog(@" %@", unit);
+			} else
+
+			// keep running the combat routine if we're in a group and the tank or assist is in combat
+			if (theCombatProfile.partyEnabled) {
+				Player *assistPlayer = [playersController playerWithGUID:theCombatProfile.assistUnitGUID];
+				Player *tankPlayer = [playersController playerWithGUID:theCombatProfile.tankUnitGUID];
+				if ([inCombatUnits count] == 0 && ![assistPlayer isInCombat] && ![tankPlayer isInCombat]) {
+					doCombatProcedure = NO;
+					PGLog(@"[Procedure] Not executing combat procedure!");
+                    for ( Unit *unit in inCombatUnits ) PGLog(@" %@", unit);
+				} else {
+					PGLog(@"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
 				}
-			}
-			else{
+
+			} else {
 				PGLog(@"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
 			}
 		}
@@ -2913,6 +2923,37 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         }
     }
 
+	// check for party mode assist
+	// this is really a fallback check that initiates combat in most cases
+	if ( theCombatProfile.partyEnabled && [combatController combatEnabled] && theCombatProfile.assistUnit && theCombatProfile.assistUnitGUID > 0x0) {
+		Player *assistPlayer = [playersController playerWithGUID:theCombatProfile.assistUnitGUID];
+		if ( assistPlayer && [assistPlayer isValid] ) {
+			UInt64 targetGUID = [assistPlayer targetID];
+			if ( targetGUID > 0x0 ) {
+				Mob *mob = [mobController mobWithGUID:targetGUID];
+				if ( mob ) {
+					if ( [assistPlayer isInCombat] ) {
+						[movementController turnTowardObject: mob];
+						PGLog(@" [Combat] assisting with %@", mob);
+						[self actOnUnit: mob];
+					}
+				}
+			}
+		}
+	}
+	// Check the party units
+	if ( theCombatProfile.partyEnabled && theCombatProfile.healingEnabled ) {
+		NSArray *validUnits = [NSArray arrayWithArray:[combatController validUnitsWithFriendly:YES onlyHostilesInCombat:NO]];
+		if ( [validUnits count] ) {
+			for ( Unit *unit in validUnits ) {
+				if ([playerController isHostileWithFaction: [unit factionTemplate]]) continue;
+				if ([playerPosition distanceToPosition:[unit position]] > theCombatProfile.healingRange) continue;
+				if ( ![self combatProcedureValidForUnit:unit] ) continue;
+				[self actOnUnit: unit];
+			}
+		}
+	}
+	
     // check for mining and herbalism
     if(![movementController moveToObject]) {
         NSMutableArray *nodes = [NSMutableArray array];
