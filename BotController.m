@@ -424,7 +424,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// if this is an add and the rule is not for adds then return no
 		// this can not exclude picking up an add when our target dies
-		if ([rule target] != TargetAdd && !test) {
+		if ([rule target] != TargetAdd && [[self procedureInProgress] isEqualToString: CombatProcedure] && !test) {
 			GUID targetID = [playerController targetID];
 			Unit *targetUnit = [[MobController sharedController] mobWithGUID: targetID];
 			if (targetUnit) {
@@ -1753,7 +1753,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[playerController setPrimaryTarget: originalTarget];
 			}
 		}
-		// slipmat	
+
 		return;
 	}
 	
@@ -2083,7 +2083,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self interactWithMouseoverGUID: [mob GUID]];
 	
 	// Sleep to allow the skinned mobs to fade, this keeps us from reskinning when we're updating the loot table
-	usleep(10000);
+	// Only do this if there are no more mobs left to loot as that's the only time we rescan for loot
+	if ( ![_mobsToLoot count] ) usleep(50000);
 	
 	// In the off chance that no items are actually looted
 	//[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
