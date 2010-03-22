@@ -499,7 +499,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableArray *allPotentialUnits = [NSMutableArray array];
 	
 	// add friendly units w/in range
-	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) ){
+	// only do this if we dont have the onlyHostilesInCombat flag
+	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) && !onlyHostilesInCombat){
 		//PGLog(@" [Combat] Adding friendly units");
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
@@ -512,8 +513,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ( player && [player isValid] ){
 			
 			UInt64 targetGUID = [player targetID];
-			
-			if ( targetGUID > 0x0 ){
+			// only assist if the assist player is in combat
+			if ( targetGUID > 0x0 && [player isInCombat]){
 				Mob *mob = [mobController mobWithGUID:targetGUID];
 				
 				if ( mob ){
