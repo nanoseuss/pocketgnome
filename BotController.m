@@ -1675,7 +1675,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				
 				// lets do the action
 				if ( canPerformAction ){
-					
+								
 					// target yourself
 					if ( [rule target] == TargetSelf ){
 						PGLog(@"[Procedure] Targeting self");
@@ -1746,6 +1746,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								target,											@"Target", nil]
 				   afterDelay: 0.1f]; 
 		PGLog(@"[Procedure] Rule executed, trying for more rules!");
+
+		// Lets see if we need to go back to the original target 
+		if (originalTarget && originalTarget != target) {
+			if ([originalTarget isInCombat] && ![originalTarget isDead] && [playerController isHostileWithFaction: [originalTarget factionTemplate]]) {
+				[playerController setPrimaryTarget: originalTarget];
+			}
+		}
+		// slipmat	
 		return;
 	}
 	
@@ -2073,6 +2081,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Lets interact w/the mob!
 	[self interactWithMouseoverGUID: [mob GUID]];
+	
+	// Sleep to allow the skinned mobs to fade, this keeps us from reskinning when we're updating the loot table
+	usleep(10000);
 	
 	// In the off chance that no items are actually looted
 	//[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
@@ -2516,11 +2527,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// check for lootable mobs not in our list. this fixes looting after death.
 	// in some situations mobs aren't added to the loot list so this will catch them.
-	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
-	for (Mob *mob in mobs) {
-		if ([mob isLootable] && [mob isDead] && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
-			PGLog(@"[Loot] Adding %@ to loot list.", mob);
-			[_mobsToLoot addObject: mob];
+	if ( ![_mobsToLoot count] ){
+		NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
+		for (Mob *mob in mobs) {
+			if ([mob isLootable] && [mob isDead] && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
+				PGLog(@"[Loot] Adding %@ to loot list.", mob);
+				[_mobsToLoot addObject: mob];
+			}
 		}
 	}
 
