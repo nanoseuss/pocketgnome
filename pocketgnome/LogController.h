@@ -36,6 +36,10 @@
 #define LOG_POSITION				"position"
 #define LOG_ACTION					"action"
 #define LOG_PARTY					"party"
+#define LOG_GHOST					"ghost"
+#define LOG_EVALUATE				"evaluate"
+#define LOG_STARTUP					"startup"
+#define LOG_REGEN					"regen"
 
 @interface LogController : NSObject {
 	
