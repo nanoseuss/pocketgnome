@@ -144,6 +144,9 @@ typedef enum MovementType {
 // establish the player's position
 - (void)establishPlayerPosition;
 
+// party version of follow
+- (void)followObject: (WoWObject*)unit;
+
 // for now
 - (float)averageSpeed;
 - (float)averageDistance;

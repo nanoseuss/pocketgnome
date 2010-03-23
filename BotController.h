@@ -290,9 +290,19 @@
 
 // Input from MovementController;
 //- (void)reachedUnit: (WoWObject*)unit;
-- (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
+- (BOOL)performPatrolProcedure;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
+- (BOOL)evaluateForPVP;
+- (BOOL)evaluateForGhost;
+- (void)jumpIfAirMountOnGround;
+- (BOOL)evaluateForPartyFollow;
+- (BOOL)evaluateForCombatContinuation;
+- (BOOL)evaluateForRegen;
+- (BOOL)evaluateForLoot;
+- (BOOL)evaluateForCombatStart;
+- (BOOL)evaluateForMiningAndHerbalism;
+- (BOOL)evaluateForFishing;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

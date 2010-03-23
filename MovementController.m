@@ -327,7 +327,7 @@ typedef enum MovementState{
 		else if ( self.destinationWaypoint ){
 			
 			// check for patrol procedure before we move (thanks slipknot)
-			if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
+			if ( ![botController performPatrolProcedure] ) {
 				PGLog(@"[Move] Not resuming movement, performing patrol proc");
 				return;
 			}
@@ -383,7 +383,7 @@ typedef enum MovementState{
 				self.destinationWaypoint = newWP;
 				
 				// check for patrol procedure before we move (thanks slipknot)
-				if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
+				if ( ![botController performPatrolProcedure] ){
 					PGLog(@"[Move] Not resuming movement, performing patrol proc");
 					return;
 				}
@@ -655,7 +655,7 @@ typedef enum MovementState{
 			BOOL continueRoute = YES;
 			
 			// we could be told to move by a UI click, so make sure we're botting to perform a patrol proc
-			if ( ![botController isBotting] || ![botController shouldProceedFromWaypoint:self.destinationWaypoint] ){
+			if ( ![botController isBotting] || ![botController performPatrolProcedure] ){
 				continueRoute = NO;
 				PGLog(@"[Move] Not continuing route! We have to do something or we're not botting anymore!");
 			}
@@ -1611,6 +1611,20 @@ typedef enum MovementState{
 	UInt32 value = 0;
     [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"CTM_ACTION"] Buffer: (Byte*)&value BufLength: sizeof(value)];
     return ((value == ctmWalkTo) || (value == ctmLoot) || (value == ctmInteractNpc) || (value == ctmInteractObject));
+}
+
+// Party Version of follow
+- (void)followObject: (WoWObject*)unit{
+	
+	// not moving directly to the unit's position! Within a range from it
+	float start = botController.theCombatProfile.yardsBehindTargetStart;
+	float stop = botController.theCombatProfile.yardsBehindTargetStop;
+	float randomDistance = SSRandomFloatBetween( start, stop );
+	
+	Position *positionToMove = [[unit position] positionAtDistance:randomDistance withDestination:[playerData position]];
+	PGLog(@"[Follow] Moving to %@", positionToMove);
+	[self moveToPosition:positionToMove];
+	//[self setClickToMove: positionToMove andType:ctmWalkTo andGUID:0x0];
 }
 
 #pragma mark Miscellaneous
