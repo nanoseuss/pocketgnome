@@ -218,12 +218,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		[offsets setObject:[NSNumber numberWithUnsignedLong:0xEA5914] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
 		[offsets setObject:[NSNumber numberWithUnsignedLong:0xD2D240 + 0x24] forKey:@"PLAYER_NAME_LIST"];
 		[offsets setObject:[NSNumber numberWithUnsignedLong:0xC8EA60] forKey:@"KEYBINDINGS_PTR"];
-		
-		
-		
-		
-		
-		
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xDBAB14] forKey:@"MOUNT_LIST_NUM"];
 		
 		// 0xD8BD20 - charselect, login, charcreate, patchdownload
 		

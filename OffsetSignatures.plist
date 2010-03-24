@@ -290,7 +290,7 @@
 		<key>Intel</key>
 		<dict>
 			<key>Comment</key>
-			<string>For 3.3.0: sub_65CA80</string>
+			<string>For 3.3.3: sub_5A5960</string>
 			<key>Signature</key>
 			<string>\x53\xBB\xBC\x9B\xFC\x00\x83\xEC\x10\x8B</string>
 			<key>Mask</key>
