@@ -205,14 +205,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	NSMutableArray *units = [NSMutableArray array];
 	
-	if ( [_unitsAttackingMe count] ){
+	if ( [_unitsAttackingMe count] ) {
 		[units addObjectsFromArray:_unitsAttackingMe];
 	}
 	
 	// add the other units if we need to
 	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ){
 		[units addObject:_attackUnit];
-		log(LOG_COMBAT, @"[Bot] Adding attack unit: %@", _attackUnit);
+		log(LOG_COMBAT, @"Adding attack unit: %@", _attackUnit);
 	}
 	
 	// add our add
@@ -242,9 +242,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	for ( Unit *unit in units ){
 		
-		if ( [blacklistController isBlacklisted:unit] )
+		if ( [blacklistController isBlacklisted:unit] ) {
+			log(LOG_COMBAT, @"Not adding blacklisted unit to validated combat list: %@", unit);
 			continue;
-		
+		}
 		// ignore dead/evading/not valid units
 		if ( [unit isDead] || [unit isEvading] || ![unit isValid] ){
 			continue;

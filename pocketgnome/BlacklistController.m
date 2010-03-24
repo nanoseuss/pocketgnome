@@ -76,7 +76,7 @@
 	if ( [_blacklist count] ){
 		NSArray *allKeys = [_blacklist allKeys];
 		
-		for ( NSNumber *guid in allKeys ){
+		for ( NSNumber *guid in allKeys ) {
 		
 			NSArray *infractions = [_blacklist objectForKey:guid];
 			NSMutableArray *infractionsToKeep = [NSMutableArray array];
@@ -170,7 +170,7 @@
 
 - (void)clearAll{
 	[_blacklist removeAllObjects];
-	[_attemptList removeAllObjects];	
+	[_attemptList removeAllObjects];
 }
 
 - (void)removeAllUnits{
@@ -196,6 +196,15 @@
 	log(LOG_BLACKLIST, @"Removed %d units.", removedObjects);
 }
 
+- (void)removeUnit: (Unit*)unit{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit GUID]];
+
+	if ( [_blacklist objectForKey:guid] ) {
+		log(LOG_BLACKLIST, @"Removing %@ from blacklist.", unit);
+		[_blacklist removeObjectForKey:guid];
+	}
+}
+
 #pragma mark Notifications
 
 - (void)unitDied: (NSNotification*)notification{
@@ -204,10 +213,10 @@
 	// remove the object from the blacklist!
 	if ( unit ){
 		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit GUID]];
-	
-		if ( [_blacklist objectForKey:guid] )
+		if ( [_blacklist objectForKey:guid] ) {
 			log(LOG_BLACKLIST, @"%@ died, removing from blacklist.", unit);
 			[_blacklist removeObjectForKey:guid];
+		}
 	}
 }
 

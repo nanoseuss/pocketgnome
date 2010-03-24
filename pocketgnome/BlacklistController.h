@@ -11,7 +11,7 @@
 // created a controller for this, as I don't want to implement the exact same versions for Combat and for nodes
 
 @class WoWObject;
-
+@class Unit;
 @class MobController;
 @class PlayersController;
 
@@ -40,6 +40,7 @@ enum{
 - (void)blacklistObject: (WoWObject*)obj;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;
+- (void)removeUnit: (Unit*)unit;
 
 // sick of putting more dictionaries in bot controller, will just use this
 - (int)attemptsForObject:(WoWObject*)obj;

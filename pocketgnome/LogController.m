@@ -13,13 +13,17 @@
 
 + (BOOL) canLog:(char*)type_s, ...
 {
-	NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
+
+//	NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
 // Not logging conditions, remove when we no longer need manual supression.
-// hmm, how do I do this?  need an interface!
-	// if (type == "condition") return NO;
-	
+//	return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+
+	NSString* type = [NSString stringWithFormat:@"%s", type_s];
+
+	if (type == @"condition") return NO;
+	if (type == @"rule") return NO;
+
 	return YES;
-	//return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
 }
 
 + (NSString*) log:(char*)type_s, ...

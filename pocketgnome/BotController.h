@@ -285,6 +285,8 @@
 // Input from CombatController
 - (void)addingUnit: (Unit*)unit;
 
+- (void)lootScan;
+
 // Input from CombatController
 - (void)actOnUnit: (Unit*)unit;
 
