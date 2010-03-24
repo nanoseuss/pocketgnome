@@ -74,61 +74,61 @@ enum eUnitFields {
 	//UnitField_Persuaded                 = 0x48,
 	UnitField_Channel_Object            = 0x50,
     
-    UnitField_Bytes0                    = 0x58,
+    UnitField_Bytes0                    = 0x5C,
     
-	UnitField_Health                    = 0x5C,
-	UnitField_Power1                    = 0x60, // Mana
-	UnitField_Power2                    = 0x64, // Rage
-	UnitField_Power3                    = 0x68, // Focus
-	UnitField_Power4                    = 0x6C, // Energy
-	UnitField_Power5                    = 0x70, // Happiness
-	UnitField_Power6                    = 0x74, // unknown
-	UnitField_Power7                    = 0x78, // Runic Power
-	UnitField_MaxHealth                 = 0x7C,
-	UnitField_MaxPower1                 = 0x80,
-	UnitField_MaxPower2                 = 0x84,
-	UnitField_MaxPower3                 = 0x88,
-	UnitField_MaxPower4                 = 0x8C,
-	UnitField_MaxPower5                 = 0x90,
-	UnitField_MaxPower6                 = 0x94,
-	UnitField_MaxPower7                 = 0x98,
-
-    UnitField_PowerRegen_FlatMod        = 0x9C,
+	UnitField_Health                    = 0x60,
+	UnitField_Power1                    = 0x64, // Mana
+	UnitField_Power2                    = 0x68, // Rage
+	UnitField_Power3                    = 0x6C, // Focus
+	UnitField_Power4                    = 0x70, // Energy
+	UnitField_Power5                    = 0x74, // Happiness
+	UnitField_Power6                    = 0x78, // unknown
+	UnitField_Power7                    = 0x7C, // Runic Power
+	UnitField_MaxHealth                 = 0x80,
+	UnitField_MaxPower1                 = 0x84,
+	UnitField_MaxPower2                 = 0x88,
+	UnitField_MaxPower3                 = 0x8C,
+	UnitField_MaxPower4                 = 0x90,
+	UnitField_MaxPower5                 = 0x94,
+	UnitField_MaxPower6                 = 0x98,
+	UnitField_MaxPower7                 = 0x9C,
+	
+    UnitField_PowerRegen_FlatMod        = 0xA0,
     // 0xA0 - 0xB4 are not known
-    UnitField_PowerRegen_Interrupted_FlatMod = 0xB8,
-
-
-	UnitField_Level                     = 0xD4,
-	UnitField_FactionTemplate           = 0xD8,
+    UnitField_PowerRegen_Interrupted_FlatMod = 0xBC,
+	
+	
+	UnitField_Level                     = 0xD8,
+	UnitField_FactionTemplate           = 0xDC,
     // UNIT_VIRTUAL_ITEM_SLOT_ID
     
-    UnitField_StatusFlags               = 0xE8,
-    UnitField_StatusFlags2              = 0xEC,
+    UnitField_StatusFlags               = 0xEC,
+    UnitField_StatusFlags2              = 0xF0,
     
-    UnitField_MainhandSpeed             = 0xF4, // these speeds are in milliseconds, eg 2000 = 2.0sec
-    UnitField_OffhandSpeed              = 0xF8,
-    UnitField_RangedSpeed               = 0xFC,
-
-    UnitField_BoundingRadius            = 0x100,
-    UnitField_CombatReach               = 0x104,
-
-    UnitField_DisplayID                 = 0x108,
-    UnitField_NativeDisplayID           = 0x10C,
-    UnitField_MountDisplayID            = 0x110,
-
-	UnitField_Bytes_1                   = 0x124,    // sit, lie, kneel and so on (stealth = 0x20000)
+    UnitField_MainhandSpeed             = 0xF8, // these speeds are in milliseconds, eg 2000 = 2.0sec
+    UnitField_OffhandSpeed              = 0xFC,
+    UnitField_RangedSpeed               = 0x100,
+	
+    UnitField_BoundingRadius            = 0x104,
+    UnitField_CombatReach               = 0x108,
+	
+    UnitField_DisplayID                 = 0x10C,
+    UnitField_NativeDisplayID           = 0x110,
+    UnitField_MountDisplayID            = 0x114,
+	
+	UnitField_Bytes_1                   = 0x128,    // sit, lie, kneel and so on (stealth = 0x20000)
     
-    UnitField_PetNumber                 = 0x128,    // not the same as entry ID
-	UnitField_PetNameTimestamp          = 0x12C,
-	UnitField_PetExperience             = 0x130,
-	UnitField_PetNextLevelExp           = 0x134,
-
-	UnitField_DynamicFlags              = 0x138,    // tracking, tapped
-	UnitField_ChannelSpell              = 0x13C,
-	UnitField_ModCastSpeed              = 0x140,
-	UnitField_UnitCreatedBySpell        = 0x144,
-	UnitField_NPCFlags                  = 0x148,    // repairer, auctioneer, etc
-	UnitField_NPCEmoteState             = 0x14C,
+    UnitField_PetNumber                 = 0x12C,    // not the same as entry ID
+	UnitField_PetNameTimestamp          = 0x130,
+	UnitField_PetExperience             = 0x134,
+	UnitField_PetNextLevelExp           = 0x138,
+	
+	UnitField_DynamicFlags              = 0x13C,    // tracking, tapped
+	UnitField_ChannelSpell              = 0x140,
+	UnitField_ModCastSpeed              = 0x144,
+	UnitField_UnitCreatedBySpell        = 0x148,
+	UnitField_NPCFlags                  = 0x14C,    // repairer, auctioneer, etc
+	UnitField_NPCEmoteState             = 0x150,
     
     // 5x stats
     // 5x +states
@@ -140,7 +140,7 @@ enum eUnitFields {
 	UnitField_BaseMana                  = 0x1E0,
 	UnitField_BaseHealth                = 0x1E4,
     UnitField_Bytes_2                   = 0x1E8,    // 0x1001 for most mobs. 0x2801 for totems?
-
+	
     UnitField_AttackPower               = 0x1EC,
     UnitField_AttackPower_Mod           = 0x1F0,
     UnitField_AttackPower_Mult          = 0x1F4,
