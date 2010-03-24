@@ -11,7 +11,7 @@
  
 #import "ObjectConstants.h"
 
-#define VALID_WOW_VERSION   @"3.3.2"
+#define VALID_WOW_VERSION   @"3.3.3"
 #define PLAYER_LEVEL_CAP    80
 
 #define BATTLEGROUND_INFO		((IS_X86) ?		0x155FE60 : 0x0)	// 3.2.2a valid

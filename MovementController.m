@@ -180,24 +180,24 @@ typedef enum MovementState{
 	
 	// moving forward or backward
 	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
-		PGLog(@"[Move] isMoving: Moving forward/backward");
+		log(LOG_MOVEMENT, @"isMoving: Moving forward/backward");
 		return YES;
 	}
 	
 	// moving up or down
 	else if ( movementFlags & MovementFlag_FlyUp || movementFlags & MovementFlag_FlyDown ){
-		PGLog(@"[Move] isMoving: Moving up/down");
+		log(LOG_MOVEMENT, @"isMoving: Moving up/down");
 		return YES;
 	}
 	
 	// CTM active
 	else if ( [self movementType] == MovementType_CTM  && [self isCTMActive] ){
-		PGLog(@"[Move] isMoving: CTM Active");
+		log(LOG_MOVEMENT, @"isMoving: CTM Active");
 		return YES;
 	}
 	
 	else if ( [playerData speed] > 0 ){
-		PGLog(@"[Move] isMoving: Speed > 0");
+		log(LOG_MOVEMENT, @"isMoving: Speed > 0");
 		return YES;
 	}
 	
@@ -232,7 +232,7 @@ typedef enum MovementState{
 	float distance = [self.lastAttemptedPosition distanceToPosition:[obj position]];
 	
 	if ( distance > 2.5f ){
-		PGLog(@"[Move] %@ moved away, re-positioning %0.2f", obj, distance);
+		log(LOG_MOVEMENT, @"%@ moved away, re-positioning %0.2f", obj, distance);
 		[self moveToObject:obj];
 		return;
 	}
@@ -255,7 +255,7 @@ typedef enum MovementState{
 
 // being patrol
 - (void)setPatrolRouteSet: (RouteSet*)route{
-	PGLog(@"[Move] Switching from route %@ to %@", _currentRouteSet, route);
+	log(LOG_MOVEMENT, @"Switching from route %@ to %@", _currentRouteSet, route);
 	
 	self.currentRouteSet = route;
 	
@@ -276,36 +276,36 @@ typedef enum MovementState{
 
 - (void)stopMovement{
 	
-	PGLog(@"[Move] Stop movement");
+	log(LOG_MOVEMENT, @"Stop Movement...");
 	
 	// check to make sure we are even moving!
 	UInt32 movementFlags = [playerData movementFlags];
 	
 	// player is moving
 	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
-		PGLog(@"[Move] Player is moving! Stopping!");
+		log(LOG_MOVEMENT, @"Player is moving, stopping movement");
 		[self resetMovementTimer];
 		[self moveForwardStop];
 	}
 	
 	else if ( movementFlags & MovementFlag_FlyUp || movementFlags & MovementFlag_FlyDown ){
-		PGLog(@"[Move] Player is flying up or down!");
+		log(LOG_MOVEMENT, @"Player is flying, stopping movment");
 		[self resetMovementTimer];
 		[self moveUpStop];
 	}
 	else{
-		PGLog(@"[Move] Player is not moving! No reason to stop. Flags: 0x%X", movementFlags);
+		log(LOG_MOVEMENT, @"Player is not moving! No reason to stop!? Flags: 0x%X", movementFlags);
 	}
 }
 
 - (void)resumeMovement{
 	
-	PGLog(@"[Move] resumeMovement");
+	log(LOG_MOVEMENT, @"resumeMovement:");
 	
 	// we're moving!
 	if ( [self isMoving] ){
 		
-		PGLog(@"[Move] We're already moving! Should we stop and resume?");
+		log(LOG_MOVEMENT, @"We're already moving! Stopping before resume.");
 	
 		[self stopMovement];
 		
@@ -313,32 +313,32 @@ typedef enum MovementState{
 	}
 	
 	// moving to an object
-	if ( _moveToObject ){
+	if ( _moveToObject ) {
+		log(LOG_MOVEMENT, @"Moving to object.");
 		[self moveToPosition:[self.moveToObject position]];
 	}
 	else if ( _currentRouteSet ){
 		
 		// we need to backtrack (we probably chased down a unit or something)
 		if ( [_backtrack count] ){
-			PGLog(@"[Move] Backtracking to our route!");
-			
+			log(LOG_MOVEMENT, @"Backtracking to our route!");
 		}
 		// previous waypoint to move to
 		else if ( self.destinationWaypoint ){
 			
 			// check for patrol procedure before we move (thanks slipknot)
 			if ( ![botController performPatrolProcedure] ) {
-				PGLog(@"[Move] Not resuming movement, performing patrol proc");
+				log(LOG_MOVEMENT, @"Performing patrol procedure before resuming.");
 				return;
 			}
 			
-			PGLog(@"[Move] Moving to WP: %@", self.destinationWaypoint);
+			log(LOG_MOVEMENT, @"Moving to WP: %@", self.destinationWaypoint);
 			[self moveToPosition:[self.destinationWaypoint position]];
 		}
 		// find the closest waypoint
 		else{
 			
-			PGLog(@"[Move] Finding the closest waypoint");
+			log(LOG_MOVEMENT, @"Finding the closest waypoint");
 			
 			Position *playerPosition = [playerData position];
 			
@@ -349,7 +349,7 @@ typedef enum MovementState{
 				
 				// we switched to a corpse route on death
 				if ( [[self.currentRoute waypoints] count] == 0 ){
-					PGLog(@"[Move] Unable to resume movement, we're dead and there is no corpse route!");
+					log(LOG_GHOST, @"Unable to resume, we're dead and there is no corpse route!");
 					return;
 				}
 				
@@ -378,25 +378,25 @@ typedef enum MovementState{
 			}
 			
 			// we have a waypoint to move to!
-			if ( newWP ){
-				PGLog(@"[Move] Found waypoint %@ to move to", newWP);
+			if ( newWP ) {
+				log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
 				self.destinationWaypoint = newWP;
 				
 				// check for patrol procedure before we move (thanks slipknot)
 				if ( ![botController performPatrolProcedure] ){
-					PGLog(@"[Move] Not resuming movement, performing patrol proc");
+					log(LOG_MOVEMENT, @"Performing patrol procedure before resuming.");
 					return;
 				}
 				
 				[self moveToPosition:[newWP position]];
 			}
 			else{
-				PGLog(@"[Move] Error, unable to find a position to resume movement to!");
+				log(LOG_ERROR, @"Unable to find a position to resume movement to!");
 			}
 		}
 	}
 	else{
-		PGLog(@"[Move] Error, we have no route or unit to move to!");
+		log(LOG_ERROR, @"We have no route or unit to move to!");
 	}
 }
 
@@ -408,7 +408,7 @@ typedef enum MovementState{
 
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 	
-	PGLog(@"[Move] Moving to a waypoint: %@", waypoint);
+	log(LOG_WAYPOINT, @"Moving to a waypoint: %@", waypoint);
 	
 	[_destinationWaypoint release];
 	_destinationWaypoint = [waypoint retain];
@@ -421,7 +421,7 @@ typedef enum MovementState{
 	
 	// do we have an action for the destination we just reached?
 	NSArray *actions = [self.destinationWaypoint actions];
-	if ( actions && [actions count] > 0 ){
+	if ( actions && [actions count] > 0 ) {
 
 		// check if conditions are met
 		Rule *rule = [self.destinationWaypoint rule];
@@ -430,7 +430,7 @@ typedef enum MovementState{
 			// reset our timer
 			[self resetMovementTimer];
 			
-			PGLog(@"[Waypoint] Performing %d actions", [actions count] );
+			log(LOG_WAYPOINT, @"Performing %d actions", [actions count] );
 			
 			// time to perform actions!
 			NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -449,7 +449,7 @@ typedef enum MovementState{
 
 - (void)realMoveToNextWaypoint{
 	
-	PGLog(@"[Move] Moving to the next waypoint!");
+	log(LOG_WAYPOINT, @"Moving to the next waypoint!");
 	
 	NSArray *waypoints = [self.currentRoute waypoints];
 	int index = [waypoints indexOfObject:self.destinationWaypoint];
@@ -459,7 +459,7 @@ typedef enum MovementState{
 		
 		// at the end of the route
 		if ( index == [waypoints count] - 1 ){
-			PGLog(@"[Move] We've reached the end of the route!");
+			log(LOG_WAYPOINT, @"We've reached the end of the route!");
 
 			[self routeEnded];
 			return;
@@ -473,11 +473,11 @@ typedef enum MovementState{
 		// increment something here to keep track of how many waypoints we've moved to?
 		
 		self.destinationWaypoint = [waypoints objectAtIndex:index];
-		PGLog(@"[Move] Moving to next waypoint of %@ with index %d", self.destinationWaypoint, index);
+		log(LOG_WAYPOINT, @"Moving to next waypoint of %@ with index %d", self.destinationWaypoint, index);
 		[self moveToPosition:[self.destinationWaypoint position]];
 	}
 	else{
-		PGLog(@"[Move] Error, there are no waypoints for the current route");
+		log(LOG_ERROR, @"There are no waypoints for the current route!");
 	}
 }
 
@@ -489,7 +489,7 @@ typedef enum MovementState{
 	// we've reached the end of our corpse route, lets switch to our main route
 	if ( self.currentRouteKey == CorpseRunRoute ){
 		
-		PGLog(@"[Move] Switching from corpse to primary route!");
+		log(LOG_GHOST, @"Switching from corpse to primary route!");
 		
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
@@ -517,27 +517,27 @@ typedef enum MovementState{
 	
 	// sanity check
     if ( !position || distance == INFINITY ) {
-        PGLog(@"[Move] Invalid waypoint (distance: %f). Ending patrol.", distance);
-		
+        log(LOG_MOVEMENT, @"Invalid waypoint (distance: %f). Ending patrol.", distance);
+
 		// we should do sometihng here! finish route!
         return;
     }
 	
 	// no object, no actions, just trying to move to the next WP!
 	if ( !_moveToObject && ![_destinationWaypoint actions] && distance < [playerData speedMax] / 2.0f ){
-		PGLog(@"[Move] Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
+		log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
         [self moveToNextWaypoint];
         return;
 	}
 	
 	// we're moving to a new position!
-	if ( ![_lastAttemptedPosition isEqual:position] ){
-		PGLog(@"[Move] Moving to a new position! From %@ to %@ Timer will expire in %0.2f", _lastPlayerPosition, position, (distance/[playerData speedMax]) + 4.0);
+	if ( ![_lastAttemptedPosition isEqual:position] ) {
+		log(LOG_MOVEMENT, @"Moving to a new position! From %@ to %@ Timer will expire in %0.2f", _lastPlayerPosition, position, (distance/[playerData speedMax]) + 4.0);
 	}
 	
 	// only reset the stuck counter if we're going to a new position
-	if ( ![position isEqual:self.lastAttemptedPosition] ){
-		PGLog(@"[Move] Resetting stuck counter");
+	if ( ![position isEqual:self.lastAttemptedPosition] ) {
+//		log(LOG_MOVEMENT, @"Resetting stuck counter");
 		_stuckCounter					= 0;
 	}
 	
@@ -554,7 +554,7 @@ typedef enum MovementState{
 	// actually move!
 	if ( [self movementType] == MovementType_Keyboard ){
 		UInt32 movementFlags = [playerData movementFlags];
-		if ( !(movementFlags & MovementFlag_Forward) )  [self moveForwardStop];
+		if ( !(movementFlags & MovementFlag_Forward) ) [self moveForwardStop];
         [self correctDirection: YES];
         if ( !(movementFlags & MovementFlag_Forward) )  [self moveForwardStart];
 	}
@@ -563,7 +563,7 @@ typedef enum MovementState{
 		[self correctDirection: YES];
 		[self moveForwardStart];
 	}
-	else if ( [self movementType] == MovementType_CTM ){
+	else if ( [self movementType] == MovementType_CTM ) {
 		[self setClickToMove:position andType:ctmWalkTo andGUID:0];
 	}
 	
@@ -574,14 +574,14 @@ typedef enum MovementState{
 	
 	// stopped botting?  end!
 	if ( ![botController isBotting] ) {
-		PGLog(@"[Move] We're not botting, stop the timer!");
+		log(LOG_MOVEMENT, @"We're not botting, stop the timer!");
 		[self resetMovementState];
 		return;
 	}
 	
 	_positionCheck++;
 
-	PGLog(@"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
+	log(LOG_MOVEMENT, @"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
 
 	BOOL isPlayerOnGround = [playerData isOnGround];
 	Position *playerPosition = [playerData position];
@@ -593,7 +593,7 @@ typedef enum MovementState{
 	
     // sanity check, incase something happens
     if ( distanceToDestination == INFINITY ) {
-        PGLog(@"[Move] Player distance == infinity. Stopping.");
+        log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
 		
 		[self resetMovementTimer];
 
@@ -605,7 +605,7 @@ typedef enum MovementState{
 	if ( [botController isBotting] && !self.moveToObject ){
 		if ( [botController evaluateSituation] ){
 			// don't need to reset our movement timer b/c it will be done when we're told to move somewhere else!
-			PGLog(@"[Move] Action taken, not checking movement");
+			log(LOG_MOVEMENT, @"Action taken, not checking movement");
 			return;
 		}
 	}
@@ -623,7 +623,7 @@ typedef enum MovementState{
 	// we've reached our position!
 	if ( distanceToDestination <= distanceToObject ){
 		
-		PGLog(@"[Move] Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
+		log(LOG_MOVEMENT, @"Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
 		
 		// moving to a unit
 		if ( self.moveToObject ){
@@ -639,7 +639,7 @@ typedef enum MovementState{
 			// stop movement
 			[self stopMovement];
 			
-			PGLog(@"[Move] Reached our object %@", object);
+			log(LOG_MOVEMENT, @"Reached our object %@", object);
 			
 			// we've reached the unit! Send a notification
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: object];
@@ -650,14 +650,14 @@ typedef enum MovementState{
 		// moving to a waypoint
 		else if ( self.destinationWaypoint ){
 			
-			PGLog(@"[Move] Reached waypoint %@", self.destinationWaypoint);
+			log(LOG_MOVEMENT, @"Reached waypoint %@", self.destinationWaypoint);
 			
 			BOOL continueRoute = YES;
 			
 			// we could be told to move by a UI click, so make sure we're botting to perform a patrol proc
 			if ( ![botController isBotting] || ![botController performPatrolProcedure] ){
 				continueRoute = NO;
-				PGLog(@"[Move] Not continuing route! We have to do something or we're not botting anymore!");
+				log(LOG_MOVEMENT, @"Not continuing route! We have to do something or we're not botting anymore!");
 			}
 			
 			if ( continueRoute ){
@@ -667,12 +667,12 @@ typedef enum MovementState{
 		}
 		// umm wut?
 		else{
-			PGLog(@"[Move] In theory we should never be here, why are we here?");
+			log(LOG_ERROR, @"Somehow we're not able to get to our waypoint!?");
 		}
 	}
 	
 	// should we jump?
-	//PGLog(@" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
+	//log(LOG_MOVEMENT, @" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
 	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] ){
 		
 		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ){
@@ -689,7 +689,7 @@ typedef enum MovementState{
 	
 	// make sure we're still moving
 	if ( _positionCheck > 3 && _stuckCounter < 3 && ![self isMoving] ){
-		PGLog(@"[Move] For some reason we're not moving! Let's start moving again!");
+		log(LOG_MOVEMENT, @"For some reason we're not moving! Let's start moving again!");
 		
 		[self resumeMovement];
 		
@@ -711,7 +711,7 @@ typedef enum MovementState{
 		
 		[controller setCurrentStatus: @"Bot: Stuck, entering anti-stuck routine"];
 		
-		PGLog(@"[Move] Player is stuck, trying anti-stuck routine");
+		log(LOG_MOVEMENT, @"Player is stuck, trying anti-stuck routine");
 		
 		[self unStickify];
 		
@@ -719,12 +719,12 @@ typedef enum MovementState{
 	}
 	
 	// check to see if we are stuck
-	if ( _positionCheck > 5 ){
+	if ( _positionCheck > 5 ) {
 		float maxSpeed = [playerData speedMax];
 		float distanceTraveled = [self.lastPlayerPosition distanceToPosition:playerPosition];
 		
-		PGLog(@" Checking speed: %0.2f <= %.02f  (max: %0.2f)", playerSpeed, (maxSpeed/10.0f), maxSpeed );
-		PGLog(@" Checking distance: %0.2f <= %0.2f", distanceTraveled, (maxSpeed/10.0f)/5.0f);
+		log(LOG_MOVEMENT, @" Checking speed: %0.2f <= %.02f  (max: %0.2f)", playerSpeed, (maxSpeed/10.0f), maxSpeed );
+		log(LOG_MOVEMENT, @" Checking distance: %0.2f <= %0.2f", distanceTraveled, (maxSpeed/10.0f)/5.0f);
 		
 		// distance + speed check
 		if ( distanceTraveled <= (maxSpeed/10.0f)/5.0f || playerSpeed <= maxSpeed/10.0f ){
@@ -742,7 +742,7 @@ typedef enum MovementState{
 	// are we stuck moving up?
 	UInt32 movementFlags = [playerData movementFlags];
 	if ( movementFlags & MovementFlag_FlyUp && !_movingUp ){
-		PGLog(@"[Move] We're stuck moving up! Fixing!");
+		log(LOG_MOVEMENT, @"We're stuck moving up! Fixing!");
 		[self moveUpStop];
 		
 		[self resumeMovement];
@@ -762,7 +762,7 @@ typedef enum MovementState{
 	if ( [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnStuck"] boolValue] ){
 		int stuckThreshold = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmOnStuckAttempts"] intValue];
 		if ( _unstickifyTry > stuckThreshold ){
-			PGLog(@"[Bot] We're stuck, playing an alarm!");
+			log(LOG_MOVEMENT, @"We're stuck, playing an alarm!");
 			[[NSSound soundNamed: @"alarm"] play];
 		}
 	}
@@ -772,7 +772,7 @@ typedef enum MovementState{
 		int stuckTries = [logOutStuckAttemptsTextField intValue];
 		
 		if ( _unstickifyTry > stuckTries ){
-			PGLog(@"[Bot] We're stuck, closing wow!");
+			log(LOG_MOVEMENT, @"We're stuck, closing wow!");
 			[botController logOut];
 			[controller setCurrentStatus: @"Bot: Logged out due to being stuck"];
 			return;
@@ -798,7 +798,7 @@ typedef enum MovementState{
 	_unstickifyTry++;
 	[lastTarget release];
 	
-	PGLog(@"[Move] Entering anti-stuck procedure! Try %d", _unstickifyTry);
+	log(LOG_MOVEMENT, @"Entering anti-stuck procedure! Try %d", _unstickifyTry);
 	
 	// anti-stuck for moving to an object!
 	if ( self.moveToObject ){
@@ -806,7 +806,7 @@ typedef enum MovementState{
 		// blacklist unit after 5 tries!
 		if ( _unstickifyTry > 5 ){
 			
-			PGLog(@"[Move] Unable to reach %@, blacklisting", self.moveToObject);
+			log(LOG_MOVEMENT, @"Unable to reach %@, blacklisting", self.moveToObject);
 			
 			[blacklistController blacklistObject:self.moveToObject withReason:Reason_CantReachObject];
 			
@@ -820,7 +820,7 @@ typedef enum MovementState{
 		// player is flying and is stuck :(  makes me sad, lets move up a bit
 		if ( [[playerData player] isFlyingMounted] ){
 			
-			PGLog(@"[Move] Moving up since we're flying mounted!");
+			log(LOG_MOVEMENT, @"Moving up since we're flying mounted!");
 			
 			// move up for 1 second!
 			[self moveUpStop];
@@ -830,7 +830,7 @@ typedef enum MovementState{
 			return;
 		}
 		
-		PGLog(@"[Move] Moving to an object + stuck and not flying?  shux");
+		log(LOG_MOVEMENT, @"Moving to an object + stuck and not flying?  shux");
 		[self resumeMovement];
 	}
 	
@@ -838,9 +838,9 @@ typedef enum MovementState{
 	else if ( self.destinationWaypoint ){
 		
 		// player is flying and is stuck :(  makes me sad, lets move up a bit
-		if ( [[playerData player] isFlyingMounted] && _unstickifyTry < 5 ){
+		if ( [[playerData player] isFlyingMounted] && _unstickifyTry < 5 ) {
 			
-			PGLog(@"[Move] Moving up since we're flying mounted!");
+			log(LOG_MOVEMENT, @"Moving up since we're flying mounted!");
 			
 			// move up for 1 second!
 			[self moveUpStop];
@@ -859,11 +859,11 @@ typedef enum MovementState{
 				if ( index == 0 ) {
 					index = [waypoints count];
 				}
-				PGLog(@"[Move] ... Moving to prevous waypoint.");
+				log(LOG_MOVEMENT, @"Moving to prevous waypoint.");
 				[self moveToWaypoint: [waypoints objectAtIndex: index-1]];
 			}
 			else{
-				PGLog(@"[Move] Trying to move to a previous WP, previously we would finish the route");
+				log(LOG_MOVEMENT, @"Trying to move to a previous WP, previously we would finish the route");
 			}
 			
 		}
@@ -874,10 +874,10 @@ typedef enum MovementState{
 
 - (void)resetMovementState{
 	
-	PGLog(@"[Move] Resetting movement state");
+	log(LOG_MOVEMENT, @"Resetting movement state");
 	
 	if ( [self isMoving] ){
-		PGLog(@"[Move] Stopping movement!");
+		log(LOG_MOVEMENT, @"Stopping movement!");
 		[self stopMovement];
 		[self setClickToMove:nil andType:ctmIdle andGUID:0x0];
 	}
@@ -925,13 +925,13 @@ typedef enum MovementState{
 		
         // every 2 seconds, we should cover around [playerData speedMax]*2
         // check to ensure that we've moved 1/4 of that
-        // PGLog(@"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
+        // log(LOG_MOVEMENT, @"Expiration in: %.2f seconds (%@).", [self.movementExpiration timeIntervalSinceNow], self.movementExpiration);
         if( self.movementExpiration && ([self.movementExpiration compare: [NSDate date]] == NSOrderedAscending) ) {
-            PGLog(@"[Move] **** Movement timer expired!! ****");
+            log(LOG_MOVEMENT, @"[Move] **** Movement timer expired!! ****");
             
 			// if we can't reach the unit, just bail it
             if ( self.moveToObject ){ 
-                PGLog(@"[Move] ... Unable to reach unit %@; cancelling.", self.unit);
+                log(LOG_MOVEMENT, @"[Move] ... Unable to reach unit %@; cancelling.", self.unit);
   
 				//TO DO: BLACKLIST THE UNIT??? FIRE A NOTIFICATION?
 				self.moveToObject = nil;
@@ -947,7 +947,7 @@ typedef enum MovementState{
                     if(index == 0) {
                         index = [waypoints count];
                     }
-                    PGLog(@"[Move] ... Moving to prevous waypoint.");
+                    log(LOG_MOVEMENT, @"[Move] ... Moving to prevous waypoint.");
                     [self moveToWaypoint: [waypoints objectAtIndex: index-1]];
                 } else {
                     [self finishRoute];
@@ -958,7 +958,7 @@ typedef enum MovementState{
         
         // float timeSpan = [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection];
         // if(distanceMoved > 0.01)
-        //    PGLog(@"Moved %.2f yards in %.2f seconds.", distanceMoved, timeSpan);
+        //    log(LOG_MOVEMENT, @"Moved %.2f yards in %.2f seconds.", distanceMoved, timeSpan);
         
         // update the direction we're facing
 		Position *position = self.moveToObject ? [self.moveToObject position] : [self.destination position];
@@ -979,7 +979,7 @@ typedef enum MovementState{
         if(self.lastSavedPosition && (distanceMoved > ([playerData speedMax]/2.0)) ) {
             float secondsFromNow = ([playerPosition distanceToPosition: position]/[playerData speedMax]) + 4.0;
             self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: secondsFromNow];
-            //PGLog(@"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
+            //log(LOG_MOVEMENT, @"Movement expiration in %.2f seconds for %.2f yards.", secondsFromNow, [playerPosition distanceToPosition: position]);
         }
     } else {
         if( [[NSDate date] timeIntervalSinceDate: self.lastDirectionCorrection] > 2.0) {
@@ -991,7 +991,7 @@ typedef enum MovementState{
 - (void)turnToward: (Position*)position{
 	
 	/*if ( [movementType selectedTag] == MOVE_CTM ){
-	 PGLog(@"[Move] In theory we should never be here!");
+	 log(LOG_MOVEMENT, @"[Move] In theory we should never be here!");
 	 return;
 	 }*/
 	
@@ -1030,8 +1030,8 @@ typedef enum MovementState{
                 // 2.25 rad/sec is an approximate turning speed
                 float compensationFactor = ([controller refreshDelay]/2000000.0f) * 2.25f;
                 
-                if(printTurnInfo) PGLog(@"[Turn] ------");
-                if(printTurnInfo) PGLog(@"[Turn] %.3f rad turn with %.2f error (lim %.2f) for distance %.2f.", absAngleTo, errorStart, errorLimit, startDistance);
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] ------");
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] %.3f rad turn with %.2f error (lim %.2f) for distance %.2f.", absAngleTo, errorStart, errorLimit, startDistance);
                 
                 NSDate *date = [NSDate date];
                 ( angleTo > 0) ? [self turnLeft: YES] : [self turnRight: YES];
@@ -1063,18 +1063,18 @@ typedef enum MovementState{
                     errorNow = (fabsf(currDiff) < M_PI_2) ? (currentDistance * sinf(modifiedDiff)) : INFINITY;
                     
                     if( (errorNow < errorLimit) ) {
-                        if(printTurnInfo) PGLog(@"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
-                        //PGLog(@"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
+                        if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
+                        //log(LOG_MOVEMENT, @"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
                         break;
                     }
                     
                     if( (delayCount > 250) ) {
                         if( (signbit(lastDiff) != signbit(currDiff)) ) {
-                            if(printTurnInfo) PGLog(@"[Turn] [Sign Diff] %.3f vs. %.3f (Error: %.2f vs. %.2f)", lastDiff, currDiff, errorNow, errorPrev);
+                            if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] [Sign Diff] %.3f vs. %.3f (Error: %.2f vs. %.2f)", lastDiff, currDiff, errorNow, errorPrev);
                             break;
                         }
                         if( (errorNow > (errorPrev + errorLimit)) ) {
-                            if(printTurnInfo) PGLog(@"[Turn] [Error Growing] %.2f > %.2f", errorNow, errorPrev);
+                            if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] [Error Growing] %.2f > %.2f", errorNow, errorPrev);
                             break;
                         }
                     }
@@ -1099,7 +1099,7 @@ typedef enum MovementState{
 				 if(finalFacing != [playerData directionFacing]) {
 				 float currentDistance = [[playerData position] distanceToPosition2D: position];
 				 float diff = fabsf([playerData directionFacing] - finalFacing);
-				 PGLog(@"[Turn] Stabalized at ~%d ms (wow delay: %d) with %.3f diff --> %.2f yards.", j*2, [controller refreshDelay], diff, currentDistance * sinf(diff) );
+				 log(LOG_MOVEMENT, @"[Turn] Stabalized at ~%d ms (wow delay: %d) with %.3f diff --> %.2f yards.", j*2, [controller refreshDelay], diff, currentDistance * sinf(diff) );
 				 break;
 				 }
 				 }*/
@@ -1111,17 +1111,17 @@ typedef enum MovementState{
                     else                                savedDirection += (M_PI*2);
                 }
                 float interval = -1*[date timeIntervalSinceNow], turnRad = fabsf(savedDirection - finalFacing);
-                if(printTurnInfo) PGLog(@"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
                 
             }
         }
 		else{
-            if ( printTurnInfo ) PGLog(@"DOING SHARP TURN to %.2f", [playerPosition angleTo: position]);
+            if ( printTurnInfo ) log(LOG_MOVEMENT, @"DOING SHARP TURN to %.2f", [playerPosition angleTo: position]);
             [playerData faceToward: position];
             usleep([controller refreshDelay]*2);
         }
     } else {
-        if(printTurnInfo) PGLog(@"Skipping turn because right mouse button is down.");
+        if(printTurnInfo) log(LOG_MOVEMENT, @"Skipping turn because right mouse button is down.");
     }
     
 }
@@ -1141,7 +1141,7 @@ typedef enum MovementState{
 	
 	// do nothing if they're PvPing
 	if ( [botController isPvPing] || [playerData isInBG:[playerData zone]] ){
-		PGLog(@"[Move] Ignoring corpse route because we're PvPing!");
+		log(LOG_MOVEMENT, @"[Move] Ignoring corpse route because we're PvPing!");
 		return;
 	}
 	
@@ -1150,17 +1150,17 @@ typedef enum MovementState{
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRouteSet = [botController.theRouteCollection startingRoute];
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
-		PGLog(@"[Move] Died, switching to main starting route! %@", self.currentRoute);
+		log(LOG_MOVEMENT, @"[Move] Died, switching to main starting route! %@", self.currentRoute);
 	}
 	// be normal!
 	else{
-		PGLog(@"[Move] Died, switching to corpse route");
+		log(LOG_MOVEMENT, @"[Move] Died, switching to corpse route");
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	}
 	
 	if ( self.currentRoute && [[self.currentRoute waypoints] count] == 0  ){
-		PGLog(@"[Move] No corpse route! Ending movement");
+		log(LOG_MOVEMENT, @"[Move] No corpse route! Ending movement");
 		[self stopMovement];
 	}
 }
@@ -1179,7 +1179,7 @@ typedef enum MovementState{
 	self.currentRouteKey = PrimaryRoute;
 	self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 	
-	PGLog(@"[Move] Player revived, switching to %@", self.currentRoute);
+	log(LOG_MOVEMENT, @"[Move] Player revived, switching to %@", self.currentRoute);
 	
 	if ( self.currentRoute ){
 		[self resumeMovement];
@@ -1197,7 +1197,7 @@ typedef enum MovementState{
 - (void)moveForwardStart{
     _isMovingFromKeyboard = YES;
 	
-	PGLog(@"moveForwardStart");
+	log(LOG_MOVEMENT, @"moveForwardStart");
 	
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_UpArrow, TRUE);
@@ -1233,7 +1233,7 @@ typedef enum MovementState{
 - (void)moveForwardStop {
 	_isMovingFromKeyboard = NO;
 	
-	PGLog(@"moveForwardStop");
+	log(LOG_MOVEMENT, @"moveForwardStop");
 	
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
@@ -1446,8 +1446,8 @@ typedef enum MovementState{
                 // 2.25 rad/sec is an approximate turning speed
                 float compensationFactor = ([controller refreshDelay]/2000000.0f) * 2.25f;
                 
-                if(printTurnInfo) PGLog(@"[Turn] ------");
-                if(printTurnInfo) PGLog(@"[Turn] %.3f rad turn with %.2f error (lim %.2f) for distance %.2f.", absAngleTo, errorStart, errorLimit, startDistance);
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] ------");
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] %.3f rad turn with %.2f error (lim %.2f) for distance %.2f.", absAngleTo, errorStart, errorLimit, startDistance);
                 
                 NSDate *date = [NSDate date];
                 ( angleTo > 0) ? [self turnLeft: YES] : [self turnRight: YES];
@@ -1479,18 +1479,18 @@ typedef enum MovementState{
                     errorNow = (fabsf(currDiff) < M_PI_2) ? (currentDistance * sinf(modifiedDiff)) : INFINITY;
                     
                     if( (errorNow < errorLimit) ) {
-                        if(printTurnInfo) PGLog(@"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
-                        //PGLog(@"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
+                        if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] [Range is Good] %.2f < %.2f", errorNow, errorLimit);
+                        //log(LOG_MOVEMENT, @"Expected additional movement: %.2f", currentDistance * sinf(0.035*2.25));
                         break;
                     }
                     
                     if( (delayCount > 250) ) {
                         if( (signbit(lastDiff) != signbit(currDiff)) ) {
-                            if(printTurnInfo) PGLog(@"[Turn] [Sign Diff] %.3f vs. %.3f (Error: %.2f vs. %.2f)", lastDiff, currDiff, errorNow, errorPrev);
+                            if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] [Sign Diff] %.3f vs. %.3f (Error: %.2f vs. %.2f)", lastDiff, currDiff, errorNow, errorPrev);
                             break;
                         }
                         if( (errorNow > (errorPrev + errorLimit)) ) {
-                            if(printTurnInfo) PGLog(@"[Turn] [Error Growing] %.2f > %.2f", errorNow, errorPrev);
+                            if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] [Error Growing] %.2f > %.2f", errorNow, errorPrev);
                             break;
                         }
                     }
@@ -1515,7 +1515,7 @@ typedef enum MovementState{
 				 if(finalFacing != [playerData directionFacing]) {
 				 float currentDistance = [[playerData position] distanceToPosition2D: position];
 				 float diff = fabsf([playerData directionFacing] - finalFacing);
-				 PGLog(@"[Turn] Stabalized at ~%d ms (wow delay: %d) with %.3f diff --> %.2f yards.", j*2, [controller refreshDelay], diff, currentDistance * sinf(diff) );
+				 log(LOG_MOVEMENT, @"[Turn] Stabalized at ~%d ms (wow delay: %d) with %.3f diff --> %.2f yards.", j*2, [controller refreshDelay], diff, currentDistance * sinf(diff) );
 				 break;
 				 }
 				 }*/
@@ -1527,7 +1527,7 @@ typedef enum MovementState{
                     else                                savedDirection += (M_PI*2);
                 }
                 float interval = -1*[date timeIntervalSinceNow], turnRad = fabsf(savedDirection - finalFacing);
-                if(printTurnInfo) PGLog(@"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
+                if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
             }
 			
 		// mouse turning or CTM
@@ -1553,13 +1553,13 @@ typedef enum MovementState{
 				[self establishPosition];
 			}
 			
-			if ( printTurnInfo ) PGLog(@"Doing sharp turn to %.2f", theAngle );
+			if ( printTurnInfo ) log(LOG_MOVEMENT, @"Doing sharp turn to %.2f", theAngle );
 
             usleep( [controller refreshDelay] );
         }
     }
 	else {
-        if(printTurnInfo) PGLog(@"Skipping turn because right mouse button is down.");
+        if(printTurnInfo) log(LOG_MOVEMENT, @"Skipping turn because right mouse button is down.");
     }
 }
 
@@ -1622,7 +1622,7 @@ typedef enum MovementState{
 	float randomDistance = SSRandomFloatBetween( start, stop );
 	
 	Position *positionToMove = [[unit position] positionAtDistance:randomDistance withDestination:[playerData position]];
-	PGLog(@"[Follow] Moving to %@", positionToMove);
+	log(LOG_MOVEMENT, @"[Follow] Moving to %@", positionToMove);
 	[self moveToPosition:positionToMove];
 	//[self setClickToMove: positionToMove andType:ctmWalkTo andGUID:0x0];
 }
@@ -1658,14 +1658,15 @@ typedef enum MovementState{
 	
 	// just in case people have problems, we'll print something to their log file
 	if ( ![playerData isOnGround] ) {
-		PGLog(@"[Movement] Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
+		log(LOG_MOVEMENT, @"[Movement] Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
     }
 	
 	return NO;	
 }
 
 - (void)jump{
-	
+
+	log(LOG_MOVEMENT, @"Jumping!");
     // correct direction
     [self correctDirection: YES];
     
@@ -1691,7 +1692,7 @@ typedef enum MovementState{
 	if ( [playerData isCasting] ){
 		float delayTime = [playerData castTimeRemaining];
         if ( delayTime < 0.2f) delayTime = 0.2f;
-        PGLog(@"  Player casting. Waiting %.2f to perform next action.", delayTime);
+        log(LOG_MOVEMENT, @"  Player casting. Waiting %.2f to perform next action.", delayTime);
         
         [self performSelector: _cmd
                    withObject: dict 
@@ -1706,7 +1707,7 @@ typedef enum MovementState{
 	
 	// are we done?
 	if ( actionToExecute >= [actions count] ){
-		PGLog(@"[Waypoint] Action complete, resuming route");
+		log(LOG_MOVEMENT, @"[Waypoint] Action complete, resuming route");
 		[self realMoveToNextWaypoint];
 		return;
 	}
@@ -1714,7 +1715,7 @@ typedef enum MovementState{
 	// execute our action
 	else {
 		
-		PGLog(@"[Waypoint] Executing action %d", actionToExecute);
+		log(LOG_MOVEMENT, @"[Waypoint] Executing action %d", actionToExecute);
 		
 		Action *action = [actions objectAtIndex:actionToExecute];
 		
@@ -1723,7 +1724,7 @@ typedef enum MovementState{
 			
 			UInt32 spell = [[[action value] objectForKey:@"SpellID"] unsignedIntValue];
 			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
-			PGLog(@"[Waypoint] Casting spell %d", spell);
+			log(LOG_MOVEMENT, @"[Waypoint] Casting spell %d", spell);
 			
 			// only pause movement if we have to!
 			if ( !instant )
@@ -1739,7 +1740,7 @@ typedef enum MovementState{
 			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
 			UInt32 actionID = (USE_ITEM_MASK + itemID);
 			
-			PGLog(@"[Waypoint] Using item %d", itemID);
+			log(LOG_MOVEMENT, @"[Waypoint] Using item %d", itemID);
 			
 			// only pause movement if we have to!
 			if ( !instant )
@@ -1755,7 +1756,7 @@ typedef enum MovementState{
 			BOOL instant = [[[action value] objectForKey:@"Instant"] boolValue];
 			UInt32 actionID = (USE_MACRO_MASK + macroID);
 			
-			PGLog(@"[Waypoint] Using macro %d", macroID);
+			log(LOG_MOVEMENT, @"[Waypoint] Using macro %d", macroID);
 			
 			// only pause movement if we have to!
 			if ( !instant )
@@ -1771,7 +1772,7 @@ typedef enum MovementState{
 			
 			[self stopMovement];
 			
-			PGLog(@"[Waypoint] Delaying for %0.2f seconds", delay);
+			log(LOG_MOVEMENT, @"[Waypoint] Delaying for %0.2f seconds", delay);
 		}
 		
 		// jump
@@ -1779,7 +1780,7 @@ typedef enum MovementState{
 			
 			[self jump];
 			
-			PGLog(@"[Waypoint] Jumping!");
+			log(LOG_MOVEMENT, @"[Waypoint] Jumping!");
 		}
 		
 		// switch route
@@ -1795,11 +1796,11 @@ typedef enum MovementState{
 			}
 			
 			if ( route == nil ){
-				PGLog(@"[Waypoint] Unable to find route %@ to switch to!", UUID);
+				log(LOG_MOVEMENT, @"[Waypoint] Unable to find route %@ to switch to!", UUID);
 				
 			}
 			else{
-				PGLog(@"[Waypoint] Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
+				log(LOG_MOVEMENT, @"[Waypoint] Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
 				
 				// switch the botController's route!
 				[botController setTheRouteSet:route];
@@ -1828,7 +1829,7 @@ typedef enum MovementState{
 					
 					// might want to make k 3 (but will take longer)
 					
-					PGLog(@"[Waypoint] Turning in/grabbing quests to/from %@", questNPC);
+					log(LOG_MOVEMENT, @"[Waypoint] Turning in/grabbing quests to/from %@", questNPC);
 					
 					int i = 0, k = 1;
 					for ( ; i < 3; i++ ){
@@ -1868,7 +1869,7 @@ typedef enum MovementState{
 		else if ( [action type] == ActionType_InteractNPC ){
 			
 			NSNumber *entryID = [action value];
-			PGLog(@"[Waypoint] Interacting with mob %@", entryID);
+			log(LOG_MOVEMENT, @"[Waypoint] Interacting with mob %@", entryID);
 			
 			// moving bad, lets pause!
 			[self stopMovement];
@@ -1881,7 +1882,7 @@ typedef enum MovementState{
 		else if ( [action type] == ActionType_InteractObject ){
 			
 			NSNumber *entryID = [action value];
-			PGLog(@"[Waypoint] Interacting with node %@", entryID);
+			log(LOG_MOVEMENT, @"[Waypoint] Interacting with node %@", entryID);
 			
 			// moving bad, lets pause!
 			[self stopMovement];
@@ -1898,7 +1899,7 @@ typedef enum MovementState{
 			Mob *repairNPC = nil;
 			for ( repairNPC in nearbyMobs ){
 				if ( [repairNPC canRepair] ){
-					PGLog(@"[Waypoint] Repairing with %@", repairNPC);
+					log(LOG_MOVEMENT, @"[Waypoint] Repairing with %@", repairNPC);
 					break;
 				}
 			}
@@ -1914,17 +1915,17 @@ typedef enum MovementState{
 					// now send the repair macro
 					[macroController useMacro:@"RepairAll"];	
 					
-					PGLog(@"[Waypoint] All items repaired");
+					log(LOG_MOVEMENT, @"[Waypoint] All items repaired");
 				}
 			}
 			else{
-				PGLog(@"[Waypoint] Unable to repair, no repair NPC found!");
+				log(LOG_MOVEMENT, @"[Waypoint] Unable to repair, no repair NPC found!");
 			}
 		}
 		
 		// switch combat profile
 		else if ( [action type] == ActionType_CombatProfile ){
-			PGLog(@"[Waypoint] Switching from combat profile %@", botController.theCombatProfile);
+			log(LOG_MOVEMENT, @"[Waypoint] Switching from combat profile %@", botController.theCombatProfile);
 			
 			CombatProfile *profile = nil;
 			NSString *UUID = [action value];
@@ -1946,16 +1947,16 @@ typedef enum MovementState{
 			
 			if ( waypointIndex >= 1 && waypointIndex < [waypoints count] ){
 				self.destinationWaypoint = [waypoints objectAtIndex:waypointIndex];
-				PGLog(@"[Waypoint] Jumping to waypoint %@", self.destinationWaypoint);
+				log(LOG_MOVEMENT, @"[Waypoint] Jumping to waypoint %@", self.destinationWaypoint);
 				[self resumeMovement];
 			}
 			else{
-				PGLog(@"[Waypoint] Error, unable to move to waypoint index %d, out of range!", waypointIndex);
+				log(LOG_MOVEMENT, @"[Waypoint] Error, unable to move to waypoint index %d, out of range!", waypointIndex);
 			}
 		}
 	}
 	
-	PGLog(@"[Waypoint] Action %d complete, checking for more!", actionToExecute);
+	log(LOG_MOVEMENT, @"[Waypoint] Action %d complete, checking for more!", actionToExecute);
 	
 	[self performSelector: _cmd
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys:
