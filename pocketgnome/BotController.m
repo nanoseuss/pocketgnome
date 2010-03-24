@@ -1099,7 +1099,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)performProcedureWithState: (NSDictionary*)state {
 	// player dead?
 	if ( [playerController isDead] ) {
-		log(LOG_PROCEDURE, @"[Procedure] Player is dead! Aborting!");
+		log(LOG_PROCEDURE, @"Player is dead! Aborting!");
 		[self cancelCurrentProcedure];
 		return;
 	}
@@ -1142,8 +1142,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int actionsPerformed = [[state objectForKey: @"ActionsPerformed"] intValue];
 	int inCombatNoAttack = [[state objectForKey: @"InCombatNoAttack"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
+	
 	if ( rulesTried == nil ) {
-		log(LOG_PROCEDURE, @"Creating dictionary to track our tried rules!");
+	//	log(LOG_PROCEDURE, @"Creating dictionary to track our tried rules!");
 		rulesTried = [[NSMutableDictionary dictionary] retain];
 	}
     
@@ -1163,12 +1164,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: _cmd withObject: state afterDelay: delayTime];
 		return;
     }
-	
+	 
 	// We don't want to cast if our GCD is active!
-	if ( [spellController isGCDActive] ){
+	if ( [spellController isGCDActive] ) {
 		log(LOG_PROCEDURE, @"GCD is active, trying again shortly...");
 		[self performSelector: _cmd withObject: state afterDelay: RULE_EVAL_DELAY_SHORT];
 		return;
+	} else {
+		log(LOG_DEV, @"GCD is inactive, continuing...");
 	}
     
     // have we exceeded our maximum attempts on this rule?
@@ -2921,7 +2924,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
 	// Make sure we check regen when we evaluate
 // 3.3.3 broke, uncommenting this to debug
-	//	_doRegenProcedure = 1;
+		_doRegenProcedure = 1;
 
     if ( self.theCombatProfile && self.theBehavior ) {
 		log(LOG_STARTUP, @"Starting...");
