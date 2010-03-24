@@ -687,8 +687,6 @@ static SpellController *sharedSpells = nil;
 	[memory loadDataForObject:self atAddress:offset + 0x4 Buffer:(Byte *)&lastObjectPtr BufLength:sizeof(lastObjectPtr)];
 	[memory loadDataForObject:self atAddress:offset + 0x8 Buffer:(Byte *)&objectListPtr BufLength:sizeof(objectListPtr)];
 
-	log(LOG_DEV, @"GCD is active, trying again shortly...");
-
 	while ((objectListPtr != 0)  && ((objectListPtr & 1) == 0) ) {
 		[memory loadDataForObject: self atAddress: (objectListPtr) Buffer:(Byte*)&cd BufLength: sizeof(cd)];
 		
