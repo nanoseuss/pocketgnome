@@ -40,6 +40,7 @@
 #define LOG_EVALUATE				"evaluate"
 #define LOG_STARTUP					"startup"
 #define LOG_REGEN					"regen"
+#define LOG_PROCEDURE				"procedure"
 
 @interface LogController : NSObject {
 	

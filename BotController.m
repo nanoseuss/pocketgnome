@@ -1098,8 +1098,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)performProcedureWithState: (NSDictionary*)state {
 	// player dead?
-	if ( [playerController isDead] ){
-		log(LOG_GENERAL, @"[Procedure] Player is dead! Aborting!");
+	if ( [playerController isDead] ) {
+		log(LOG_PROCEDURE, @"[Procedure] Player is dead! Aborting!");
 		[self cancelCurrentProcedure];
 		return;
 	}
@@ -1107,24 +1107,27 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if there's another procedure running, we gotta stop it
     if( self.procedureInProgress && ![self.procedureInProgress isEqualToString: [state objectForKey: @"Procedure"]]) {
 		[self cancelCurrentProcedure];
-		log(LOG_GENERAL, @"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
+		log(LOG_PROCEDURE, @"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
     }
 	
 	// reset
 	_doRegenProcedure = 0;
 	
-    if(![self procedureInProgress]) {
+    if (![self procedureInProgress]) {
 		[self setProcedureInProgress: [state objectForKey: @"Procedure"]];
-		log(LOG_GENERAL, @"Setting current procedure: %@", self.procedureInProgress);
-	
-		if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ){
-			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])			[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
-				else if( [[self procedureInProgress] isEqualToString: PostCombatProcedure]) [controller setCurrentStatus: @"Bot: Post-Combat Phase"];
-				else if( [[self procedureInProgress] isEqualToString: RegenProcedure])		[controller setCurrentStatus: @"Bot: Regen Phase"];
+		log(LOG_PROCEDURE, @"No Procedure in progress, setting it to: %@", self.procedureInProgress);	
+		if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
+			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])	
+				[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
+			else if( [[self procedureInProgress] isEqualToString: PostCombatProcedure]) 
+				[controller setCurrentStatus: @"Bot: Post-Combat Phase"];
+			else if( [[self procedureInProgress] isEqualToString: RegenProcedure])
+				[controller setCurrentStatus: @"Bot: Regen Phase"];
 		}
     }
 	
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
+		log(LOG_PROCEDURE, @"Looks like we have %@", self.procedureInProgress);
 		NSArray *combatList = [combatController combatList];
 		int count =		[combatList count];
 		if (count == 1)	[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
@@ -1139,8 +1142,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int actionsPerformed = [[state objectForKey: @"ActionsPerformed"] intValue];
 	int inCombatNoAttack = [[state objectForKey: @"InCombatNoAttack"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
-	if ( rulesTried == nil ){
-		//log(LOG_GENERAL, @"[Procedure^^^^^^^^^^^^^] Creating dictionary to track our tried rules!");
+	if ( rulesTried == nil ) {
+		log(LOG_PROCEDURE, @"Creating dictionary to track our tried rules!");
 		rulesTried = [[NSMutableDictionary dictionary] retain];
 	}
     
@@ -1156,21 +1159,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// try to be smart about how long we wait
 		float delayTime = [playerController castTimeRemaining]/2.0f;
 		if(delayTime < RULE_EVAL_DELAY_LONG) delayTime = RULE_EVAL_DELAY_LONG;
-		//log(LOG_GENERAL, @"  Player casting. Waiting %.2f to perform next rule.", delayTime);
+		log(LOG_PROCEDURE, @"  Player casting. Waiting %.2f to perform next rule.", delayTime);
 		[self performSelector: _cmd withObject: state afterDelay: delayTime];
 		return;
     }
 	
 	// We don't want to cast if our GCD is active!
 	if ( [spellController isGCDActive] ){
-		//log(LOG_GENERAL, @"[Procedure] GCD is active, trying again shortly...");
+		log(LOG_PROCEDURE, @"GCD is active, trying again shortly...");
 		[self performSelector: _cmd withObject: state afterDelay: RULE_EVAL_DELAY_SHORT];
 		return;
 	}
     
     // have we exceeded our maximum attempts on this rule?
     if ( attempts > 3 ) {
-		log(LOG_GENERAL, @"  Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
+		log(LOG_PROCEDURE, @"  Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
 		[self performSelector: _cmd withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 				[state objectForKey: @"Procedure"],		@"Procedure",
 				[NSNumber numberWithInt: completed+1],		@"CompletedRules",
@@ -1204,7 +1207,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// we can break out of this procedure early!
 			if ( [inCombatUnits count] == 0 && !theCombatProfile.partyEnabled){
 				doCombatProcedure = NO;
-				log(LOG_GENERAL, @"[Procedure] Not executing combat procedure!");
+				log(LOG_PROCEDURE, @"Skipping combat to loot.");
 				for ( Unit *unit in inCombatUnits ) log(LOG_GENERAL, @" %@", unit);
 			} else if (theCombatProfile.partyEnabled) {
 				// keep running the combat routine if we're in a group and the tank or assist is in combat
@@ -1216,12 +1219,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					else if ([tankPlayer isInCombat]) StayInCombat = YES;
 				if (!StayInCombat) {
 					doCombatProcedure = NO;
-					log(LOG_GENERAL, @"[Procedure] Not executing combat procedure!");
+					log(LOG_PROCEDURE, @"Skipping combat to loot.");
 				} else {
-					log(LOG_GENERAL, @"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
+					log(LOG_PROCEDURE, @"Executing combat procedure. %d units remain", [inCombatUnits count]);
 				}
 			} else {
-				log(LOG_GENERAL, @"[Procedure] Executing combat procedure. %d units remain", [inCombatUnits count]);
+				log(LOG_PROCEDURE, @"Executing combat procedure. %d units remain", [inCombatUnits count]);
 			}
 		}
 		
@@ -1231,14 +1234,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			for ( i = 0; i < ruleCount; i++ ) {
 				rule = [procedure ruleAtIndex: i];
 				
-				//log(LOG_GENERAL, @"[Procedure] Evaluating rule %@", rule);
+				log(LOG_PROCEDURE, @"Evaluating rule %@", rule);
 				
 				// make sure our rule hasn't continuously failed!
 				NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
 				NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
 				if ( tries ) {
 					if ( [tries intValue] > 3 ){
-						log(LOG_GENERAL, @"[Procedure^^^^^^^^^^^^^] Rule %d failed after %@ attempts!", i, tries);
+						log(LOG_PROCEDURE, @"Rule %d failed after %@ attempts!", i, tries);
 						continue;
 					}
 				}
@@ -1248,7 +1251,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					target = [playerController player];
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						log(LOG_GENERAL, @"[Procedure] Match for %@ with target %@", rule, target);
+						log(LOG_PROCEDURE, @"Match for %@ with target %@", rule, target);
 						matchFound = YES;
 					}
 				}
@@ -1257,7 +1260,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				else if ( [rule target] == TargetNone ){
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						log(LOG_GENERAL, @"[Procedure] Match for %@", rule);
+						log(LOG_PROCEDURE, @"Match for %@", rule);
 						matchFound = YES;
 					}
 				}
@@ -1270,7 +1273,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						for ( target in adds ){
 							if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 								// do something
-								log(LOG_GENERAL, @"[Procedure] Match for %@ with add %@", rule, target);
+								log(LOG_PROCEDURE, @"Match for %@ with add %@", rule, target);
 								matchFound = YES;
 								break;
 							}
@@ -1284,7 +1287,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						log(LOG_GENERAL, @"[Procedure] Pet match for %@", rule);
+						log(LOG_PROCEDURE, @"Pet match for %@", rule);
 						matchFound = YES;
 					}
 				}
@@ -1301,15 +1304,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						if ( !self.isPvPing ){
 							// if we're in combat, and the unit is not, ignore!
 							if ( [playerController isInCombat] && ![target isInCombat] ){
-								log(LOG_GENERAL, @"[Procedure] Ignoring %@ since we're in combat and the target isn't!", target);
+								log(LOG_PROCEDURE, @"Ignoring %@ since we're in combat and the target isn't!", target);
 								continue;
 							}
 						}
 						
 						if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 							// do something
-							log(LOG_GENERAL, @"[Procedure] Match for %@ with unit %@", rule, target);
-							log(LOG_GENERAL, @"  Player in combat: %d	Unit in combat: %d", [playerController isInCombat], [target isInCombat]);
+							log(LOG_PROCEDURE, @"Match for %@ with unit %@", rule, target);
+							log(LOG_PROCEDURE, @"  Player in combat: %d	Unit in combat: %d", [playerController isInCombat], [target isInCombat]);
 							matchFound = YES;
 							break;
 						}
@@ -1323,12 +1326,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// old-school for non-combat (just goes in order)
 	else {
 		
-		log(LOG_GENERAL, @"[Procedure] Starting search at rule %d", completed);
+		log(LOG_PROCEDURE, @"Starting search at rule %d", completed);
 		for ( i = completed; i < ruleCount; i++) {
 			rule = [procedure ruleAtIndex: i];
 			
 			if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
-				log(LOG_GENERAL, @"[Procedure] Found match for non-combat with rule %@", rule);
+				log(LOG_PROCEDURE, @"Found match for non-combat with rule %@", rule);
 				matchFound = YES;
 				break;
 			}
@@ -1339,7 +1342,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// take the action here
 	if ( matchFound && rule ){
 		
-		log(LOG_GENERAL, @"[Procedure] Act on target %@ with rule %@", target, rule );
+		log(LOG_PROCEDURE, @"Act on target %@ with rule %@", target, rule );
 
 		// target if needed!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) [combatController stayWithUnit:target withType:[rule target]];
@@ -1374,7 +1377,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								
 					// target yourself
 					if ( [rule target] == TargetSelf ){
-						log(LOG_GENERAL, @"[Procedure] Targeting self");
+						log(LOG_PROCEDURE, @"Targeting self");
 						[playerController setPrimaryTarget: [playerController player]];
 					} else if ( [rule target] != TargetNone ){
 						[playerController setPrimaryTarget: target];
@@ -1385,15 +1388,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// do it!
 					int actionResult = [self performAction:actionID];
-					log(LOG_GENERAL, @"[Procedure] Action %u taken with result: %d", actionID, actionResult);
+					log(LOG_PROCEDURE, @"Action %u taken with result: %d", actionID, actionResult);
 					
 					// error of some kind :/
 					if ( actionResult != ErrNone ){
-						log(LOG_GENERAL, @"[Procedure] Attempted to take action on %@ %d %d times", target, attempts, completed);
+						log(LOG_PROCEDURE, @"Attempted to take action on %@ %d %d times", target, attempts, completed);
 						if ( originalTarget == target ) log(LOG_GENERAL, @"[Procedure] Same target!");
 						
 						NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
-						log(LOG_GENERAL, @"[Procedure^^^^^^^^^^^^^] Looking for key %@", triedRuleKey);
+						log(LOG_PROCEDURE, @"Looking for key %@", triedRuleKey);
 						
 						NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
 						
@@ -1404,7 +1407,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							tries = [NSNumber numberWithInt:1];
 						}
 						
-						log(LOG_GENERAL, @"[Procedure^^^^^^^^^^^^^] Setting tried %@ with value %@", triedRuleKey, tries);
+						log(LOG_PROCEDURE, @"Setting tried %@ with value %@", triedRuleKey, tries);
 						[rulesTried setObject:tries forKey:triedRuleKey];
 					}
 					// success!
@@ -1413,13 +1416,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						actionsPerformed++;
 					}
 				} else {
-					log(LOG_GENERAL, @"[Procedure] Unable to perform action");
+					log(LOG_PROCEDURE, @"Unable to perform action");
 				}
 			} else {
-				log(LOG_GENERAL, @"[Procedure] No action to take");
+				log(LOG_PROCEDURE, @"No action to take");
 			}
 		} else {
-			log(LOG_GENERAL, @"[Procedure] No result type");
+			log(LOG_PROCEDURE, @"No result type");
 		}
 		
 		// if we found a match, try again until we can't anymore!
@@ -1432,7 +1435,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
 								target,											@"Target", nil]
 				   afterDelay: 0.1f]; 
-		log(LOG_GENERAL, @"[Procedure] Rule executed, trying for more rules!");
+		log(LOG_PROCEDURE, @"Rule executed, trying for more rules!");
 
 		// Lets see if we need to go back to the original target 
 		if (originalTarget && originalTarget != target)
@@ -1445,18 +1448,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// still in combat with people! But not able to cast! (probably b/c insufficient rage/mana/etc...) Keep trying while we're in combat!
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [[combatController combatList] count] > 0 && inCombatNoAttack < 75 ) {
 		
-		log(LOG_GENERAL, @"[Procedure] Still being attacked! Continuing combat! No Combat: %d", inCombatNoAttack);
+		log(LOG_PROCEDURE, @"Still being attacked! Continuing combat! No Combat: %d", inCombatNoAttack);
 		
 		inCombatNoAttack++;
 		
 		BOOL validCombatUnit = NO;
 		for ( Unit *unit in [combatController combatList] ){
 			if ( ![blacklistController isBlacklisted:unit] ) validCombatUnit = YES;
-			log(LOG_GENERAL, @" %@", unit);
+			log(LOG_PROCEDURE, @" %@", unit);
 		}
 		
 		if ( validCombatUnit ) {
-			log(LOG_GENERAL, @"[Procedure] Valid unit to attack in the combat list yay!");
+			log(LOG_PROCEDURE, @"Valid unit to attack in the combat list yay!");
 			[self performSelector: _cmd
 					   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 									[state objectForKey: @"Procedure"],				@"Procedure",
@@ -1468,17 +1471,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					   afterDelay: 0.1f];
 			return;
 		} else {
-			log(LOG_GENERAL, @"[Procedure] Combat list units are blacklisted! Ignoring...");
+			log(LOG_PROCEDURE, @"Combat list units are blacklisted! Ignoring...");
 		}
 	}
 	
 	// blacklist unit - it wasn't in combat after 7.5 seconds!
 	if ( inCombatNoAttack >= 75 ){
 		[blacklistController blacklistObject:target];
-		log(LOG_GENERAL, @"[Procedure] Unit not in combat after 7.5 seconds, cancelling combat procedure");
+		log(LOG_PROCEDURE, @"Unit not in combat after 7.5 seconds, cancelling combat procedure");
 	}
 
-	log(LOG_GENERAL, @"[Procedure] Done! Finishing!");
+	log(LOG_PROCEDURE, @"Done! Finishing!");
 	[self finishCurrentProcedure: state];
 }
 
@@ -2917,7 +2920,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( [self isBotting]) [self stopBot: nil];
     
 	// Make sure we check regen when we evaluate
-	_doRegenProcedure = 1;
+// 3.3.3 broke, uncommenting this to debug
+	//	_doRegenProcedure = 1;
 
     if ( self.theCombatProfile && self.theBehavior ) {
 		log(LOG_STARTUP, @"Starting...");
