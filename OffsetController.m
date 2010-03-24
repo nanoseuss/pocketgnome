@@ -195,7 +195,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
-			if ( offset > 0x0 )
+			//if ( offset > 0x0 )
 				PGLog(@"%@: 0x%X", key, offset);
 		}
 		
@@ -211,8 +211,19 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		// game loading = 10?
 		// game loaded = 0
 		
-		[offsets setObject:[NSNumber numberWithUnsignedLong:0xC7A350] forKey:@"WorldState"];				// 3.3.2
-		[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
+		//[offsets setObject:[NSNumber numberWithUnsignedLong:0xC7A350] forKey:@"WorldState"];				// 3.3.2
+		//[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
+		
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xC88F58] forKey:@"PLAYER_GUID_STATIC"];
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xEA5914] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xD2D240 + 0x24] forKey:@"PLAYER_NAME_LIST"];
+		[offsets setObject:[NSNumber numberWithUnsignedLong:0xC8EA60] forKey:@"KEYBINDINGS_PTR"];
+		
+		
+		
+		
+		
+		
 		
 		// 0xD8BD20 - charselect, login, charcreate, patchdownload
 		
