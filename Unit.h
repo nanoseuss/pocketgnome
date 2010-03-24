@@ -73,8 +73,8 @@ enum eUnitFields {
 	UnitField_Target                    = 0x48,
 	//UnitField_Persuaded                 = 0x48,
 	UnitField_Channel_Object            = 0x50,
-	
-	UnitField_Bytes0                    = 0x58,
+	Unit_Channel_Spell                  = 0x58,
+	UnitField_Bytes0                    = 0x5C,
 	
 	UnitField_Health                    = 0x60,
 	UnitField_Power1                    = 0x64, // Mana
