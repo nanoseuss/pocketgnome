@@ -17,7 +17,7 @@
 #import "Mob.h"
 
 // how long should the object remain blacklisted?
-#define BLACKLIST_TIME		45.0f		
+#define BLACKLIST_TIME		45.0f
 
 @interface BlacklistController (Internal)
 
@@ -48,7 +48,7 @@
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason{
 	
-	PGLog(@"[Blacklist] Obj %@ with retain count %d", obj, [obj retainCount]);
+	log(LOG_BLACKLIST, @"Obj %@ with retain count %d", obj, [obj retainCount]);
 	
 	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
 	NSMutableArray *infractions = [_blacklist objectForKey:guid];
@@ -94,7 +94,7 @@
 					[infractionsToKeep addObject:infraction];
 				}
 				else{
-					PGLog(@"[Blacklist] Infraction expired: %@", infraction);
+					log(LOG_BLACKLIST, @"Expired: %@", infraction);
 				}
 				
 				// should we check for dead or alive if they are a player/NPC?  I say NO!
@@ -130,12 +130,12 @@
 		float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 		
 		if ( reason == Reason_NotInLoS && timeSinceBlacklisted <= 5.0f ){
-			PGLog(@"[Blacklist] LOS , has only been %0.2f seconds", timeSinceBlacklisted);
+			log(LOG_BLACKLIST, @"%@ was blacklisted for not being in LOS", obj, timeSinceBlacklisted);
 			totalLos++;
 		}
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
 		else if ( reason == Reason_NodeMadeMeFall ){
-			PGLog(@"[Blacklist] Blacklisted %@ for making us fall!", obj);
+			log(LOG_BLACKLIST, @"%@ was blacklisted for making us fall!", obj);
 			return YES;
 		}
 		else if ( reason == Reason_CantReachObject ){
@@ -150,20 +150,20 @@
 	}
 	
 	// general blacklisting
-	if ( totalNone >= 3 ){
-		PGLog(@"[Blacklist] Unit %@ blacklisted for total count!", obj);
+	if ( totalNone >= 3 ) {
+		log(LOG_BLACKLIST, @"Unit %@ blacklisted for total count!", obj);
 		return YES;
 	}
 	else if ( totalFailedToReach >= 3 ){
-		PGLog(@"[Blacklist] Object %@ blacklisted because we couldn't reach it!", obj);
+		log(LOG_BLACKLIST, @"%@ was blacklisted because we couldn't reach it!", obj);
 		return YES;
 	}
 	/*else if ( totalLos >= 2 ){
-		PGLog(@"[Blacklist] Blacklisted due to LOS");
+		log(LOG_BLACKLIST, @"[Blacklist] Blacklisted due to LOS");
 		return YES;
 	}*/
 	
-	PGLog(@"[Blacklist] Not blacklisted but %d infractions", [infractions count]);
+	log(LOG_BLACKLIST, @"Not blacklisted but %d infractions", [infractions count]);
 
     return NO;
 }
@@ -174,7 +174,7 @@
 }
 
 - (void)removeAllUnits{
-	PGLog(@"[Blacklist] Removing all units...");
+	log(LOG_BLACKLIST, @"Removing all units from the blacklist.");
 	
 	// only remove objects of type Player/Mob/Unit
 	NSArray *allKeys = [_blacklist allKeys];
@@ -193,7 +193,7 @@
 		}
 	}
 	
-	PGLog(@"[Blacklist] Removed %d objects of type Unit/Mob/Player", removedObjects);
+	log(LOG_BLACKLIST, @"Removed %d units.", removedObjects);
 }
 
 #pragma mark Notifications
@@ -206,6 +206,7 @@
 		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit GUID]];
 	
 		if ( [_blacklist objectForKey:guid] )
+			log(LOG_BLACKLIST, @"%@ died, removing from blacklist.", unit);
 			[_blacklist removeObjectForKey:guid];
 	}
 }
@@ -232,7 +233,7 @@
 		count = [NSNumber numberWithInt:1];
 	}
 	
-	PGLog(@"[Blacklist] Incremented to %@ for %@", count, obj);
+	log(LOG_BLACKLIST, @"Incremented to %@ for %@", count, obj);
 	[_attemptList setObject:count forKey:guid];
 }
 
