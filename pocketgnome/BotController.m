@@ -1150,7 +1150,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // have we completed all the rules?
     int ruleCount = [procedure ruleCount];
-    if( !procedure /*|| completed >= ( ruleCount * 2 )*/ ) {
+    if ( !procedure /*|| completed >= ( ruleCount * 2 )*/ ) {
 		[self finishCurrentProcedure: state];
 		return;
     }
@@ -1160,7 +1160,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// try to be smart about how long we wait
 		float delayTime = [playerController castTimeRemaining]/2.0f;
 		if(delayTime < RULE_EVAL_DELAY_LONG) delayTime = RULE_EVAL_DELAY_LONG;
-		log(LOG_PROCEDURE, @"  Player casting. Waiting %.2f to perform next rule.", delayTime);
+		log(LOG_PROCEDURE, @"Player is casting, waiting %.2f to perform next rule.", delayTime);
 		[self performSelector: _cmd withObject: state afterDelay: delayTime];
 		return;
     }
@@ -1170,8 +1170,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_PROCEDURE, @"GCD is active, trying again shortly...");
 		[self performSelector: _cmd withObject: state afterDelay: RULE_EVAL_DELAY_SHORT];
 		return;
-	} else {
-		log(LOG_DEV, @"GCD is inactive, continuing...");
 	}
     
     // have we exceeded our maximum attempts on this rule?
@@ -1760,28 +1758,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	Unit *unit = [notification object];
 	
-	log(LOG_GENERAL, @"[Bot] Unit %@ entered combat!", unit);
+	log(LOG_COMBAT, @"Unit %@ entered combat!", unit);
 	
 	// start a combat procedure if we're not in one!
-	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ){
+	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
 
 		// make sure we're not flying
 		if ( self.theCombatProfile.ignoreFlying && ![playerController isOnGround] ){
-			log(LOG_GENERAL, @"[Bot] Ignoring combat with %@ since we're flying!", unit);
+			log(LOG_COMBAT, @"Ignoring combat with %@ since we're flying!", unit);
 			return;
 		}
 		
-		log(LOG_GENERAL, @"[Bot] Acting on the above unit!");
+		log(LOG_COMBAT, @"Acting on the above unit!");
 		[self actOnUnit:unit];
 	} else {
-		log(LOG_GENERAL, @"[Bot] Already in combat procedure! Not acting on unit");
+		log(LOG_COMBAT, @"Already in combat procedure! Not acting on unit");
 	}
 }
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
 	if (![self isBotting]) return;
 	[controller setCurrentStatus: @"Bot: Player in Combat"];
-	log(LOG_GENERAL, @"[Eval] Entering combat in BOT");
+	log(LOG_COMBAT, @"Entering combat");
 	[self evaluateSituation];
 }
 
@@ -1830,7 +1828,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	BOOL matchFound = NO;
 	for ( i = 0; i < ruleCount; i++ ) {
 		rule = [procedure ruleAtIndex: i];
-		//log(LOG_GENERAL, @"[ValidProcedure] Evaluating rule %@ for %@", rule, unit);
+		log(LOG_RULE, @"Evaluating rule %@ for %@", rule, unit);
 		if ( [self evaluateRule: rule withTarget: unit asTest: NO] ) {
 			matchFound = YES;
 			break;
@@ -1847,7 +1845,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// we can break out of this procedure early!
 		if ( [inCombatUnits count] == 0 && !theCombatProfile.partyEnabled){
 			doCombatProcedure = NO;
-			log(LOG_GENERAL, @"[ProcedureCheck] Not executing combat procedure!");
+			log(LOG_PROCEDURE, @"Skipping combat to loot.");
 			for ( Unit *unit in inCombatUnits ) log(LOG_GENERAL, @" %@", unit);
 		} else if (theCombatProfile.partyEnabled) {
 			// keep running the combat routine if we're in a group and the tank or assist is in combat
@@ -1859,21 +1857,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else if ([tankPlayer isInCombat]) StayInCombat = YES;
 			if (!StayInCombat) {
 				doCombatProcedure = NO;
-				log(LOG_GENERAL, @"[ProcedureCheck] Not executing combat procedure!");
+				log(LOG_PARTY, @"Skipping combat to loot.");
 			}
 		}
 	}
 	return matchFound && doCombatProcedure;
 }
 
-// this function will actually fire off our combat procedure if needed! 
+// this function will actually fire off our combat procedure if needed!
 - (void)actOnUnit: (Unit*)unit {
 	if ( ![self isBotting] ) return;
 	
 	// in theory we should never be here
-	if ( [blacklistController isBlacklisted:unit] ) log(LOG_GENERAL, @"Attempting to attack a blacklisted unit, ruh-roh");
+	if ( [blacklistController isBlacklisted:unit] ) log(LOG_BLACKLIST, @"Attempting to attack a blacklisted unit, ruh-roh");
 	
-	log(LOG_GENERAL, @"[Bot] Acting on unit %@", unit);
+	log(LOG_COMBAT, @"Acting on unit %@", unit);
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 		BOOL readyToAttack = NO;
@@ -1882,23 +1880,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			float distance = [[playerController position] distanceToPosition2D: [unit position]];
 			// not in range, continue moving!
 			if ( distance > 5.0f ){
-				log(LOG_GENERAL, @"[Bot] Still %0.2f away, moving to %@", distance, unit);
+				log(LOG_COMBAT, @"Still %0.2f away, moving to %@", distance, unit);
 				[movementController moveToObject:unit];		//andNotify:YES
 			}
 			// we're in range
 			else{
-				log(LOG_GENERAL, @"[Bot] In range, attacking! (should we pause here? don't think it's needed)");
+				log(LOG_COMBAT, @"In range, attacking!");
 				readyToAttack = YES;
 				//[movementController stopMovement];
 			}
 		} else {
-			log(LOG_GENERAL, @"[Bot] Don't need to be in melee, pausing movement!");
+			log(LOG_COMBAT, @"Don't need to be in melee, pausing movement!");
 			// if we don't need to be in melee, pause
 			[movementController stopMovement];
 			readyToAttack = YES;
 		}
 		
-		log(LOG_GENERAL, @"[Bot] Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
+		log(LOG_COMBAT, @"Starting combat procedure (current: %@) for target %@", [self procedureInProgress], unit);
 		// cancel current procedure
 		[self cancelCurrentProcedure];
 	
@@ -1908,13 +1906,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 										  [NSNumber numberWithInt: 0],	    @"CompletedRules",
 										  unit,				    @"Target", nil]];
 	} else {
-		log(LOG_GENERAL, @"[Bot] Not acting on unit, are we stuck doing nothing?  Current procedure: %@", [self procedureInProgress]);
+		log(LOG_COMBAT, @"Not acting on unit! We are already performing %@ so actOnUnit should not have been called!", [self procedureInProgress]);
 	}
 }
 
 // this is called when any unit enters combat
 - (void)addingUnit: (Unit*)unit {
-    if(![self isBotting]) return;
+    if (![self isBotting]) return;
     
     //if( ![[self procedureInProgress] isEqualToString: CombatProcedure] && [unit isValid] ) {
     //	  log(LOG_GENERAL, @"[Bot] Add! Stopping current procedure to attack.", unit);
@@ -1923,13 +1921,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
     if (self.isPvPing && ([[playerController position] verticalDistanceToPosition: [unit position]] > vertOffset)) {
-		log(LOG_GENERAL, @"[Bot] Added mob is beyond vertical offset limit; ignoring.");
+		log(LOG_COMBAT, @"Added mob is beyond vertical offset limit; ignoring.");
 		return;
     }
 	
 	// Don't attack if the player is mounted and in the air!
 	if ( ![playerController isOnGround] && [[playerController player] isMounted] ) return;
-	//log(LOG_GENERAL, @"[Bot] Adding %@", unit);
+	log(LOG_COMBAT, @"Adding %@", unit);
 
     if ( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
 		NSString *unitName = ([unit name]) ? [unit name] : nil;
@@ -1949,12 +1947,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)unitDied: (NSNotification*)notification{
 	Unit *unit = [notification object];
 	
-	log(LOG_GENERAL, @"[Bot] Unit %@ killed %@", unit, [unit class]);
+	log(LOG_COMBAT, @"Unit %@ killed %@", unit, [unit class]);
 	
 	// unit dead, reset!
 	[movementController resetMoveToObject];
 
-	if ( [unit isNPC] ) log(LOG_GENERAL, @"[Bot] Flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
+	if ( [unit isNPC] ) log(LOG_COMBAT, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 	
 	if ( self.doLooting && [unit isNPC] ) {
 		// make sure this mob is even lootable
@@ -1965,14 +1963,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// mob already in our list? in theory this should never happen (how could we kill a unit twice? lul)
 			if ([_mobsToLoot containsObject: unit]) {
-				log(LOG_GENERAL, @"[Loot] %@ was already in the loot list, removing first", unit);
+				log(LOG_LOOT, @"%@ was already in the loot list, removing first", unit);
 				[_mobsToLoot removeObject: unit];
 			}
 			
-			log(LOG_GENERAL, @"[Loot] Adding %@ to loot list.", unit);
+			log(LOG_LOOT, @"Adding %@ to loot list.", unit);
 			[_mobsToLoot addObject: (Mob*)unit];
 		} else{
-			log(LOG_GENERAL, @"[Loot] Mob %@ isn't lootable, ignoring", unit);
+			log(LOG_LOOT, @"Mob %@ isn't lootable, ignoring", unit);
 		}
 	}
 }
@@ -3967,12 +3965,11 @@ NSMutableDictionary *_diffDict = nil;
 - (BOOL)performAction: (int32_t) actionID{
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
-	if ( !memory )
-		return NO;
+	if ( !memory ) return NO;
 	
 	int barOffset = [bindingsController barOffsetForKey:BindingPrimaryHotkey];
 	if ( barOffset == -1 ){
-		log(LOG_GENERAL, @"[Bot] Unable to execute spells! Ahhhhh! Issue with bindings!");
+		log(LOG_ERROR, @"Unable to execute spells! Ahhhhh! Issue with bindings!");
 		return NO;
 	}
 	
