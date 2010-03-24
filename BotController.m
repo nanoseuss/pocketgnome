@@ -416,7 +416,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     for ( Condition *condition in [rule conditions] ) {
 		if(![condition enabled]) continue;
-		log(LOG_CONDITION, @"Checking condition: %@", condition);		
+//		log(LOG_CONDITION, @"Checking condition: %@", condition);
 		BOOL conditionEval = NO;
 		if ([condition unit] == UnitTarget && !target) goto loopEnd;
 		if ([condition unit] == UnitFriend && !target) goto loopEnd;
@@ -1127,7 +1127,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 	
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
-		log(LOG_PROCEDURE, @"Looks like we have %@", self.procedureInProgress);
+		log(LOG_PROCEDURE, @"Requested procedure is %@", self.procedureInProgress);
 		NSArray *combatList = [combatController combatList];
 		int count =		[combatList count];
 		if (count == 1)	[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
@@ -1235,14 +1235,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			for ( i = 0; i < ruleCount; i++ ) {
 				rule = [procedure ruleAtIndex: i];
 				
-				log(LOG_PROCEDURE, @"Evaluating rule %@", rule);
+				log(LOG_RULE, @"Evaluating rule %@", rule);
 				
 				// make sure our rule hasn't continuously failed!
 				NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
 				NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
 				if ( tries ) {
 					if ( [tries intValue] > 3 ){
-						log(LOG_PROCEDURE, @"Rule %d failed after %@ attempts!", i, tries);
+						log(LOG_RULE, @"Rule %d failed after %@ attempts!", i, tries);
 						continue;
 					}
 				}
@@ -1252,7 +1252,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					target = [playerController player];
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						log(LOG_PROCEDURE, @"Match for %@ with target %@", rule, target);
+						log(LOG_RULE, @"Match for %@ with target %@", rule, target);
 						matchFound = YES;
 					}
 				}
@@ -1261,7 +1261,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				else if ( [rule target] == TargetNone ){
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						log(LOG_PROCEDURE, @"Match for %@", rule);
+						log(LOG_RULE, @"Match for %@", rule);
 						matchFound = YES;
 					}
 				}
@@ -1274,7 +1274,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						for ( target in adds ){
 							if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 								// do something
-								log(LOG_PROCEDURE, @"Match for %@ with add %@", rule, target);
+								log(LOG_RULE, @"Match for %@ with add %@", rule, target);
 								matchFound = YES;
 								break;
 							}
@@ -1288,7 +1288,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 						// do something
-						log(LOG_PROCEDURE, @"Pet match for %@", rule);
+						log(LOG_RULE, @"Pet match for %@", rule);
 						matchFound = YES;
 					}
 				}
@@ -1304,8 +1304,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						// special rule if we're NOT pvping
 						if ( !self.isPvPing ){
 							// if we're in combat, and the unit is not, ignore!
-							if ( [playerController isInCombat] && ![target isInCombat] ){
-								log(LOG_PROCEDURE, @"Ignoring %@ since we're in combat and the target isn't!", target);
+							if ( [playerController isInCombat] && ![target isInCombat] ) {
+//								log(LOG_PROCEDURE, @"Ignoring %@ since we're in combat and the target isn't!", target);
 								continue;
 							}
 						}
@@ -1502,14 +1502,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	for ( mobToLoot in _mobsToLoot ) {
 		if ( mobToLoot && [mobToLoot isValid] ) {
 			if ( ![blacklistController isBlacklisted:mobToLoot] ) return mobToLoot;
-				else log(LOG_GENERAL, @"[Loot] Found unit to loot but it's blacklisted! %@", mobToLoot);
+				else log(LOG_LOOT, @"Found unit to loot but it's blacklisted! %@", mobToLoot);
 		}
 	}
 	return nil;
 }
 
 - (void)lootScan {
-	log(LOG_GENERAL, @"[LootScan] Scanning for missed mobs to loot.");
+	log(LOG_LOOT, @"Scanning for missed mobs to loot.");
 	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
 	for (Mob *mob in mobs) {
 		if ([mob isLootable] && [mob isDead] && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
@@ -1654,23 +1654,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 // called when ONE item is looted
 - (void)itemLooted: (NSNotification*)notification {
 	
-	log(LOG_GENERAL, @"[Loot] Looted %@", [notification object]);
+	log(LOG_LOOT, @"Looted %@", [notification object]);
 	
 	// should we try to use the item?
 	if ( _lootUseItems ){		
-		log(LOG_GENERAL, @"[Loot] Check enabled...");
+		log(LOG_LOOT, @"Check enabled...");
 		int itemID = [[notification object] intValue];
 		
 		// crystallized <air|earth|fire|shadow|life|water> or mote of <air|earth|fire|life|mana|shadow|water>
 		if ( ( itemID >= 37700 && itemID <= 37705 ) || ( itemID >= 22572 && itemID <= 22578 ) ){
-			log(LOG_GENERAL, @"[Loot] Useable item looted, checking to see if we have > 10 of %d", itemID);			
+			log(LOG_LOOT, @"Useable item looted, checking to see if we have > 10 of %d", itemID);			
 			Item *item = [itemController itemForID:[notification object]];
 			if ( item ) {
 				int collectiveCount = [itemController collectiveCountForItem:item];
 				if ( collectiveCount >= 10 ){					
-					log(LOG_GENERAL, @"[Loot] We have more than 10 of %@, using!", item);
+					log(LOG_LOOT, @"We have more than 10 of %@, using!", item);
 					[self performAction:itemID + USE_ITEM_MASK];					
-				}				
+				}
 			}
 		}
 	}
@@ -1714,7 +1714,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Mount?  Or just evaluate
 		log(LOG_LOOT, @"Evaluate After skinned");
-		usleep(300000);
+		usleep(500000);
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
 	}
 }
@@ -1869,11 +1869,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![self isBotting] ) return;
 	
 	// in theory we should never be here
-	if ( [blacklistController isBlacklisted:unit] ) log(LOG_BLACKLIST, @"Attempting to attack a blacklisted unit, ruh-roh");
+	if ( [blacklistController isBlacklisted:unit] ) {
+		log(LOG_BLACKLIST, @"Ambushed by a blacklisted unit?");
+		[blacklistController removeUnit:unit];
+	}
 	
 	log(LOG_COMBAT, @"Acting on unit %@", unit);
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
+// I notice that readyToAttack is set here, but not used?? hmmm (older revisions are the same)
 		BOOL readyToAttack = NO;
 		// check to see if we are supposed to be in melee range
 		if ( self.theBehavior.meleeCombat) {
@@ -1890,9 +1894,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				//[movementController stopMovement];
 			}
 		} else {
-			log(LOG_COMBAT, @"Don't need to be in melee, pausing movement!");
-			// if we don't need to be in melee, pause
-			[movementController stopMovement];
+			UInt32 movementFlags = [playerController movementFlags];
+			if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
+				log(LOG_COMBAT, @"Don't need to be in melee, stopping movement");
+				[movementController stopMovement];
+			}
 			readyToAttack = YES;
 		}
 		
@@ -2609,7 +2615,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		float timeUntilRetry = 15.0f - (-1.0f * [_mountLastAttempt timeIntervalSinceNow]);
 		
 		if ( timeUntilRetry > 0.0f ) {
-			log(LOG_GENERAL, @"[Bot] Will not mount for another %0.2f seconds", timeUntilRetry );
+			log(LOG_MOUNT, @"Will not mount for another %0.2f seconds", timeUntilRetry );
 			return NO;
 		} else {
 			_mountAttempt = 0;
@@ -2618,7 +2624,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state]) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] ){		
 		_mountAttempt++;
-		log(LOG_GENERAL, @"[Bot] Mounting attempt %d! Movement flags: 0x%X", _mountAttempt, [playerController movementFlags]);
+		log(LOG_MOUNT, @"Mounting attempt %d! Movement flags: 0x%X", _mountAttempt, [playerController movementFlags]);
 
 		// record our last attempt
 		[_mountLastAttempt release]; _mountLastAttempt = nil;
@@ -2634,21 +2640,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// Time to cast!
 			int errID = [self performAction:[[mount ID] intValue]];
 			if ( errID == ErrNone ){				
-				log(LOG_GENERAL, @"[Bot] Mounting started! No errors!");
+				log(LOG_MOUNT, @"Mounting started! No errors!");
 				_mountAttempt = 0;
-				usleep(300000);
+				usleep(500000);
 			} else {
-				log(LOG_GENERAL, @"[Bot] Mounting failed! Error: %d", errID);
+				log(LOG_MOUNT, @"Mounting failed! Error: %d", errID);
 			}
 			return YES;
 		} else {
-			log(LOG_GENERAL, @"[Bot] No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
+			log(LOG_MOUNT, @"No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
 			
 			// should we load any mounts
 			if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ) {
-				log(LOG_GENERAL, @"[Bot] Attempting to load mounts...");
+				log(LOG_MOUNT, @"Attempting to load mounts...");
 				[spellController reloadPlayerSpells];				
-			}	
+			}
 		}
 	}
 	
