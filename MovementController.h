@@ -96,6 +96,9 @@ typedef enum MovementType {
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
 
+- (void)moveForwardStart;
+- (void)moveForwardStop;
+
 // move to an object (takes priority over a route)
 - (BOOL)moveToObject: (WoWObject*)object;
 

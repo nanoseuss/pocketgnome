@@ -1800,13 +1800,16 @@ typedef enum MovementState{
 				
 			}
 			else{
-				log(LOG_MOVEMENT, @"[Waypoint] Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
+				log(LOG_WAYPOINT, @"Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
 				
 				// switch the botController's route!
 				[botController setTheRouteSet:route];
-				
+/*
+I uncommented this because it's calling a non existent method.  Not sure if this is old er broken er?
 				// start patrolling!
+
 				[self patrolWithRouteSet:route];
+*/
 				return;
 			}
 		}
