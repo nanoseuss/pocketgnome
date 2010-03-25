@@ -1033,7 +1033,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)finishCurrentProcedure: (NSDictionary*)state {	
-	log(LOG_PROCEDURE, @"Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
+	log(LOG_DEV, @"Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
     
     // make sure we're done casting before we end the procedure
     if( [playerController isCasting] ) {
@@ -1041,7 +1041,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if( timeLeft <= 0 ) {
 			[self performSelector: _cmd withObject: state afterDelay: 0.1];
 		} else {
-			// log(LOG_GENERAL, @"[Bot] Still casting (%.2f remains): Delaying procedure end.", timeLeft);
+			log(LOG_DEV, @"Still casting (%.2f remains): Delaying procedure end.", timeLeft);
 			[self performSelector: _cmd withObject: state afterDelay: timeLeft];
 			return;
 		}
@@ -1052,22 +1052,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     
     // when we finish PreCombat, re-evaluate the situation
     if([[state objectForKey: @"Procedure"] isEqualToString: PreCombatProcedure]) {
-		log(LOG_GENERAL, @"[Eval] After PreCombat");
+		log(LOG_DEV, @"[Eval] After PreCombat");
 		[self evaluateSituation];
 		return;
     }
     
 	
     // when we finish PostCombat, run regen
-    if([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
+    if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		
 		if ( [playerController isInCombat] ){
-			log(LOG_GENERAL, @"[Procedure] Still in combat, waiting for regen!");
+			log(LOG_DEV, @"Still in combat, waiting for regen!");
 			_doRegenProcedure = 1;
-			log(LOG_GENERAL, @"[Eval] Start Regen");
 			[self evaluateSituation];
 		} else {
-			log(LOG_GENERAL, @"[Procedure] Not in combat, running regen..");
+			log(LOG_DEV, @"[Procedure] Not in combat, running regen..");
 			[self executeRegen: ([[state objectForKey: @"ActionsPerformed"] intValue] > 0)];
 		}
 		return;
@@ -1076,7 +1075,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if we did any regen, wait 30 seconds before re-evaluating the situation
     if ( [[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure] ) {
 		if ( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
-			log(LOG_GENERAL, @"[Procedure] Starting regen!");
+			log(LOG_REGEN, @"Starting regen!");
 			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 2.0];
 		} else {
 			// or if we didn't regen, go back to evaluate
@@ -1201,15 +1200,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//	So lets add a check here, this isn't how I want it to operate, but it will work for now
 		BOOL doCombatProcedure = YES;
 		
-		// temp fix for looting
-		if ( self.doLooting && [_mobsToLoot count] ){
+/*
+just a scrap example.. delete me
+		if (![self performProcedureMobCheck:target]) {
+			[self finishCurrentProcedure: state];
+			return;
+		}
+*/		
+		// check to see if we should choose looting over attacking
+		if ( self.doLooting && [_mobsToLoot count] && ![playerController isInCombat]) {
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 			
 			// we can break out of this procedure early!
-			if ( [inCombatUnits count] == 0 && !theCombatProfile.partyEnabled){
+			if ( [inCombatUnits count] == 0 && !theCombatProfile.partyEnabled) {
 				doCombatProcedure = NO;
-				log(LOG_PROCEDURE, @"Skipping combat to loot.");
-				for ( Unit *unit in inCombatUnits ) log(LOG_GENERAL, @" %@", unit);
+				log(LOG_DEV, @"Skipping combat to loot.");
 			} else if (theCombatProfile.partyEnabled) {
 				// keep running the combat routine if we're in a group and the tank or assist is in combat
 				Player *assistPlayer = [playersController playerWithGUID:theCombatProfile.assistUnitGUID];
@@ -1220,12 +1225,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					else if ([tankPlayer isInCombat]) StayInCombat = YES;
 				if (!StayInCombat) {
 					doCombatProcedure = NO;
-					log(LOG_PROCEDURE, @"Skipping combat to loot.");
-				} else {
-					log(LOG_PROCEDURE, @"Executing combat procedure. %d units remain", [inCombatUnits count]);
+					log(LOG_DEV, @"Skipping combat to loot.");
 				}
-			} else {
-				log(LOG_PROCEDURE, @"Executing combat procedure. %d units remain", [inCombatUnits count]);
 			}
 		}
 		
@@ -1347,12 +1348,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// target if needed!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) [combatController stayWithUnit:target withType:[rule target]];
-
-		// Check mob
-		if (![self performProcedureMobCheck:target]) {
-			[self finishCurrentProcedure: state];
-			return;
-		}
 		
 		// send in pet if needed
 		if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] && [rule target] == TargetEnemy )
@@ -1393,6 +1388,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
 					usleep([controller refreshDelay]);
 					
+					// Check the mob again
+					if (![self performProcedureMobCheck:target]) {
+						[self finishCurrentProcedure: state];
+						return;
+					}
+
 					// do it!
 					int actionResult = [self performAction:actionID];
 					log(LOG_PROCEDURE, @"Action %u taken with result: %d", actionID, actionResult);
@@ -1488,7 +1489,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_PROCEDURE, @"Unit not in combat after 7.5 seconds, cancelling combat procedure");
 	}
 
-	log(LOG_PROCEDURE, @"Done! Finishing!");
+	log(LOG_DEV, @"Done! Finishing!");
 	[self finishCurrentProcedure: state];
 }
 
@@ -1497,9 +1498,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// It is intended for issues like runners
 	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast
 	// returns true if the mob is good to go
+	if (!target || target == nil) return YES;
 
 	// only do this for hostiles
-	if (!target || target == nil) return YES;
 	if (![playerController isHostileWithFaction: [target factionTemplate]]) return YES;
 
 	float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
@@ -1509,14 +1510,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_PROCEDURE, @"%@ has gone out of range: %@", target, distanceToTarget);
 
 		// If they're just a lil out of range lets inch up
-		if ( distanceToTarget > (theCombatProfile.attackRange + 2.0f) && ![movementController isMoving]) {
+		if ( distanceToTarget > (theCombatProfile.attackRange + 5.0f) && ![movementController isMoving]) {
 			log(LOG_PROCEDURE, @"Unit is still close, inching forward.");
 			// Face the target
 			[playerController faceToward: [target position]];
-            usleep([controller refreshDelay]*2);
+            usleep([controller refreshDelay]);
 			// Start movement... sleep, then stop
 			[movementController moveForwardStart];
-            usleep([controller refreshDelay]*2);	
+            usleep(1.0f);
 			[movementController moveForwardStop];
 
 				// Now check again to see if they're in range
@@ -1532,6 +1533,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_PROCEDURE, @"Disengaging!");
 		[combatController resetAllCombat];
 		return NO;
+	} else {
+		// If nothing else make sure we're facing our target
+		if (![movementController isMoving]) [playerController faceToward: [target position]];
+		usleep([controller refreshDelay]);
 	}
 	
 	return YES;
@@ -1889,20 +1894,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			break;
 		}
 	}
-	
 
 	// Check to see if we should loot or do more combat
 	BOOL doCombatProcedure = YES;
 	
-	if ( self.doLooting && [_mobsToLoot count] ) {
+	if ( self.doLooting && [_mobsToLoot count] && ![playerController isInCombat]) {
 		NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 		
 		// we can break out of this procedure early!
 		if ( [inCombatUnits count] == 0 && !theCombatProfile.partyEnabled){
 			doCombatProcedure = NO;
-			log(LOG_PROCEDURE, @"Skipping combat to loot.");
-			for ( Unit *unit in inCombatUnits ) log(LOG_GENERAL, @" %@", unit);
-		} else if (theCombatProfile.partyEnabled) {
+			log(LOG_DEV, @"Skipping combat to loot.");
+		} else 
+		if (theCombatProfile.partyEnabled) {
 			// keep running the combat routine if we're in a group and the tank or assist is in combat
 			Player *assistPlayer = [playersController playerWithGUID:theCombatProfile.assistUnitGUID];
 			Player *tankPlayer = [playersController playerWithGUID:theCombatProfile.tankUnitGUID];
@@ -1912,7 +1916,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			else if ([tankPlayer isInCombat]) StayInCombat = YES;
 			if (!StayInCombat) {
 				doCombatProcedure = NO;
-				log(LOG_PARTY, @"Skipping combat to loot.");
+				log(LOG_DEV, @"Skipping combat to loot.");
 			}
 		}
 	}
@@ -2073,7 +2077,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)performPatrolProcedure {
     if( ![self isBotting]) return YES;
     if( [playerController isDead]) return YES;
-    
+
+ 	// If we're mounted and in the air let's not attempt this
+	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return YES;
+   
     // see if we would be performing anything in the patrol procedure
     BOOL performPatrolProc = NO;
     for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
@@ -2223,7 +2230,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)jumpIfAirMountOnGround {
-	// Is the player air mounted, and on the ground?  Me no likely - lets jump!
+	// Is the player air mounted, and on the ground?  Me no likey - lets jump!
 	UInt32 movementFlags = [playerController movementFlags];
 	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
 		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
@@ -2285,6 +2292,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForCombatContinuation {
     if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
+	// Let's try just usin the player controller to match n see if this gives any better results
+    if (![playerController isInCombat] && !theCombatProfile.partyEnabled) {
+		// If we're actually not in combat and not in a party lets reset the combat table as there is no combat 'contination'
+		[combatController resetAllCombat];
+		return NO;
+	}
+	
 	Unit *bestUnit = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 	if ( !bestUnit ) return NO;
 
@@ -2303,6 +2317,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.preCombatUnit = nil;
 		return NO;
 	}
+
+	// If we're mounted and in the air don't engage a target
+	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
 
 	Position *playerPosition = [playerController position];
 
@@ -2372,6 +2389,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL) evaluateForRegen {
+	// If we're mounted and in the air don't attempt to regen
+	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
+	
 	// the flag must be set for us to attempt regen
 	if ( _doRegenProcedure == 0 ) return NO;
 

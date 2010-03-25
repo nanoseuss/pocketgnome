@@ -509,6 +509,8 @@ typedef enum MovementState{
 
 - (void)moveToPosition: (Position*)position {
 	
+	[botController jumpIfAirMountOnGround];
+
 	// reset our timer (that checks if we're at the position)
 	[self resetMovementTimer];
 	
