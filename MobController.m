@@ -185,8 +185,9 @@ static MobController* sharedController = nil;
 - (NSArray*)mobsWithinDistance: (float)mobDistance MobIDs: (NSArray*)mobIDs position:(Position*)position aliveOnly:(BOOL)aliveOnly{
 	
 	NSMutableArray *withinRangeMobs = [NSMutableArray array];
+	BOOL tapCheckPassed = YES;
     for(Mob *mob in _objectList) {
-		
+		tapCheckPassed = YES;
 		// Just return nearby mobs
 		if ( mobIDs == nil ){
 			float distance = [position distanceToPosition: [mob position]];
@@ -204,10 +205,15 @@ static MobController* sharedController = nil;
 				if ( [mob entryID] == [entryID intValue] ){
 					float distance = [position distanceToPosition: [mob position]];
 					if((distance != INFINITY) && (distance <= mobDistance)) {
+						if (![mob isTappedByMe] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
 						
 						// Living check?
 						if ( !aliveOnly || (aliveOnly && ![mob isDead]) ){
-							[withinRangeMobs addObject: mob];
+							if (tapCheckPassed) {
+								[withinRangeMobs addObject: mob];
+							} else {
+								log(LOG_DEV, @"Mob %@ is tapped by another player, not adding it to my mob list!", mob, distance);
+							}
 						}
 					}
 				}
