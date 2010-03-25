@@ -19,6 +19,7 @@
 @class MobController;
 @class StatisticsController;
 @class CombatProfileEditor;
+@class Unit;
 
 @class Route;
 @class Waypoint;
@@ -125,6 +126,9 @@ typedef enum MovementType {
 
 // turn toward the object
 - (void)turnTowardObject:(WoWObject*)obj;
+
+// check unit for range adjustments
+- (BOOL)checkUnitOutOfRange: (Unit*)target;
 
 // dismount the player
 - (BOOL)dismount;

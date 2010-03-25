@@ -19,6 +19,8 @@
 // how long should the object remain blacklisted?
 #define BLACKLIST_TIME		45.0f
 #define BLACKLIST_TIME_LOS		10.0f
+// This should be just long enough to move and not instantly retarget the mob
+#define BLACKLIST_TIME_NICA_10		2.0f
 
 @interface BlacklistController (Internal)
 
@@ -89,19 +91,26 @@
 			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 				
 			// length varies based on reason
-					if ( reason == Reason_NotInLoS) {
-						if ( timeSinceBlacklisted < BLACKLIST_TIME_LOS ) {
-							[infractionsToKeep addObject:infraction];
-						} else {
-							log(LOG_BLACKLIST, @"Expired: %@", infraction);
-						}
+			if ( reason == Reason_NotInCombatAfter10) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_NICA_10 ) {
+					[infractionsToKeep addObject:infraction];
+				} else {
+					log(LOG_BLACKLIST, @"Expired: %@", infraction);
+				}
+			} else
+			if ( reason == Reason_NotInLoS) {
+					if ( timeSinceBlacklisted < BLACKLIST_TIME_LOS ) {
+						[infractionsToKeep addObject:infraction];
 					} else {
-						if ( timeSinceBlacklisted < BLACKLIST_TIME ) {
-							[infractionsToKeep addObject:infraction];
-						} else {
-							log(LOG_BLACKLIST, @"Expired: %@", infraction);
-						}
+						log(LOG_BLACKLIST, @"Expired: %@", infraction);
 					}
+			} else {
+					if ( timeSinceBlacklisted < BLACKLIST_TIME ) {
+						[infractionsToKeep addObject:infraction];
+					} else {
+						log(LOG_BLACKLIST, @"Expired: %@", infraction);
+					}
+				}
 			}
 			
 			// Either unblacklist or update the number of infractions

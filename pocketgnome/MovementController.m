@@ -874,6 +874,47 @@ typedef enum MovementState{
 	}
 }
 
+- (BOOL)checkUnitOutOfRange: (Unit*)target {
+	// This is intended for issues like runners, a chance to correct vs blacklist
+	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast
+	// returns true if the mob is good to go
+	
+	if (!target || target == nil) return YES;
+
+	// only do this for hostiles
+	if (![playerData isHostileWithFaction: [target factionTemplate]]) return YES;
+
+	// If the mob is in our attack range return true
+	float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
+	if ( distanceToTarget <= botController.theCombatProfile.attackRange) return YES;
+
+	log(LOG_MOVEMENT, @"%@ has gone out of range: %@", target, distanceToTarget);
+		
+	// If they're just a lil out of range lets inch up
+	float moveForwardRange = 5.0;
+	if ( distanceToTarget < (botController.theCombatProfile.attackRange + moveForwardRange) && ![self isMoving]) {
+		log(LOG_MOVEMENT, @"Unit is still close, inching forward.");
+		// Face the target
+		[playerData faceToward: [target position]];
+		usleep([controller refreshDelay]);
+		// Move, Jump, Stop
+		[self moveForwardStart];
+		usleep(10000);
+		[self jump];
+		[self moveForwardStop];
+			
+		// Now check again to see if they're in range
+        usleep(100000);
+		float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
+		if ( distanceToTarget > botController.theCombatProfile.attackRange) {
+			log(LOG_MOVEMENT, @"Still out of range: %@, giving up.", target, distanceToTarget);
+			return NO;
+		}
+	}
+	// They're running and they're nothing we can do about it
+	log(LOG_MOVEMENT, @"Target: %@ has gone out of range: %@", target, distanceToTarget);
+    return NO;
+}
 - (void)resetMovementState{
 	
 	log(LOG_MOVEMENT, @"Resetting movement state");
@@ -1782,7 +1823,6 @@ typedef enum MovementState{
 			
 			[self jump];
 			
-			log(LOG_MOVEMENT, @"[Waypoint] Jumping!");
 		}
 		
 		// switch route
