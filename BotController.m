@@ -1492,27 +1492,40 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast
 	// returns true if the mob is good to go
 	if (!target || target == nil) return YES;
-
+	
+	// Dismount if mounted, if we've gotten this far it should be safe to do so
+	if ( [[playerController player] isMounted] ) [movementController dismount];
+	
 	// only do this for hostiles
 	if (![playerController isHostileWithFaction: [target factionTemplate]]) return YES;
 
-	// Tap check!
-	if ([target isKindOfClass: [Mob class]]) {
-		if ([(Mob*)target isTappedByOther] && !theCombatProfile.partyEnabled && !self.isPvPing) {
-			log(LOG_PROCEDURE, @"%@ is tapped by another player, disengaging.", target);
-			[combatController resetAllCombat];
-			return NO;
-		}
+	if ( !self.theBehavior.meleeCombat && [movementController isMoving]) {
+		log(LOG_PROCEDURE, @"Stopping movement to cast on %@.", target);
+		[movementController stopMovement];
 	}
-		
-	float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
+	
+	if ([movementController checkUnitOutOfRange:target]) {
+		// Range is good, let's face our target
+		if (![movementController isMoving]) [playerController faceToward: [target position]];
+		usleep([controller refreshDelay]);
+		return YES;
+	} else {
+		// They're running and they're nothing we can do so lets bail
+		log(LOG_PROCEDURE, @"Disengaging!");
+		[combatController resetAllCombat];
+		return NO;
+	}
 
+/*		
+	float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
+	float moveForwardRange = 5.0;
+	
 	// If the mob is out of our attack range
 	if ( distanceToTarget > theCombatProfile.attackRange) {
 		log(LOG_PROCEDURE, @"%@ has gone out of range: %@", target, distanceToTarget);
 
 		// If they're just a lil out of range lets inch up
-		if ( distanceToTarget > (theCombatProfile.attackRange + 5.0f) && ![movementController isMoving]) {
+		if ( distanceToTarget < (theCombatProfile.attackRange + moveForwardRange) && ![movementController isMoving]) {
 			log(LOG_PROCEDURE, @"Unit is still close, inching forward.");
 			// Face the target
 			[playerController faceToward: [target position]];
@@ -1540,7 +1553,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if (![movementController isMoving]) [playerController faceToward: [target position]];
 		usleep([controller refreshDelay]);
 	}
-	
+*/	
 	return YES;
 }
 
