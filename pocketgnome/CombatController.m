@@ -916,7 +916,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		tapCheckPassed = YES;
 		unitTarget = [mob targetID];
 		
-		if (![mob isTappedByMe] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
+		if ([mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
 		
 		if (
 			![mob isDead]	&&		// 1 - living units only
