@@ -910,15 +910,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	UInt64 playerGUID = [[playerData player] GUID];
 	UInt64 unitTarget = 0;
 	BOOL playerHasPet = [[playerData player] hasPet];
+	BOOL tapCheckPassed = YES;
 	
 	for ( Mob *mob in mobs ){
+		tapCheckPassed = YES;
 		unitTarget = [mob targetID];
+		
+		if (![mob isTappedByMe] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
+		
 		if (
 			![mob isDead]	&&		// 1 - living units only
 			[mob isInCombat] &&		// 2 - in Combat
 			[mob isSelectable] &&	// 3 - can select this target
 			[mob isAttackable] &&	// 4 - attackable
 			//[mob isTapped] &&		// 5 - tapped - in theory someone could tap a target while you're casting, and you get agg - so still kill (removed as a unit @ 100% could attack us and not be tapped)
+			tapCheckPassed &&	// lets give this one a go
 			[mob isValid] &&		// 6 - valid mob
 			(	(unitTarget == playerGUID ||										// 7 - targetting us
 				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
@@ -927,7 +933,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			// add mob!
 			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ){
-				log(LOG_COMBAT, @"[Combat] Adding mob %@", mob);
+				log(LOG_COMBAT, @"Adding mob %@", mob);
 				[_unitsAttackingMe addObject:(Unit*)mob];
 				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[mob retain] autorelease]];
 			}

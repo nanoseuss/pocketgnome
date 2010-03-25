@@ -1975,6 +1975,7 @@ just a scrap example.. delete me
 //	else {
 //		log(LOG_COMBAT, @"We are already performing %@ so actOnUnit should not have been called!?", [self procedureInProgress]);
 //	}
+	return;
 }
 
 // this is called when any unit enters combat
@@ -2009,6 +2010,7 @@ just a scrap example.. delete me
 	}
     
     //[combatController disposeOfUnit: unit];
+	return;
 }
 
 - (void)unitDied: (NSNotification*)notification{
