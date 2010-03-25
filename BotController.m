@@ -1200,13 +1200,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		//	So lets add a check here, this isn't how I want it to operate, but it will work for now
 		BOOL doCombatProcedure = YES;
 		
-/*
-just a scrap example.. delete me
-		if (![self performProcedureMobCheck:target]) {
-			[self finishCurrentProcedure: state];
-			return;
-		}
-*/		
 		// check to see if we should choose looting over attacking
 		if ( self.doLooting && [_mobsToLoot count] && ![playerController isInCombat]) {
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
@@ -1503,6 +1496,15 @@ just a scrap example.. delete me
 	// only do this for hostiles
 	if (![playerController isHostileWithFaction: [target factionTemplate]]) return YES;
 
+	// Tap check!
+	if ([target isKindOfClass: [Mob class]]) {
+		if ([(Mob*)target isTappedByOther] && !theCombatProfile.partyEnabled && !self.isPvPing) {
+			log(LOG_PROCEDURE, @"%@ is tapped by another player, disengaging.", target);
+			[combatController resetAllCombat];
+			return NO;
+		}
+	}
+		
 	float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
 
 	// If the mob is out of our attack range
@@ -1829,7 +1831,7 @@ just a scrap example.. delete me
 		}
 		
 		log(LOG_COMBAT, @"Looks like an ambush, taking action!");
-		[self cancelCurrentProcedure];
+//		[self cancelCurrentProcedure]; may have been causing crash!?
 		[self actOnUnit:unit];
 	} else {
 		log(LOG_COMBAT, @"Already in combat procedure! Not acting on unit");
