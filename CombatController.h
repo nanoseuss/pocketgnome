@@ -60,7 +60,7 @@
 @property (readonly, retain) Unit *attackUnit;
 @property (readonly, retain) Unit *castingUnit;
 @property (readonly, retain) Unit *addUnit;
-
+// @property (readonly) NSString *unitHealthBar:(Unit*)unit;
 
 // weighted units we're in combat with
 - (NSArray*)combatList;
@@ -99,5 +99,8 @@
 // UI
 - (void)showCombatPanel;
 - (void)updateCombatTable;
+
+- (void)monitorUnit;
+- (NSString*)unitHealthBar: (Unit*)unit;
 
 @end

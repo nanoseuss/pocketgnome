@@ -42,6 +42,8 @@
 #define LOG_REGEN					"regen"
 #define LOG_PROCEDURE				"procedure"
 #define LOG_MOUNT					"mount"
+#define LOG_CONTROLLER				"controller"
+#define LOG_STATISTICS				"statistics"
 
 
 @interface LogController : NSObject {

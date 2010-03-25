@@ -29,6 +29,8 @@
 @class CombatProfileEditor;
 @class ObjectsController;
 @class PvPController;
+@class CombatController;
+
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
