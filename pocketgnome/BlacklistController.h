@@ -19,7 +19,6 @@
 	
 	IBOutlet MobController		*mobController;
 	IBOutlet PlayersController	*playersController;
-	
 
 	NSMutableDictionary *_blacklist;
 	NSMutableDictionary *_attemptList;

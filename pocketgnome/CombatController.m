@@ -147,7 +147,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
-    log(LOG_COMBAT, @"[Combat] Player has died!");
+    log(LOG_COMBAT, @"Player has died!");
 	
 	[self cancelAllCombat];
 }
@@ -157,18 +157,23 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// is there a unit we should be attacking
 	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
-		log(LOG_COMBAT, @"[Combat] Target not valid, blacklisting %@", _castingUnit);
+		log(LOG_BLACKLIST, @"Target not valid, blacklisting %@", _castingUnit);
 		[blacklistController blacklistObject: _castingUnit];
 	}
 }
 
 // target is out of range
 - (void)outOfRange: (NSNotification*)notification {
-	
-	// blacklist?
-	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
+	if ( !_castingUnit || [playerData targetID] != [_castingUnit GUID] ) return;
 		
-		[blacklistController blacklistObject: _castingUnit withReason:Reason_NotInLoS];
+		if ( ![_castingUnit isInCombat] ) {
+			// if it's too far and not in combat then just bail
+			log(LOG_COMBAT, @"Unit is running away, disengaging.");
+			[botController cancelCurrentProcedure];
+		} else {
+// if it's close inch up a lil
+			//		[blacklistController blacklistObject: _castingUnit withReason:Reason_NotInLoS];
+		}
 		
 		/*
 		// don't blacklist if melee + moving to!
@@ -179,20 +184,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		else{
 			log(LOG_COMBAT, @"BLACKLIST [Combat] Moving to unit, not blacklisting");
 		}*/
-	}
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
-	log(LOG_COMBAT, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
-	log(LOG_COMBAT, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
-	log(LOG_COMBAT, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	log(LOG_ERROR, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	log(LOG_ERROR, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	log(LOG_ERROR, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
 	[movementController establishPlayerPosition];
 }
 
 - (void)unitDied: (NSNotification*)notification{
 	Unit *unit = [notification object];
 	
-	if ( unit == _addUnit ){
+	if ( unit == _addUnit ) {
 		log(LOG_COMBAT, @"[Combat] Removing add %@", unit);
 		[_addUnit release]; _addUnit = nil;
 	}
@@ -367,36 +371,35 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)stayWithUnit{
 	
-	log(LOG_COMBAT, @"[Combat] Staying with %@ in procedure %@", _castingUnit, [botController procedureInProgress]);
-	
+	log(LOG_DEV, @"Staying with %@ in procedure %@", _castingUnit, [botController procedureInProgress]);
 	// cancel other requests
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 	
-	if ( _castingUnit == nil ){
-		log(LOG_COMBAT, @"[Combat] No longer staying w/the unit");
+	if ( _castingUnit == nil ) {
+		log(LOG_COMBAT, @"No longer staying w/the unit");
 		return;
 	}
 	
 	// dead
 	if ( [_castingUnit isDead] ){
-		log(LOG_COMBAT, @"[Combat] Unit is dead! %@", _castingUnit);
+		log(LOG_COMBAT, @"Unit is dead! %@", _castingUnit);
 		return;
 	}
 	
 	// sanity checks
 	if ( ![_castingUnit isValid] || [_castingUnit isEvading] || [blacklistController isBlacklisted:_castingUnit] ) {
-		log(LOG_COMBAT, @"[Combat] STOP ATTACK: Invalid? (%d)  Evading? (%d)  Blacklisted? (%d)", ![_castingUnit isValid], [_castingUnit isEvading], [blacklistController isBlacklisted:_castingUnit]);
+		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Evading? (%d)  Blacklisted? (%d)", ![_castingUnit isValid], [_castingUnit isEvading], [blacklistController isBlacklisted:_castingUnit]);
 		return;
 	}
 	
 	if ( [playerData isDead] ){
-		log(LOG_COMBAT, @"[Combat] You died, stopping attack.");
+		log(LOG_COMBAT, @"You died, stopping attack.");
 		return;
 	}
 	
 	// no longer in combat procedure
 	if ( ![[botController procedureInProgress] isEqualToString:CombatProcedure] ){
-		log(LOG_COMBAT, @"[Combat] No longer in combat procedure, no longer staying with unit");
+		log(LOG_COMBAT, @"No longer in combat procedure, no longer staying with unit");
 		return;
 	}
 	
@@ -525,7 +528,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	} else 
 	// add new units w/in range if we're not on assist
 	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat ) {
-		log(LOG_COMBAT, @"Adding ALL available combat units");
+		log(LOG_DEV, @"Adding ALL available combat units");
 		// determine attack range
 		float attackRange = [botController.theCombatProfile engageRange];
 		if ( botController.isPvPing && [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] )
@@ -543,7 +546,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		for ( Unit *unit in inCombatUnits ) if ( ![allPotentialUnits containsObject:unit] ) [allPotentialUnits addObject:unit];
 	}
 	
-	log(LOG_COMBAT, @"Found %d potential units to validate", [allPotentialUnits count]);
+	log(LOG_DEV, @"Found %d potential units to validate", [allPotentialUnits count]);
 	
 	// *************************************************
 	//	Validate all potential units - check for:
@@ -591,7 +594,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 	}
 	
-	log(LOG_COMBAT, @"Found %d valid units", [validUnits count]);
+	if ([validUnits count]) log(LOG_COMBAT, @"Found %d valid units", [validUnits count]);
 	// sort
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 	for ( Unit *unit in validUnits ) {
@@ -610,7 +613,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// no combat or healing?
 	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ) return nil;
 
-	log(LOG_COMBAT, @"Looking for a valid target");
+	log(LOG_DEV, @"Looking for a valid target");
 
 	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
 	Position *playerPosition = [playerData position];
@@ -708,7 +711,41 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	return weight;
 }
-
+- (NSString*)unitHealthBar: (Unit*)unit {
+	// lets build a log prefix that reflects units health
+	NSString *logPrefix = nil;
+	UInt32 unitPercentHealth = [unit percentHealth];
+	
+	if ([playerData isFriendlyWithFaction: [unit factionTemplate]]) {		
+		if (unitPercentHealth == 100)			logPrefix = @"[+++++++++++]";
+			else if (unitPercentHealth >= 90)	logPrefix = @"[++++++++++ ]";
+			else if (unitPercentHealth >= 80)	logPrefix = @"[+++++++++  ]";
+			else if (unitPercentHealth >= 70)	logPrefix = @"[++++++++   ]";
+			else if (unitPercentHealth >= 60)	logPrefix = @"[+++++++    ]";
+			else if (unitPercentHealth >= 50)	logPrefix = @"[++++++     ]";
+			else if (unitPercentHealth >= 40)	logPrefix = @"[+++++      ]";
+			else if (unitPercentHealth >= 30)	logPrefix = @"[++++       ]";
+			else if (unitPercentHealth >= 20)	logPrefix = @"[+++        ]";
+			else if (unitPercentHealth >= 10)	logPrefix = @"[++         ]";
+			else if (unitPercentHealth > 0)		logPrefix = @"[+          ]";
+			else								logPrefix = @"[           ]";		
+	} else {
+		if (unitPercentHealth == 100)			logPrefix = @"[***********]";
+			else if (unitPercentHealth >= 90)	logPrefix = @"[********** ]";
+			else if (unitPercentHealth >= 80)	logPrefix = @"[*********  ]";
+			else if (unitPercentHealth >= 70)	logPrefix = @"[********   ]";
+			else if (unitPercentHealth >= 60)	logPrefix = @"[*******    ]";
+			else if (unitPercentHealth >= 50)	logPrefix = @"[******     ]";
+			else if (unitPercentHealth >= 40)	logPrefix = @"[*****      ]";
+			else if (unitPercentHealth >= 30)	logPrefix = @"[****       ]";
+			else if (unitPercentHealth >= 20)	logPrefix = @"[***        ]";
+			else if (unitPercentHealth >= 10)	logPrefix = @"[**         ]";
+			else if (unitPercentHealth > 0)		logPrefix = @"[*          ]";
+			else								logPrefix = @"[           ]";
+	}
+	 return logPrefix;
+ }
+		 
 #pragma mark Enemy
 
 - (int)weight: (Unit*)unit {
@@ -798,25 +835,26 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // monitor unit until it dies
 - (void)monitorUnit: (Unit*)unit{
-	
-	log(LOG_COMBAT, @"[**********] Monitoring %@", unit);
+
+
+	log(LOG_COMBAT, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 	
 	// invalid unit
-	if ( !unit || ![unit isValid] ){
-		log(LOG_COMBAT, @"[**********] Unit isn't valid! %@", unit);
+	if ( !unit || ![unit isValid] ) {
+		log(LOG_COMBAT, @"%@ Unit isn't valid! %@", [self unitHealthBar: unit], unit);
 		return;
 	}
 	
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
 	// unit left combat?
-	if ( ![unit isInCombat] ){
-		log(LOG_COMBAT, @"[**********] Unit not in combat! %d", leftCombatCount);
+	if ( ![unit isInCombat] ) {
+		log(LOG_COMBAT, @"%@ Unit not in combat! %d", [self unitHealthBar: unit], leftCombatCount);
 		leftCombatCount++;
 		
 		// not in combat after 10 seconds, blacklist?
-		if ( leftCombatCount > 100 ){
+		if ( leftCombatCount > 100 ) {
 			if ( unit == _attackUnit ){
-				log(LOG_COMBAT, @"[**********] Unit not in combat after 10 seconds, blacklisting");
+				log(LOG_COMBAT, @"%@ Unit not in combat after 10 seconds, blacklisting", [self unitHealthBar: unit]);
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
 				self.attackUnit = nil;
 				return;
@@ -825,12 +863,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 		// after a minute stop monitoring
 		if ( leftCombatCount > 600 ){
-			log(LOG_COMBAT, @"[**********]  No longer monitoring %@, unit didn't enter combat after a minute!", unit);
+			log(LOG_COMBAT, @"%@ No longer monitoring %@, unit didn't enter combat after a minute!", [self unitHealthBar: unit], unit);
 			return;
 		}
 	}
 	else{
-		//log(LOG_COMBAT, @"[**********] Unit in combat! %d", leftCombatCount);
+		//log(LOG_COMBAT, @"%@ Unit in combat! %d", logPrefix, leftCombatCount);
 		leftCombatCount = 0;
 	}
 	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
@@ -838,7 +876,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// unit died, fire off notification
 	if ( [unit isDead] ){
-		log(LOG_COMBAT, @"[**********] Firing death notification for unit %@", unit);
+		log(LOG_COMBAT, @"%@ Firing death notification for unit %@", [self unitHealthBar: unit], unit);
 		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
 		return;
 	}
@@ -846,7 +884,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// unit has ghost aura (so is dead, fire off notification
 	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
 	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
-		log(LOG_COMBAT, @"[**********] Firing death notification for player %@", unit);
+		log(LOG_COMBAT, @"%@ Firing death notification for player %@", [self unitHealthBar: unit], unit);
 		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
 		return;
 	}
@@ -859,7 +897,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	if ( [[playerData player] isDead] ){
 		
-		log(LOG_COMBAT, @"[Combat] Dead, removing all objects!");
+		log(LOG_COMBAT, @"Dead, removing all objects!");
 		
 		[_unitsAttackingMe removeAllObjects];
 		self.attackUnit = nil;
@@ -945,11 +983,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[_unitsAttackingMe removeObjectsInArray:unitsToRemove];
 	}
 	
-	log(LOG_COMBAT, @"[Combat] In combat with %d units", [_unitsAttackingMe count]);
+	log(LOG_DEV, @"In combat with %d units", [_unitsAttackingMe count]);
 	
-	/*for ( Unit *unit in _unitsAttackingMe ){
-		log(LOG_COMBAT, @" [Combat] %@", unit);
-	}*/
+	for ( Unit *unit in _unitsAttackingMe ){
+		log(LOG_DEV, @"	%@", unit);
+	}
 }
 
 // this will return the level range of mobs we are attacking!

@@ -1127,7 +1127,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 	
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
-		log(LOG_PROCEDURE, @"Requested procedure is %@", self.procedureInProgress);
+		log(LOG_DEV, @"Requested procedure is %@", self.procedureInProgress);
 		NSArray *combatList = [combatController combatList];
 		int count =		[combatList count];
 		if (count == 1)	[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
@@ -1167,7 +1167,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 
 	// We don't want to cast if our GCD is active!
 	if ( [spellController isGCDActive] ) {
-		log(LOG_PROCEDURE, @"GCD is active, trying again shortly...");
+		log(LOG_DEV, @"GCD is active, trying again shortly...");
 		[self performSelector: _cmd withObject: state afterDelay: RULE_EVAL_DELAY_SHORT];
 		return;
 	}
@@ -1305,7 +1305,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						if ( !self.isPvPing ){
 							// if we're in combat, and the unit is not, ignore!
 							if ( [playerController isInCombat] && ![target isInCombat] ) {
-//								log(LOG_PROCEDURE, @"Ignoring %@ since we're in combat and the target isn't!", target);
+								log(LOG_DEV, @"Ignoring %@ since we're in combat and the target isn't!", target);
 								continue;
 							}
 						}
@@ -1456,7 +1456,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		BOOL validCombatUnit = NO;
 		for ( Unit *unit in [combatController combatList] ){
 			if ( ![blacklistController isBlacklisted:unit] ) validCombatUnit = YES;
-			log(LOG_PROCEDURE, @" %@", unit);
+			log(LOG_DEV, @" %@", unit);
 		}
 		
 		if ( validCombatUnit ) {
@@ -1509,11 +1509,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)lootScan {
-	log(LOG_LOOT, @"Scanning for missed mobs to loot.");
+	log(LOG_DEV, @"Scanning for missed mobs to loot.");
 	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
 	for (Mob *mob in mobs) {
 		if ([mob isLootable] && [mob isDead] && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
-			log(LOG_GENERAL, @"[LootScan] Adding %@ to loot list.", mob);
+			log(LOG_LOOT, @"[LootScan] Adding %@ to loot list.", mob);
 			[_mobsToLoot addObject: mob];
 		}
 	}
@@ -1532,7 +1532,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( !count ) count = [NSNumber numberWithInt:1]; else count = [NSNumber numberWithInt:[count intValue] + 1];
 		[_lootDismountCount setObject:count forKey:guid];
 		
-		log(LOG_GENERAL, @"[Loot] Player is still in the air, waiting to loot. Attempt %@", count);
+		log(LOG_LOOT, @"Player is still in the air, waiting to loot. Attempt %@", count);
 		
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
 		return;
@@ -1540,7 +1540,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// playr moving, wait to loot
 	if ( [movementController isMoving] ){
-		log(LOG_GENERAL, @"[Loot] Still moving, waiting to loot");
+		log(LOG_LOOT, @"Still moving, waiting to loot");
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
 		return;
 	}
@@ -1557,12 +1557,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		if ( [unit isValid] && ( distanceToUnit <= 5.0 ) ) { //	 && (unitIsMob ? [(Mob*)unit isLootable] : YES)
 			[controller setCurrentStatus: @"Bot: Looting"];
-			log(LOG_GENERAL, @"[Loot] Looting : %@", unit);
+			log(LOG_LOOT, @"Looting : %@", unit);
 			self.lootStartTime = [NSDate date];
 			self.unitToLoot = unit;
 			self.mobToSkin = (Mob*)unit;
 			[blacklistController incrementAttemptForObject:unit];
-			log(LOG_GENERAL, @"[Loot] Attempt incremented to %d!", [blacklistController attemptsForObject:unit]);
+			log(LOG_DEV, @"Attempt incremented to %d!", [blacklistController attemptsForObject:unit]);
 			
 			// Lets do this instead of the loot hotkey!
 			[self interactWithMouseoverGUID: [unit GUID]];
@@ -1570,17 +1570,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// In the off chance that no items are actually looted
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
 		} else {
-			log(LOG_GENERAL, @"[Bot] Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit <= 5.0, ![unit isValid], unit );
+			log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit <= 5.0, ![unit isValid], unit );
 			// remove from list
-			if ( ![self.unitToLoot isKindOfClass: [Node class]] ) [_mobsToLoot removeObject: self.unitToLoot];			
-			log(LOG_GENERAL, @"[Eval] lootUnit");
+			if ( ![self.unitToLoot isKindOfClass: [Node class]] ) [_mobsToLoot removeObject: self.unitToLoot];
 			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];	
 		}
 	}
 }
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
-- (void)verifyLootSuccess{
+- (void)verifyLootSuccess {
+	log(LOG_LOOT, @"Verifying loot succes...");
 	
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ){
@@ -1589,21 +1589,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// Is the loot window stuck being open?
-	if ( [lootController isLootWindowOpen] && _lootMacroAttempt < 3 ){
-		log(LOG_GENERAL, @"[Loot] Loot window open? ZOMG lets close it!");		
+	if ( [lootController isLootWindowOpen] && _lootMacroAttempt < 3 ) {
+		log(LOG_LOOT, @"Loot window open? ZOMG lets close it!");
 		_lootMacroAttempt++;
 		[lootController acceptLoot];
-		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];		
+		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];
 		return;
 	} else if ( _lootMacroAttempt >= 3 ){
-		log(LOG_GENERAL, @"[Loot] Attempted to loot %d times, moving on...", _lootMacroAttempt);
+		log(LOG_LOOT, @"Attempted to loot %d times, moving on...", _lootMacroAttempt);
 	}
 	
 	// fire off notification (sometimes needed if the mob only had $$, or the loot failed)
-	if ( self.unitToLoot ){
-		log(LOG_GENERAL, @"[Loot] Firing off loot success");		
+	if ( self.unitToLoot) {
+		log(LOG_DEV, @"Firing off loot success");
 		// is it a mob?
-		if ( [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC] ) log(LOG_GENERAL, @"[Loot] Is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );		
+		if ( [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC] ) log(LOG_DEV, @"Is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
 	}
 }
@@ -1625,10 +1625,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [self.unitToLoot isKindOfClass: [Node class]] ){
 			//[nodeController finishedNode: (Node*)self.unitToLoot];
 			self.mobToSkin = nil;
-			log(LOG_GENERAL, @"[Loot] Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s");
+			log(LOG_LOOT, @"Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s");
 		}else{
 			[_mobsToLoot removeObject: self.unitToLoot];
-			log(LOG_GENERAL, @"[Loot] Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s", [_mobsToLoot count]);
+			log(LOG_LOOT, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
 		
 		// clear the attempts since it was successful
@@ -1640,7 +1640,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Here from skinning!
 	else if ( self.mobToSkin ){
 		NSDate *currentTime = [NSDate date];
-		log(LOG_GENERAL, @"[Loot] Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);		
+		log(LOG_LOOT, @"Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);		
 		self.mobToSkin = nil;
 	}
 	
@@ -1658,12 +1658,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// should we try to use the item?
 	if ( _lootUseItems ){		
-		log(LOG_LOOT, @"Check enabled...");
 		int itemID = [[notification object] intValue];
 		
 		// crystallized <air|earth|fire|shadow|life|water> or mote of <air|earth|fire|life|mana|shadow|water>
-		if ( ( itemID >= 37700 && itemID <= 37705 ) || ( itemID >= 22572 && itemID <= 22578 ) ){
-			log(LOG_LOOT, @"Useable item looted, checking to see if we have > 10 of %d", itemID);			
+		if ( ( itemID >= 37700 && itemID <= 37705 ) || ( itemID >= 22572 && itemID <= 22578 ) ) {
+			log(LOG_DEV, @"Useable item looted, checking to see if we have > 10 of %d", itemID);			
 			Item *item = [itemController itemForID:[notification object]];
 			if ( item ) {
 				int collectiveCount = [itemController collectiveCountForItem:item];
@@ -1706,16 +1705,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// We're done looting+skinning!
 	if ( !canSkin ) {
 		NSDate *currentTime = [NSDate date];
-		log(LOG_GENERAL, @"[Loot] All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
+		log(LOG_LOOT, @"All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
 		
 		// Reset our attempt variables!
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 		
 		// Mount?  Or just evaluate
-		log(LOG_LOOT, @"Evaluate After skinned");
-		usleep(500000);
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
+//	Took out mounting here as it's handled else where.
+//		log(LOG_DEV, @"Evaluate After skinned");
+		usleep(400000);
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+
+//		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
+
 	}
 }
 
@@ -1725,9 +1728,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 
 	// We tried for 2.0 seconds, lets bail
 	if ( _skinAttempt++ > 20 ) {
-		log(LOG_GENERAL, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
+		log(LOG_LOOT, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
 		self.mobToSkin = nil;
-		log(LOG_GENERAL, @"[Eval] Unable to skin");
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
 		return;
 	}
@@ -1744,10 +1746,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	[controller setCurrentStatus: @"Bot: Skinning"];
 	
-	log(LOG_GENERAL, @"[Loot] Skinning!");
+	log(LOG_LOOT, @"Skinning!");
 	
 	// Lets interact w/the mob!
 	[self interactWithMouseoverGUID: [mob GUID]];
+
+	// In the off chance that no items are actually looted
+	[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 6.5f];
+
 }
 
 #pragma mark -
@@ -1870,8 +1876,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// in theory we should never be here
 	if ( [blacklistController isBlacklisted:unit] ) {
-		log(LOG_BLACKLIST, @"Ambushed by a blacklisted unit?");
-		[blacklistController removeUnit:unit];
+		float distance = [[playerController position] distanceToPosition2D: [unit position]];
+		log(LOG_BLACKLIST, @"Ambushed by a blacklisted unit??  Ignoring %@ at %0.2f away", distance, unit);
+		return;
 	}
 	
 	log(LOG_COMBAT, @"Acting on unit %@", unit);
@@ -1912,7 +1919,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 										  [NSNumber numberWithInt: 0],	    @"CompletedRules",
 										  unit,				    @"Target", nil]];
 	} else {
-		log(LOG_COMBAT, @"Not acting on unit! We are already performing %@ so actOnUnit should not have been called!", [self procedureInProgress]);
+		log(LOG_COMBAT, @"We are already performing %@ so actOnUnit should not have been called!?", [self procedureInProgress]);
 	}
 }
 
@@ -2068,7 +2075,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)monitorRegen: (NSDate*)start{
 	
 	if ( [playerController isInCombat] ){
-		log(LOG_GENERAL, @"[Eval] monitorRegen");
+		log(LOG_DEV, @"monitorRegen");
 		[self evaluateSituation];
 		return;
 	}
@@ -2090,15 +2097,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// we're done eating/drinking! continue
 	if ( eatClear && drinkClear ){
-		log(LOG_GENERAL, @"[Regen] Finished after %0.2f seconds", timeSinceStart);
-		log(LOG_GENERAL, @"[Eval] Done drinking");
+		log(LOG_REGEN, @"Finished after %0.2f seconds", timeSinceStart);
+		log(LOG_REGEN, @"Done drinking");
 		[self evaluateSituation];
 		return;
 	} else 
 	// should we be done?
 	if ( timeSinceStart > 30.0f ) {
-		log(LOG_GENERAL, @"[Regen] Ran for 30, done!");
-		log(LOG_GENERAL, @"[Eval] Regen too long");
+		log(LOG_REGEN, @"Ran for 30, done, regen too long!?");
 		[self evaluateSituation];
 		return;
 	}
@@ -2361,7 +2367,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// if the mob is close, just loot it!
 	if ( mobToLootDist <= 5.0 ) {
-		log(LOG_LOOT, @"Used to call reachedUnit here");
+//		log(LOG_LOOT, @"Used to call reachedUnit here");
 		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.1f];
 		return YES;
 	} else
@@ -2452,14 +2458,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						[self lootUnit:nodeToLoot];
 						[blacklistController blacklistObject:nodeToLoot];
 					} else {
-						log(LOG_NODE, @"Used to call reachedUnit for node here");
+//						log(LOG_NODE, @"Used to call reachedUnit for node here");
 						[self lootUnit:nodeToLoot];
 						return YES;
 					}
 				}
 				// Should we be mounted before we move to the node?
 				else if ( [self mountNow] ) {
-					log(LOG_NODE, @"[Stay Mounted] Mounting...");
+					log(LOG_MOUNT, @"[Stay Mounted] Mounting...");
 					[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 					return YES;
 				} else {
@@ -2549,7 +2555,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if (![self isBotting])						return NO;
     if (![playerController playerIsValid:self])	return NO;
 	
-	log(LOG_GENERAL, @"Evaluate Situation");
+	log(LOG_DEV, @"Evaluate Situation");
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 	
     // Order of Operations
@@ -2587,7 +2593,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Should we be mounted?
 	if ( ![movementController moveToObject] && [self mountNow] ) {
-		log(LOG_GENERAL, @"Mounting.....");
+		log(LOG_MOUNT, @"Mounting...");
 		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
 		return YES;
 	}
@@ -4128,7 +4134,7 @@ NSMutableDictionary *_diffDict = nil;
 - (void)interactWithMob:(UInt32)entryID {
 	Mob *mobToInteract = [mobController closestMobForInteraction:entryID];
 	
-	if([mobToInteract isValid]) {
+	if ([mobToInteract isValid]) {
 		[self interactWithMouseoverGUID:[mobToInteract GUID]];
 	}
 }

@@ -292,6 +292,7 @@
 
 // Input from MovementController;
 //- (void)reachedUnit: (WoWObject*)unit;
+- (void)cancelCurrentProcedure;
 - (BOOL)performPatrolProcedure;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;

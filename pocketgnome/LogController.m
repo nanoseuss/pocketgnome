@@ -18,11 +18,12 @@
 // Not logging conditions, remove when we no longer need manual supression.
 //	return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
 
-	NSString* type = [NSString stringWithFormat:@"%s", type_s];
+	
+	if (type_s == LOG_CONDITION) return NO;
+	if (type_s == LOG_RULE) return NO;
+	if (type_s == LOG_DEV) return NO;
 
-	if (type == @"condition") return NO;
-	if (type == @"rule") return NO;
-
+	
 	return YES;
 }
 

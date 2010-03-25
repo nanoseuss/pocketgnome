@@ -18,6 +18,7 @@
 
 // how long should the object remain blacklisted?
 #define BLACKLIST_TIME		45.0f
+#define BLACKLIST_TIME_LOS		10.0f
 
 @interface BlacklistController (Internal)
 
@@ -46,7 +47,7 @@
 
 #pragma mark Blacklisting
 
-- (void)blacklistObject:(WoWObject *)obj withReason:(int)reason{
+- (void)blacklistObject:(WoWObject *)obj withReason:(int)reason {
 	
 	log(LOG_BLACKLIST, @"Obj %@ with retain count %d", obj, [obj retainCount]);
 	
@@ -72,35 +73,43 @@
 
 // remove old objects from the blacklist
 - (void)refreshBlacklist{
-	
-	if ( [_blacklist count] ){
-		NSArray *allKeys = [_blacklist allKeys];
+	if ( ![_blacklist count] ) return;
+	NSArray *allKeys = [_blacklist allKeys];
 		
-		for ( NSNumber *guid in allKeys ) {
+	for ( NSNumber *guid in allKeys ) {
 		
-			NSArray *infractions = [_blacklist objectForKey:guid];
-			NSMutableArray *infractionsToKeep = [NSMutableArray array];
+		NSArray *infractions = [_blacklist objectForKey:guid];
+		NSMutableArray *infractionsToKeep = [NSMutableArray array];
 			
-			for ( NSDictionary *infraction in infractions ){
+		// Count the Infractions
+		for ( NSDictionary *infraction in infractions ){
 				
-				//int reason		= [[infraction objectForKey:@"Reason"] intValue];
-				NSDate *date	= [infraction objectForKey:@"Date"];
+			int reason		= [[infraction objectForKey:@"Reason"] intValue];
+			NSDate *date	= [infraction objectForKey:@"Date"];
+			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 				
-				// length varies based on reason
-				
-				float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
-				
-				if ( timeSinceBlacklisted < BLACKLIST_TIME ){
-					[infractionsToKeep addObject:infraction];
-				}
-				else{
-					log(LOG_BLACKLIST, @"Expired: %@", infraction);
-				}
-				
-				// should we check for dead or alive if they are a player/NPC?  I say NO!
+			// length varies based on reason
+					if ( reason == Reason_NotInLoS) {
+						if ( timeSinceBlacklisted < BLACKLIST_TIME_LOS ) {
+							[infractionsToKeep addObject:infraction];
+						} else {
+							log(LOG_BLACKLIST, @"Expired: %@", infraction);
+						}
+					} else {
+						if ( timeSinceBlacklisted < BLACKLIST_TIME ) {
+							[infractionsToKeep addObject:infraction];
+						} else {
+							log(LOG_BLACKLIST, @"Expired: %@", infraction);
+						}
+					}
 			}
 			
+			// Either unblacklist or update the number of infractions
+		if ([infractionsToKeep count]) {
 			[_blacklist setObject:infractionsToKeep forKey:guid];
+		} else {
+			log(LOG_BLACKLIST, @"Removing %@", (Unit*)guid);
+			[_blacklist removeObjectForKey:guid];
 		}
 	}
 }

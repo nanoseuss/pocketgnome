@@ -186,18 +186,18 @@ typedef enum MovementState{
 	
 	// moving up or down
 	else if ( movementFlags & MovementFlag_FlyUp || movementFlags & MovementFlag_FlyDown ){
-		log(LOG_MOVEMENT, @"isMoving: Moving up/down");
+		log(LOG_DEV, @"isMoving: Moving up/down");
 		return YES;
 	}
 	
 	// CTM active
 	else if ( [self movementType] == MovementType_CTM  && [self isCTMActive] ){
-		log(LOG_MOVEMENT, @"isMoving: CTM Active");
+		log(LOG_DEV, @"isMoving: CTM Active");
 		return YES;
 	}
 	
 	else if ( [playerData speed] > 0 ){
-		log(LOG_MOVEMENT, @"isMoving: Speed > 0");
+		log(LOG_DEV, @"isMoving: Speed > 0");
 		return YES;
 	}
 	
@@ -581,7 +581,7 @@ typedef enum MovementState{
 	
 	_positionCheck++;
 
-	log(LOG_MOVEMENT, @"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
+	if (_stuckCounter > 0) log(LOG_MOVEMENT, @"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
 
 	BOOL isPlayerOnGround = [playerData isOnGround];
 	Position *playerPosition = [playerData position];
@@ -723,8 +723,8 @@ typedef enum MovementState{
 		float maxSpeed = [playerData speedMax];
 		float distanceTraveled = [self.lastPlayerPosition distanceToPosition:playerPosition];
 		
-		log(LOG_MOVEMENT, @" Checking speed: %0.2f <= %.02f  (max: %0.2f)", playerSpeed, (maxSpeed/10.0f), maxSpeed );
-		log(LOG_MOVEMENT, @" Checking distance: %0.2f <= %0.2f", distanceTraveled, (maxSpeed/10.0f)/5.0f);
+		log(LOG_DEV, @" Checking speed: %0.2f <= %.02f  (max: %0.2f)", playerSpeed, (maxSpeed/10.0f), maxSpeed );
+		log(LOG_DEV, @" Checking distance: %0.2f <= %0.2f", distanceTraveled, (maxSpeed/10.0f)/5.0f);
 		
 		// distance + speed check
 		if ( distanceTraveled <= (maxSpeed/10.0f)/5.0f || playerSpeed <= maxSpeed/10.0f ){

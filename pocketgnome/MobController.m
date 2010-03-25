@@ -191,7 +191,7 @@ static MobController* sharedController = nil;
 		if ( mobIDs == nil ){
 			float distance = [position distanceToPosition: [mob position]];
 			if((distance != INFINITY) && (distance <= mobDistance)) {
-				PGLog(@"[Mob] Mob %@ is %0.2f away", mob, distance);
+				log(LOG_DEV, @"Mob %@ is %0.2f away", mob, distance);
 				
 				// Living check?
 				if ( !aliveOnly || (aliveOnly && ![mob isDead]) ){
@@ -231,12 +231,12 @@ static MobController* sharedController = nil;
     BOOL ignoreLevelOne = ([playerData level] > 10) ? YES : NO;
     Position *playerPosition = [(PlayerDataController*)playerData position];
 	
-	//PGLog(@"[Mob] Total mobs: %d", [_objectList count]);
+	//log(LOG_GENERAL, @"[Mob] Total mobs: %d", [_objectList count]);
     
     for(Mob *mob in _objectList) {
         
         if ( !includeElite && [mob isElite] ){
-			//PGLog(@"[Mob] Ignoring elite %@", mob);
+			log(LOG_DEV, @"Ignoring elite %@", mob);
             continue;   // ignore elite if specified
 		}
 		
@@ -264,7 +264,7 @@ static MobController* sharedController = nil;
             BOOL isHostile = [playerData isHostileWithFaction: faction];
 			BOOL isNeutral = (!isHostile && ![playerData isFriendlyWithFaction: faction]);
 			
-			//PGLog(@"%d %d (%d || %d || %d) %d %d %d %d %@", [mob isValid], ![mob isDead], (friendly && isFriendly), (neutral && isNeutral), (hostile && isHostile), ((mobLevel >= lowLevel) && (mobLevel <= highLevel)), [mob isSelectable], 
+			//log(LOG_GENERAL, @"%d %d (%d || %d || %d) %d %d %d %d %@", [mob isValid], ![mob isDead], (friendly && isFriendly), (neutral && isNeutral), (hostile && isHostile), ((mobLevel >= lowLevel) && (mobLevel <= highLevel)), [mob isSelectable], 
 			//	  [mob isAttackable],   ![mob isTappedByOther], mob);
 			
             // only include:
@@ -282,7 +282,7 @@ static MobController* sharedController = nil;
         }
     }
 	
-	//PGLog(@"[MobController] Found %d mobs", [withinRangeMobs count]);
+	//log(LOG_GENERAL, @"[MobController] Found %d mobs", [withinRangeMobs count]);
     
     return withinRangeMobs;
 }
@@ -302,7 +302,7 @@ static MobController* sharedController = nil;
         }
     }
 	
-    PGLog(@"[Mob] No mob for interaction");
+    log(LOG_GENERAL, @"[Mob] No mob for interaction");
     return nil;
 }
 
@@ -365,7 +365,7 @@ static MobController* sharedController = nil;
 		for(Mob *mob in _objectList) {
 			if ( [mob entryID] == nearbyEntryID && ![mob isDead] ){
 				[[NSSound soundNamed: @"alarm"] play];
-				PGLog(@"[Combat] Found %d nearby! Playing alarm!", nearbyEntryID);
+				log(LOG_GENERAL, @"[Combat] Found %d nearby! Playing alarm!", nearbyEntryID);
 			}
 		}
 	}
