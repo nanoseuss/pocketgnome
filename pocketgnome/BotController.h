@@ -282,6 +282,8 @@
 
 - (void)testRule: (Rule*)rule;
 
+- (BOOL)performProcedureMobCheck: (Unit*)target;
+
 // Input from CombatController
 - (void)addingUnit: (Unit*)unit;
 

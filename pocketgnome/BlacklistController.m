@@ -183,6 +183,8 @@
 }
 
 - (void)removeAllUnits{
+	if ( ![_blacklist count] ) return;
+	
 	log(LOG_BLACKLIST, @"Removing all units from the blacklist.");
 	
 	// only remove objects of type Player/Mob/Unit

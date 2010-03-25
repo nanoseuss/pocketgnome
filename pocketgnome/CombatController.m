@@ -139,7 +139,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
-    log(LOG_COMBAT, @"------ Technically (real) OOC ------");
+    log(LOG_DEV, @"------ Technically (real) OOC ------");
 	
 	_inCombat = NO;
 	
@@ -216,7 +216,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// add the other units if we need to
 	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ){
 		[units addObject:_attackUnit];
-		log(LOG_COMBAT, @"Adding attack unit: %@", _attackUnit);
+		log(LOG_DEV, @"Adding attack unit: %@", _attackUnit);
 	}
 	
 	// add our add
@@ -362,7 +362,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[self monitorUnit:unit];
 	}
 	
-	log(LOG_COMBAT, @"[Combat] Now staying with %@", unit);
+	log(LOG_DEV, @"Now staying with %@", unit);
 	
 	// we don't need to monitor friendlies!
 	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] )
@@ -542,7 +542,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// add combat units that have been validated! (includes attack unit + add)
 	NSArray *inCombatUnits = [self combatListValidated];
 	if ( [inCombatUnits count] ) {
-		log(LOG_COMBAT, @"Adding %d validated in combat units to list", [inCombatUnits count]);
+		log(LOG_DEV, @"Adding %d validated in combat units to list", [inCombatUnits count]);
 		for ( Unit *unit in inCombatUnits ) if ( ![allPotentialUnits containsObject:unit] ) [allPotentialUnits addObject:unit];
 	}
 	
@@ -594,7 +594,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 	}
 	
-	if ([validUnits count]) log(LOG_COMBAT, @"Found %d valid units", [validUnits count]);
+	if ([validUnits count]) log(LOG_DEV, @"Found %d valid units", [validUnits count]);
 	// sort
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 	for ( Unit *unit in validUnits ) {
@@ -625,7 +625,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	for ( Unit *unit in validUnits ) {
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];
-		log(LOG_COMBAT, @"Valid target %@ found with weight %d", unit, weight);
+		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
 
 		// best weight
 		if ( weight > highestWeight ) {
@@ -835,9 +835,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // monitor unit until it dies
 - (void)monitorUnit: (Unit*)unit{
-
-
-	log(LOG_COMBAT, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 	
 	// invalid unit
 	if ( !unit || ![unit isValid] ) {
@@ -848,7 +845,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
 	// unit left combat?
 	if ( ![unit isInCombat] ) {
-		log(LOG_COMBAT, @"%@ Unit not in combat! %d", [self unitHealthBar: unit], leftCombatCount);
+		log(LOG_DEV, @"%@ Unit not in combat! %d units left", [self unitHealthBar: unit], leftCombatCount);
 		leftCombatCount++;
 		
 		// not in combat after 10 seconds, blacklist?
@@ -866,9 +863,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			log(LOG_COMBAT, @"%@ No longer monitoring %@, unit didn't enter combat after a minute!", [self unitHealthBar: unit], unit);
 			return;
 		}
-	}
-	else{
-		//log(LOG_COMBAT, @"%@ Unit in combat! %d", logPrefix, leftCombatCount);
+	} else {
+		log(LOG_COMBAT, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		leftCombatCount = 0;
 	}
 	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
@@ -876,7 +872,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// unit died, fire off notification
 	if ( [unit isDead] ){
-		log(LOG_COMBAT, @"%@ Firing death notification for unit %@", [self unitHealthBar: unit], unit);
+		log(LOG_DEV, @"Firing death notification for unit %@", unit);
 		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
 		return;
 	}

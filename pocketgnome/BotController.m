@@ -1033,7 +1033,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)finishCurrentProcedure: (NSDictionary*)state {	
-	log(LOG_GENERAL, @"[Bot] Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
+	log(LOG_PROCEDURE, @"Finishing Procedure: %@", [state objectForKey: @"Procedure"]);
     
     // make sure we're done casting before we end the procedure
     if( [playerController isCasting] ) {
@@ -1080,7 +1080,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 2.0];
 		} else {
 			// or if we didn't regen, go back to evaluate
-			log(LOG_GENERAL, @"[Eval] No regen");
+			log(LOG_DEV, @"No regen, back to evaluate");
 			[self evaluateSituation];
 		}
 	}
@@ -1115,7 +1115,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     if (![self procedureInProgress]) {
 		[self setProcedureInProgress: [state objectForKey: @"Procedure"]];
-		log(LOG_PROCEDURE, @"No Procedure in progress, setting it to: %@", self.procedureInProgress);	
+		log(LOG_DEV, @"No Procedure in progress, setting it to: %@", self.procedureInProgress);	
 		if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])	
 				[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
@@ -1160,7 +1160,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// try to be smart about how long we wait
 		float delayTime = [playerController castTimeRemaining]/2.0f;
 		if(delayTime < RULE_EVAL_DELAY_LONG) delayTime = RULE_EVAL_DELAY_LONG;
-		log(LOG_PROCEDURE, @"Player is casting, waiting %.2f to perform next rule.", delayTime);
+		log(LOG_DEV, @"Player is casting, waiting %.2f to perform next rule.", delayTime);
 		[self performSelector: _cmd withObject: state afterDelay: delayTime];
 		return;
     }
@@ -1312,8 +1312,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						
 						if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
 							// do something
-							log(LOG_PROCEDURE, @"Match for %@ with unit %@", rule, target);
-							log(LOG_PROCEDURE, @"  Player in combat: %d	Unit in combat: %d", [playerController isInCombat], [target isInCombat]);
+							log(LOG_RULE, @"Match for %@ with unit %@", rule, target);
+							log(LOG_DEV, @"  Player in combat: %d	Unit in combat: %d", [playerController isInCombat], [target isInCombat]);
 							matchFound = YES;
 							break;
 						}
@@ -1327,12 +1327,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// old-school for non-combat (just goes in order)
 	else {
 		
-		log(LOG_PROCEDURE, @"Starting search at rule %d", completed);
+		log(LOG_DEV, @"Starting search at rule %d", completed);
 		for ( i = completed; i < ruleCount; i++) {
 			rule = [procedure ruleAtIndex: i];
 			
 			if( [self evaluateRule: rule withTarget: target asTest: NO] ) {
-				log(LOG_PROCEDURE, @"Found match for non-combat with rule %@", rule);
+				log(LOG_DEV, @"Found match for non-combat with rule %@", rule);
 				matchFound = YES;
 				break;
 			}
@@ -1343,10 +1343,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// take the action here
 	if ( matchFound && rule ){
 		
-		log(LOG_PROCEDURE, @"Act on target %@ with rule %@", target, rule );
+		log(LOG_PROCEDURE, @"Proceeding on %@ with rule %@", target, rule );
 
 		// target if needed!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) [combatController stayWithUnit:target withType:[rule target]];
+
+		// Check mob
+		if (![self performProcedureMobCheck:target]) {
+			[self finishCurrentProcedure: state];
+			return;
+		}
 		
 		// send in pet if needed
 		if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] && [rule target] == TargetEnemy )
@@ -1436,7 +1442,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
 								target,											@"Target", nil]
 				   afterDelay: 0.1f]; 
-		log(LOG_PROCEDURE, @"Rule executed, trying for more rules!");
+		log(LOG_DEV, @"Rule executed, trying for more rules!");
 
 		// Lets see if we need to go back to the original target 
 		if (originalTarget && originalTarget != target)
@@ -1449,7 +1455,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// still in combat with people! But not able to cast! (probably b/c insufficient rage/mana/etc...) Keep trying while we're in combat!
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [[combatController combatList] count] > 0 && inCombatNoAttack < 75 ) {
 		
-		log(LOG_PROCEDURE, @"Still being attacked! Continuing combat! No Combat: %d", inCombatNoAttack);
+		log(LOG_DEV, @"Still in combat... No Combat: %d", inCombatNoAttack);
 		
 		inCombatNoAttack++;
 		
@@ -1460,7 +1466,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		
 		if ( validCombatUnit ) {
-			log(LOG_PROCEDURE, @"Valid unit to attack in the combat list yay!");
+			log(LOG_DEV, @"Valid unit to attack in the combat list yay!");
 			[self performSelector: _cmd
 					   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 									[state objectForKey: @"Procedure"],				@"Procedure",
@@ -1484,6 +1490,51 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_PROCEDURE, @"Done! Finishing!");
 	[self finishCurrentProcedure: state];
+}
+
+- (BOOL)performProcedureMobCheck: (Unit*)target {
+	// This is an attempt to add a pre cast check for targets.
+	// It is intended for issues like runners
+	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast
+	// returns true if the mob is good to go
+
+	// only do this for hostiles
+	if (!target || target == nil) return YES;
+	if (![playerController isHostileWithFaction: [target factionTemplate]]) return YES;
+
+	float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
+
+	// If the mob is out of our attack range
+	if ( distanceToTarget > theCombatProfile.attackRange) {
+		log(LOG_PROCEDURE, @"%@ has gone out of range: %@", target, distanceToTarget);
+
+		// If they're just a lil out of range lets inch up
+		if ( distanceToTarget > (theCombatProfile.attackRange + 2.0f) && ![movementController isMoving]) {
+			log(LOG_PROCEDURE, @"Unit is still close, inching forward.");
+			// Face the target
+			[playerController faceToward: [target position]];
+            usleep([controller refreshDelay]*2);
+			// Start movement... sleep, then stop
+			[movementController moveForwardStart];
+            usleep([controller refreshDelay]*2);	
+			[movementController moveForwardStop];
+
+				// Now check again to see if they're in range
+		    usleep(100000);
+			float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
+			if ( distanceToTarget > theCombatProfile.attackRange) {
+				log(LOG_PROCEDURE, @"Still out of range: %@, giving up.", target, distanceToTarget);
+				[combatController resetAllCombat];
+				return NO;
+			}
+		}
+		// They're running and they're nothing we can do so lets bail
+		log(LOG_PROCEDURE, @"Disengaging!");
+		[combatController resetAllCombat];
+		return NO;
+	}
+	
+	return YES;
 }
 
 #pragma mark -
@@ -1673,9 +1724,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
-	// Sleep to allow objects to fade
-	// Only do this if there are no more mobs left to loot as that's the only time we rescan for loot
-	if ( ![_mobsToLoot count] ) usleep(500000);
 }
 
 - (void)skinOrFinish{	
@@ -1714,8 +1762,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// Mount?  Or just evaluate
 //	Took out mounting here as it's handled else where.
 //		log(LOG_DEV, @"Evaluate After skinned");
-		usleep(400000);
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+//		usleep(500000);
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
 
 //		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
 
@@ -1775,7 +1823,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return;
 		}
 		
-		log(LOG_COMBAT, @"Acting on the above unit!");
+		log(LOG_COMBAT, @"Looks like an ambush, taking action!");
+		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
 	} else {
 		log(LOG_COMBAT, @"Already in combat procedure! Not acting on unit");
@@ -1881,7 +1930,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
-	log(LOG_COMBAT, @"Acting on unit %@", unit);
+	log(LOG_DEV, @"Acting on unit %@", unit);
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 // I notice that readyToAttack is set here, but not used?? hmmm (older revisions are the same)
@@ -1918,9 +1967,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 										  CombatProcedure,		    @"Procedure",
 										  [NSNumber numberWithInt: 0],	    @"CompletedRules",
 										  unit,				    @"Target", nil]];
-	} else {
-		log(LOG_COMBAT, @"We are already performing %@ so actOnUnit should not have been called!?", [self procedureInProgress]);
 	}
+//	else {
+//		log(LOG_COMBAT, @"We are already performing %@ so actOnUnit should not have been called!?", [self procedureInProgress]);
+//	}
 }
 
 // this is called when any unit enters combat
@@ -2235,14 +2285,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForCombatContinuation {
     if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
-	log(LOG_COMBAT, @"Bot still in combat, looking for next target.");
-
 	Unit *bestUnit = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 	if ( !bestUnit ) return NO;
 
-	log(LOG_COMBAT, @"checking %@ for validity", bestUnit);
+	log(LOG_DEV, @"checking %@ for validity", bestUnit);
 	if ([self combatProcedureValidForUnit:bestUnit] ) {
-		log(LOG_COMBAT, @"Found %@ to act on!", bestUnit);
+		log(LOG_DEV, @"Found %@ to act on!", bestUnit);
 		[self actOnUnit:bestUnit];
 		[movementController stopMovement];
 		return YES;
@@ -2282,7 +2330,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( unitToActOn && [unitToActOn isValid] ) {
 		float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
 		if ( unitToActOnDist < INFINITY && [self combatProcedureValidForUnit:unitToActOn] ) {
-			log(LOG_COMBAT, @"[Combat Start] Valid unit to act on: %@", unitToActOn);
+			log(LOG_DEV, @"[Combat Start] Valid unit to act on: %@", unitToActOn);
 			// hostile only
 			if ( [playerController isHostileWithFaction: [unitToActOn factionTemplate]] ) {	
 				// should we do pre-combat?
@@ -2296,7 +2344,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 													  unitToActOn,			   @"Target",  nil]];
 					return YES;
 				}
-				if ( unitToActOn != self.preCombatUnit ) log(LOG_COMBAT, @"[Combat Start] Attacking unit other than pre-combat unit.");
+				if ( unitToActOn != self.preCombatUnit ) log(LOG_DEV, @"[Combat Start] Attacking unit other than pre-combat unit.");
 				self.preCombatUnit = nil;
 				log(LOG_COMBAT, @"[Combat Start] Found %@ and attacking.", unitToActOn);
 				[movementController turnTowardObject: unitToActOn];
@@ -4063,16 +4111,16 @@ NSMutableDictionary *_diffDict = nil;
 			 if ( [logOutOnFullInventoryCheckbox state] )
 				 [self logOutWithMessage:@"Inventory full, closing game"];
 		 }
-		 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ){
+		 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ) {
 			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
 		 }
 		 
-		 log(LOG_GENERAL, @"[Bot] Action taken! Result: %d", lastErrorMessage);
+		 log(LOG_DEV, @"Action taken! Result: %d", lastErrorMessage);
 		 
 		 return lastErrorMessage;
 	}
 	
-	log(LOG_GENERAL, @"[Bot] Action taken successfully!");
+	log(LOG_DEV, @"Action taken successfully!");
 
 	return ErrNone;
 }
