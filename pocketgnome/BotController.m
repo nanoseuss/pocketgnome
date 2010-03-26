@@ -1341,7 +1341,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_PROCEDURE, @"Proceeding on %@ with rule %@", target, rule );
 		
 		// target if needed!
-		if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) [combatController stayWithUnit:target withType:[rule target]];
+		if ( [[self procedureInProgress] isEqualToString: CombatProcedure])
+			[combatController stayWithUnit:target withType:[rule target]];
 		
 		// send in pet if needed
 		if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] && [rule target] == TargetEnemy )
@@ -1418,7 +1419,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						actionsPerformed++;
 					}
 				} else {
-					log(LOG_PROCEDURE, @"Unable to perform action");
+					log(LOG_PROCEDURE, @"Unable to perform action %d", actionID);
 				}
 			} else {
 				log(LOG_PROCEDURE, @"No action to take");
@@ -3049,6 +3050,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
+	// TO DO: verify starting routes for ALL PvP routes
+	
 	// not really sure how this could be possible hmmm
     if( [self isBotting]) [self stopBot: nil];
     
@@ -3494,6 +3497,12 @@ NSMutableDictionary *_diffDict = nil;
 
 - (void)playerIsInvalid: (NSNotification*)not {
     if ( ![self isBotting]) return;
+	
+	if ( self.isPvPing ){
+		log(LOG_PVP, @" player is invalid, but we're not stopping as we're pvping!");
+		return;
+	}
+	
 	log(LOG_GENERAL, @"[Bot] Player is no longer valid, stopping bot.");
 	[self stopBot: nil];
 }
@@ -3594,9 +3603,7 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark Timers
 
 - (void)logOutTimer: (NSTimer*)timer {
-	if ( !self.isBotting )
-		log(LOG_GENERAL, @"[Bot] We should never be here!!");
-	
+
 	BOOL logOutNow = NO;
 	NSString *logMessage = nil;
 	
@@ -5101,9 +5108,9 @@ typedef struct WoWClientDb {
 			
 			RouteCollection *rc = [bg routeCollection];
 			if ( rc ){
-				log(LOG_PVP, @" setting PvP route set to %@", rc);
 				self.theRouteSet = [[rc startingRoute] retain];
 				self.theRouteCollection = [rc retain];
+				log(LOG_PVP, @" setting PvP route set to %@", self.theRouteSet);
 				return YES;
 			}
 		}
@@ -5283,6 +5290,9 @@ typedef struct WoWClientDb {
 	//	valid pvp behavior
 	//	valid combat profile
 	
+	// reset movement state
+	[movementController resetMovementState];
+	
 	// set the route set
 	[movementController setPatrolRouteSet:self.theRouteSet];
 	
@@ -5310,7 +5320,6 @@ typedef struct WoWClientDb {
     self.preCombatUnit = nil;
 	[fishController stopFishing];
 
-    self.isPvPing = NO;
     self.pvpLeaveInactive = NO;
     self.pvpPlayWarning = NO;
     self.pvpAntiAFKCounter = 0;
@@ -5392,7 +5401,7 @@ typedef struct WoWClientDb {
 	if ( _pvpIsInBG && !isPlayerInBG ){
 		_pvpIsInBG = NO;
 		
-		log(LOG_PVP, @"[PvP] Player has left the battleground...");
+		log(LOG_PVP, @" player has left the battleground...");
 		
 		// Stop the bot! (this could be triggered by our marks check, but of course someone could have maxed marks)
 		if ( self.isBotting ){
