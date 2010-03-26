@@ -1284,7 +1284,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 
 				// If we don't have a target by this point we should try our combat target
-				else if ([combatController castingUnit]) {
+				else if ([combatController castingUnit] && 
+							[[combatController castingUnit] isValid] && 
+							![[combatController castingUnit] isDead] &&
+							[self evaluateRule: rule withTarget: [combatController castingUnit] asTest: NO]
+						 ) {
 					target = [combatController castingUnit];
 					matchFound = YES;
 					break;
@@ -1440,6 +1444,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				   afterDelay: 0.1f]; 
 		log(LOG_DEV, @"Rule executed, trying for more rules!");
 		
+/*
+ thoguht this may be helpful... not sure if it is
 		// Lets see if we need to go back to the original target 
 		if (originalTarget && originalTarget != target)
 			if ([originalTarget isInCombat] && 
@@ -1447,7 +1453,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				![originalTarget isDead] && 
 				[playerController isHostileWithFaction: [originalTarget factionTemplate]])
 					[playerController setPrimaryTarget: originalTarget];
- 
+*/
 		return;
 	}
 	
@@ -2322,8 +2328,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 -(BOOL) evaluateForRegen {
+	
+	// If we're mounted then let's not do anything that would cause us to dismount
+	if ( [[playerController player] isMounted] ) return NO;
+
 	// If we're mounted and in the air don't attempt to regen
-	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
+//	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
 
 	// See if we need to perform this
 	BOOL performRegen = NO;
@@ -2368,6 +2378,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForLoot {
+	if (!self.doLooting) return NO;
+	
     // get potential units and their distances
     Mob *mobToLoot	= [self mobToLoot];
     if ( !mobToLoot ) return NO;
@@ -2425,6 +2437,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForMiningAndHerbalism {
+	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
+
 	Position *playerPosition = [playerController position];
     if ([movementController moveToObject]) return NO;
 	
@@ -2580,8 +2594,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if( ![self isBotting]) return NO;
 	if( [playerController isDead]) return NO;
 
+	// If we're mounted then let's not do anything that would cause us to dismount
+	if ( [[playerController player] isMounted] ) return NO;
+	
 	// If we're mounted and in the air let's not attempt this
-	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
+//	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
 
 	// see if we would be performing anything in the patrol procedure
 	BOOL performPatrolProc = NO;
@@ -2641,8 +2658,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [playerController isGhost] ) return [self evaluateForGhost];
 	
 	if ( [self evaluateForPVP] ) return YES;
-	
-	[self jumpIfAirMountOnGround ];
+
+//	[self jumpIfAirMountOnGround ];
 	
 	if ( [self evaluateForPartyFollow] ) return YES;
 	
