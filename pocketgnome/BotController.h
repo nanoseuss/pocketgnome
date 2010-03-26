@@ -295,7 +295,6 @@
 // Input from MovementController;
 //- (void)reachedUnit: (WoWObject*)unit;
 - (void)cancelCurrentProcedure;
-- (BOOL)performPatrolProcedure;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
 - (BOOL)evaluateForPVP;
@@ -308,6 +307,7 @@
 - (BOOL)evaluateForCombatStart;
 - (BOOL)evaluateForMiningAndHerbalism;
 - (BOOL)evaluateForFishing;
+- (BOOL)evaluateForPatrol;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

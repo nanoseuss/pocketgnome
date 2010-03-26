@@ -1479,22 +1479,12 @@ No sure if this was actually helpful, unncommenting to see
 		}
 	}
 	
-/*
-this is handed elsewhere, commenting it out
-	// blacklist unit - it wasn't in combat after 7.5 seconds!
-	if ( inCombatNoAttack >= 75 ){
-		[blacklistController blacklistObject:target];
-		log(LOG_PROCEDURE, @"Unit not in combat after 7.5 seconds, cancelling combat procedure");
-	}
-*/
 	log(LOG_DEV, @"Done with Procedure!");
 	[self finishCurrentProcedure: state];
 }
 
 - (BOOL)performProcedureMobCheck: (Unit*)target {
-	// This is an attempt to add a pre cast check for targets.
-	// It is intended for issues like runners
-	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast
+	// This is a pre cast check for targets.
 	// returns true if the mob is good to go
 	if (!target || target == nil) return YES;
 	
@@ -1512,58 +1502,12 @@ this is handed elsewhere, commenting it out
 		[movementController stopMovement];
 	}
 	
-	if ([movementController checkUnitOutOfRange:target]) {
-		// Range is good, let's face our target
-// Causing procs like hotstreak to cast too late?
-//		if (![movementController isMoving]) [playerController faceToward: [target position]];
-//		usleep([controller refreshDelay]);
-		return YES;
-	} else {
-		// They're running and they're nothing we can do so lets bail
-		log(LOG_PROCEDURE, @"Disengaging!");
-		[combatController resetAllCombat];
-		return NO;
-	}
+	if ([movementController checkUnitOutOfRange:target]) return YES;
 
-/*		
-	float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
-	float moveForwardRange = 5.0;
-	
-	// If the mob is out of our attack range
-	if ( distanceToTarget > theCombatProfile.attackRange) {
-		log(LOG_PROCEDURE, @"%@ has gone out of range: %@", target, distanceToTarget);
-
-		// If they're just a lil out of range lets inch up
-		if ( distanceToTarget < (theCombatProfile.attackRange + moveForwardRange) && ![movementController isMoving]) {
-			log(LOG_PROCEDURE, @"Unit is still close, inching forward.");
-			// Face the target
-			[playerController faceToward: [target position]];
-            usleep([controller refreshDelay]);
-			// Start movement... sleep, then stop
-			[movementController moveForwardStart];
-            usleep(1.0f);
-			[movementController moveForwardStop];
-
-				// Now check again to see if they're in range
-		    usleep(100000);
-			float distanceToTarget = [[(PlayerDataController*)playerController position] distanceToPosition: [target position]];
-			if ( distanceToTarget > theCombatProfile.attackRange) {
-				log(LOG_PROCEDURE, @"Still out of range: %@, giving up.", target, distanceToTarget);
-				[combatController resetAllCombat];
-				return NO;
-			}
-		}
-		// They're running and they're nothing we can do so lets bail
-		log(LOG_PROCEDURE, @"Disengaging!");
-		[combatController resetAllCombat];
-		return NO;
-	} else {
-		// If nothing else make sure we're facing our target
-		if (![movementController isMoving]) [playerController faceToward: [target position]];
-		usleep([controller refreshDelay]);
-	}
-*/	
-	return YES;
+	// They're running and they're nothing we can do so lets bail
+	log(LOG_PROCEDURE, @"Disengaging!");
+	[combatController resetAllCombat];
+	return NO;
 }
 
 #pragma mark -
@@ -1846,14 +1790,20 @@ this is handed elsewhere, commenting it out
 	// start a combat procedure if we're not in one!
 	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
 
-		// make sure we're not flying
+		// If we're supposed to ignore combat while flying
+		if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) {
+			log(LOG_COMBAT, @"Ignoring combat with %@ since we're set to ignore combat while flying.", unit);
+			return;
+		}
+		
+		// make sure we're not flying mounted and in the air
 		if ( self.theCombatProfile.ignoreFlying && ![playerController isOnGround] ){
-			log(LOG_COMBAT, @"Ignoring combat with %@ since we're flying!", unit);
+			log(LOG_COMBAT, @"Ignoring combat with %@ since we're in the air!", unit);
 			return;
 		}
 		
 		log(LOG_COMBAT, @"Looks like an ambush, taking action!");
-//		[self cancelCurrentProcedure]; may have been causing crash!?
+		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
 	} else {
 		log(LOG_COMBAT, @"Already in combat procedure! Not acting on unit");
@@ -2100,48 +2050,6 @@ this is handed elsewhere, commenting it out
 	[controller setCurrentStatus: @"Bot: Searching for body..."];
 }
 
-- (BOOL)performPatrolProcedure {
-    if( ![self isBotting]) return YES;
-    if( [playerController isDead]) return YES;
-
- 	// If we're mounted and in the air let's not attempt this
-	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return YES;
-   
-    // see if we would be performing anything in the patrol procedure
-    BOOL performPatrolProc = NO;
-    for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
-		if( ([rule resultType] != ActionType_None) && ([rule actionID] > 0) && [self evaluateRule: rule withTarget: nil asTest: NO] ) {
-			performPatrolProc = YES;
-			break;
-		}
-    }
-    
-    // check if all used abilities are instant
-    BOOL needToPause = NO;
-    for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
-		if( ([rule resultType] == ActionType_Spell)) {
-			Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [rule actionID]]];
-			if ([spell isInstant]) continue;
-		}
-		if([rule resultType] == ActionType_None) continue;
-		needToPause = YES; 
-		break;
-    }
-    
-    // if we are, pause movement and perform it.
-    if (performPatrolProc) {
-		// only pause if we are performing something non instant
-		if (needToPause) [movementController stopMovement];
-		[self performSelector: @selector(performProcedureWithState:) 
-		   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-				PatrollingProcedure,		  @"Procedure",
-				[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
-		   afterDelay: (needToPause ? 0.25 : 0.0)];
-		if (needToPause)	 return NO;
-    }
-    return YES;
-}
-
 #pragma mark -
 
 - (void)executeRegen: (BOOL)delay{
@@ -2330,7 +2238,7 @@ this is handed elsewhere, commenting it out
 
 	log(LOG_DEV, @"checking %@ for validity", bestUnit);
 	if ([self combatProcedureValidForUnit:bestUnit] ) {
-		log(LOG_DEV, @"Found %@ to act on!", bestUnit);
+		log(LOG_DEV, @"[Combat Continuation] Found %@ to act on!", bestUnit);
 		[self actOnUnit:bestUnit];
 		[movementController stopMovement];
 		return YES;
@@ -2344,7 +2252,10 @@ this is handed elsewhere, commenting it out
 		return NO;
 	}
 
-	// If we're mounted and in the air don't engage a target
+	// If we're supposed to ignore combat while flying lets return false
+	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
+	
+	// If we're mounted and in the air don't look for a target
 	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
 
 	Position *playerPosition = [playerController position];
@@ -2380,7 +2291,7 @@ this is handed elsewhere, commenting it out
 				if ( ![combatController inCombat] && !_didPreCombatProcedure ) {				
 					_didPreCombatProcedure = YES;
 					self.preCombatUnit = unitToActOn;
-					log(LOG_COMBAT, @"[Combat Start] Starting PreCombat procedure");
+					log(LOG_COMBAT, @"[Combat Start] PreCombat procedure underway...");
 					[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
 													  PreCombatProcedure,		    @"Procedure",
 													  [NSNumber numberWithInt: 0],	    @"CompletedRules",
@@ -2645,6 +2556,50 @@ this is handed elsewhere, commenting it out
 	return NO;
 }
 
+- (BOOL)evaluateForPatrol {
+	if( ![self isBotting]) return NO;
+	if( [playerController isDead]) return NO;
+
+	// If we're mounted and in the air let's not attempt this
+	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
+
+	// see if we would be performing anything in the patrol procedure
+	BOOL performPatrolProc = NO;
+	for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
+		if( ([rule resultType] != ActionType_None) && ([rule actionID] > 0) && [self evaluateRule: rule withTarget: nil asTest: NO] ) {
+			performPatrolProc = YES;
+			break;
+		}
+	}
+
+	// Perform the procedure.
+	if (performPatrolProc) {
+
+		// check if all used abilities are instant
+		BOOL needToPause = NO;
+		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
+			if( ([rule resultType] == ActionType_Spell)) {
+				Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [rule actionID]]];
+				if ([spell isInstant]) continue;
+			}
+			if([rule resultType] == ActionType_None) continue;
+			needToPause = YES; 
+			break;
+		}
+		
+		// only pause if we are performing something non instant
+		if (needToPause) [movementController stopMovement];
+
+		[self performSelector: @selector(performProcedureWithState:) 
+				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+								PatrollingProcedure,		  @"Procedure",
+								[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
+				   afterDelay: (needToPause ? 0.25 : 0.0)];
+		if (needToPause) return YES;
+	}
+ return NO;
+}
+
 - (BOOL)evaluateSituation {
     if (![self isBotting])						return NO;
     if (![playerController playerIsValid:self])	return NO;
@@ -2678,7 +2633,9 @@ this is handed elsewhere, commenting it out
 	if ( [self evaluateForRegen] ) return YES;
 
 	if ( [self evaluateForLoot] ) return YES;
-    
+
+   	if ( [self evaluateForPatrol] ) return YES;
+
 	if ( [self evaluateForCombatStart] ) return YES;
 
 	if ( [self evaluateForMiningAndHerbalism] ) return YES;
@@ -3027,7 +2984,6 @@ this is handed elsewhere, commenting it out
     if( [self isBotting]) [self stopBot: nil];
     
 	// Make sure we check regen when we evaluate
-// 3.3.3 broke, uncommenting this to debug
 		_doRegenProcedure = 1;
 
     if ( self.theCombatProfile && self.theBehavior ) {
@@ -3091,8 +3047,9 @@ this is handed elsewhere, commenting it out
 		if ( self.theRouteSet ) [movementController setPatrolRouteSet:self.theRouteSet];
 
 		// player is dead but not a ghost - we need to res!
-		if ( [playerController isDead] && ![playerController isGhost] ) [self rePop:[NSNumber numberWithInt:0]];
-			else [movementController resumeMovement];
+// lets just allow evaluation to handle this as bot start may require other tasks prior to movment
+//		if ( [playerController isDead] && ![playerController isGhost] ) [self rePop:[NSNumber numberWithInt:0]];
+//			else [movementController resumeMovement];
 	
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		log(LOG_STARTUP, @" StartBot");
@@ -3333,6 +3290,7 @@ NSMutableDictionary *_diffDict = nil;
     log(LOG_GENERAL, @"---- Player has revived!");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
+
     _reviveAttempt = 0;
     // perform post combat
     [self performSelector: @selector(performProcedureWithState:) 
@@ -3340,7 +3298,6 @@ NSMutableDictionary *_diffDict = nil;
 			    PostCombatProcedure,	      @"Procedure",
 			    [NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
 	       afterDelay: 1.0];
-	
 	// Set the flag so we do regen
 	_doRegenProcedure = 1;
 }
