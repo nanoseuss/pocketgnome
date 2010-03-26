@@ -30,4 +30,6 @@
 
 + (id)battlegroundWithName: (NSString*)name andZone: (int)zone;
 
+- (BOOL)isValid;
+
 @end

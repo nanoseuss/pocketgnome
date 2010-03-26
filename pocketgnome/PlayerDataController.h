@@ -36,8 +36,6 @@
 #define PlayerEnteringCombatNotification    @"PlayerEnteringCombatNotification"
 #define PlayerLeavingCombatNotification     @"PlayerLeavingCombatNotification"
 
-#define ZoneStrandOfTheAncients		4384
-
 #define StrandGateOfTheBlueSapphire		190724
 #define StrandGateOfTheGreenEmerald		190722
 #define StrandGateOfThePurpleAmethyst	190723
