@@ -47,6 +47,7 @@
 	IBOutlet NSTableView *combatTable;
 	
 	BOOL _inCombat;
+	BOOL _hasStepped;
 	
 	NSDate *_enteredCombat;
 	
