@@ -20,7 +20,8 @@
 #define BLACKLIST_TIME		45.0f
 #define BLACKLIST_TIME_LOS		10.0f
 // This should be just long enough to move and not instantly retarget the mob
-#define BLACKLIST_TIME_NICA_10		2.0f
+#define BLACKLIST_TIME_NICA_15		2.0f
+#define BLACKLIST_TIME_NICA_25		45.0f
 
 @interface BlacklistController (Internal)
 
@@ -91,8 +92,15 @@
 			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 				
 			// length varies based on reason
-			if ( reason == Reason_NotInCombatAfter10) {
-				if ( timeSinceBlacklisted < BLACKLIST_TIME_NICA_10 ) {
+			if ( reason == Reason_NotInCombatAfter15) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_NICA_15 ) {
+					[infractionsToKeep addObject:infraction];
+				} else {
+					log(LOG_BLACKLIST, @"Expired: %@", infraction);
+				}
+			} else
+			if ( reason == Reason_NotInCombatAfter25) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_NICA_25 ) {
 					[infractionsToKeep addObject:infraction];
 				} else {
 					log(LOG_BLACKLIST, @"Expired: %@", infraction);
@@ -159,9 +167,12 @@
 		else if ( reason == Reason_CantReachObject ){
 			totalFailedToReach++;
 		}
-		else if ( reason == Reason_NotInCombatAfter10 ){
+		else if ( reason == Reason_NotInCombatAfter15 ){
 			return YES;
 		}
+		else if ( reason == Reason_NotInCombatAfter25 ){
+			return YES;
+		}		
 		else{
 			totalNone++;
 		}

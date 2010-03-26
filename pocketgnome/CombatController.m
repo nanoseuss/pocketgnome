@@ -845,19 +845,26 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ( unit == _attackUnit ) {
 
 			// not in combat after 5 seconds try moving forward to unbug casting
-			if ( leftCombatCount < 100 && leftCombatCount > 50) {
+			if ( leftCombatCount < 150 && leftCombatCount > 50) {
 				// Try Stepping forward in case we're just position bugged for casting
 				if (![playerData isCasting] && ![movementController isMoving]) {
 					log(LOG_COMBAT, @"%@ stepping forward to try to unbug a bad casting position.", [self unitHealthBar: unit]);
 					[movementController stepForward];
 				}
 			} else 
-			// not in combat after 10 seconds we blacklist
-			if ( leftCombatCount > 100 ) {
-				log(LOG_COMBAT, @"%@ Unit not in combat after 10 seconds, blacklisting", [self unitHealthBar: unit]);
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
+
+			// not in combat after 15 seconds we blacklist for the short term, long enough to target something else or move
+			if ( leftCombatCount > 150 ) {
+				log(LOG_COMBAT, @"%@ Unit not in combat after 15 seconds, temp blacklisting", [self unitHealthBar: unit]);
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter15];
 				self.attackUnit = nil;
-				return;
+			} else
+
+			// not in combat after 25 seconds we blacklist for real
+			if ( leftCombatCount > 250 ) {
+				log(LOG_COMBAT, @"%@ Unit not in combat after 25 seconds, seriously blacklisting", [self unitHealthBar: unit]);
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter25];
+				self.attackUnit = nil;
 			}
 		}
 		// after a minute stop monitoring
