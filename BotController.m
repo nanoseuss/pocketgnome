@@ -5188,15 +5188,18 @@ typedef struct WoWClientDb {
 		if ( _pvpLastBattleground == -1 ){
 			bg = [self.pvpBehavior battlegroundForIndex:0];
 			_pvpLastBattleground = 0;
+			log(LOG_PVP, @"selecting first bg: %@", bg);
 		}
 		
 		else{
 			bg = [self.pvpBehavior battlegroundForIndex:++_pvpLastBattleground];
+			log(LOG_PVP, @"selecting next bg: %@", bg);
 			
 			// we've gone too far! grab the first!
 			if ( bg == nil ){
 				bg = [self.pvpBehavior battlegroundForIndex:0];
 				_pvpLastBattleground = 0;
+				log(LOG_PVP, @"selecting first bg: %@", bg);
 			}
 		}
 		
@@ -5208,10 +5211,10 @@ typedef struct WoWClientDb {
 			usleep(100000);
 			
 			if ( [bg zone] == ZoneArathiBasin ){
-				[macroController useMacroOrSendCmd:@"BGClickType3"];
+				[macroController useMacroOrSendCmd:@"BGClickType4"];
 			}
 			else if ( [bg zone] == ZoneAlteracValley ){
-				[macroController useMacroOrSendCmd:@"BGClickType4"];
+				[macroController useMacroOrSendCmd:@"BGClickType2"];
 			}
 			else if ( [bg zone] == ZoneEyeOfTheStorm ){
 				[macroController useMacroOrSendCmd:@"BGClickType5"];
@@ -5227,7 +5230,7 @@ typedef struct WoWClientDb {
 				[macroController useMacroOrSendCmd:@"BGClickType4"];
 			}
 			else if ( [bg zone] == ZoneWarsongGulch ){
-				[macroController useMacroOrSendCmd:@"BGClickType2"];
+				[macroController useMacroOrSendCmd:@"BGClickType3"];
 			}
 			
 			usleep(100000);
