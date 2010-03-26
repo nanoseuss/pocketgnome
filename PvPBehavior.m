@@ -155,20 +155,31 @@
 // little helper
 - (BOOL)isValid{
 	
-	if ( self.AlteracValley.enabled && self.AlteracValley.routeCollection != nil )
-		return YES;
-	if ( self.ArathiBasin.enabled && self.ArathiBasin.routeCollection != nil )
-		return YES;
-	if ( self.EyeOfTheStorm.enabled && self.EyeOfTheStorm.routeCollection != nil )
-		return YES;
-	if ( self.IsleOfConquest.enabled && self.IsleOfConquest.routeCollection != nil )
-		return YES;
-	if ( self.StrandOfTheAncients.enabled && self.StrandOfTheAncients.routeCollection != nil )
-		return YES;
-	if ( self.WarsongGulch.enabled && self.WarsongGulch.routeCollection != nil )
-		return YES;	
+	int totalEnabled = 0;
 	
-	return NO;	
+	if ( self.AlteracValley.enabled && self.AlteracValley.routeCollection != nil )
+		totalEnabled++;
+	if ( self.ArathiBasin.enabled && self.ArathiBasin.routeCollection != nil )
+		totalEnabled++;
+	if ( self.EyeOfTheStorm.enabled && self.EyeOfTheStorm.routeCollection != nil )
+		totalEnabled++;
+	if ( self.IsleOfConquest.enabled && self.IsleOfConquest.routeCollection != nil )
+		totalEnabled++;
+	if ( self.StrandOfTheAncients.enabled && self.StrandOfTheAncients.routeCollection != nil )
+		totalEnabled++;
+	if ( self.WarsongGulch.enabled && self.WarsongGulch.routeCollection != nil )
+		totalEnabled++;
+	
+	// don't have the total for random!
+	if ( self.random && totalEnabled != TotalBattlegrounds ){
+		return NO;
+	}
+	// none enabled
+	else if ( totalEnabled == 0 ){
+		return NO;
+	}
+	
+	return YES;	
 }
 
 // we need a route collection for each BG

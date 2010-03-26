@@ -283,7 +283,7 @@
 - (BOOL)otherPlayersWorkingNode: (WoWObject*)node;
 
 // Input from CombatController
-- (void)addingUnit: (Unit*)unit;
+//- (void)addingUnit: (Unit*)unit;
 
 // Input from CombatController
 - (void)actOnUnit: (Unit*)unit;

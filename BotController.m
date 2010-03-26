@@ -149,6 +149,7 @@
 // new pvp
 - (void)pvpQueueOrStart;
 - (void)pvpQueueBattleground;
+- (BOOL)pvpSetEnvironmentForZone;
 
 @end
 
@@ -2909,14 +2910,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// make sure mounting will even work
-	if ( [mountCheckbox state] && ![[playerController player] isMounted] && ![playerController isInCombat] ){
+	/*if ( [mountCheckbox state] && ![[playerController player] isMounted] && ![playerController isInCombat] ){
 		if ( ![spellController mountSpell:[mountType selectedTag] andFast:YES] ){
 			log(LOG_STARTUP, @"Mounting will fail!");
 			NSBeep();
 			NSRunAlertPanel(@"No valid mount spells found on your action bars!", @"You must have a valid mount spell on ANY action bar in order for 'stay mounted' to function! You may also want to click 'Load All' on the spells tab if you don't see any spells listed under 'Mounts'", @"Okay", NULL, NULL);
 			return;
 		}
-	}
+	}*/
 	
 	// find our key bindings
 	[bindingsController reloadBindings];
@@ -3002,6 +3003,50 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		NSBeep();
 		NSRunAlertPanel(@"Your spells/macros/items need to be on your action bars!", spellError, @"Okay", NULL, NULL);
 		return;
+	}
+	
+	// pvp checks
+	UInt32 zone = [playerController zone];
+	if ( [playerController isInBG:zone] ){
+		
+		// verify we're able to actually do something (otherwise we make the assumption the user selected the correct route!)
+		if ( self.pvpBehavior ){
+			
+			// do we have a BG for this?
+			Battleground *bg = [self.pvpBehavior battlegroundForZone:zone];
+			
+			if ( !bg ){
+				NSString *errorMsg = [NSString stringWithFormat:@"No battleground found for '%@', check your PvP Behavior!", [bg name]];
+				log(LOG_STARTUP, errorMsg);
+				NSBeep();
+				NSRunAlertPanel(@"Unknown error in PvP Behavior", errorMsg, @"Okay", NULL, NULL);
+				return;	
+			}
+			else if ( ![bg routeCollection] ){
+				NSString *errorMsg = [NSString stringWithFormat:@"You must select a valid Route Set in your PvP Behavior for '%@'.", [bg name]];
+				log(LOG_STARTUP, @"No valid route found for BG %d.", zone);
+				NSBeep();
+				NSRunAlertPanel(@"No route set found for this battleground", errorMsg, @"Okay", NULL, NULL);
+				return;
+			}
+		}
+	}
+	
+	// not a valid pvp behavior
+	if ( self.pvpBehavior && ![self.pvpBehavior isValid] ){
+		
+		if ( [self.pvpBehavior random] ){
+			log(LOG_STARTUP, @"You must have all battlegrounds enabled in your PvP behavior to do random!", zone);
+			NSBeep();
+			NSRunAlertPanel(@"Enable all battlegrounds", @"You must have all battlegrounds enabled in your PvP behavior to do random!", @"Okay", NULL, NULL);
+			return;
+		}
+		else{
+			log(LOG_STARTUP, @"You need at least 1 battleground enabled in your PvP behavior to do PvP!", zone);
+			NSBeep();
+			NSRunAlertPanel(@"Enable 1 battleground", @"You need at least 1 battleground enabled in your PvP behavior to do PvP!", @"Okay", NULL, NULL);
+			return;
+		}
 	}
 	
 	// not really sure how this could be possible hmmm
@@ -3153,7 +3198,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// TO DO: stop PvP stuff (i.e. if we're queued, unqueue)
 	if ( self.pvpBehavior ){
-		log (LOG_PVP, " Botting stopped, we need to stop th equeue if it's up");
+		log (LOG_PVP, @" Botting stopped, we need to stop the queue if it's up");
 	}
 	
 	// Then a user clicked!
@@ -5024,8 +5069,29 @@ typedef struct WoWClientDb {
 		NSRunAlertPanel(@"Unable to do random BGs", @"Unable to do random BGs, your behavior doesn't have all BGs enabled with a RouteSet!", @"Okay", NULL, NULL);
 		return;
 	}
-	
+
 	// is the player already in a BG?
+	UInt32 zone = [playerController zone];
+	if ( [playerController isInBG:zone] ){
+		
+		if ( [self pvpSetEnvironmentForZone] ){
+			self.isPvPing = YES;
+			[self pvpStart];
+		}
+		else{
+			log(LOG_PVP, @" should never be here really, but if so, we weren't able to set the PvP environment!");
+		}
+	}
+	// player isn't in a BG, so we need to queue!
+	else{
+		self.isPvPing = YES;
+		[self pvpQueueBattleground];
+	}
+}
+
+// this will set up the pvp environment based on the zone we're in (basically set the RouteSet)
+- (BOOL)pvpSetEnvironmentForZone{
+	
 	UInt32 zone = [playerController zone];
 	if ( [playerController isInBG:zone] ){
 		
@@ -5035,35 +5101,17 @@ typedef struct WoWClientDb {
 			
 			RouteCollection *rc = [bg routeCollection];
 			if ( rc ){
-				log(LOG_STARTUP, @" PvP routes found! Starting bot!");
+				log(LOG_PVP, @" setting PvP route set to %@", rc);
 				self.theRouteSet = [[rc startingRoute] retain];
 				self.theRouteCollection = [rc retain];
-				self.isPvPing = YES;
-				// time to go!
-				[self pvpStart];
+				return YES;
 			}
-			else{
-				NSString *errorMsg = [NSString stringWithFormat:@"You muse select a valid Route Set in your PvP Behavior for '%@'.", [bg name]];
-				log(LOG_STARTUP, @"No valid route found for BG %d.", zone);
-				NSBeep();
-				NSRunAlertPanel(@"No route set found for this battleground", errorMsg, @"Okay", NULL, NULL);
-				return;
-			}
-			
-		}
-		// in theory we should never be here
-		else{
-			log(LOG_STARTUP, @"Unknown error, no BG found for zone id %d.", zone);
-			NSBeep();
-			NSRunAlertPanel(@"Unknown error", @"Unknown error, unable to find a battleground.", @"Okay", NULL, NULL);
-			return;
 		}
 	}
-	// player isn't in a BG, so we need to queue!
-	else{
-		self.isPvPing = YES;
-		[self pvpQueueBattleground];
-	}
+	
+	log(LOG_PVP, @" no pvp route found!");
+	
+	return NO;	
 }
 
 - (void)pvpQueueBattleground{
@@ -5443,10 +5491,6 @@ typedef struct WoWClientDb {
 		 [controller setCurrentStatus: @"PvP: BG has ended, botting stopped."];
 		 }
 		 }*/
-	}
-	
-	if ( !isPlayerInBG && self.isBotting ){
-		log(LOG_GENERAL, @"WE SHOULD NEVER BE HERE! Why are we botting outside of the BG?!?!?!");
 	}
 }
 
