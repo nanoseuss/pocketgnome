@@ -134,7 +134,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 #pragma mark Notifications
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
-    log(LOG_COMBAT, @"------ Player Entering Combat ------");
+    log(LOG_DEV, @"------ Player Entering Combat ------");
 	
 	_inCombat = YES;
 }
@@ -173,17 +173,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_COMBAT, @"Looks like we've corrected the out of range issue.");
 	} else {
 		// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
-		log(LOG_COMBAT, @"Unit is put of range, disengaging.");
+		log(LOG_COMBAT, @"Unit is out of range, disengaging.");
 		self.attackUnit = nil;
-//		[self resetAllCombat];
-//		[botController cancelCurrentProcedure];
 	}
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
-	log(LOG_ERROR, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
-	log(LOG_ERROR, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
-	log(LOG_ERROR, @"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	log(LOG_ERROR, @"[Combat] Target not in front!");
 	[movementController establishPlayerPosition];
 }
 
@@ -842,11 +838,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"%@ Unit not in combat now for %d", [self unitHealthBar: unit], leftCombatCount);
 		leftCombatCount++;
 		
+		// Check to see if we need to inch up
+//		[movementController checkUnitOutOfRange:unit];
+		
 		// If it's our target let's do some checks as we should be in combat
 		if ( unit == _attackUnit ) {
-
-			// not in combat after 5 seconds try moving forward to unbug casting
-			if ( leftCombatCount < 150) {
+			// not in combat after 3 seconds try moving forward to unbug casting
+			if ( leftCombatCount < 150 && leftCombatCount > 30) {
 				// Try Stepping forward in case we're just position bugged for casting
 				if (![playerData isCasting] && ![movementController isMoving] && !_hasStepped) {
 					_hasStepped = YES;
@@ -854,6 +852,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 					[movementController stepForward];
 					[playerData faceToward: [unit position]];
 					usleep([controller refreshDelay]);
+					[movementController stopMovement];
 				}
 			} else 
 
