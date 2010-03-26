@@ -5452,8 +5452,14 @@ typedef struct WoWClientDb {
 			}
 			
 			// Start bot after 5 seconds!
-			log(LOG_GENERAL, @"[PvP] PvP environment valid. Starting bot in 5 seconds...");
+			log(LOG_PVP, @" PvP environment valid. Starting bot in 5 seconds...");
 			[controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
+			
+			// in theory this shouldn't happen as there should be enough error check before we start the bot (although I guess someone could change the PvP behavior while it's running)
+			if ( ![self pvpSetEnvironmentForZone] ){
+				log(LOG_PVP, @" no valid environment found for pvp! Nooo! Starting will fail :(");
+				[controller setCurrentStatus: @"PvP: Unable to start PvP, check log files"];
+			}
 			[self performSelector: @selector(pvpStart) withObject: nil afterDelay: 5.0f];
 		}
 	}
