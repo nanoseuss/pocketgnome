@@ -282,11 +282,11 @@
 - (void)testRule: (Rule*)rule;
 
 - (BOOL)performProcedureMobCheck: (Unit*)target;
+- (void)lootScan;
+- (BOOL)otherPlayersWorkingNode: (WoWObject*)node;
 
 // Input from CombatController
 - (void)addingUnit: (Unit*)unit;
-
-- (void)lootScan;
 
 // Input from CombatController
 - (void)actOnUnit: (Unit*)unit;

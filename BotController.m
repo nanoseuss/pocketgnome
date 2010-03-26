@@ -1533,7 +1533,7 @@ No sure if this was actually helpful, unncommenting to see
 - (void)lootUnit: (WoWObject*) unit{
 
 	// are we still in the air?  shit we can't loot yet!
-	if ( ![playerController isOnGround] ){
+	if ( ![playerController isOnGround] ) {
 
 		// once the macro failed, so dismount if we need to
 		if ( [[playerController player] isMounted] ) [movementController dismount];
@@ -1567,6 +1567,7 @@ No sure if this was actually helpful, unncommenting to see
 		self.lastAttemptedUnitToLoot = unit;
 		
 		if ( [unit isValid] && ( distanceToUnit <= 5.0 ) ) { //	 && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+			if ( [[playerController player] isMounted] ) [movementController dismount];
 			[controller setCurrentStatus: @"Bot: Looting"];
 			log(LOG_LOOT, @"Looting : %@", unit);
 			self.lootStartTime = [NSDate date];
@@ -1719,13 +1720,9 @@ No sure if this was actually helpful, unncommenting to see
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 		
-		// Mount?  Or just evaluate
-//	Took out mounting here as it's handled else where.
-//		log(LOG_DEV, @"Evaluate After skinned");
-//		usleep(500000);
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
-
-//		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
+		log(LOG_DEV, @"Evaluate After skinned");
+// If you are getting hung up on Skin attempts you may need to increase the delay here
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.6f];
 
 	}
 }
@@ -1793,7 +1790,7 @@ No sure if this was actually helpful, unncommenting to see
 		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
 	} else {
-		log(LOG_COMBAT, @"Already in combat procedure! Not acting on unit");
+		log(LOG_DEV, @"Already in combat procedure! Not acting on unit");
 	}
 }
 
@@ -1819,7 +1816,8 @@ No sure if this was actually helpful, unncommenting to see
 	//if(self.theRouteSet) [movementController stopMovement];
 	[movementController resetMoveToObject];
 	
-	log(LOG_COMBAT, @"[Bot] should we evaluate after resetting the unit?");
+	log(LOG_DEV, @"[Bot] should we evaluate after resetting the unit?");
+	[self evaluateSituation];
 }
 
 #pragma mark Combat
@@ -2416,14 +2414,20 @@ No sure if this was actually helpful, unncommenting to see
 
 	[nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
 		
-	if([nodes count]) {
+	if ([nodes count]) {
 		// find a valid node to loot
 		Node *nodeToLoot = nil;
 		float nodeDist = INFINITY;
 		
 		for(nodeToLoot in nodes) {
+
 			if ( ![nodeToLoot validToLoot] ){
-				log(LOG_NODE, @"Node %@ is not valid to loot, ignoring...", nodeToLoot );
+				log(LOG_NODE, @"%@ is not valid to loot, ignoring...", nodeToLoot );
+				continue;
+			}
+			
+			if ( [self otherPlayersWorkingNode: nodeToLoot] ) {
+				log(LOG_NODE, @"%@ has another player working it, ignoring...", nodeToLoot );
 				continue;
 			}
 			
@@ -2437,7 +2441,7 @@ No sure if this was actually helpful, unncommenting to see
 				}
 			}
 			
-			if ( nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot] ){
+			if ( nodeToLoot && [nodeToLoot isValid] && ![blacklistController isBlacklisted:nodeToLoot] ) {
 				nodeDist = [playerPosition distanceToPosition: [nodeToLoot position]];
 				break;
 			}
@@ -4246,25 +4250,31 @@ NSMutableDictionary *_diffDict = nil;
 	[controller killWOW];
 }
 
+- (BOOL)otherPlayersWorkingNode: (WoWObject*)node {
+// Check to see if there are other players working the node
+	if ( [playersController playerWithinRangeOfUnit: 4.0f Unit:(Unit*)node includeFriendly:YES includeHostile:YES] ) return YES;
+	return NO;
+}
+
 // check if units are nearby
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
 	if ( doMobCheck ){
 		log(LOG_GENERAL, @"[Bot] Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
 		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
 		if ( [mobs count] ){
-			log(LOG_GENERAL, @"[Bot] There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);
+			log(LOG_NODE, @"There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);
 			return YES;
 		}
 	}
 	if ( doFriendlyCheck ){
 		if ( [playersController playerWithinRangeOfUnit: _nodeIgnoreFriendlyDistance Unit:(Unit*)node includeFriendly:YES includeHostile:NO] ){
-			log(LOG_GENERAL, @"[Bot] Friendly player(s) near node, ignoring %@", node);
+			log(LOG_NODE, @"Friendly player(s) near node, ignoring %@", node);
 			return YES;
 		}
 	}
-	if ( doHostileCheck ){
+	if ( doHostileCheck ) {
 		if ( [playersController playerWithinRangeOfUnit: _nodeIgnoreHostileDistance Unit:(Unit*)node includeFriendly:NO includeHostile:YES] ){
-			log(LOG_GENERAL, @"[Bot] Hostile player(s) near node, ignoring %@", node);
+			log(LOG_NODE, @"Hostile player(s) near node, ignoring %@", node);
 			return YES;
 		}
 	}
