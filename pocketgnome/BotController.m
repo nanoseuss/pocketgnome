@@ -1438,11 +1438,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				   afterDelay: 0.1f]; 
 		log(LOG_DEV, @"Rule executed, trying for more rules!");
 
+/*
+No sure if this was actually helpful, unncommenting to see
 		// Lets see if we need to go back to the original target 
 		if (originalTarget && originalTarget != target)
 			if ([originalTarget isInCombat] && ![originalTarget isDead] && [playerController isHostileWithFaction: [originalTarget factionTemplate]])
 				[playerController setPrimaryTarget: originalTarget];
-
+*/
+ 
 		return;
 	}
 
@@ -1499,6 +1502,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// only do this for hostiles
 	if (![playerController isHostileWithFaction: [target factionTemplate]]) return YES;
 
+	// Doube check so we don't wast casts
+	if ( [target isDead] ) return NO;
+
 	if ( !self.theBehavior.meleeCombat && [movementController isMoving]) {
 		log(LOG_PROCEDURE, @"Stopping movement to cast on %@.", target);
 		[movementController stopMovement];
@@ -1506,8 +1512,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ([movementController checkUnitOutOfRange:target]) {
 		// Range is good, let's face our target
-		if (![movementController isMoving]) [playerController faceToward: [target position]];
-		usleep([controller refreshDelay]);
+// Causing procs like hotstreak to cast too late?
+//		if (![movementController isMoving]) [playerController faceToward: [target position]];
+//		usleep([controller refreshDelay]);
 		return YES;
 	} else {
 		// They're running and they're nothing we can do so lets bail
