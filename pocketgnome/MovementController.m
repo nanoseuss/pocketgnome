@@ -888,7 +888,7 @@ typedef enum MovementState{
 	float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
 	if ( distanceToTarget <= [botController.theCombatProfile attackRange]) return YES;
 
-	log(LOG_COMBAT, @"%@ has gone out of range: %@", target, distanceToTarget);
+	log(LOG_COMBAT, @"%@ has gone out of range: %0.2f", target, distanceToTarget);
 		
 	// If they're just a lil out of range lets inch up
 	if ( distanceToTarget < ([botController.theCombatProfile attackRange] + 5.0f) && ![self isMoving]) {
@@ -907,12 +907,12 @@ typedef enum MovementState{
 		float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
 
 		if ( distanceToTarget > [botController.theCombatProfile attackRange]) {
-			log(LOG_COMBAT, @"Still out of range: %@, giving up.", target, distanceToTarget);
+			log(LOG_COMBAT, @"Still out of range: %@, giving up.", target);
 			return NO;
 		}
 	}
 	// They're running and they're nothing we can do about it
-	log(LOG_COMBAT, @"Target: %@ has gone out of range: %@", target, distanceToTarget);
+	log(LOG_COMBAT, @"Target: %@ has gone out of range: %0.2f", target, distanceToTarget);
     return NO;
 }
 - (void)resetMovementState{
