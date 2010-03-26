@@ -1479,13 +1479,15 @@ No sure if this was actually helpful, unncommenting to see
 		}
 	}
 	
+/*
+this is handed elsewhere, commenting it out
 	// blacklist unit - it wasn't in combat after 7.5 seconds!
 	if ( inCombatNoAttack >= 75 ){
 		[blacklistController blacklistObject:target];
 		log(LOG_PROCEDURE, @"Unit not in combat after 7.5 seconds, cancelling combat procedure");
 	}
-
-	log(LOG_DEV, @"Done! Finishing!");
+*/
+	log(LOG_DEV, @"Done with Procedure!");
 	[self finishCurrentProcedure: state];
 }
 
