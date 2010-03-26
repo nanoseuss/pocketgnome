@@ -850,6 +850,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				if (![playerData isCasting] && ![movementController isMoving]) {
 					log(LOG_COMBAT, @"%@ stepping forward to try to unbug a bad casting position.", [self unitHealthBar: unit]);
 					[movementController stepForward];
+					[playerData faceToward: [unit position]];
+					usleep([controller refreshDelay]);
 				}
 			} else 
 
