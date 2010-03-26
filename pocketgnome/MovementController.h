@@ -127,6 +127,9 @@ typedef enum MovementType {
 // turn toward the object
 - (void)turnTowardObject:(WoWObject*)obj;
 
+// Unbug a caster
+- (void)stepForward;
+
 // check unit for range adjustments
 - (BOOL)checkUnitOutOfRange: (Unit*)target;
 
