@@ -1211,7 +1211,7 @@ typedef enum MovementState{
 - (void)playerHasRevived:(NSNotification *)aNotification{
 	
 	// do nothing
-	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ){
+	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] && ![botController isPvPing] ){
 		return;
 	}
 	
