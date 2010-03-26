@@ -5180,7 +5180,7 @@ typedef struct WoWClientDb {
 	}
 	// choosing an actual BG
 	else{
-		log(LOG_PVP, " choosing a BG to join, cycling through all available in the pvp behavior");
+		log(LOG_PVP, @" choosing a BG to join, cycling through all available in the pvp behavior");
 		
 		Battleground *bg = nil;
 		
