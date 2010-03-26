@@ -846,11 +846,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ( unit == _attackUnit ) {
 
 			// not in combat after 5 seconds try moving forward to unbug casting
-			if ( leftCombatCount < 150 && leftCombatCount > 50) {
+			if ( leftCombatCount < 150) {
 				// Try Stepping forward in case we're just position bugged for casting
 				if (![playerData isCasting] && ![movementController isMoving] && !_hasStepped) {
 					_hasStepped = YES;
-					log(LOG_COMBAT, @"%@ stepping forward to try to unbug a bad casting position.", [self unitHealthBar: unit]);
+					log(LOG_COMBAT, @"Stepping forward to try to unbug a bad casting position.");
 					[movementController stepForward];
 					[playerData faceToward: [unit position]];
 					usleep([controller refreshDelay]);

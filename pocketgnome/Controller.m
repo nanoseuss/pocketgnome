@@ -835,7 +835,7 @@ typedef struct NameObjectStruct{
     NSString *currentText = [[currentStatusText stringValue] retain];
     [currentStatusText setStringValue: statusMsg];
 
-	if (currentText != statusMsg) log(LOG_CONTROLLER, @"Setting status to: %@", statusMsg);
+	if (currentText != statusMsg) log(LOG_DEV, @"Setting status to: %@", statusMsg);
 
     [_savedStatus release];
     _savedStatus = currentText;
