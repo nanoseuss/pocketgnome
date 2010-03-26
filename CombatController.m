@@ -170,13 +170,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ([movementController checkUnitOutOfRange:_castingUnit]) {
 		// Unit should now be back in range
 		log(LOG_COMBAT, @"Looks like we've corrected the out of range issue.");
-		return;
 	} else {
 		// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
 		log(LOG_COMBAT, @"Unit is put of range, disengaging.");
-		[self resetAllCombat];
-		[botController cancelCurrentProcedure];
-		return;
+		self.attackUnit = nil;
+//		[self resetAllCombat];
+//		[botController cancelCurrentProcedure];
 	}
 }
 
@@ -842,26 +841,25 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"%@ Unit not in combat now for %d", [self unitHealthBar: unit], leftCombatCount);
 		leftCombatCount++;
 		
-		// not in combat after 10 seconds, blacklist?
-	if ( leftCombatCount > 100 ) {
-			if ( unit == _attackUnit ) {
-				// let's disengage instead of blacklist for now
-				// in some cases this will occur when player spells are failing
-// heres a thought, we should count how many attempts as this will cause it to choose a new target
-// if we get the same target so many times in a rown THEN blacklist.
+		// If it's our target let's do some checks as we should be in combat
+		if ( unit == _attackUnit ) {
 
-// lets just try reducing the time limit for this blacklist in abother spot
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
-				self.attackUnit = nil;
-/*
+			// not in combat after 5 seconds try moving forward to unbug casting
+			if ( leftCombatCount < 100 && leftCombatCount > 50) {
+				// Try Stepping forward in case we're just position bugged for casting
+				if (![playerData isCasting] && ![movementController isMoving]) {
+					log(LOG_COMBAT, @"%@ stepping forward to try to unbug a bad casting position.", [self unitHealthBar: unit]);
+					[movementController stepForward];
+				}
+			} else 
+			// not in combat after 10 seconds we blacklist
+			if ( leftCombatCount > 100 ) {
 				log(LOG_COMBAT, @"%@ Unit not in combat after 10 seconds, blacklisting", [self unitHealthBar: unit]);
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
 				self.attackUnit = nil;
-*/
 				return;
 			}
 		}
-		
 		// after a minute stop monitoring
 		if ( leftCombatCount > 600 ){
 			log(LOG_COMBAT, @"%@ No longer monitoring %@, unit didn't enter combat after a minute!", [self unitHealthBar: unit], unit);

@@ -873,7 +873,12 @@ typedef enum MovementState{
 		[self resumeMovement];
 	}
 }
-
+- (void)stepForward{
+// Meant to be used to unstick bad casting spots like when you're facing forward, but getting a 'not facing' error
+	[self moveForwardStart];
+	usleep(10000);
+	[self moveForwardStop];
+}
 - (BOOL)checkUnitOutOfRange: (Unit*)target {
 	// This is intended for issues like runners, a chance to correct vs blacklist
 	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast
