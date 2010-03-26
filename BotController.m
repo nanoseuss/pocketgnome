@@ -1174,7 +1174,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	BOOL matchFound = NO;
 	
 	// priority system for combat
-	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ){
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 		// decision "tree"
 		// if in combat, attack nearby
 		// if not in combat, check for an add
@@ -1210,7 +1210,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 		
-		if ( doCombatProcedure ){
+		if ( doCombatProcedure ) {
 			NSArray *units = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
 			NSArray *adds = [combatController allAdds];
 			for ( i = 0; i < ruleCount; i++ ) {
@@ -1235,6 +1235,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						// do something
 						log(LOG_RULE, @"Match for %@ with target %@", rule, target);
 						matchFound = YES;
+						break;
 					}
 				}
 				
@@ -1244,6 +1245,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						// do something
 						log(LOG_RULE, @"Match for %@", rule);
 						matchFound = YES;
+						break;
 					}
 				}
 				
@@ -1271,14 +1273,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						// do something
 						log(LOG_RULE, @"Pet match for %@", rule);
 						matchFound = YES;
+						break;
 					}
 				}
-				
-				// TO DO: we need pet in here?
-				
+
+				// If we don't have a target by this point we should try our combat target
+				else if ([combatController castingUnit]) {
+					target = [combatController castingUnit];
+					matchFound = YES;
+					break;
+				}
+
 				// loop through all units
 				else{
-					
+					 
 					//Unit *notInCombatUnit = nil;
 					for ( target in units ){
 						
@@ -1300,7 +1308,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 					}
 				}
-				
+
 				if ( matchFound ) break;
 			}
 		}
@@ -1322,7 +1330,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 		
 	// take the action here
-	if ( matchFound && rule ){
+	if ( matchFound && rule ) {
 		
 		log(LOG_PROCEDURE, @"Proceeding on %@ with rule %@", target, rule );
 
@@ -1425,13 +1433,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				   afterDelay: 0.1f]; 
 		log(LOG_DEV, @"Rule executed, trying for more rules!");
 
-/*
-No sure if this was actually helpful, unncommenting to see
 		// Lets see if we need to go back to the original target 
 		if (originalTarget && originalTarget != target)
-			if ([originalTarget isInCombat] && ![originalTarget isDead] && [playerController isHostileWithFaction: [originalTarget factionTemplate]])
-				[playerController setPrimaryTarget: originalTarget];
-*/
+			if ([originalTarget isInCombat] && 
+				[playerController isInCombat] &&
+				![originalTarget isDead] && 
+				[playerController isHostileWithFaction: [originalTarget factionTemplate]])
+					[playerController setPrimaryTarget: originalTarget];
  
 		return;
 	}
@@ -3047,9 +3055,11 @@ No sure if this was actually helpful, unncommenting to see
 //		if ( [playerController isDead] && ![playerController isGhost] ) [self rePop:[NSNumber numberWithInt:0]];
 //			else [movementController resumeMovement];
 	
-		[controller setCurrentStatus: @"Bot: Enabled"];
-		log(LOG_STARTUP, @" StartBot");
-				
+		log(LOG_DEV, @" StartBot");
+
+		if ( [playerController isDead])	[controller setCurrentStatus: @"Bot: Player is Dead"];
+			else [controller setCurrentStatus: @"Bot: Enabled"];
+		
 		[self evaluateSituation];
     }
 }
@@ -3287,6 +3297,8 @@ NSMutableDictionary *_diffDict = nil;
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
 
+/*
+ // Lets skip this here n let evaluation handle it as we never know what sort of situation we're going to spawn into.
     _reviveAttempt = 0;
     // perform post combat
     [self performSelector: @selector(performProcedureWithState:) 
@@ -3294,6 +3306,7 @@ NSMutableDictionary *_diffDict = nil;
 			    PostCombatProcedure,	      @"Procedure",
 			    [NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
 	       afterDelay: 1.0];
+*/
 }
 
 - (void)playerHasDied: (NSNotification*)notification {    

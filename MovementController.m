@@ -886,14 +886,13 @@ typedef enum MovementState{
 
 	// If the mob is in our attack range return true
 	float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
-	if ( distanceToTarget <= botController.theCombatProfile.attackRange) return YES;
+	if ( distanceToTarget <= [botController.theCombatProfile attackRange]) return YES;
 
-	log(LOG_MOVEMENT, @"%@ has gone out of range: %@", target, distanceToTarget);
+	log(LOG_COMBAT, @"%@ has gone out of range: %@", target, distanceToTarget);
 		
 	// If they're just a lil out of range lets inch up
-	float moveForwardRange = 5.0;
-	if ( distanceToTarget < (botController.theCombatProfile.attackRange + moveForwardRange) && ![self isMoving]) {
-		log(LOG_MOVEMENT, @"Unit is still close, inching forward.");
+	if ( distanceToTarget < ([botController.theCombatProfile attackRange] + 5.0f) && ![self isMoving]) {
+		log(LOG_COMBAT, @"Unit is still close, inching forward.");
 		// Face the target
 		[playerData faceToward: [target position]];
 		usleep([controller refreshDelay]);
@@ -906,13 +905,14 @@ typedef enum MovementState{
 		// Now check again to see if they're in range
         usleep(100000);
 		float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
-		if ( distanceToTarget > botController.theCombatProfile.attackRange) {
-			log(LOG_MOVEMENT, @"Still out of range: %@, giving up.", target, distanceToTarget);
+
+		if ( distanceToTarget > [botController.theCombatProfile attackRange]) {
+			log(LOG_COMBAT, @"Still out of range: %@, giving up.", target, distanceToTarget);
 			return NO;
 		}
 	}
 	// They're running and they're nothing we can do about it
-	log(LOG_MOVEMENT, @"Target: %@ has gone out of range: %@", target, distanceToTarget);
+	log(LOG_COMBAT, @"Target: %@ has gone out of range: %@", target, distanceToTarget);
     return NO;
 }
 - (void)resetMovementState{
