@@ -55,6 +55,7 @@
 		_enteredCombat = nil;
 		
 		_inCombat = NO;
+		_hasStepped = NO;
 		
 		_unitsAttackingMe = [[NSMutableArray array] retain];
 		_unitsAllCombat = [[NSMutableArray array] retain];
@@ -847,7 +848,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			// not in combat after 5 seconds try moving forward to unbug casting
 			if ( leftCombatCount < 150 && leftCombatCount > 50) {
 				// Try Stepping forward in case we're just position bugged for casting
-				if (![playerData isCasting] && ![movementController isMoving]) {
+				if (![playerData isCasting] && ![movementController isMoving] && !_hasStepped) {
+					_hasStepped = YES;
 					log(LOG_COMBAT, @"%@ stepping forward to try to unbug a bad casting position.", [self unitHealthBar: unit]);
 					[movementController stepForward];
 					[playerData faceToward: [unit position]];
@@ -857,6 +859,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 			// not in combat after 15 seconds we blacklist for the short term, long enough to target something else or move
 			if ( leftCombatCount > 150 ) {
+				_hasStepped = NO;
 				log(LOG_COMBAT, @"%@ Unit not in combat after 15 seconds, temp blacklisting", [self unitHealthBar: unit]);
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter15];
 				self.attackUnit = nil;
@@ -864,6 +867,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 			// not in combat after 25 seconds we blacklist for real
 			if ( leftCombatCount > 250 ) {
+				_hasStepped = NO;
 				log(LOG_COMBAT, @"%@ Unit not in combat after 25 seconds, seriously blacklisting", [self unitHealthBar: unit]);
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter25];
 				self.attackUnit = nil;
@@ -871,6 +875,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 		// after a minute stop monitoring
 		if ( leftCombatCount > 600 ){
+			_hasStepped = NO;
 			log(LOG_COMBAT, @"%@ No longer monitoring %@, unit didn't enter combat after a minute!", [self unitHealthBar: unit], unit);
 			return;
 		}

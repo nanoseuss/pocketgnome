@@ -199,7 +199,6 @@
 	_procedureInProgress = nil;
 	_lastProcedureExecuted = nil;
 	_didPreCombatProcedure = NO;
-	_doRegenProcedure = 0;
 	_lastSpellCastGameTime = 0;
 	self.startDate = nil;
 	_unitToLoot = nil;
@@ -1056,23 +1055,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self evaluateSituation];
 		return;
     }
-    
-	
-    // when we finish PostCombat, run regen
+
+	// when we finish PostCombat, go back to evaluation
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
-		
-		if ( [playerController isInCombat] ){
-			log(LOG_DEV, @"Still in combat, waiting for regen!");
-			_doRegenProcedure = 1;
-			[self evaluateSituation];
-		} else {
-			log(LOG_DEV, @"[Procedure] Not in combat, running regen..");
-			[self executeRegen: ([[state objectForKey: @"ActionsPerformed"] intValue] > 0)];
-		}
+		log(LOG_DEV, @"[Eval] After PostCombat");
+		[self evaluateSituation];
 		return;
-    }
-    
-    // if we did any regen, wait 30 seconds before re-evaluating the situation
+	}
+
     if ( [[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure] ) {
 		if ( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
 			log(LOG_REGEN, @"Starting regen!");
@@ -1083,7 +1073,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self evaluateSituation];
 		}
 	}
-    
+
     // if we did the Patrolling procdure, go back to evaluate
     if([[state objectForKey: @"Procedure"] isEqualToString: PatrollingProcedure]) [self evaluateSituation];
 	
@@ -1108,9 +1098,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self cancelCurrentProcedure];
 		log(LOG_PROCEDURE, @"Cancelling a previous procedure to begin %@.", [state objectForKey: @"Procedure"]);
     }
-	
-	// reset
-	_doRegenProcedure = 0;
 	
     if (![self procedureInProgress]) {
 		[self setProcedureInProgress: [state objectForKey: @"Procedure"]];
@@ -2052,17 +2039,6 @@ No sure if this was actually helpful, unncommenting to see
 
 #pragma mark -
 
-- (void)executeRegen: (BOOL)delay{
-	float regenDelay = 0.0f;
-	if ( delay ) regenDelay = 1.5f;
-	
-	[self performSelector: @selector(performProcedureWithState:) 
-			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-							RegenProcedure,			  @"Procedure",
-							[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
-			   afterDelay: regenDelay];
-}
-
 - (void)monitorRegen: (NSDate*)start{
 	
 	if ( [playerController isInCombat] ){
@@ -2328,28 +2304,46 @@ No sure if this was actually helpful, unncommenting to see
 -(BOOL) evaluateForRegen {
 	// If we're mounted and in the air don't attempt to regen
 	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
-	
-	// the flag must be set for us to attempt regen
-	if ( _doRegenProcedure == 0 ) return NO;
 
-	_doRegenProcedure++;
-	log(LOG_REGEN, @"Trying to execute regen procedure %d", _doRegenProcedure);
-	
-	// only try this a few times
-	if ( _doRegenProcedure < 10 ) {
-		if ( [playerController isInCombat] ) {
-			log(LOG_REGEN, @"Still in combat, waiting to execute regen, trying again in 0.1 seconds");
-			[self performSelector:_cmd withObject:nil afterDelay:0.1f];
-			return YES;
+	// See if we need to perform this
+	BOOL performRegen = NO;
+	for(Rule* rule in [[self.theBehavior procedureForKey: RegenProcedure] rules]) {
+		if( ([rule resultType] != ActionType_None) && ([rule actionID] > 0) && [self evaluateRule: rule withTarget: nil asTest: NO] ) {
+			performRegen = YES;
+			break;
 		}
-		_doRegenProcedure = 0;
-		[self executeRegen:NO];
-		return YES;
-	} else {
-		_doRegenProcedure = 0;
-		log(LOG_REGEN, @"Ignoring regen procedure, evaluating.");
-		return NO;
 	}
+	
+	if (!performRegen) return NO;
+	
+	if ( [playerController isInCombat] ) {
+		log(LOG_DEV, @"Still in combat, waiting for regen!");
+		return YES;
+	}
+
+	// check if all used abilities are instant
+	BOOL needToPause = NO;
+	for(Rule* rule in [[self.theBehavior procedureForKey: RegenProcedure] rules]) {
+		if( ([rule resultType] == ActionType_Spell)) {
+			Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [rule actionID]]];
+			if ([spell isInstant]) continue;
+		}
+		if([rule resultType] == ActionType_None) continue;
+		needToPause = YES; 
+		break;
+	}
+	
+	// only pause if we are performing something non instant
+	if (needToPause) [movementController stopMovement];
+	
+	[self performSelector: @selector(performProcedureWithState:) 
+			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+							RegenProcedure,		  @"Procedure",
+							[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
+			   afterDelay: (needToPause ? 0.25 : 0.0)];
+
+	if (needToPause) return YES;
+
 	return NO;
 }
 
@@ -2983,8 +2977,6 @@ No sure if this was actually helpful, unncommenting to see
 	// not really sure how this could be possible hmmm
     if( [self isBotting]) [self stopBot: nil];
     
-	// Make sure we check regen when we evaluate
-		_doRegenProcedure = 1;
 
     if ( self.theCombatProfile && self.theBehavior ) {
 		log(LOG_STARTUP, @"Starting...");
@@ -3298,8 +3290,6 @@ NSMutableDictionary *_diffDict = nil;
 			    PostCombatProcedure,	      @"Procedure",
 			    [NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
 	       afterDelay: 1.0];
-	// Set the flag so we do regen
-	_doRegenProcedure = 1;
 }
 
 - (void)playerHasDied: (NSNotification*)notification {    
