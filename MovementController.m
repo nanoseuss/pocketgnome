@@ -322,16 +322,9 @@ typedef enum MovementState{
 		// we need to backtrack (we probably chased down a unit or something)
 		if ( [_backtrack count] ){
 			log(LOG_MOVEMENT, @"Backtracking to our route!");
-		}
+		} else
 		// previous waypoint to move to
-		else if ( self.destinationWaypoint ){
-			
-			// check for patrol procedure before we move (thanks slipknot)
-			if ( ![botController performPatrolProcedure] ) {
-				log(LOG_MOVEMENT, @"Performing patrol procedure before resuming.");
-				return;
-			}
-			
+		if ( self.destinationWaypoint ){
 			log(LOG_MOVEMENT, @"Moving to WP: %@", self.destinationWaypoint);
 			[self moveToPosition:[self.destinationWaypoint position]];
 		}
@@ -382,12 +375,14 @@ typedef enum MovementState{
 				log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
 				self.destinationWaypoint = newWP;
 				
+/*
+ handled in evaluation now
 				// check for patrol procedure before we move (thanks slipknot)
 				if ( ![botController performPatrolProcedure] ){
 					log(LOG_MOVEMENT, @"Performing patrol procedure before resuming.");
 					return;
 				}
-				
+*/
 				[self moveToPosition:[newWP position]];
 			}
 			else{
@@ -656,10 +651,9 @@ typedef enum MovementState{
 			
 			BOOL continueRoute = YES;
 			
-			// we could be told to move by a UI click, so make sure we're botting to perform a patrol proc
-			if ( ![botController isBotting] || ![botController performPatrolProcedure] ){
+			if ( ![botController isBotting] ){
 				continueRoute = NO;
-				log(LOG_MOVEMENT, @"Not continuing route! We have to do something or we're not botting anymore!");
+				log(LOG_MOVEMENT, @"Not continuing route! We're not botting anymore!");
 			}
 			
 			if ( continueRoute ){
