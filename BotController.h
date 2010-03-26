@@ -166,16 +166,13 @@
     // pvp shit
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
-    int _pvpCheckCount;
-    IBOutlet NSButton *pvpStartStopButton;
-    IBOutlet NSPanel *pvpBMSelectPanel;
-    IBOutlet NSImageView *pvpBannerImage;
-    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox, *pvpWaitForPreparationBuff;
+    int _pvpAntiAFKCounter;
+    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
-	int _pvpMarks;
 	BOOL _attackingInStrand;
 	BOOL _strandDelay;
+	int _pvpLastBattleground;
 	
 	// auto join WG options
 	NSTimer *_wgTimer;
@@ -323,11 +320,6 @@
 - (IBAction)closeLootHotkeyHelp: (id)sender;
 - (IBAction)gatheringLootingOptions: (id)sender;
 - (IBAction)gatheringLootingSelectAction: (id)sender;
-
-// PvP shit
-- (IBAction)pvpStartStop: (id)sender;
-- (IBAction)pvpBMSelectAction: (id)sender;
-- (IBAction)pvpTestWarning: (id)sender;
 
 // test stuff
 - (IBAction)test: (id)sender;

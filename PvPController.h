@@ -12,6 +12,7 @@
 @class WaypointController;
 
 @class PvPBehavior;
+@class RouteSet;
 
 @interface PvPController : SaveData {
 	

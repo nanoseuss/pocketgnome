@@ -113,5 +113,14 @@
 	//PGLog(@"%@ set to %d", self, changed);
 }
 
+#pragma mark -
+
+- (BOOL)isValid{
+	if ( self.routeCollection ){
+		return YES;
+	}
+	return NO;
+}
+
 @end
 
