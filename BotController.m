@@ -1622,9 +1622,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// If we do skinning and it may become skinnable
 			else if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
-				delayTime = 0.7;				// if it's missing mobs that it should have skinned then increase this
+				delayTime = 0.8;				// if it's missing mobs that it should have skinned then increase this
 
-			if (isNode) delayTime = 0.7; // if it's trying on nodes it just hit increase this
+			if (isNode) delayTime = 0.8; // if it's trying on nodes it just hit increase this
 
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
 		} else {
@@ -1663,6 +1663,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// is it a mob?
 		if ( [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC] ) log(LOG_DEV, @"Is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
+	} else {
+		log(LOG_DEV, @"verifyLootSuccess was called, but there was no mob luted.");
+		// Return to evaluate since our luting was bugged r we attempted to relute
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	}
 }
 
@@ -1767,14 +1771,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.lastAttemptedUnitToLoot = nil;
 		
 		log(LOG_DEV, @"Evaluate After skinned");
-		float delayTime = 0.3;
+		float delayTime = 0.1;
 
-		// If you are getting hung trying to skin a disappeared corse you may need to increase the delay here
-		if (_doSkinning) delayTime = 0.7;
+		// If you are trying to skin a disappeared corse you may need to increase the delay here
+		if (_doSkinning) delayTime = 0.3;
 
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delayTime];
-
 	}
+
+	if ( ![playerController isCasting] ) [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 }
 
 // It actually takes 1.2 - 2.0 seconds for [mob isSkinnable] to change to the correct status, this makes me very sad as a human, seconds wasted!
