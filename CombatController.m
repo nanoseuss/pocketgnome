@@ -488,7 +488,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// add friendly units w/in range
 	// only do this if we dont have the onlyHostilesInCombat flag
 	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) && !onlyHostilesInCombat) {
-		log(LOG_COMBAT, @"Adding friendlies to the list of valid units");
+		log(LOG_DEV, @"Adding friendlies to the list of valid units");
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
 	

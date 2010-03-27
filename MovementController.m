@@ -521,12 +521,15 @@ typedef enum MovementState{
     }
 	
 	// no object, no actions, just trying to move to the next WP!
-	if ( !_moveToObject && ![_destinationWaypoint actions] && distance < [playerData speedMax] / 2.0f ){
-		log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
-        [self moveToNextWaypoint];
-        return;
+	// dont try this if we're in party follow mode
+	if (![[controller currentStatus] isEqualToString: @"Bot: Following"]) {
+		if ( !_moveToObject && ![_destinationWaypoint actions] && distance < [playerData speedMax] / 2.0f ){
+			log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
+			[self moveToNextWaypoint];
+			return;
+		}
 	}
-	
+
 	// we're moving to a new position!
 	if ( ![_lastAttemptedPosition isEqual:position] ) {
 		log(LOG_MOVEMENT, @"Moving to a new position! From %@ to %@ Timer will expire in %0.2f", _lastPlayerPosition, position, (distance/[playerData speedMax]) + 4.0);
@@ -593,7 +596,10 @@ typedef enum MovementState{
         log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
 		
 		[self resetMovementTimer];
-
+		if ([[controller currentStatus] isEqualToString: @"Bot: Following"]) {
+			[controller setCurrentStatus: @"Bot: Endabled"];
+			[botController evaluateSituation];
+		}
 		// do something here
         return;
     }

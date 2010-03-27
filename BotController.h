@@ -127,6 +127,7 @@
 	BOOL _shouldFollow;
 	Unit *_lastUnitAttemptedToHealed;
 	BOOL _includeFriendly;
+	BOOL _includeFriendlyPatrol;
 	
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;

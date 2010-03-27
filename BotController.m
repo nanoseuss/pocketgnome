@@ -219,6 +219,7 @@
 	_strandDelay = NO;
 	_jumpAttempt = 0;
 	_includeFriendly = NO;
+	_includeFriendlyPatrol = NO;
 	_lastSpellCast = 0;
 	_mountAttempt = 0;
 	_movingTowardMobCount = 0;
@@ -368,12 +369,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// target checks
 	if ( [rule target] != TargetNone ){
 		if ( ([rule target] == TargetFriend || [rule target] == TargetPet ) && ![playerController isFriendlyWithFaction: [target factionTemplate]] ){
-			log(LOG_DEV, @"[Rule] Target isn't friendly! Bailing!");
+//			log(LOG_DEV, @"[Rule] %@ isn't friendly! Bailing!", target);
 			return NO;
 		}
 		
 		if ( ([rule target] == TargetEnemy || [rule target] == TargetAdd) && [playerController isFriendlyWithFaction: [target factionTemplate]] ){
-			log(LOG_DEV, @"[Rule] Target isn't an enemy! Bailing!");
+//			log(LOG_DEV, @"[Rule] @% isn't an enemy! Bailing!", target);
 			return NO;
 		}
 		
@@ -1092,6 +1093,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)performProcedureWithState: (NSDictionary*)state {
+	log(LOG_DEV, @"performProcedureWithState called");
+
 	// player dead?
 	if ( [playerController isDead] ) {
 		log(LOG_PROCEDURE, @"Player is dead! Aborting!");
@@ -1109,12 +1112,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self setProcedureInProgress: [state objectForKey: @"Procedure"]];
 		log(LOG_DEV, @"No Procedure in progress, setting it to: %@", self.procedureInProgress);	
 		if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])	
-				[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
-			else if( [[self procedureInProgress] isEqualToString: PostCombatProcedure]) 
-				[controller setCurrentStatus: @"Bot: Post-Combat Phase"];
-			else if( [[self procedureInProgress] isEqualToString: RegenProcedure])
-				[controller setCurrentStatus: @"Bot: Regen Phase"];
+			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])	[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
+			else if( [[self procedureInProgress] isEqualToString: PostCombatProcedure]) [controller setCurrentStatus: @"Bot: Post-Combat Phase"];
+			else if( [[self procedureInProgress] isEqualToString: RegenProcedure]) [controller setCurrentStatus: @"Bot: Regen Phase"];
+			else if( [[self procedureInProgress] isEqualToString: PatrollingProcedure]) [controller setCurrentStatus: @"Bot: Patrolling Phase"];
 		}
     }
 	
@@ -1302,11 +1303,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 
 				// If we don't have a target by this point we should try our combat target
-				else if ([combatController castingUnit] && 
-							[[combatController castingUnit] isValid] && 
-							![[combatController castingUnit] isDead] &&
-							[self evaluateRule: rule withTarget: [combatController castingUnit] asTest: NO]
-						 ) {
+//				else if ( [rule target] == TargetEnemy &&
+				else if ( [combatController castingUnit] &&
+						[[combatController castingUnit] isValid] && 
+						![[combatController castingUnit] isDead] &&
+						[self evaluateRule: rule withTarget: [combatController castingUnit] asTest: NO]
+					) {
 					target = [combatController castingUnit];
 					matchFound = YES;
 					break;
@@ -1344,7 +1346,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// old-school for non-combat (just goes in order)
 	else {
 		
-		log(LOG_DEV, @"Starting search at rule %d", completed);
+		log(LOG_DEV, @"Non combat search");
 		for ( i = completed; i < ruleCount; i++) {
 			rule = [procedure ruleAtIndex: i];
 			
@@ -1353,17 +1355,36 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				matchFound = YES;
 				break;
 			}
+			
+			// Check For Friendlies in Patrolling
+			
+			if ([rule target] == TargetFriend && _includeFriendlyPatrol &&  [[self procedureInProgress] isEqualToString: PatrollingProcedure]) {
+				NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
+				for ( target in units ) {
+					if (![playerController isFriendlyWithFaction: [target factionTemplate]] ) continue;
+					if ( [self evaluateRule: rule withTarget: target asTest: NO] ) {
+						log(LOG_DEV, @"Found match for patrolling with rule %@", rule);
+						matchFound = YES;
+						break;
+					}
+				}
+				if ( matchFound ) break;
+			}
 		}
 		completed = i;
 	}
 	
 	// take the action here
 	if ( matchFound && rule ) {
-		
-		log(LOG_PROCEDURE, @"%@ %@ doing %@", [combatController unitHealthBar:target], target, rule );
-		
+	
+		if ( [rule target] != TargetNone ) {
+			log(LOG_PROCEDURE, @"%@ %@ doing %@", [combatController unitHealthBar:target], target, rule );
+		} else {
+			log(LOG_PROCEDURE, @"Doing %@", rule );
+		}
+			
 		// target if needed!
-		if ( [[self procedureInProgress] isEqualToString: CombatProcedure])
+		if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [rule target] != TargetNone)
 			[combatController stayWithUnit:target withType:[rule target]];
 		
 		// send in pet if needed
@@ -1614,13 +1635,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self interactWithMouseoverGUID: [unit GUID]];
 			
 			// normal lute delay
-			float delayTime = 0.3;
+			float delayTime = 0.5;
 			
 			// If we do skinning and it may become skinnable
 			if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
-				delayTime = 1.0;				// if it's missing mobs that it should have skinned then increase this
+				delayTime = 1.5;				// if it's missing mobs that it should have skinned then increase this
 
-			if (isNode) delayTime = 1.0; // if it's trying on nodes it just hit increase this
+			if (isNode) delayTime = 1.5; // if it's trying on nodes it just hit increase this
 
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
 		} else {
@@ -1899,6 +1920,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
+- (BOOL)includeFriendlyInPatrol {	
+	// should we include friendly units?
+	
+	// if we have friendly spells in our Patrol Behavior lets return true
+	Procedure *procedure = [self.theBehavior procedureForKey: PatrollingProcedure];
+    int i;
+    for ( i = 0; i < [procedure ruleCount]; i++ ) {
+		Rule *rule = [procedure ruleAtIndex: i];
+		if ( [rule target] == TargetFriend ) return YES;
+	}
+	return NO;
+}
+
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit{	
 	Procedure *procedure = [self.theBehavior procedureForKey: CombatProcedure];
     int ruleCount = [procedure ruleCount];
@@ -2144,6 +2178,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForPVP {
 	if ( !self.isPvPing ) return NO;
 	
+	log(LOG_DEV, @"Evaluate for PvP");
+
 	// Check for preparation buff
 	/*if ( self.isPvPing && [pvpWaitForPreparationBuff state] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
 		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
@@ -2183,6 +2219,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 -(BOOL)evaluateForGhost {
 	if ( ![playerController isGhost]) return NO;
+
+	log(LOG_DEV, @"Evaluate for Ghost");
+
 	Position *playerPosition = [playerController position];
 	if( [playerController corpsePosition] && [playerPosition distanceToPosition: [playerController corpsePosition]] < 26.0 ) {
 		// we found our corpse
@@ -2217,9 +2256,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForPartyFollow {
-	if ( !theCombatProfile.partyEnabled || !theCombatProfile.followUnit || !theCombatProfile.followUnitGUID > 0x0 ) return NO;
+	if ( !theCombatProfile.partyEnabled || 
+		!theCombatProfile.followUnit || 
+		!theCombatProfile.followUnitGUID > 0x0 ) return NO;
 	// auto-queue button name: LFDDungeonReadyDialogueEnterDungeonButton
+
+	if ( [playerController isCasting] )return NO;
+
+	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
+		log(LOG_DEV, @"Skipping party follow since we're looting.");
+		return NO;
+	}
 	
+	log(LOG_DEV, @"Evaluate for Party Follow");
+
 	Player *followTarget = [playersController playerWithGUID:theCombatProfile.followUnitGUID];
 	
 	if ( !followTarget || ![followTarget isValid] ) {
@@ -2228,7 +2278,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// mount
-	if ( theCombatProfile.mountEnabled && [followTarget isMounted] && ![[playerController player] isMounted] && ![playerController isCasting] && ![[playerController player] isSwimming] && ![playerController isInCombat] ){
+	if ( theCombatProfile.mountEnabled && [followTarget isMounted] && ![[playerController player] isMounted] && ![[playerController player] isSwimming] && ![playerController isInCombat] ){
 		int theMountType = 1;	// ground
 		if ( ![followTarget isOnGround] ) theMountType = 2;		// air
 		Spell *mount = [spellController mountSpell:theMountType andFast:YES];
@@ -2244,7 +2294,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				// I see the log entry here, but where does the mount loading happen?  Is this is stuff that needs removed?
 				log(LOG_PARTY, @"[Follow] Attempting to load mounts... ????");
 			}
-			return NO;
+		 return NO;
 		}
 	}
 	
@@ -2252,19 +2302,47 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Position *playerPosition = [[playerController player] position];
 	float range = [playerPosition distanceToPosition: [followTarget position]];
 	
-	if ( range >= theCombatProfile.followDistanceToMove ) {
-		log(LOG_PARTY, @"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
-		if ( ![playerController isCasting] ) [movementController followObject: followTarget];
-		// Check our position again shortly!
-		[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
-		return YES;
+	// If we're on the ground and the leader isn't mounted then dismount
+	if ( range <= theCombatProfile.followDistanceToMove && 
+		![followTarget isMounted] && 
+		[[playerController player] isMounted] && 
+		[[playerController player] isOnGround] 
+		) {
+		[movementController dismount];
+		return NO;
 	}
-	return NO;
+
+	// If we're technically in the air, but still close to the dismoutned leader, dismount
+	if ( range < 10.0f && 
+		![followTarget isMounted] && 
+		[[playerController player] isMounted] 
+		) {
+		[movementController dismount];
+		return NO;
+	}
+	
+	if (range == INFINITY) {
+		log(LOG_PARTY, @"[Follow] Unit is out of range!");
+		return NO;
+	}
+
+	if ( range <= theCombatProfile.followDistanceToMove ) return NO;
+
+	[controller setCurrentStatus: @"Bot: Following"];
+	log(LOG_PARTY, @"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
+	[movementController followObject: followTarget];
+
+	// Check our position again shortly!
+	[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
+
+	return YES;
 }
 
 - (BOOL)evaluateForCombatContinuation {
     if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
-	
+
+	log(LOG_DEV, @"Evaluate for Combat Continuation");
+
 	// Let's try just usin the player controller to match n see if this gives any better results
     if (![playerController isInCombat] && !theCombatProfile.partyEnabled) {
 		// If we're actually not in combat and not in a party lets reset the combat table as there is no combat 'contination'
@@ -2286,6 +2364,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForCombatStart {
+	
 	// Don't look for new combat if we're fishin
 	if ( [fishController isFishing] && !theCombatProfile.partyEnabled) return NO;
 
@@ -2294,6 +2373,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 	
+	log(LOG_DEV, @"Evaluate for Combat Start");
+
 	// If we're supposed to ignore combat while flying lets return false
 	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
 	
@@ -2376,6 +2457,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Don't try if we're fishin
 	if ( [fishController isFishing] ) return NO;
 
+	log(LOG_DEV, @"Evaluate for Regen");
+
 	// See if we need to perform this
 	BOOL performRegen = NO;
 	for(Rule* rule in [[self.theBehavior procedureForKey: RegenProcedure] rules]) {
@@ -2425,6 +2508,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if (!self.doLooting) return NO;
 	
+	log(LOG_DEV, @"Evaluate for Loot");
+
     // get potential units and their distances
     Mob *mobToLoot	= [self mobToLoot];
     if ( !mobToLoot ) return NO;
@@ -2485,6 +2570,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Don't try if we're fishin
 	if ( [fishController isFishing] ) return NO;
+
+	log(LOG_DEV, @"Evaluate for Mining and Herbalism");
 
 	Position *playerPosition = [playerController position];
     if ([movementController moveToObject]) return NO;
@@ -2644,12 +2731,38 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're already mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
 
+	log(LOG_DEV, @"Evaluate for Patrol");
+
 	// see if we would be performing anything in the patrol procedure
 	BOOL performPatrolProc = NO;
+	Rule *ruleToCheck;
 	for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
 		if( ([rule resultType] != ActionType_None) && ([rule actionID] > 0) && [self evaluateRule: rule withTarget: nil asTest: NO] ) {
+			ruleToCheck = rule;
 			performPatrolProc = YES;
 			break;
+		}
+	}
+	
+// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
+	if ( !performPatrolProc && _includeFriendlyPatrol) {
+		NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
+		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
+			if ([rule target] != TargetFriend ) continue;			
+			log(LOG_RULE, @"Evaluating rule %@", rule);
+
+			//Let go through the friendly targets
+			Unit *target = nil;
+			for ( target in units ) {
+				if (![playerController isFriendlyWithFaction: [target factionTemplate]] ) continue;
+				if ( [self evaluateRule: rule withTarget: target asTest: NO] ) {
+					// do something
+					log(LOG_RULE, @"Match for %@ with %@", rule, target);
+					ruleToCheck = rule;
+					performPatrolProc = YES;
+					break;
+				}
+			}
 		}
 	}
 
@@ -2660,27 +2773,25 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// check if all used abilities are instant
 	BOOL needToPause = NO;
-	for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
-		if( ([rule resultType] == ActionType_Spell)) {
-			Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [rule actionID]]];
-			if ([spell isInstant]) continue;
-		}
-		if([rule resultType] == ActionType_None) continue;
-		needToPause = YES; 
-		break;
-	}
+		if( ([ruleToCheck resultType] == ActionType_Spell)) {
+			Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [ruleToCheck actionID]]];
+			if (![spell isInstant]) needToPause = YES;
+		} else
+		if ([ruleToCheck resultType] != ActionType_None) needToPause = YES; 
 		
 	// only pause if we are performing something non instant
-	if (needToPause) [movementController stopMovement];
+	if (needToPause && [movementController isMoving]) [movementController stopMovement];
+	log(LOG_DEV, @"Patrol now calling for performProcedurewithState");
 
 	[self performSelector: @selector(performProcedureWithState:) 
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 							PatrollingProcedure,		  @"Procedure",
 							[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
-			   afterDelay: (needToPause ? 0.5 : 0.0)];	// Havin a problem with mounts not completing so I'm increasing this
-	if (needToPause) return YES;
+			   afterDelay: (needToPause ? 0.6 : 0.1)];	// Havin a problem with mounts not completing so I'm increasing this
 
-	return NO;
+//	if (needToPause) return YES;
+
+	return YES;
 }
 
 - (BOOL)evaluateSituation {
@@ -3154,6 +3265,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// friendly shit
 		_includeFriendly = [self includeFriendlyInCombat];
+		_includeFriendlyPatrol = [self includeFriendlyInPatrol];
 		
 		// reset statistics
 		[statisticsController resetQuestMobCount];
@@ -3222,6 +3334,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self evaluateSituation];
 		}
 
+		// Running in a mode with no route selected
+		else {
+			[self evaluateSituation];
+		}
 		log(LOG_DEV, @" StartBot");
 
 		if ( [playerController isDead])	[controller setCurrentStatus: @"Bot: Player is Dead"];
