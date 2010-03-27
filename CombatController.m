@@ -454,7 +454,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)cancelAllCombat{
 	
-	log(LOG_COMBAT, @"[Combat] All combat cancelled");
+	log(LOG_DEV, @"All combat cancelled");
 	
 	// cancel selecting the unit!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
@@ -955,7 +955,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 		// remove unit
 		else if ( [_unitsAttackingMe containsObject:(Unit*)mob] ) {
-			log(LOG_COMBAT, @"[Combat] Removing mob %@", mob);
+			log(LOG_DEV, @"Removing mob %@", mob);
 			[_unitsAttackingMe removeObject:(Unit*)mob];
 		}
 	}

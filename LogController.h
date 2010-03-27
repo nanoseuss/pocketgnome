@@ -44,6 +44,7 @@
 #define LOG_MOUNT					"mount"
 #define LOG_CONTROLLER				"controller"
 #define LOG_STATISTICS				"statistics"
+#define LOG_BINDINGS				"bindings"
 
 
 @interface LogController : NSObject {

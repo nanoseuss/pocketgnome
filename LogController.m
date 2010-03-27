@@ -17,12 +17,21 @@
 //	NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
 // Not logging conditions, remove when we no longer need manual supression.
 //	return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+
+	
+/*
+ As a temporary solution I think we should add a button like 'Extended Logging'.
+ When it's clicked have it log everything, when it's not.. have it log all but these
+ */
 	
 	if (type_s == LOG_CONDITION) return NO;
 	if (type_s == LOG_RULE) return NO;
 	if (type_s == LOG_MOVEMENT) return NO;
 	if (type_s == LOG_DEV) return NO;
 	if (type_s == LOG_WAYPOINT) return NO;
+	if (type_s == LOG_BINDINGS) return NO;
+	if (type_s == LOG_STATISTICS) return NO;
+	if (type_s == LOG_MACRO) return NO;
 	
 	return YES;
 }

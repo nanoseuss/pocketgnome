@@ -1084,7 +1084,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if([[state objectForKey: @"Procedure"] isEqualToString: PatrollingProcedure]) [self evaluateSituation];
 	
 	if([[state objectForKey: @"Procedure"] isEqualToString: CombatProcedure]) {
-		log(LOG_GENERAL, @"[Bot] Combat completed, moving to PostCombat (in combat? %d)", [playerController isInCombat]);
+		log(LOG_DEV, @"Combat completed, moving to PostCombat (in combat? %d)", [playerController isInCombat]);
 		[self performSelector: @selector(performProcedureWithState:) 
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: PostCombatProcedure,		  @"Procedure", [NSNumber numberWithInt: 0],	  @"CompletedRules", nil]
 				   afterDelay: (0.1)];
@@ -1342,7 +1342,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// take the action here
 	if ( matchFound && rule ) {
 		
-		log(LOG_PROCEDURE, @"Proceeding on %@ with rule %@", target, rule );
+		log(LOG_PROCEDURE, @"%@ %@ doing %@", [combatController unitHealthBar:target], target, rule );
 		
 		// target if needed!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure])
@@ -1399,11 +1399,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// error of some kind :/
 					if ( actionResult != ErrNone ){
-						log(LOG_PROCEDURE, @"Attempted to take action on %@ %d %d times", target, attempts, completed);
-						if ( originalTarget == target ) log(LOG_GENERAL, @"[Procedure] Same target!");
+						log(LOG_PROCEDURE, @"Attempted to do %u on %@ %d %d times", actionID, target, attempts, completed);
+						if ( originalTarget == target ) log(LOG_DEV, @"Same target");
 						
 						NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
-						log(LOG_PROCEDURE, @"Looking for key %@", triedRuleKey);
+						log(LOG_DEV, @"Looking for key %@", triedRuleKey);
 						
 						NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
 						
@@ -1414,7 +1414,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							tries = [NSNumber numberWithInt:1];
 						}
 						
-						log(LOG_PROCEDURE, @"Setting tried %@ with value %@", triedRuleKey, tries);
+						log(LOG_DEV, @"Setting tried %@ with value %@", triedRuleKey, tries);
 						[rulesTried setObject:tries forKey:triedRuleKey];
 					}
 					// success!
@@ -1542,6 +1542,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)lootScan {
+	if ( !self.doLooting ) return;
 	log(LOG_DEV, @"Scanning for missed mobs to loot.");
 	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
 	for (Mob *mob in mobs) {
@@ -1573,7 +1574,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// playr moving, wait to loot
 	if ( [movementController isMoving] ){
-		log(LOG_LOOT, @"Still moving, waiting to loot");
+		log(LOG_DEV, @"Still moving, waiting to loot");
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
 		return;
 	}
@@ -1614,7 +1615,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
 - (void)verifyLootSuccess {
-	log(LOG_LOOT, @"Verifying loot succes...");
+	log(LOG_DEV, @"Verifying loot succes...");
 	
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ){
@@ -1744,8 +1745,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 
 		log(LOG_DEV, @"Evaluate After skinned");
-// If you are getting hung up on Skin attempts you may need to increase the delay here
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.6f];
+		float delayTime = 0.1;
+		// If you are getting hung up on Skin attempts you may need to increase the delay here
+		if (_doSkinning) delayTime = 0.5;
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delayTime];
 	}
 }
 
@@ -2005,7 +2008,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// unit dead, reset!
 	[movementController resetMoveToObject];
 	
-	if ( [unit isNPC] ) log(LOG_COMBAT, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
+	if ( [unit isNPC] ) log(LOG_DEV, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 	
 	if ( self.doLooting && [unit isNPC] ) {
 		// make sure this mob is even lootable
@@ -2412,7 +2415,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					[_mobsToLoot removeObject: self.unitToLoot];
 				} else {
 					_movingTowardMobCount = 0;
-					log(LOG_GENERAL, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
+					log(LOG_DEV, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
 					[movementController moveToObject: mobToLoot];		// andNotify: YES
 				}
 				return YES;
@@ -2678,7 +2681,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [self evaluateForMiningAndHerbalism] ) return YES;
 	
 	if ( [self evaluateForFishing] ) return YES;
-	
+
+// Should be deprecated as this is handled in the 
 	// Should we be mounted?
 	if ( ![movementController moveToObject] && [self mountNow] ) {
 		log(LOG_MOUNT, @"Mounting...");
