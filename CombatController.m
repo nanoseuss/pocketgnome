@@ -496,14 +496,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.assistUnit && botController.theCombatProfile.assistUnitGUID > 0x0 ) {
 		Player *assistPlayer = [playersController playerWithGUID:botController.theCombatProfile.assistUnitGUID];
 
-		if ( assistPlayer && [assistPlayer isValid] && [assistPlayer isInCombat]) {
-			UInt64 targetGUID = [assistPlayer targetID];
-			// only assist if the assist player is in combat
-			if ( targetGUID > 0x0) {
-				Mob *mob = [mobController mobWithGUID:targetGUID];
-				if ( mob ) {
-					[allPotentialUnits addObject:mob];
-					log(LOG_COMBAT, @"Adding my assist's target to list of valid units");
+		if ( assistPlayer && [assistPlayer isValid] ) {
+			if ([assistPlayer isInCombat]) {
+				UInt64 targetGUID = [assistPlayer targetID];
+				// only assist if the assist player is in combat
+				if ( targetGUID > 0x0) {
+					Mob *mob = [mobController mobWithGUID:targetGUID];
+					if ( mob ) {
+						[allPotentialUnits addObject:mob];
+						log(LOG_COMBAT, @"Adding my assist's target to list of valid units");
+					}
 				}
 			}
 		} else {

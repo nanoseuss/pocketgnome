@@ -2320,7 +2320,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[movementController dismount];
 		return NO;
 	}
-	
+		
 	if (range == INFINITY) {
 		log(LOG_PARTY, @"[Follow] Unit is out of range!");
 		return NO;
@@ -2328,8 +2328,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( range <= theCombatProfile.followDistanceToMove ) return NO;
 
+	[self jumpIfAirMountOnGround];
+	
 	[controller setCurrentStatus: @"Bot: Following"];
-	log(LOG_PARTY, @"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
+	if (![movementController isMoving]) log(LOG_PARTY, @"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
 	[movementController followObject: followTarget];
 
 	// Check our position again shortly!
@@ -2400,8 +2402,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 			}
 		}
+	} else
+	if ( theCombatProfile.partyEnabled && theCombatProfile.assistUnit) {
+		// IF assist is broke let's stop here.
+		return NO;
 	}
-	
+		
 	// Look for a new target
 	Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
 	if ( unitToActOn && [unitToActOn isValid] ) {
