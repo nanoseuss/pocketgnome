@@ -24,14 +24,14 @@
  When it's clicked have it log everything, when it's not.. have it log all but these
  */
 	
-	if (type_s == LOG_CONDITION) return NO;
-	if (type_s == LOG_RULE) return NO;
-	if (type_s == LOG_MOVEMENT) return NO;
-	if (type_s == LOG_DEV) return NO;
-	if (type_s == LOG_WAYPOINT) return NO;
-	if (type_s == LOG_BINDINGS) return NO;
-	if (type_s == LOG_STATISTICS) return NO;
-	if (type_s == LOG_MACRO) return NO;
+//	if (type_s == LOG_CONDITION) return NO;
+//	if (type_s == LOG_RULE) return NO;
+//	if (type_s == LOG_MOVEMENT) return NO;
+//	if (type_s == LOG_DEV) return NO;
+//	if (type_s == LOG_WAYPOINT) return NO;
+//	if (type_s == LOG_BINDINGS) return NO;
+//	if (type_s == LOG_STATISTICS) return NO;
+//	if (type_s == LOG_MACRO) return NO;
 	
 	return YES;
 }

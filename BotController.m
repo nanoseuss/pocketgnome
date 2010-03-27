@@ -1072,7 +1072,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ( [[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure] ) {
 		if ( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
 			log(LOG_REGEN, @"Starting regen!");
-			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 2.0];
+			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 1.0];
 		} else {
 			// or if we didn't regen, go back to evaluate
 			log(LOG_DEV, @"No regen, back to evaluate");
@@ -1163,10 +1163,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: _cmd withObject: state afterDelay: RULE_EVAL_DELAY_SHORT];
 		return;
 	}
-    
+
+	if ( attempts == 2 &&
+		!self.theBehavior.meleeCombat && 
+		![movementController isMoving] &&
+		[combatController castingUnit] == target &&
+		![playerController isCasting] ) {
+		log(LOG_PROCEDURE, @"Stepping forward to try to unbug a bad casting position.");
+		[movementController stepForward];
+		[playerController faceToward: [target position]];
+		usleep([controller refreshDelay]);
+		[movementController stopMovement];
+	}
+	
     // have we exceeded our maximum attempts on this rule?
     if ( attempts > 3 ) {
-		log(LOG_PROCEDURE, @"  Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
+		log(LOG_PROCEDURE, @"Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
 		[self performSelector: _cmd withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 												 [state objectForKey: @"Procedure"],		@"Procedure",
 												 [NSNumber numberWithInt: completed+1],		@"CompletedRules",
@@ -1597,18 +1609,29 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			self.unitToLoot = unit;
 			self.mobToSkin = (Mob*)unit;
 			[blacklistController incrementAttemptForObject:unit];
-			log(LOG_DEV, @"Attempt incremented to %d!", [blacklistController attemptsForObject:unit]);
-			
+
 			// Lets do this instead of the loot hotkey!
 			[self interactWithMouseoverGUID: [unit GUID]];
 			
-			// In the off chance that no items are actually looted
-			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
+			// normal lute delay
+			float delayTime = 0.3;
+
+			// if it's already skinnable get to it!
+			if (_doSkinning && [self.mobToSkin isSkinnable])
+				delayTime = 0.3;
+			
+			// If we do skinning and it may become skinnable
+			else if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
+				delayTime = 0.7;				// if it's missing mobs that it should have skinned then increase this
+
+			if (isNode) delayTime = 0.7; // if it's trying on nodes it just hit increase this
+
+			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
 		} else {
 			log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit <= 5.0, ![unit isValid], unit );
 			// remove from list
 			if ( ![self.unitToLoot isKindOfClass: [Node class]] ) [_mobsToLoot removeObject: self.unitToLoot];
-			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];	
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		}
 	}
 }
@@ -1701,7 +1724,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			Item *item = [itemController itemForID:[notification object]];
 			if ( item ) {
 				int collectiveCount = [itemController collectiveCountForItem:item];
-				if ( collectiveCount >= 10 ){					
+				if ( collectiveCount >= 10 ) {					
 					log(LOG_LOOT, @"We have more than 10 of %@, using!", item);
 					[self performAction:itemID + USE_ITEM_MASK];					
 				}
@@ -1743,12 +1766,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 		
-
 		log(LOG_DEV, @"Evaluate After skinned");
-		float delayTime = 0.1;
-		// If you are getting hung up on Skin attempts you may need to increase the delay here
-		if (_doSkinning) delayTime = 0.5;
+		float delayTime = 0.3;
+
+		// If you are getting hung trying to skin a disappeared corse you may need to increase the delay here
+		if (_doSkinning) delayTime = 0.7;
+
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delayTime];
+
 	}
 }
 
@@ -1760,7 +1785,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( _skinAttempt++ > 20 ) {
 		log(LOG_LOOT, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
 		self.mobToSkin = nil;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return;
 	}
 	
@@ -1770,7 +1795,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Not able to skin :/
 	if( ![mob isValid] || ![mob isSkinnable] || distanceToUnit > 5.0f ) {
-		[self performSelector: @selector(skinMob:) withObject:mob afterDelay:0.1f];
+// if its not skinnable lets go back to evaluation instead of skinning it again lol
+//		[self performSelector: @selector(skinMob:) withObject:mob afterDelay:0.1f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return;
     }
 	
@@ -1782,7 +1809,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self interactWithMouseoverGUID: [mob GUID]];
 	
 	// In the off chance that no items are actually looted
-	[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 6.5f];
+	[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 0.5f];
 	
 }
 
@@ -2251,6 +2278,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForCombatStart {
+	// Don't look for new combat if we're fishin
+	if ( [fishController isFishing] && !theCombatProfile.partyEnabled) return NO;
+
 	if ( ![combatController combatEnabled] && !theCombatProfile.healingEnabled ) {
 		self.preCombatUnit = nil;
 		return NO;
@@ -2335,8 +2365,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
 
-	// If we're mounted and in the air don't attempt to regen
-//	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
+	// Don't try if we're fishin
+	if ( [fishController isFishing] ) return NO;
 
 	// See if we need to perform this
 	BOOL performRegen = NO;
@@ -2368,7 +2398,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// only pause if we are performing something non instant
 	if (needToPause) [movementController stopMovement];
-	
+
 	[self performSelector: @selector(performProcedureWithState:) 
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 							RegenProcedure,		  @"Procedure",
@@ -2381,6 +2411,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForLoot {
+	
+	// Don't try if we're fishin
+	if ( [fishController isFishing] ) return NO;	// pretty sure this will be a good thing.. make sure it doesn't prevent fishing looting!
+
 	if (!self.doLooting) return NO;
 	
     // get potential units and their distances
@@ -2393,15 +2427,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     float mobToLootDist	    = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
     float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
     
-    // if the mob to loot is closer to us, loot it first
+    // if theres a unit that needs our attention that's closer than the lute.
     if ( mobToLootDist > unitToActOnDist ) {
 		log(LOG_LOOT, @"Mob is too close to loot: %0.2f > %0.2f", mobToLootDist, unitToActOnDist);
 		return NO;
 	}
-	
+
 	// if the mob is close, just loot it!
 	if ( mobToLootDist <= 5.0 ) {
-		//		log(LOG_LOOT, @"Used to call reachedUnit here");
 		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.1f];
 		return YES;
 	} else
@@ -2441,6 +2474,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForMiningAndHerbalism {
 	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
+
+	// Don't try if we're fishin
+	if ( [fishController isFishing] ) return NO;
 
 	Position *playerPosition = [playerController position];
     if ([movementController moveToObject]) return NO;
@@ -2597,11 +2633,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if( ![self isBotting]) return NO;
 	if( [playerController isDead]) return NO;
 
-	// If we're mounted then let's not do anything that would cause us to dismount
+	// If we're already mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
-	
-	// If we're mounted and in the air let's not attempt this
-//	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
 
 	// see if we would be performing anything in the patrol procedure
 	BOOL performPatrolProc = NO;
@@ -2612,32 +2645,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
+	if (!performPatrolProc) return NO;
+
 	// Perform the procedure.
-	if (performPatrolProc) {
+	[controller setCurrentStatus: @"Bot: Patrolling Phase"];
 
-		// check if all used abilities are instant
-		BOOL needToPause = NO;
-		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
-			if( ([rule resultType] == ActionType_Spell)) {
-				Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [rule actionID]]];
-				if ([spell isInstant]) continue;
-			}
-			if([rule resultType] == ActionType_None) continue;
-			needToPause = YES; 
-			break;
+	// check if all used abilities are instant
+	BOOL needToPause = NO;
+	for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
+		if( ([rule resultType] == ActionType_Spell)) {
+			Spell *spell = [spellController spellForID: [NSNumber numberWithUnsignedInt: [rule actionID]]];
+			if ([spell isInstant]) continue;
 		}
-		
-		// only pause if we are performing something non instant
-		if (needToPause) [movementController stopMovement];
-
-		[self performSelector: @selector(performProcedureWithState:) 
-				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
-								PatrollingProcedure,		  @"Procedure",
-								[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
-				   afterDelay: (needToPause ? 0.25 : 0.0)];
-		if (needToPause) return YES;
+		if([rule resultType] == ActionType_None) continue;
+		needToPause = YES; 
+		break;
 	}
- return NO;
+		
+	// only pause if we are performing something non instant
+	if (needToPause) [movementController stopMovement];
+
+	[self performSelector: @selector(performProcedureWithState:) 
+			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+							PatrollingProcedure,		  @"Procedure",
+							[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
+			   afterDelay: (needToPause ? 0.5 : 0.0)];	// Havin a problem with mounts not completing so I'm increasing this
+	if (needToPause) return YES;
+
+	return NO;
 }
 
 - (BOOL)evaluateSituation {
