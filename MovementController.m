@@ -898,8 +898,8 @@ typedef enum MovementState{
 		usleep([controller refreshDelay]);
 		// Move, Jump, Stop
 		[self moveForwardStart];
-		usleep(10000);
 		[self jump];
+		usleep(10000);
 		[self moveForwardStop];
 			
 		// Now check again to see if they're in range

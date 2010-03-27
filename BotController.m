@@ -1164,11 +1164,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 
-	if ( attempts == 2 &&
-		!self.theBehavior.meleeCombat && 
-		![movementController isMoving] &&
-		[combatController castingUnit] == target &&
-		![playerController isCasting] ) {
+	// if we can't cast lets try to unbug our position
+	if ( attempts == 3 && !self.theBehavior.meleeCombat && 
+			![movementController isMoving] &&
+			[combatController castingUnit] == target ) {
 		log(LOG_PROCEDURE, @"Stepping forward to try to unbug a bad casting position.");
 		[movementController stepForward];
 		[playerController faceToward: [target position]];
@@ -1176,6 +1175,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[movementController stopMovement];
 	}
 	
+	// Check the mob if we're in combat and it's our target
+	if (![movementController isMoving] && [combatController castingUnit] == target) {
+		if (![self performProcedureMobCheck:target]) {
+			[self finishCurrentProcedure: state];
+			return;
+		}
+	}
     // have we exceeded our maximum attempts on this rule?
     if ( attempts > 3 ) {
 		log(LOG_PROCEDURE, @"Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
@@ -1398,13 +1404,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
 					usleep([controller refreshDelay]);
-					
-					// Check the mob again
-					if (![self performProcedureMobCheck:target]) {
-						[self finishCurrentProcedure: state];
-						return;
-					}
-					
+										
 					// do it!
 					int actionResult = [self performAction:actionID];
 					log(LOG_PROCEDURE, @"Action %u taken with result: %d", actionID, actionResult);
@@ -1566,7 +1566,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)lootUnit: (WoWObject*) unit{
-	
+
 	// are we still in the air?  shit we can't loot yet!
 	if ( ![playerController isOnGround] ) {
 		
@@ -1598,12 +1598,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		Position *playerPosition = [playerController position];
 		float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
 		[movementController turnTowardObject: unit];
+		[controller setCurrentStatus: @"Bot: Looting"];
 		
 		self.lastAttemptedUnitToLoot = unit;
 		
 		if ( [unit isValid] && ( distanceToUnit <= 5.0 ) ) { //	 && (unitIsMob ? [(Mob*)unit isLootable] : YES)
 			if ( [[playerController player] isMounted] ) [movementController dismount];
-			[controller setCurrentStatus: @"Bot: Looting"];
 			log(LOG_LOOT, @"Looting : %@", unit);
 			self.lootStartTime = [NSDate date];
 			self.unitToLoot = unit;
@@ -1615,16 +1615,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// normal lute delay
 			float delayTime = 0.3;
-
-			// if it's already skinnable get to it!
-			if (_doSkinning && [self.mobToSkin isSkinnable])
-				delayTime = 0.3;
 			
 			// If we do skinning and it may become skinnable
-			else if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
-				delayTime = 0.8;				// if it's missing mobs that it should have skinned then increase this
+			if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
+				delayTime = 1.0;				// if it's missing mobs that it should have skinned then increase this
 
-			if (isNode) delayTime = 0.8; // if it's trying on nodes it just hit increase this
+			if (isNode) delayTime = 1.0; // if it's trying on nodes it just hit increase this
 
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
 		} else {
@@ -1638,13 +1634,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
 - (void)verifyLootSuccess {
-	log(LOG_DEV, @"Verifying loot succes...");
 	
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ){
 		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];
 		return;
 	}
+
+	log(LOG_DEV, @"Verifying loot succes...");
 	
 	// Is the loot window stuck being open?
 	if ( [lootController isLootWindowOpen] && _lootMacroAttempt < 3 ) {
@@ -1774,7 +1771,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		float delayTime = 0.1;
 
 		// If you are trying to skin a disappeared corse you may need to increase the delay here
-		if (_doSkinning) delayTime = 0.3;
+		if (_doSkinning) delayTime = 0.4;
 
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delayTime];
 	}
@@ -1865,6 +1862,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_didPreCombatProcedure = NO;
 	
 	if ( [playerController isDead] ) return;
+
+	// if we're already looting lets not interfere
+	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
+		log(LOG_DEV, @"Skipping post combat since we're already looting.");
+		return;
+	}
 	// start post-combat after specified delay
 	
 	// This is an odd situation that can occur (still in CombatProcedure when we leave combat)

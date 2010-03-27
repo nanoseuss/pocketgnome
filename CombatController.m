@@ -167,15 +167,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (void)outOfRange: (NSNotification*)notification {
 	if ( !_castingUnit || [playerData targetID] != [_castingUnit GUID] ) return;
 		
-	// try to correct the OOR
-	if ([movementController checkUnitOutOfRange:_castingUnit]) {
-		// Unit should now be back in range
-		log(LOG_COMBAT, @"Looks like we've corrected the out of range issue.");
-	} else {
-		// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
-		log(LOG_COMBAT, @"Unit is out of range, disengaging.");
-		self.attackUnit = nil;
-	}
+	// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
+	log(LOG_COMBAT, @"Unit is out of range, disengaging.");
+	self.attackUnit = nil;
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
