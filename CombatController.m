@@ -825,15 +825,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// if we have some targets
     if ( [friendliesWithinRange count] ) {
         for ( Unit *unit in friendliesWithinRange ) {
-			//log(LOG_COMBAT, @"[Combat] Friendly - Checking %@", unit);
+			log(LOG_DEV, @"Friendly - Checking %@", unit);
 			if ( [self validFriendlyUnit:unit] ){
-				//log(LOG_COMBAT, @"[Combat] Valid friendly");
+				log(LOG_DEV, @"Valid friendly");
 				[friendlyTargets addObject: unit];
 			}
         }
     }
 	
-	//log(LOG_COMBAT, @"[Combat] Total friendlies: %d", [friendlyTargets count]);
+	log(LOG_DEV, @"Total friendlies: %d", [friendlyTargets count]);
 	
 	return friendlyTargets;
 }

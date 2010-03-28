@@ -89,6 +89,8 @@
 // INPUT: from PlayerDataController when a user enters combat
 - (void)doCombatSearch;
 
+- (NSArray*)friendlyUnits;
+
 // OUPUT: could also be using [playerController isInCombat]
 - (BOOL)combatEnabled;
 

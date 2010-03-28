@@ -1369,6 +1369,31 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 				}
 				if ( matchFound ) break;
+
+				// Raise the dead?
+				if ( !matchFound && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
+					NSMutableArray *units = [NSMutableArray array];
+					[units addObjectsFromArray: [playersController allPlayers]];
+					
+					for ( target in units ){
+						if ( ![target isPlayer] || ![target isDead] ) continue;
+						if ( [[playerController position] distanceToPosition:[target position]] > theCombatProfile.healingRange ) continue;							
+						if ( [blacklistController isBlacklisted: target] ) continue;
+						// player: make sure they're not a ghost
+						NSArray *auras = [auraController aurasForUnit: target idsOnly: YES];
+						if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ) {
+							continue;
+						}
+						
+						if ( [self evaluateRule: rule withTarget: target asTest: NO] ) {
+							log(LOG_DEV, @"Found match for patrolling with rule %@", rule);
+							matchFound = YES;
+							break;
+						}
+					}
+					if ( matchFound ) break;
+
+				}
 			}
 		}
 		completed = i;
@@ -2781,8 +2806,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !performPatrolProc && _includeFriendlyPatrol) {
 		NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
 		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
-			if ([rule target] != TargetFriend ) continue;			
-			log(LOG_RULE, @"Evaluating rule %@", rule);
+			if ([rule target] != TargetFriend ) continue;
+			log(LOG_RULE, @"[Patrol] Evaluating rule %@", rule);
 
 			//Let go through the friendly targets
 			Unit *target = nil;
@@ -2790,7 +2815,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if (![playerController isFriendlyWithFaction: [target factionTemplate]] ) continue;
 				if ( [self evaluateRule: rule withTarget: target asTest: NO] ) {
 					// do something
-					log(LOG_RULE, @"Match for %@ with %@", rule, target);
+					log(LOG_RULE, @"[Patrol] Match for %@ with %@", rule, target);
 					ruleToCheck = rule;
 					performPatrolProc = YES;
 					break;
@@ -2799,6 +2824,40 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
+	// Raise the dead?
+	if ( !performPatrolProc && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
+		NSMutableArray *allPotentialUnits = [NSMutableArray array];
+		[allPotentialUnits addObjectsFromArray: [playersController allPlayers]];
+		
+		if ( [allPotentialUnits count] ){
+			log(LOG_DEV, @"[CorpseScan] in evaluation...");
+			float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+			for ( Unit *unit in allPotentialUnits ){
+				log(LOG_DEV, @"[CorpseScan] looking for corpses: %@", unit);
+				
+				if ( ![unit isPlayer] || ![unit isDead] ) continue;
+				if ( [[unit position] verticalDistanceToPosition: [playerController position]] > vertOffset ) continue;
+				if ( [[playerController position] distanceToPosition:[unit position]] > theCombatProfile.healingRange ) continue;
+				
+				if ( [blacklistController isBlacklisted:unit] ) {
+					log(LOG_DEV, @":[CorpseScan] Ignoring blacklisted unit: %@", unit);
+					continue;
+				}
+
+				// player: make sure they're not a ghost
+				NSArray *auras = [auraController aurasForUnit: unit idsOnly: YES];
+				if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ) {
+					continue;
+				}
+
+				log(LOG_DEV, @"Found a corpse in evaluation!");
+
+				performPatrolProc = YES;
+				break;
+			}
+		}
+	}
+	
 	if (!performPatrolProc) return NO;
 
 	// Perform the procedure.
@@ -3667,6 +3726,7 @@ NSMutableDictionary *_diffDict = nil;
     log(LOG_GENERAL, @"---- Player has revived!");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
+	[self evaluateSituation];
 }
 
 - (void)playerHasDied: (NSNotification*)notification {    
