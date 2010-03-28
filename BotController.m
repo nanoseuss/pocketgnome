@@ -2313,15 +2313,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// If we're technically in the air, but still close to the dismoutned leader, dismount
-	if ( range < 10.0f && 
-		![followTarget isMounted] && 
-		[[playerController player] isMounted] 
-		) {
+	if ( range < 15.0f && ![followTarget isMounted] &&  [[playerController player] isMounted] ) {
 		[movementController dismount];
 		return NO;
 	}
-		
-	if (range == INFINITY) {
+	
+	// If we're not moving yet and the target is out of distance.
+	if (range == INFINITY && ![movementController isMoving]) {
 		log(LOG_PARTY, @"[Follow] Unit is out of range!");
 		return NO;
 	}

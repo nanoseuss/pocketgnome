@@ -16,31 +16,15 @@
 	// Check to see whether or not extended logging is even on
 	if ([[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue]) {
 		// Extended logging is on so lets see if we're supposed to log the requested type
-/*
-		// This is an example of how it could be done for a faster return and without using static values here.
-		// NOTE: It also means the button variable names will have to match the log levels to work
-			NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
+
+		// Check to see if we have a setting for it in the interface.
+		NSString* type = [NSString stringWithFormat:@"ExtendedLogging%s", type_s];
+		if ([[NSUserDefaults standardUserDefaults] objectForKey: type])
 			return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
-*/
-		// This works for now
-		if (type_s == LOG_CONDITION && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingCondition"] boolValue])
-			return NO;
-		if (type_s == LOG_RULE && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingRule"] boolValue])
-			return NO;	
-		if (type_s == LOG_MOVEMENT && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMovement"] boolValue])
-			return NO;
-		if (type_s == LOG_DEV && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingDev"] boolValue])
-			return NO;
-		if (type_s == LOG_WAYPOINT && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingWaypoint"] boolValue])
-			return NO;
-		if (type_s == LOG_BINDINGS && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingBindings"] boolValue])
-			return NO;
-		if (type_s == LOG_STATISTICS && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingStatistics"] boolValue])
-			return NO;
-		if (type_s == LOG_MACRO && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMacro"] boolValue])
-			return NO;
+
 	} else {
-		// These are the types we don't show when Extended Logging isn't enabled
+		// These are the types we supress when Extended Logging isn't enabled
+		// We'll most likely need to add more to this list as we further the roll out of this logging
 		if (type_s == LOG_CONDITION) return NO;
 		if (type_s == LOG_RULE) return NO;
 		if (type_s == LOG_MOVEMENT) return NO;
@@ -51,6 +35,7 @@
 		if (type_s == LOG_MACRO) return NO;
 	}
 
+	// If it's not been supressed let's allow it
 	return YES;
 	
 }

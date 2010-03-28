@@ -104,7 +104,16 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityPreferencesUnreadable",
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
+/*
+BUG to NOTE here.  Enabling the following option allowed the logging on my desktop hackintosh to work,
+ but FAILed on my laptop hackintosh!  The failure was that it could not properly determine
+for this call... [[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] 
+ I'm uncommenting the next item here, because the interface button works on both my desktop and laptop with out it!
+
+ My guess is that everything else defined here is subject to the same condition !?
+ 
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEnable",
+ */
 								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];
