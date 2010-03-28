@@ -1579,6 +1579,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"Scanning for missed mobs to loot.");
 	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
 	for (Mob *mob in mobs) {
+		
+		if (_doSkinning && _doNinjaSkin && [mob isSkinnable] && ![_mobsToLoot containsObject: mob]) {
+			log(LOG_LOOT, @"[NinjaSkin] Adding %@ to skinning list.", mob);
+			[_mobsToLoot addObject: mob];
+		}
+		
 		if ([mob isLootable] && [mob isDead] && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
 			log(LOG_LOOT, @"[LootScan] Adding %@ to loot list.", mob);
 			[_mobsToLoot addObject: mob];
@@ -1756,8 +1762,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)skinOrFinish{	
-	if ( [fishController isFishing] ) return;
-	
+
 	BOOL canSkin = NO;
 	BOOL unitIsMob = ([self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]);
 	
@@ -2117,7 +2122,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		// if it's a player, or a non-dead NPC, we must be doing melee combat
 		if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) ){
-			log(LOG_GENERAL, @"[Bot] Reached melee range with %@", object);
+			log(LOG_COMBAT, @"Reached melee range with %@", object);
 			return;
 		}
 	}
@@ -2128,7 +2133,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if( ![self isBotting]) return;
     if ( !self.theRouteSet ) return;
 	if ( route != [self.theRouteSet routeForKey: CorpseRunRoute] ) return;
-	log(LOG_GENERAL, @"Finished Corpse Run. Begin search for body...");
+	log(LOG_GHOST, @"Finished Corpse Run. Begin search for body...");
 	[controller setCurrentStatus: @"Bot: Searching for body..."];
 }
 
@@ -2137,7 +2142,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)monitorRegen: (NSDate*)start{
 	
 	if ( [playerController isInCombat] ){
-		log(LOG_DEV, @"monitorRegen");
+		log(LOG_FUNCTION, @"monitorRegen");
 		[self evaluateSituation];
 		return;
 	}
@@ -2160,7 +2165,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// we're done eating/drinking! continue
 	if ( eatClear && drinkClear ){
 		log(LOG_REGEN, @"Finished after %0.2f seconds", timeSinceStart);
-		log(LOG_REGEN, @"Done drinking");
 		[self evaluateSituation];
 		return;
 	} else 
@@ -2178,7 +2182,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForPVP {
 	if ( !self.isPvPing ) return NO;
 	
-	log(LOG_DEV, @"Evaluate for PvP");
+	log(LOG_EVALUATE, @"Evaluating for PvP");
 
 	// Check for preparation buff
 	/*if ( self.isPvPing && [pvpWaitForPreparationBuff state] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
@@ -2220,7 +2224,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)evaluateForGhost {
 	if ( ![playerController isGhost]) return NO;
 
-	log(LOG_DEV, @"Evaluate for Ghost");
+	log(LOG_EVALUATE, @"Evaluating for Ghost");
 
 	Position *playerPosition = [playerController position];
 	if( [playerController corpsePosition] && [playerPosition distanceToPosition: [playerController corpsePosition]] < 26.0 ) {
@@ -2233,7 +2237,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		else _reviveAttempt = _reviveAttempt*2;
 		[macroController useMacroOrSendCmd:@"Resurrect"];	 // get corpse
 		if ( _reviveAttempt > 15 ) _reviveAttempt = 15;
-		log(LOG_GENERAL, @"Waiting %d seconds to resurrect.", _reviveAttempt);
+		log(LOG_GHOST, @"Waiting %d seconds to resurrect.", _reviveAttempt);
 		[self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
 		return YES;
 	}
@@ -2259,78 +2263,100 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !theCombatProfile.partyEnabled || 
 		!theCombatProfile.followUnit || 
 		!theCombatProfile.followUnitGUID > 0x0 ) return NO;
-	// auto-queue button name: LFDDungeonReadyDialogueEnterDungeonButton
-
-	if ( [playerController isCasting] )return NO;
 
 	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
-		log(LOG_DEV, @"Skipping party follow since we're looting.");
+		log(LOG_PARTY, @"Skipping party follow since we're looting.");
 		return NO;
 	}
 	
-	log(LOG_DEV, @"Evaluate for Party Follow");
+	log(LOG_EVALUATE, @"Evaluating for Party Follow");
 
 	Player *followTarget = [playersController playerWithGUID:theCombatProfile.followUnitGUID];
 	
-	if ( !followTarget || ![followTarget isValid] ) {
-		log(LOG_PARTY, @"[Follow] No target found to follow!");
+	if ( (!followTarget || ![followTarget isValid]) && ![[controller currentStatus] isEqualToString: @"Bot: Following"] && !_lastGoodFollowPosition) {
+		if (![[controller currentStatus] isEqualToString: @"Bot: Cannot Follow!"]) {
+			[controller setCurrentStatus: @"Bot: Cannot Follow!"];
+			log(LOG_PARTY, @"[Follow] No target found to follow!");
+		}
 		return NO;
 	}
 	
 	// mount
-	if ( theCombatProfile.mountEnabled && [followTarget isMounted] && ![[playerController player] isMounted] && ![[playerController player] isSwimming] && ![playerController isInCombat] ){
-		int theMountType = 1;	// ground
-		if ( ![followTarget isOnGround] ) theMountType = 2;		// air
-		Spell *mount = [spellController mountSpell:theMountType andFast:YES];
-		if ( mount != nil ) {
-			log(LOG_PARTY, @"[Follow] Mounting...");
-			[self performAction:[[mount ID] intValue]];
-			// Check our position again shortly!
+	if ( theCombatProfile.mountEnabled && 
+		[followTarget isMounted] && 
+		![[playerController player] isMounted] 
+		&& ![[playerController player] isSwimming] && ![playerController isInCombat] ){
+		if ( [self mountNow] ) {
+			log(LOG_MOUNT, @"Mounting...");
 			[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
-			return YES;
-		} else {
-			// does this player have any mounts?
-			if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ) {
-				// I see the log entry here, but where does the mount loading happen?  Is this is stuff that needs removed?
-				log(LOG_PARTY, @"[Follow] Attempting to load mounts... ????");
-			}
-		 return NO;
+			return NO;
 		}
 	}
 	
-	// move
-	Position *playerPosition = [[playerController player] position];
-	float range = [playerPosition distanceToPosition: [followTarget position]];
+	if ( ![followTarget isOnGround] )[self jumpIfAirMountOnGround];
+
+/*
+	// Make sure we're on an air mount if we're supposed to be!
+	if ( ![followTarget isOnGround] && [followTarget isMounted] && [[playerController player] isOnGround] && [[playerController player] isMounted]) {
+		log(LOG_PARTY, @"[Follow] Looks like I'm supposed to be on an air mount, dismounting.");
+		[movementController dismount];
+		return NO;
+	}
+	
+*/
+
+	// Moving Now...
+	float range = [[[playerController player] position] distanceToPosition: [followTarget position]];
+	
+	if (range == INFINITY && _lastGoodFollowPosition) {
+		// Target has gone out of range so lets just go to the last know good position
+		[controller setCurrentStatus: @"Bot: Cannot Follow!"];
+		log(LOG_PARTY, @"[Follow] Lost target, proceeding to last known position!");
+
+		[movementController moveToPosition:_lastGoodFollowPosition];
+
+		// Check our position again shortly!
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
+		
+		return YES;
+		
+	} else if (range == INFINITY) {
+			log(LOG_PARTY, @"[Follow] Lost target, but there is no last known position!?");
+	}
 	
 	// If we're on the ground and the leader isn't mounted then dismount
 	if ( range <= theCombatProfile.followDistanceToMove && 
-		![followTarget isMounted] && 
-		[[playerController player] isMounted] && 
-		[[playerController player] isOnGround] 
+			![followTarget isMounted] && 
+			[[playerController player] isMounted] && 
+			[[playerController player] isOnGround] 
 		) {
+		log(LOG_PARTY, @"[Follow] Leader dismounted, so am I.");
 		[movementController dismount];
-		return NO;
 	}
-
+	
 	// If we're technically in the air, but still close to the dismoutned leader, dismount
-	if ( range < 15.0f && ![followTarget isMounted] &&  [[playerController player] isMounted] ) {
-		[movementController dismount];
-		return NO;
-	}
+	if ( range < 15.0f && ![followTarget isMounted] &&  [[playerController player] isMounted] ) [movementController dismount];
 	
-	// If we're not moving yet and the target is out of distance.
-	if (range == INFINITY && ![movementController isMoving]) {
-		log(LOG_PARTY, @"[Follow] Unit is out of range!");
+	if ( range <= theCombatProfile.followDistanceToMove ) {
+		_lastGoodFollowPosition = nil;
 		return NO;
 	}
 
-	if ( range <= theCombatProfile.followDistanceToMove ) return NO;
-
-	[self jumpIfAirMountOnGround];
+	if (![[controller currentStatus] isEqualToString: @"Bot: Following"]) {
+		[controller setCurrentStatus: @"Bot: Following"];
+		log(LOG_PARTY, @"[Follow] Not within %0.2f yards of target, %0.2f away, following.", theCombatProfile.followDistanceToMove, range);
+	}
 	
-	[controller setCurrentStatus: @"Bot: Following"];
-	if (![movementController isMoving]) log(LOG_PARTY, @"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
-	[movementController followObject: followTarget];
+	// not moving directly to the unit's position! Within a range from it
+	float start = theCombatProfile.yardsBehindTargetStart;
+	float stop = theCombatProfile.yardsBehindTargetStop;
+	float randomDistance = SSRandomFloatBetween( start, stop );
+	
+	Position *positionToMove = [[followTarget position] positionAtDistance:randomDistance withDestination:[playerController position]];
+
+	_lastGoodFollowPosition = positionToMove;
+
+	[movementController moveToPosition:positionToMove];
 
 	// Check our position again shortly!
 	[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
@@ -2341,7 +2367,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForCombatContinuation {
     if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
-	log(LOG_DEV, @"Evaluate for Combat Continuation");
+	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
 
 	// Let's try just usin the player controller to match n see if this gives any better results
     if (![playerController isInCombat] && !theCombatProfile.partyEnabled) {
@@ -2373,14 +2399,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 	
-	log(LOG_DEV, @"Evaluate for Combat Start");
-
 	// If we're supposed to ignore combat while flying lets return false
 	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
 	
 	// If we're mounted and in the air don't look for a target
 	if ( [[playerController player] isFlyingMounted] && ![[playerController player] isOnGround]) return NO;
-	
+
+	// If we're not a healer, not on assist and set to only attack when attacked then lets return false.
+	if ( !theCombatProfile.healingEnabled && !theCombatProfile.assistUnit && theCombatProfile.onlyRespond) return NO;
+
+	log(LOG_EVALUATE, @"Evaluating for Combat Start");
+
 	Position *playerPosition = [playerController position];
 	
 	// check for party mode assist
@@ -2461,7 +2490,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Don't try if we're fishin
 	if ( [fishController isFishing] ) return NO;
 
-	log(LOG_DEV, @"Evaluate for Regen");
+	log(LOG_EVALUATE, @"Evaluating for Regen");
 
 	// See if we need to perform this
 	BOOL performRegen = NO;
@@ -2475,7 +2504,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (!performRegen) return NO;
 	
 	if ( [playerController isInCombat] ) {
-		log(LOG_DEV, @"Still in combat, waiting for regen!");
+		log(LOG_REGEN, @"Still in combat, waiting for regen!");
 		return YES;
 	}
 
@@ -2511,8 +2540,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [fishController isFishing] ) return NO;	// pretty sure this will be a good thing.. make sure it doesn't prevent fishing looting!
 
 	if (!self.doLooting) return NO;
+
+	// If we're mounted and in the air lets just skip loot scans
+	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
 	
-	log(LOG_DEV, @"Evaluate for Loot");
+	log(LOG_EVALUATE, @"Evaluating for Loot");
 
     // get potential units and their distances
     Mob *mobToLoot	= [self mobToLoot];
@@ -2550,7 +2582,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 				return YES;
 			} else {
-				log(LOG_GENERAL, @"[Loot] Mob found, but either isn't valid (%d), is too far away (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY) );
+				log(LOG_LOOT, @"Mob found, but either isn't valid (%d), is too far away (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY) );
 				return NO;
 			}
 		} else {
@@ -2575,7 +2607,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Don't try if we're fishin
 	if ( [fishController isFishing] ) return NO;
 
-	log(LOG_DEV, @"Evaluate for Mining and Herbalism");
+	log(LOG_EVALUATE, @"Evaluating for Mining and Herbalism");
 
 	Position *playerPosition = [playerController position];
     if ([movementController moveToObject]) return NO;
@@ -2599,12 +2631,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				log(LOG_NODE, @"%@ is not valid to loot, ignoring...", nodeToLoot );
 				continue;
 			}
-			
-			if ( [self otherPlayersWorkingNode: nodeToLoot] ) {
-				log(LOG_NODE, @"%@ has another player working it, ignoring...", nodeToLoot );
-				continue;
-			}
-			
+						
 			NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[nodeToLoot cachedGUID]];
 			NSNumber *count = [_lootDismountCount objectForKey:guid];
 			if ( count ){
@@ -2660,7 +2687,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [movementController moveToObject] ) return NO;
 	if ( !_doFishing ) return NO;
 	
-	log(LOG_FISHING, @"Fishing scan!");
+	log(LOG_EVALUATE, @"Evaluating for Fishing.");
 	
 	Position *playerPosition = [playerController position];
 	
@@ -2735,7 +2762,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're already mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
 
-	log(LOG_DEV, @"Evaluate for Patrol");
+	if ( [playerController isCasting] )return NO;
+
+	log(LOG_EVALUATE, @"Evaluating for Patrol");
 
 	// see if we would be performing anything in the patrol procedure
 	BOOL performPatrolProc = NO;
@@ -2791,7 +2820,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 							PatrollingProcedure,		  @"Procedure",
 							[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
-			   afterDelay: (needToPause ? 0.6 : 0.1)];	// Havin a problem with mounts not completing so I'm increasing this
+			   afterDelay: (needToPause ? 0.7 : 0.1)];	// Havin a problem with mounts not completing so I'm increasing this
 
 //	if (needToPause) return YES;
 
@@ -2802,7 +2831,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if (![self isBotting])						return NO;
     if (![playerController playerIsValid:self])	return NO;
 	
-	log(LOG_DEV, @"Evaluate Situation");
+	log(LOG_EVALUATE, @"Evaluating Situation");
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 	
     // Order of Operations
@@ -2820,17 +2849,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [self evaluateForPVP] ) return YES;
 
-//	[self jumpIfAirMountOnGround ];
-	
-	if ( [self evaluateForPartyFollow] ) return YES;
-	
 	if ( [self evaluateForCombatContinuation] ) return YES;
 	
     /* *** if we get here, we aren't in combat *** */
 	
 	if ( [self evaluateForRegen] ) return YES;
-	
+
+	if ( [self evaluateForPartyFollow] ) return YES;
+
 	if ( [self evaluateForLoot] ) return YES;
+
 
    	if ( [self evaluateForPatrol] ) return YES;
 
@@ -2842,12 +2870,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Should be deprecated as this is handled in the 
 	// Should we be mounted?
-	if ( ![movementController moveToObject] && [self mountNow] ) {
-		log(LOG_MOUNT, @"Mounting...");
-		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
-		return YES;
-	}
-    
+	if (!theCombatProfile.followUnit) {
+		if ( ![movementController moveToObject] && [self mountNow] ) {
+			log(LOG_MOUNT, @"Mounting...");
+			[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
+			return YES;
+		}
+    }
+	
     // if there's nothing to do, make sure we keep moving if we aren't
     if ( self.theRouteSet ) {
 		
@@ -2858,7 +2888,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		[controller setCurrentStatus: @"Bot: Patrolling"];
     } else {
-		[controller setCurrentStatus: @"Bot: Enabled"];
+		if (![[controller currentStatus] isEqualToString: @"Bot: Cannot Follow!"] && ![[controller currentStatus] isEqualToString: @"Bot: Following"]) {
+			[controller setCurrentStatus: @"Bot: Enabled"];
+		}
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
     }
 	
@@ -2875,6 +2907,39 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return NO;
 		} else {
 			_mountAttempt = 0;
+		}
+	}
+	
+	// Party Mounting
+	if (theCombatProfile.followUnit) {
+		Player *followTarget = [playersController playerWithGUID:theCombatProfile.followUnitGUID];
+		int theMountType = 1;	// ground
+		if ( ![followTarget isOnGround] ) theMountType = 2;		// air
+		Spell *mount = [spellController mountSpell:theMountType andFast:YES];
+		if ( mount != nil ) {
+			// stop moving if we need to!
+			[movementController stopMovement];
+			usleep(100000);
+			log(LOG_PARTY, @"[PartyFollow] Mounting...");
+			// Time to cast!
+			int errID = [self performAction:[[mount ID] intValue]];
+			if ( errID == ErrNone ){				
+				log(LOG_MOUNT, @"Mounting started! No errors!");
+				_mountAttempt = 0;
+				usleep(500000);
+			} else {
+				log(LOG_MOUNT, @"Mounting failed! Error: %d", errID);
+			}				
+			return YES;
+		} else {			
+			log(LOG_PARTY, @"No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
+			
+			// should we load any mounts
+			if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ) {
+				log(LOG_MOUNT, @"Attempting to load mounts...");
+				[spellController reloadPlayerSpells];				
+			}
+			return NO;
 		}
 	}
 	
@@ -3246,6 +3311,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_doHerbalism		= [herbalismCheckbox state];
 		_herbLevel			= [herbalismSkillText intValue];
 		_doSkinning			= [skinningCheckbox state];
+		_doNinjaSkin			= [ninjaSkinCheckbox state];
+
 		_skinLevel			= [skinningSkillText intValue];
 		
 		// fishing
@@ -4138,12 +4205,6 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// Kill the process
 	[controller killWOW];
-}
-
-- (BOOL)otherPlayersWorkingNode: (WoWObject*)node {
-// Check to see if there are other players working the node
-	if ( [playersController playerWithinRangeOfUnit: 4.0f Unit:(Unit*)node includeFriendly:YES includeHostile:YES] ) return YES;
-	return NO;
 }
 
 // check if units are nearby

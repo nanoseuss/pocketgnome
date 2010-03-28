@@ -33,6 +33,8 @@
 		if (type_s == LOG_BINDINGS) return NO;
 		if (type_s == LOG_STATISTICS) return NO;
 		if (type_s == LOG_MACRO) return NO;
+		if (type_s == LOG_EVALUATE) return NO;
+
 	}
 
 	// If it's not been supressed let's allow it

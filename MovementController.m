@@ -1662,20 +1662,6 @@ typedef enum MovementState{
     return ((value == ctmWalkTo) || (value == ctmLoot) || (value == ctmInteractNpc) || (value == ctmInteractObject));
 }
 
-// Party Version of follow
-- (void)followObject: (WoWObject*)unit{
-	
-	// not moving directly to the unit's position! Within a range from it
-	float start = botController.theCombatProfile.yardsBehindTargetStart;
-	float stop = botController.theCombatProfile.yardsBehindTargetStop;
-	float randomDistance = SSRandomFloatBetween( start, stop );
-	
-	Position *positionToMove = [[unit position] positionAtDistance:randomDistance withDestination:[playerData position]];
-	log(LOG_MOVEMENT, @"[Follow] Moving to %@", positionToMove);
-	[self moveToPosition:positionToMove];
-	//[self setClickToMove: positionToMove andType:ctmWalkTo andGUID:0x0];
-}
-
 #pragma mark Miscellaneous
 
 - (BOOL)dismount{

@@ -19,6 +19,7 @@
 @class RouteCollection;
 @class CombatProfile;
 @class PvPBehavior;
+@class Position;
 
 @class PTHotKey;
 @class SRRecorderControl;
@@ -106,7 +107,7 @@
     
 	UInt32 _lastSpellCastGameTime;
 	UInt32 _lastSpellCast;
-    BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg, _doFishing;
+    BOOL _doMining, _doHerbalism, _doSkinning, _doNinjaSkin, _doLooting, _doNetherwingEgg, _doFishing;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
@@ -159,6 +160,7 @@
 	
 	// new flying shit
 	int _jumpAttempt;
+	Position *_lastGoodFollowPosition;
 	
 	// mount correction (sometimes we can't mount)
 	int _mountAttempt;
@@ -218,6 +220,7 @@
     IBOutlet id miningSkillText;
     IBOutlet id herbalismSkillText;
     IBOutlet NSButton *skinningCheckbox;
+	IBOutlet NSButton *ninjaSkinCheckbox;
     IBOutlet id skinningSkillText;
     IBOutlet id gatherDistText;
     IBOutlet NSButton *lootCheckbox;
@@ -281,7 +284,6 @@
 
 - (BOOL)performProcedureMobCheck: (Unit*)target;
 - (void)lootScan;
-- (BOOL)otherPlayersWorkingNode: (WoWObject*)node;
 
 // Input from CombatController
 //- (void)addingUnit: (Unit*)unit;

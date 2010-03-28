@@ -700,9 +700,29 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (NSString*)unitHealthBar: (Unit*)unit {
 	// lets build a log prefix that reflects units health
 	NSString *logPrefix = nil;
-	UInt32 unitPercentHealth = [unit percentHealth];
-	
-	if ([playerData isFriendlyWithFaction: [unit factionTemplate]]) {		
+	UInt32 unitPercentHealth = 0;
+	if (unit) {
+		unitPercentHealth = [unit percentHealth];
+	} else {
+		unitPercentHealth = [[playerData player] percentHealth];
+	}
+	if ([[playerData player] GUID] == [unit GUID] || !unit) {
+		// Ourselves
+		if (unitPercentHealth == 100)		logPrefix = @"[OOOOOOOOOOO]";
+		else if (unitPercentHealth >= 90)	logPrefix = @"[OOOOOOOOOO ]";
+		else if (unitPercentHealth >= 80)	logPrefix = @"[OOOOOOOOO  ]";
+		else if (unitPercentHealth >= 70)	logPrefix = @"[OOOOOOOO   ]";
+		else if (unitPercentHealth >= 60)	logPrefix = @"[OOOOOOO    ]";
+		else if (unitPercentHealth >= 50)	logPrefix = @"[OOOOOO     ]";
+		else if (unitPercentHealth >= 40)	logPrefix = @"[OOOOO      ]";
+		else if (unitPercentHealth >= 30)	logPrefix = @"[OOOO       ]";
+		else if (unitPercentHealth >= 20)	logPrefix = @"[OOO        ]";
+		else if (unitPercentHealth >= 10)	logPrefix = @"[OO         ]";
+		else if (unitPercentHealth > 0)		logPrefix = @"[O          ]";
+		else								logPrefix = @"[           ]";		
+	} else
+	if ([playerData isFriendlyWithFaction: [unit factionTemplate]]) {
+		// Friendly
 		if (unitPercentHealth == 100)			logPrefix = @"[+++++++++++]";
 			else if (unitPercentHealth >= 90)	logPrefix = @"[++++++++++ ]";
 			else if (unitPercentHealth >= 80)	logPrefix = @"[+++++++++  ]";
@@ -716,6 +736,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			else if (unitPercentHealth > 0)		logPrefix = @"[+          ]";
 			else								logPrefix = @"[           ]";		
 	} else {
+		// Hostile
 		if (unitPercentHealth == 100)			logPrefix = @"[***********]";
 			else if (unitPercentHealth >= 90)	logPrefix = @"[********** ]";
 			else if (unitPercentHealth >= 80)	logPrefix = @"[*********  ]";
