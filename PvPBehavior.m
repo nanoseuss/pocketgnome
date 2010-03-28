@@ -245,6 +245,9 @@
 	}
 }
 
+// TO DO: prob. need to do an accessor for random, since you need all 6 checked!
+
+
 #pragma mark -
 
 - (NSArray*)validBattlegrounds{

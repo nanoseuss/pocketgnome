@@ -2210,18 +2210,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for PvP");
 
 	// Check for preparation buff
-	/*if ( self.isPvPing && [pvpWaitForPreparationBuff state] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
+	if ( self.isPvPing && /*[pvpWaitForPreparationBuff state] &&*/ [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
 		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
 		[movementController stopMovement];	
-		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
 		return YES;
-	}*/
+	}
 	
 	// wait for boat to settle!
 	if ( self.isPvPing && _strandDelay ){
 		[controller setCurrentStatus: @"PvP: Waiting for boat to arrive..."];
 		[movementController stopMovement];
-		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
 		return YES;
 	}
 	
@@ -2240,7 +2240,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		
 		[movementController moveToPosition:pos];
-		[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.5f];
 		return YES;
 	}
 	return NO;
