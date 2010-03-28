@@ -24,14 +24,22 @@
  When it's clicked have it log everything, when it's not.. have it log all but these
  */
 	
-	if (type_s == LOG_CONDITION) return NO;
-	if (type_s == LOG_RULE) return NO;	
-	if (type_s == LOG_MOVEMENT) return NO;
-	if (type_s == LOG_DEV) return NO;
-	if (type_s == LOG_WAYPOINT) return NO;
-	if (type_s == LOG_BINDINGS) return NO;
-	if (type_s == LOG_STATISTICS) return NO;
-	if (type_s == LOG_MACRO) return NO;
+	if (type_s == LOG_CONDITION && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingCondition"] boolValue]))
+		return NO;
+	if (type_s == LOG_RULE && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingRule"] boolValue]))
+		return NO;	
+	if (type_s == LOG_MOVEMENT && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMovement"] boolValue]))
+		return NO;
+	if (type_s == LOG_DEV && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingDev"] boolValue]))
+		return NO;
+	if (type_s == LOG_WAYPOINT && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingWaypoint"] boolValue]))
+		return NO;
+	if (type_s == LOG_BINDINGS && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingBindings"] boolValue]))
+		return NO;
+	if (type_s == LOG_STATISTICS && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingStatistics"] boolValue]))
+		return NO;
+	if (type_s == LOG_MACRO && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMacro"] boolValue]))
+		return NO;
 	
 	return YES;
 }

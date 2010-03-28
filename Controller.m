@@ -104,6 +104,7 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityPreferencesUnreadable",
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEnable",
 								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];
