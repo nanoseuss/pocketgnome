@@ -307,6 +307,8 @@
 - (BOOL)evaluateForMiningAndHerbalism;
 - (BOOL)evaluateForFishing;
 - (BOOL)evaluateForPatrol;
+- (BOOL)mountNow;
+- (BOOL)mountNowParty;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
