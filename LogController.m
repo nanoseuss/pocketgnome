@@ -13,35 +13,46 @@
 
 + (BOOL) canLog:(char*)type_s, ...
 {
-
-//	NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
-// Not logging conditions, remove when we no longer need manual supression.
-//	return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
-
-	
+	// Check to see whether or not extended logging is even on
+	if ([[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue]) {
+		// Extended logging is on so lets see if we're supposed to log the requested type
 /*
- As a temporary solution I think we should add a button like 'Extended Logging'.
- When it's clicked have it log everything, when it's not.. have it log all but these
- */
-	
-	if (type_s == LOG_CONDITION && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingCondition"] boolValue]))
-		return NO;
-	if (type_s == LOG_RULE && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingRule"] boolValue]))
-		return NO;	
-	if (type_s == LOG_MOVEMENT && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMovement"] boolValue]))
-		return NO;
-	if (type_s == LOG_DEV && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingDev"] boolValue]))
-		return NO;
-	if (type_s == LOG_WAYPOINT && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingWaypoint"] boolValue]))
-		return NO;
-	if (type_s == LOG_BINDINGS && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingBindings"] boolValue]))
-		return NO;
-	if (type_s == LOG_STATISTICS && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingStatistics"] boolValue]))
-		return NO;
-	if (type_s == LOG_MACRO && (![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] || ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMacro"] boolValue]))
-		return NO;
-	
+		// This is an example of how it could be done for a faster return and without using static values here.
+		// NOTE: It also means the button variable names will have to match the log levels to work
+			NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
+			return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+*/
+		// This works for now
+		if (type_s == LOG_CONDITION && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingCondition"] boolValue])
+			return NO;
+		if (type_s == LOG_RULE && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingRule"] boolValue])
+			return NO;	
+		if (type_s == LOG_MOVEMENT && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMovement"] boolValue])
+			return NO;
+		if (type_s == LOG_DEV && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingDev"] boolValue])
+			return NO;
+		if (type_s == LOG_WAYPOINT && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingWaypoint"] boolValue])
+			return NO;
+		if (type_s == LOG_BINDINGS && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingBindings"] boolValue])
+			return NO;
+		if (type_s == LOG_STATISTICS && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingStatistics"] boolValue])
+			return NO;
+		if (type_s == LOG_MACRO && ![[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingMacro"] boolValue])
+			return NO;
+	} else {
+		// These are the types we don't show when Extended Logging isn't enabled
+		if (type_s == LOG_CONDITION) return NO;
+		if (type_s == LOG_RULE) return NO;
+		if (type_s == LOG_MOVEMENT) return NO;
+		if (type_s == LOG_DEV) return NO;
+		if (type_s == LOG_WAYPOINT) return NO;
+		if (type_s == LOG_BINDINGS) return NO;
+		if (type_s == LOG_STATISTICS) return NO;
+		if (type_s == LOG_MACRO) return NO;
+	}
+
 	return YES;
+	
 }
 
 + (NSString*) log:(char*)type_s, ...
