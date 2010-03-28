@@ -31,6 +31,7 @@
 		_random = NO;
 		_stopHonor = 0;
 		_stopHonorTotal = 75000;
+		_preparationDelay = YES;
 		
 		_leaveIfInactive = YES;
 		
@@ -80,6 +81,7 @@
 		self.random = [[decoder decodeObjectForKey: @"Random"] boolValue];
 		self.stopHonor = [[decoder decodeObjectForKey: @"StopHonor"] intValue];
 		self.stopHonorTotal = [[decoder decodeObjectForKey: @"StopHonorTotal"] intValue];
+		self.preparationDelay = [[decoder decodeObjectForKey: @"PreparationDelay"] boolValue];
 		
 		self.name = [decoder decodeObjectForKey:@"Name"];
 	}
@@ -98,6 +100,7 @@
 	[coder encodeObject: [NSNumber numberWithBool:self.random] forKey:@"Random"];
 	[coder encodeObject: [NSNumber numberWithInt: self.stopHonor] forKey:@"StopHonor"];
 	[coder encodeObject: [NSNumber numberWithInt: self.stopHonorTotal] forKey:@"StopHonorTotal"];
+	[coder encodeObject: [NSNumber numberWithBool:self.preparationDelay] forKey:@"PreparationDelay"];
 	
 	[coder encodeObject: self.name forKey:@"Name"];
 }
@@ -115,6 +118,7 @@
 	copy.random = self.random;
 	copy.stopHonor = self.stopHonor;
 	copy.stopHonorTotal = self.stopHonorTotal;
+	copy.preparationDelay = self.preparationDelay;
 	
     return copy;
 }
@@ -132,6 +136,7 @@
 @synthesize stopHonor = _stopHonor;
 @synthesize stopHonorTotal = _stopHonorTotal;
 @synthesize leaveIfInactive = _leaveIfInactive;
+@synthesize preparationDelay = _preparationDelay;
 
 - (void)addObservers{
 	[self addObserver: self forKeyPath: @"AlteracValley" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
@@ -145,6 +150,7 @@
 	[self addObserver: self forKeyPath: @"stopHonor" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
 	[self addObserver: self forKeyPath: @"stopHonorTotal" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
 	[self addObserver: self forKeyPath: @"leaveIfInactive" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"preparationDelay" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{

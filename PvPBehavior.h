@@ -30,6 +30,7 @@
 	BOOL _stopHonor;
 	int _stopHonorTotal;
 	BOOL _leaveIfInactive;
+	BOOL _preparationDelay;
 }
 
 @property (readwrite, retain) Battleground *AlteracValley;
@@ -44,6 +45,7 @@
 @property (readwrite, assign) BOOL stopHonor;
 @property (readwrite, assign) int stopHonorTotal;
 @property (readwrite, assign) BOOL leaveIfInactive;
+@property (readwrite, assign) BOOL preparationDelay;
 
 + (id)pvpBehaviorWithName: (NSString*)name;
 

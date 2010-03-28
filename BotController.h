@@ -224,8 +224,6 @@
     IBOutlet id skinningSkillText;
     IBOutlet id gatherDistText;
     IBOutlet NSButton *lootCheckbox;
-	IBOutlet NSButton *mountCheckbox;
-	IBOutlet NSPopUpButton *mountType;
 	
 	IBOutlet NSTextField *fishingGatherDistanceText;
 	IBOutlet NSButton *fishingCheckbox;

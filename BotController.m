@@ -2210,7 +2210,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for PvP");
 
 	// Check for preparation buff
-	if ( self.isPvPing && /*[pvpWaitForPreparationBuff state] &&*/ [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
+	if ( self.isPvPing && [self.pvpBehavior preparationDelay] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
 		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
 		[movementController stopMovement];	
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
@@ -2690,17 +2690,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						[self lootUnit:nodeToLoot];
 						[blacklistController blacklistObject:nodeToLoot];
 					} else {
-						//						log(LOG_NODE, @"Used to call reachedUnit for node here");
+						// log(LOG_NODE, @"Used to call reachedUnit for node here");
 						[self lootUnit:nodeToLoot];
 						return YES;
 					}
 				}
+				/*
 				// Should we be mounted before we move to the node?
 				else if ( [self mountNow] ) {
 					log(LOG_MOUNT, @"[Stay Mounted] Mounting...");
 					[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
 					return YES;
-				} else {
+				} */else {
 					// Safe to move to the node!
 					[movementController moveToObject: nodeToLoot];		//andNotify: YES
 				}
@@ -2958,6 +2959,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)mountNow{
+	
+	/*
 	// some error checking
 	if ( _mountAttempt > 8 ) {
 		float timeUntilRetry = 15.0f - (-1.0f * [_mountLastAttempt timeIntervalSinceNow]);
@@ -3004,7 +3007,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[spellController reloadPlayerSpells];				
 			}
 		}
-	}
+	}*/
 	
 	return NO;
 }
@@ -3102,29 +3105,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		status = [status stringByAppendingFormat: @" Herbalism (%d).", [herbalismSkillText intValue]];
     if([skinningCheckbox state])
 		status = [status stringByAppendingFormat: @" Skinning (%d).", [skinningSkillText intValue]];
-	
-	BOOL enableMount = YES;
-	
-	// enable our any mount
-	if ( [miningCheckbox state] || [herbalismCheckbox state] || [netherwingEggCheckbox state] || [fishingCheckbox state] ){
-		enableMount = YES;
-	}
-	
-	// don't enable if looting! Sorry it doesn't work correctly yet!
-	if ( [lootCheckbox state] || [skinningCheckbox state] ){
-		enableMount = NO;
-	}
-	
-	
-	if ( enableMount ){
-		[mountCheckbox setEnabled:YES];
-		[mountType setEnabled:YES];
-	}
-	else{
-		[mountCheckbox setEnabled:NO];
-		[mountType setEnabled:NO];
-		[mountCheckbox setState:0];
-	}
     
     [statusText setStringValue: status];
 }
@@ -3462,7 +3442,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// what was the last BG we joined?  -1 will default it to choosing the first
 			_pvpLastBattleground = -1;
 			
-			[self pvpQueueOrStart];
+			[self performSelector:@selector(pvpQueueOrStart) withObject:nil afterDelay:0.1f];
 		}
 		
 		// normal, non-PvP

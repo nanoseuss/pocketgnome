@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1"/>
+			<integer value="402"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -278,20 +278,26 @@
 											<int key="NSPeriodicInterval">25</int>
 										</object>
 									</object>
-									<object class="NSTextField" id="629537924">
+									<object class="NSButton" id="186827465">
 										<reference key="NSNextResponder" ref="777827197"/>
 										<int key="NSvFlags">268</int>
-										<string key="NSFrame">{{15, 14}, {683, 17}}</string>
+										<string key="NSFrame">{{16, 12}, {337, 18}}</string>
 										<reference key="NSSuperview" ref="777827197"/>
 										<bool key="NSEnabled">YES</bool>
-										<object class="NSTextFieldCell" key="NSCell" id="905662610">
-											<int key="NSCellFlags">68288064</int>
-											<int key="NSCellFlags2">272630784</int>
-											<string key="NSContents">Don't want to move while you have Preparation? Add a waypoint action to delay!</string>
+										<object class="NSButtonCell" key="NSCell" id="1067253656">
+											<int key="NSCellFlags">-2080244224</int>
+											<int key="NSCellFlags2">0</int>
+											<string key="NSContents">Don't move until Preparation buff has faded</string>
 											<reference key="NSSupport" ref="1039970681"/>
-											<reference key="NSControlView" ref="629537924"/>
-											<reference key="NSBackgroundColor" ref="620660649"/>
-											<reference key="NSTextColor" ref="654416282"/>
+											<reference key="NSControlView" ref="186827465"/>
+											<int key="NSButtonFlags">1211912703</int>
+											<int key="NSButtonFlags2">2</int>
+											<reference key="NSNormalImage" ref="709417277"/>
+											<reference key="NSAlternateImage" ref="1040129315"/>
+											<string key="NSAlternateContents"/>
+											<string key="NSKeyEquivalent"/>
+											<int key="NSPeriodicDelay">200</int>
+											<int key="NSPeriodicInterval">25</int>
 										</object>
 									</object>
 								</object>
@@ -2520,6 +2526,38 @@
 					</object>
 					<int key="connectionID">735</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: validBehavior</string>
+						<reference key="source" ref="186827465"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="186827465"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: validBehavior</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">validBehavior</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">739</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: currentBehavior.preparationDelay</string>
+						<reference key="source" ref="186827465"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="186827465"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: currentBehavior.preparationDelay</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">currentBehavior.preparationDelay</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">740</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2959,7 +2997,7 @@
 							<reference ref="510892672"/>
 							<reference ref="98049396"/>
 							<reference ref="63826129"/>
-							<reference ref="629537924"/>
+							<reference ref="186827465"/>
 						</object>
 						<reference key="parent" ref="1005"/>
 					</object>
@@ -3313,20 +3351,6 @@
 						<reference key="parent" ref="63826129"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">719</int>
-						<reference key="object" ref="629537924"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="905662610"/>
-						</object>
-						<reference key="parent" ref="113569904"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">720</int>
-						<reference key="object" ref="905662610"/>
-						<reference key="parent" ref="629537924"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">721</int>
 						<reference key="object" ref="429096919"/>
 						<object class="NSMutableArray" key="children">
@@ -3348,6 +3372,20 @@
 						<int key="objectID">723</int>
 						<reference key="object" ref="877530466"/>
 						<reference key="parent" ref="952276153"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">736</int>
+						<reference key="object" ref="186827465"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1067253656"/>
+						</object>
+						<reference key="parent" ref="113569904"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">737</int>
+						<reference key="object" ref="1067253656"/>
+						<reference key="parent" ref="186827465"/>
 					</object>
 				</object>
 			</object>
@@ -3459,11 +3497,11 @@
 					<string>707.IBPluginDependency</string>
 					<string>710.IBPluginDependency</string>
 					<string>711.IBPluginDependency</string>
-					<string>719.IBPluginDependency</string>
-					<string>720.IBPluginDependency</string>
 					<string>721.IBPluginDependency</string>
 					<string>722.IBPluginDependency</string>
 					<string>723.IBPluginDependency</string>
+					<string>736.IBPluginDependency</string>
+					<string>737.IBPluginDependency</string>
 					<string>74.IBPluginDependency</string>
 					<string>76.IBPluginDependency</string>
 					<string>77.IBPluginDependency</string>
@@ -3484,7 +3522,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{268, 292}, {749, 416}}</string>
+					<string>{{179, 292}, {749, 416}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{353, 328}, {625, 477}}</string>
@@ -3629,7 +3667,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">735</int>
+			<int key="maxID">740</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3827,6 +3865,7 @@
 							<string>mountType</string>
 							<string>movementController</string>
 							<string>netherwingEggCheckbox</string>
+							<string>ninjaSkinCheckbox</string>
 							<string>nodeController</string>
 							<string>nodeIgnoreFriendlyCheckbox</string>
 							<string>nodeIgnoreFriendlyDistanceText</string>
@@ -3912,6 +3951,7 @@
 							<string>NSButton</string>
 							<string>NSPopUpButton</string>
 							<string>MovementController</string>
+							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NodeController</string>
 							<string>NSButton</string>
