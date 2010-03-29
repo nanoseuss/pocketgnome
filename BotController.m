@@ -4809,6 +4809,9 @@ typedef struct WoWClientDb {
 
 - (IBAction)test: (id)sender{
 	
+	[self pvpGetBattlegroundStatus];
+	return;
+	
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
 	// hooked the spell function which was passed: 0xD87980 0xA8D268 0x194
@@ -5917,6 +5920,251 @@ typedef struct WoWClientDb {
 - (IBAction)pvpTestWarning: (id)sender {
     [[NSSound soundNamed: @"alarm"] play];
 }
+
+#pragma mark Testing/Development Info
+
+- (void)pvpGetBattlegroundStatus{
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	//pvpStruct: 0xD37B80
+	UInt32 structAddress = 0xD37B80;
+
+	UInt32 bgStatus = 0;
+	[memory loadDataForObject: self atAddress: structAddress+BG_STATUS Buffer: (Byte*)&bgStatus BufLength: sizeof(bgStatus)];
+	
+	BOOL jumpTo14 = NO;
+	UInt32 v40 = 0, v39 = 0, v42 = 0;
+	UInt32 v41[9] = {0};
+	
+	// "confirm"
+	if ( bgStatus == 2 ){
+		UInt32 tmp = 0;
+		[memory loadDataForObject: self atAddress: structAddress + 0x8 Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
+		[memory loadDataForObject: self atAddress: 0xD2F200 Buffer: (Byte*)&v41 BufLength: sizeof(v41)];
+		[memory loadDataForObject: self atAddress: structAddress + 0xC Buffer: (Byte*)&v40 BufLength: sizeof(v40)];
+		[memory loadDataForObject: self atAddress: 0xD2F200 + 0x10 Buffer: (Byte*)&v39 BufLength: sizeof(v39)];
+		
+		//if ( pvpStruct[0x8] == 32 || (v41 = &dword_D2F200, v40 = pvpStruct[0xC], v39 = *(&dword_D2F200 + 4), v40 < v39) )
+		if ( tmp == 32 || v40 < v39 ){
+			log( LOG_DEV, @" tmp == 32 %d < %d", v40, v39);
+			jumpTo14 = YES;
+		}
+	}
+	else{
+		[memory loadDataForObject: self atAddress: 0xD2F200 Buffer: (Byte*)&v41 BufLength: sizeof(v41)];
+		[memory loadDataForObject: self atAddress: 0xC8A678 Buffer: (Byte*)&v40 BufLength: sizeof(v40)];
+		[memory loadDataForObject: self atAddress: 0xD2F200 + 0x10 Buffer: (Byte*)&v39 BufLength: sizeof(v39)];
+		
+		log( LOG_DEV, @" v40 < v39 %d < %d", v40, v39);
+		
+		// if ( v15 != 3 || (v41 = &dword_D2F200, v40 = dword_C8A678, v39 = *(&dword_D2F200 + 4), dword_C8A678 < v39) )
+		if ( bgStatus != 3 || v40 < v39 ){
+			log( LOG_DEV, @" bgStatus != 3 %d < %d", v40, v39);
+			jumpTo14 = YES;
+		}
+	}
+	
+	// fairly certain we are only here if we are IN a bg already
+	if ( !jumpTo14 ){
+		
+		/*v42 = *(_DWORD *)(v41[8] + 4 * (v40 - v39));
+		if ( v42 )
+		{
+			FrameScript_PushString(a1, *(char **)(v42 + 20));
+			*/
+		
+		log( LOG_DEV, @" %d < %d", v40, v41[3]);
+		if ( v40 < v41[3] ){
+			log( LOG_DEV, @" %d + %d * (%d-%d)", v41[8], 4, v40, v39);
+			v42 = v41[8] + ( 0x10 * (v40 - v39) );
+			if ( v42 ){
+				log( LOG_DEV, @" string found? 0x%X", v42 + (20 * 4));
+			}
+		}
+	}
+	// if we're not in a BG, we'll get here!
+	else{
+		
+		/*	
+		LABEL_14:
+		v17 = v13[2];
+		v16 = *(&dword_D30CC0 + 4);
+		if ( v17 >= v16 && v17 <= *(&dword_D30CC0 + 3) && (v18 = *(_DWORD *)(*(&dword_D30CC0 + 8) + 4 * (v17 - v16))) != 0 )
+			FrameScript_PushString(a1, *(char **)(v18 + 44));
+		 */
+		
+		
+		// thinking v17 is the index in the db
+		
+		log( LOG_DEV, @" jumping to 14!");
+		
+		UInt32 v18 = 0, v17 = 0, v16 = 0, tmp = 0;
+		[memory loadDataForObject: self atAddress: 0xD30CC0 + 0x20 Buffer: (Byte*)&v18 BufLength: sizeof(v18)];
+		[memory loadDataForObject: self atAddress: structAddress + 0x8 Buffer: (Byte*)&v17 BufLength: sizeof(v17)];
+		[memory loadDataForObject: self atAddress: 0xD30CC0 + 0x10 Buffer: (Byte*)&v16 BufLength: sizeof(v16)];
+		[memory loadDataForObject: self atAddress: 0xD30CC0 + 0xC Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
+		
+		log( LOG_DEV, @"[0x%X] v17 - v16 == %d - %d", v18, v17, v16);
+		
+		v18 += ( 0x20 * ( v17 - v16 ) );
+		
+		log( LOG_DEV, @" %d >= %d && %d <= %d && 0x%X != 0", v17, v16, v17, tmp, v18);
+		
+		if ( v17 >= v16 && v17 <= tmp && v18 != 0 ){			//0xB0
+			log( LOG_DEV, @" string found heresz? 0x%X 0x%X 0x%X", v18, v18 + 44, v18 + (44*4) );		// + 44 (or 0xB0)
+		}
+	}
+}
+
+/*
+signed int __cdecl lua_GetBattlefieldStatus(int a1)
+{
+	int v1; // eax@3
+	double v3; // ST50_8@3
+	int *v13; // esi@6
+	signed int v14; // eax@7
+	int v15; // eax@12
+	int v16; // eax@14
+	int v17; // edx@14
+	int v18; // eax@16
+	__int128 v23; // ST40_16@18
+	__int128 v28; // ST30_16@18
+	__int128 v33; // ST20_16@18
+	__int128 v38; // ST10_16@18
+	int v39; // eax@22
+	int v40; // edx@22
+	int *v41; // ecx@22
+	int v42; // eax@24
+	
+	if ( !FrameScript_IsNumber(a1, 1) )
+		FrameScript_DisplayError(a1, "Usage: GetBattlefieldStatus(index)");
+	__asm { xorpd   xmm3, xmm3 }
+	v3 = sub_81BA10(a1, 1);
+	__asm
+	{
+		movsd   xmm1, [ebp+var_18]
+		movapd  xmm0, xmm1
+		movsd   xmm1, ds:qword_BFD7F0
+		movapd  xmm2, xmm1
+		cmplesd xmm2, xmm0
+		andpd   xmm1, xmm2
+		psllq   xmm2, 1Fh
+		minsd   xmm0, ds:qword_BFD800
+		maxsd   xmm0, xmm3
+		subpd   xmm0, xmm1
+		cvttpd2dq xmm0, xmm0
+		pxor    xmm0, xmm2
+		movd    eax, xmm0
+	}
+	v1 = _EAX - 1;
+	if ( (unsigned int)v1 > 1 || (v13 = &dword_D37B80[13 * v1], !v13) )
+	{
+		FrameScript_pushnil(a1);
+		FrameScript_pushnil(a1);
+		FrameScript_PushNumber(a1, 0LL);
+		FrameScript_PushNumber(a1, 0LL);
+		FrameScript_PushNumber(a1, 0LL);
+		FrameScript_PushNumber(a1, 0LL);
+	LABEL_5:
+		FrameScript_pushnil(a1);
+		return 7;
+	}
+ switch ( v13[4] )
+ {
+ case 0:
+ v9 = (int)"none";
+ break;
+ case 1:
+ v9 = (int)"queued";
+ break;
+ case 2:
+ v9 = (int)"confirm";
+ break;
+ case 3:
+ v9 = (int)"active";
+ break;
+ default:
+ v9 = (int)"error";
+ break;
+ }
+ FrameScript_PushString(a1, v9);
+ 
+LABEL_12:
+	v15 = v13[4];
+	if ( v15 == 2 )
+	{
+		if ( v13[2] == 32 || (v41 = &dword_D2F200, v40 = v13[3], v39 = *(&dword_D2F200 + 4), v40 < v39) )
+			goto LABEL_14;
+	}
+	else
+	{
+		if ( v15 != 3 || (v41 = &dword_D2F200, v40 = dword_C8A678, v39 = *(&dword_D2F200 + 4), dword_C8A678 < v39) )
+			goto LABEL_14;
+	}
+	if ( v40 <= v41[3] )
+	{
+		v42 = *(_DWORD *)(v41[8] + 4 * (v40 - v39));
+		if ( v42 )
+		{
+			FrameScript_PushString(a1, *(char **)(v42 + 20));
+			goto LABEL_18;
+		}
+	}
+LABEL_14:
+	v17 = v13[2];
+	v16 = *(&dword_D30CC0 + 4);
+	if ( v17 >= v16 && v17 <= *(&dword_D30CC0 + 3) && (v18 = *(_DWORD *)(*(&dword_D30CC0 + 8) + 4 * (v17 - v16))) != 0 )
+		FrameScript_PushString(a1, *(char **)(v18 + 44));
+	else
+		FrameScript_pushnil(a1);
+LABEL_18:
+	_EAX = v13[7] + -2147483648;
+	__asm
+	{
+		movd    xmm0, eax
+		cvtdq2pd xmm0, xmm0
+		addsd   xmm0, ds:qword_BFD7F0
+		movapd  [ebp+var_28], xmm0
+	}
+	v23 = _FT0;
+	FrameScript_PushNumber(a1, v23);
+	_EAX = v13[5] + -2147483648;
+	__asm
+	{
+		movd    xmm0, eax
+		cvtdq2pd xmm0, xmm0
+		addsd   xmm0, ds:qword_BFD7F0
+		movapd  [ebp+var_38], xmm0
+	}
+	v28 = _FT0;
+	FrameScript_PushNumber(a1, v28);
+	_EAX = v13[6] + -2147483648;
+	__asm
+	{
+		movd    xmm0, eax
+		cvtdq2pd xmm0, xmm0
+		addsd   xmm0, ds:qword_BFD7F0
+		movapd  [ebp+var_48], xmm0
+	}
+	v33 = _FT0;
+	FrameScript_PushNumber(a1, v33);
+	_EAX = v13[11] + -2147483648;
+	__asm
+	{
+		movd    xmm0, eax
+		cvtdq2pd xmm0, xmm0
+		addsd   xmm0, ds:qword_BFD7F0
+		movapd  [ebp+var_58], xmm0
+	}
+	v38 = _FT0;
+	FrameScript_PushNumber(a1, v38);
+	if ( !v13[12] )
+		goto LABEL_5;
+	FrameScript_PushNumber(a1, 4607182418800017408LL);
+	return 7;
+}
+*/
 
 @end
 

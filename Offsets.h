@@ -14,12 +14,11 @@
 #define VALID_WOW_VERSION   @"3.3.3"
 #define PLAYER_LEVEL_CAP    80
 
-#define BATTLEGROUND_INFO		((IS_X86) ?		0x155FE60 : 0x0)	// 3.2.2a valid
 #define	BG_STATUS		0x10
 #define BG_MINLEVEL		0x14
 #define BG_MAXLEVEL		0x18
+#define BG_QUEUETIME	0x28
 #define BG_INFO_NEXT	0x34
-
 
 // 3.2.0 valid
 //#define COMBO_POINTS_STATIC         ((IS_X86) ? 0xB9D8AC : 0x0) // 3.2.0
