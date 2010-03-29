@@ -175,9 +175,9 @@ enum AutomatorIntervalType {
 	
 	// lets save our collections!
 	for ( RouteCollection *rc in _routeCollectionList ){
-		if ( rc.changed ){
+		//if ( rc.changed ){
 			[self saveObject:rc];
-		}
+		//}
 	}
 	
 	// we no longer use this anymore! Yay!

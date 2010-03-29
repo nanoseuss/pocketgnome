@@ -417,6 +417,8 @@ typedef enum MovementState{
 	// do we have an action for the destination we just reached?
 	NSArray *actions = [self.destinationWaypoint actions];
 	if ( actions && [actions count] > 0 ) {
+		
+		log(LOG_WAYPOINT, @"Actions to take? %d", [actions count]);
 
 		// check if conditions are met
 		Rule *rule = [self.destinationWaypoint rule];
@@ -1184,7 +1186,7 @@ typedef enum MovementState{
 	[self resetMovementState];
 	
 	// do nothing
-	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ){
+	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] && ![botController isPvPing] ){
 		return;
 	}
 	
@@ -1196,9 +1198,18 @@ typedef enum MovementState{
 	
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ){
-		self.currentRouteKey = CorpseRunRoute;
-		self.currentRouteSet = [botController.theRouteCollection startingRoute];
-		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+		
+		// normal route if PvPing
+		if ( [botController isPvPing] ){
+			self.currentRouteKey = PrimaryRoute;
+			self.currentRouteSet = [botController.theRouteCollection startingRoute];
+			self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+		}
+		else{
+			self.currentRouteKey = CorpseRunRoute;
+			self.currentRouteSet = [botController.theRouteCollection startingRoute];
+			self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+		}
 		log(LOG_MOVEMENT, @"[Move] Died, switching to main starting route! %@", self.currentRoute);
 	}
 	// be normal!

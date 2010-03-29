@@ -5679,9 +5679,8 @@ typedef struct WoWClientDb {
 	// set the route set
 	[movementController setPatrolRouteSet:self.theRouteSet];
 	
-	// time to move
-	[movementController resumeMovement];
-
+	// start to evaluate!
+	[self evaluateSituation];
 
 	// Start our monitor!
 	_pvpIsInBG = YES;
