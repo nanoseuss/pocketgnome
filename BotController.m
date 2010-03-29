@@ -2070,7 +2070,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// in theory we should never be here
 	if ( [blacklistController isBlacklisted:unit] ) {
 		float distance = [[playerController position] distanceToPosition2D: [unit position]];
-		log(LOG_BLACKLIST, @"Ambushed by a blacklisted unit??  Ignoring %@ at %0.2f away", distance, unit);
+		log(LOG_BLACKLIST, @"Ambushed by a blacklisted unit??  Ignoring %@ at %0.2f away", unit, distance);
 		return;
 	}
 	
