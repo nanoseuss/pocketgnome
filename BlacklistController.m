@@ -16,12 +16,30 @@
 #import "Player.h"
 #import "Mob.h"
 
-// how long should the object remain blacklisted?
+// how long should the object remain blacklisted? (fallback)
 #define BLACKLIST_TIME		45.0f
-#define BLACKLIST_TIME_LOS		10.0f
+
+// We got a line of sight error
+#define BLACKLIST_TIME_NOT_IN_LOS		10.0f
+
+// We got a line of sight error
+#define BLACKLIST_TIME_OUT_OF_RANGE		10.0f
+
+// We got an Invalid Target error
+#define BLACKLIST_TIME_INVALID_TARGET		45.0f
+
 // This should be just long enough to move and not instantly retarget the mob
-#define BLACKLIST_TIME_NICA_15		2.0f
-#define BLACKLIST_TIME_NICA_25		45.0f
+#define BLACKLIST_TIME_NOT_IN_COMBAT_TEMP		3.0f
+
+// The never entered combat after a decent amount of time
+#define BLACKLIST_TIME_NOT_IN_COMBAT_PERM		45.0f
+
+// After we res them we don't want to instanty try to res them again
+#define BLACKLIST_TIME_RECENTLY_RESURRECTED		6.0f
+
+// This is meant as a GCD for friends so we don't double buff/heal.  It's not applied to tanks/assists
+// Basically this should be long enough for the unit to refresh.
+#define BLACKLIST_TIME_RECENTLY_HELPED_FRIEND		0.2f
 
 @interface BlacklistController (Internal)
 
@@ -92,41 +110,46 @@
 			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 				
 			// length varies based on reason
-			if ( reason == Reason_NotInCombatAfter15) {
-				if ( timeSinceBlacklisted < BLACKLIST_TIME_NICA_15 ) {
-					[infractionsToKeep addObject:infraction];
-				} else {
-					log(LOG_BLACKLIST, @"Expired: %@", infraction);
-				}
-			} else
-			if ( reason == Reason_NotInCombatAfter25) {
-				if ( timeSinceBlacklisted < BLACKLIST_TIME_NICA_25 ) {
-					[infractionsToKeep addObject:infraction];
-				} else {
-					log(LOG_BLACKLIST, @"Expired: %@", infraction);
-				}
-			} else
-			if ( reason == Reason_NotInLoS) {
-					if ( timeSinceBlacklisted < BLACKLIST_TIME_LOS ) {
-						[infractionsToKeep addObject:infraction];
-					} else {
-						log(LOG_BLACKLIST, @"Expired: %@", infraction);
-					}
+			if ( reason == Reason_NotInCombatTemp) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_NOT_IN_COMBAT_TEMP) [infractionsToKeep addObject:infraction];
+					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+
+			} else if ( reason == Reason_InvalidTarget) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_INVALID_TARGET ) [infractionsToKeep addObject:infraction];
+				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+				
+			} else if ( reason == Reason_NotInLoS) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_NOT_IN_LOS ) [infractionsToKeep addObject:infraction];
+				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+				
+			} else if ( reason == Reason_OutOfRange) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_OUT_OF_RANGE ) [infractionsToKeep addObject:infraction];
+				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+				
+			} else if ( reason == Reason_NotInCombatPerm) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_NOT_IN_COMBAT_PERM ) [infractionsToKeep addObject:infraction];
+					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+
+			} else if ( reason == Reason_RecentlyResurrected) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_RESURRECTED ) [infractionsToKeep addObject:infraction];
+					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+
+			} else if ( reason == Reason_RecentlyHelpedFriend) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_HELPED_FRIEND ) [infractionsToKeep addObject:infraction];
+					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+
 			} else {
-					if ( timeSinceBlacklisted < BLACKLIST_TIME ) {
-						[infractionsToKeep addObject:infraction];
-					} else {
-						log(LOG_BLACKLIST, @"Expired: %@", infraction);
-					}
-				}
+				if ( timeSinceBlacklisted < BLACKLIST_TIME ) [infractionsToKeep addObject:infraction];
+					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 			}
 			
 			// Either unblacklist or update the number of infractions
-		if ([infractionsToKeep count]) {
-			[_blacklist setObject:infractionsToKeep forKey:guid];
-		} else {
-			log(LOG_BLACKLIST, @"Removing %@", (Unit*)guid);
-			[_blacklist removeObjectForKey:guid];
+			if ([infractionsToKeep count]) {
+				[_blacklist setObject:infractionsToKeep forKey:guid];
+			} else {
+				log(LOG_BLACKLIST, @"Removing %@", (Unit*)guid);
+				[_blacklist removeObjectForKey:guid];
+			}
 		}
 	}
 }
@@ -156,23 +179,45 @@
 		float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 		
 		if ( reason == Reason_NotInLoS && timeSinceBlacklisted <= 5.0f ){
-			log(LOG_BLACKLIST, @"%@ was blacklisted for not being in LOS", obj, timeSinceBlacklisted);
+			log(LOG_BLACKLIST, @"%@ was blacklisted for not being in LoS.", obj, timeSinceBlacklisted);
 			totalLos++;
 		}
+
+		if ( reason == Reason_OutOfRange ) {
+			log(LOG_BLACKLIST, @"%@ was blacklisted for not being in range.", obj, timeSinceBlacklisted);
+			return YES;
+		}
+		
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
 		else if ( reason == Reason_NodeMadeMeFall ){
 			log(LOG_BLACKLIST, @"%@ was blacklisted for making us fall!", obj);
 			return YES;
 		}
+
 		else if ( reason == Reason_CantReachObject ){
 			totalFailedToReach++;
 		}
-		else if ( reason == Reason_NotInCombatAfter15 ){
+
+		else if ( reason == Reason_NotInCombatTemp ){
+			log(LOG_BLACKLIST, @"%@ was temp blacklisted for not entering entering combat when I tried to engage.", obj);
 			return YES;
 		}
-		else if ( reason == Reason_NotInCombatAfter25 ){
+
+		else if ( reason == Reason_NotInCombatPerm ){
+			log(LOG_BLACKLIST, @"%@ was perm blacklisted for not entering combat when I tried to engage.", obj);
 			return YES;
 		}		
+
+		else if ( reason == Reason_RecentlyResurrected ){
+			log(LOG_BLACKLIST, @"%@ was blacklisted because I just resurrected them.", obj);
+			return YES;
+		}
+		
+		else if ( reason == Reason_RecentlyHelpedFriend ){
+			log(LOG_BLACKLIST, @"%@ was blacklisted because I just helped them and I'm allowing their unit to refresh.", obj);
+			return YES;
+		}
+		
 		else{
 			totalNone++;
 		}

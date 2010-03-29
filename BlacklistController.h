@@ -30,9 +30,14 @@ enum{
 	Reason_None					= 0,
 	Reason_NotInLoS				= 1,
 	Reason_NodeMadeMeFall		= 2,
-	Reason_CantReachObject		= 4,
-	Reason_NotInCombatAfter15	= 8,
-	Reason_NotInCombatAfter25	= 16,
+	Reason_CantReachObject		= 3,
+	Reason_NotInCombatTemp		= 4,
+	Reason_NotInCombatPerm		= 5,
+	Reason_RecentlyResurrected	= 6,
+	Reason_RecentlyHelpedFriend = 7,
+	Reason_InvalidTarget		= 8,
+	Reason_OutOfRange			= 9,
+	
 };
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason;

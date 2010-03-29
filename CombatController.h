@@ -55,6 +55,7 @@
 	NSMutableArray *_unitsAllCombat;		// meant for the display table ONLY!
 	
 	NSMutableDictionary *_unitLeftCombatCount;
+	NSMutableDictionary *_unitLeftCombatTargetCount;
 }
 
 @property BOOL inCombat;

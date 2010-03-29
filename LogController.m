@@ -34,6 +34,7 @@
 		if (type_s == LOG_STATISTICS) return NO;
 		if (type_s == LOG_MACRO) return NO;
 		if (type_s == LOG_EVALUATE) return NO;
+		if (type_s == LOG_BLACKLIST) return NO;
 
 	}
 

@@ -60,6 +60,7 @@
 		_unitsAttackingMe = [[NSMutableArray array] retain];
 		_unitsAllCombat = [[NSMutableArray array] retain];
 		_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
+		_unitLeftCombatTargetCount = [[NSMutableDictionary dictionary] retain];
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
@@ -81,6 +82,7 @@
 	[_unitsAttackingMe release];
 	[_unitsAllCombat release];
 	[_unitLeftCombatCount release];
+	[_unitLeftCombatTargetCount release];
     [super dealloc];
 }
 
@@ -140,7 +142,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
-    log(LOG_DEV, @"------ Technically (real) OOC ------");
+    log(LOG_DEV, @"------ Player Leaving Combat ------");
 	
 	_inCombat = NO;
 	
@@ -148,7 +150,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
-    log(LOG_COMBAT, @"Player has died!");
+	log(LOG_COMBAT, @"%@ Player has died!", [self unitHealthBar: _castingUnit]);
 	
 	[self cancelAllCombat];
 }
@@ -157,23 +159,40 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (void)invalidTarget: (NSNotification*)notification {
 	
 	// is there a unit we should be attacking
-	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
-		log(LOG_BLACKLIST, @"Target not valid, blacklisting %@", _castingUnit);
-		[blacklistController blacklistObject: _castingUnit];
+	if ( _castingUnit ){
+		log(LOG_BLACKLIST, @"%@ %@ is not valid, blacklisting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+		[blacklistController blacklistObject:_castingUnit withReason:Reason_InvalidTarget];
 	}
+	
+}
+
+// not in LoS
+- (void)targetNotInLOS: (NSNotification*)notification {
+
+	// is there a unit and its not in LOS
+	if ( _castingUnit ) {
+		log(LOG_BLACKLIST, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+		[blacklistController blacklistObject:_castingUnit withReason:Reason_NotInLoS];
+	}
+	
 }
 
 // target is out of range
 - (void)outOfRange: (NSNotification*)notification {
+	// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
+
 	if ( !_castingUnit || [playerData targetID] != [_castingUnit GUID] ) return;
 		
-	// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
-	log(LOG_COMBAT, @"Unit is out of range, disengaging.");
+	log(LOG_COMBAT, @"%@ %@ is out of range, disengaging.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+
+	log(LOG_BLACKLIST, @"%@ %@ out of range, blacklisting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+	[blacklistController blacklistObject:_castingUnit withReason:Reason_OutOfRange];
+	
 	self.attackUnit = nil;
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
-	log(LOG_ERROR, @"[Combat] Target not in front!");
+	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
 	[movementController establishPlayerPosition];
 }
 
@@ -181,7 +200,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	Unit *unit = [notification object];
 	
 	if ( unit == _addUnit ) {
-		log(LOG_COMBAT, @"[Combat] Removing add %@", unit);
+		log(LOG_COMBAT, @"%@ %@ died, removing add.", [self unitHealthBar: unit] ,unit);
 		[_addUnit release]; _addUnit = nil;
 	}
 }
@@ -469,6 +488,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (void)resetAllCombat{
 	[self cancelAllCombat];
 	[_unitLeftCombatCount removeAllObjects];
+	[_unitLeftCombatTargetCount removeAllObjects];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 }
 
@@ -849,19 +869,29 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 	
+	// Unit not in combat check
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
-	// unit left combat?
+
+	// This is to set timers for of the unit is our taret
+	int leftCombatTargetCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
+
 	if ( ![unit isInCombat] ) {
-		log(LOG_DEV, @"%@ Unit not in combat now for %d", [self unitHealthBar: unit], leftCombatCount);
+		
+		float secondsInCombat = leftCombatCount/10;
+		
+		log(LOG_DEV, @"%@ Unit not in combat now for %d seconds", [self unitHealthBar: unit], secondsInCombat);
 		leftCombatCount++;
-		
-		// Check to see if we need to inch up
-//		[movementController checkUnitOutOfRange:unit];
-		
+
 		// If it's our target let's do some checks as we should be in combat
 		if ( unit == _attackUnit ) {
-			// not in combat after 3 seconds try moving forward to unbug casting
-			if ( leftCombatCount < 150 && leftCombatCount > 30) {
+
+			secondsInCombat = leftCombatTargetCount/10;
+
+			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
+			
+			// not in combat after 2 seconds try moving forward to unbug casting
+			if ( secondsInCombat > 2) {
+
 				// Try Stepping forward in case we're just position bugged for casting
 				if (![playerData isCasting] && ![movementController isMoving] && !_hasStepped) {
 					_hasStepped = YES;
@@ -873,30 +903,37 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				}
 			} else 
 
-			// not in combat after 15 seconds we blacklist for the short term, long enough to target something else or move
-			if ( leftCombatCount > 150 ) {
+			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
+			if ( secondsInCombat >  combatBlacklistDelay ) {
 				_hasStepped = NO;
-				log(LOG_COMBAT, @"%@ Unit not in combat after 15 seconds, temp blacklisting", [self unitHealthBar: unit]);
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter15];
+				log(LOG_COMBAT, @"%@ Unit not in combat after %d seconds, temp blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatTemp];
 				self.attackUnit = nil;
 			} else
 
-			// not in combat after 25 seconds we blacklist for real
-			if ( leftCombatCount > 250 ) {
+			// not in combat after 25 seconds we blacklist perm
+			if ( secondsInCombat > 25 ) {
 				_hasStepped = NO;
 				log(LOG_COMBAT, @"%@ Unit not in combat after 25 seconds, seriously blacklisting", [self unitHealthBar: unit]);
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter25];
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatPerm];
 				self.attackUnit = nil;
 			}
+			
+			leftCombatTargetCount++;
+			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
 		}
 		// after a minute stop monitoring
-		if ( leftCombatCount > 600 ){
+		if ( secondsInCombat > 60 ){
 			_hasStepped = NO;
-			log(LOG_COMBAT, @"%@ No longer monitoring %@, unit didn't enter combat after a minute!", [self unitHealthBar: unit], unit);
+			log(LOG_COMBAT, @"%@ No longer monitoring %@, didn't enter combat after  %d seconds.", [self unitHealthBar: unit], unit, secondsInCombat);
+
+			leftCombatTargetCount = 0;
+			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
+
 			return;
 		}
 	} else {
-		log(LOG_COMBAT, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
+		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		leftCombatCount = 0;
 	}
 	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
@@ -965,7 +1002,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			// add mob!
 			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ){
-				log(LOG_COMBAT, @"Adding mob %@", mob);
+				log(LOG_DEV, @"Adding mob %@", mob);
 				[_unitsAttackingMe addObject:(Unit*)mob];
 				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[mob retain] autorelease]];
 			}
