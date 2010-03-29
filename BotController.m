@@ -111,6 +111,7 @@
 @property (readwrite, assign) BOOL doLooting;
 @property (readwrite, assign) float gatherDistance;
 
+
 @end
 
 @interface BotController (Internal)
@@ -151,10 +152,13 @@
 - (void)pvpQueueBattleground;
 - (BOOL)pvpSetEnvironmentForZone;
 
+
 @end
 
 
 @implementation BotController
+
+@synthesize castingUnit = _castingUnit;
 
 + (void)initialize {
     
@@ -225,6 +229,7 @@
 	_movingTowardMobCount = 0;
 	_lootDismountCount = [[NSMutableDictionary dictionary] retain];
 	_mountLastAttempt = nil;
+	_castingUnit	= nil;
 	
 	_routesChecked = [[NSMutableArray array] retain];
 	_mobsToLoot = [[NSMutableArray array] retain];
@@ -1188,7 +1193,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 												 target,						@"Target",  nil] afterDelay: RULE_EVAL_DELAY_SHORT];
 		return;
     }
-	
+
 	Rule *rule = nil;
 	int i = 0;
 	BOOL matchFound = NO;
@@ -1344,6 +1349,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	else {
 		
 		log(LOG_DEV, @"Non combat search");
+		
+		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+		float attackRange = ( theCombatProfile.attackRange > theCombatProfile.engageRange ) ? theCombatProfile.attackRange : theCombatProfile.engageRange;
+		
 		for ( i = completed; i < ruleCount; i++) {
 			rule = [procedure ruleAtIndex: i];
 			
@@ -1358,7 +1367,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ([rule target] == TargetFriend && _includeFriendlyPatrol &&  [[self procedureInProgress] isEqualToString: PatrollingProcedure]) {
 				NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
 				for ( target in units ) {
+					if ( ![target isValid] ) continue;
+					
 					if (![playerController isFriendlyWithFaction: [target factionTemplate]] ) continue;
+
+					if ([[playerController position] verticalDistanceToPosition: [target position]] > vertOffset) continue;
+					
+					// range changes if the unit is friendly or not
+					float distanceToTarget = [[playerController position] distanceToPosition:[target position]];
+					float range = ([playerController isFriendlyWithFaction: [target factionTemplate]] ? theCombatProfile.healingRange : attackRange);
+					if ( distanceToTarget > range ) continue;
+
 					if ( [self evaluateRule: rule withTarget: target asTest: NO] ) {
 						log(LOG_DEV, @"Found match for patrolling with rule %@", rule);
 						matchFound = YES;
@@ -1376,8 +1395,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					for ( target in units ){
 						if ( ![target isPlayer] || ![target isDead] ) continue;
-						if ( [[playerController position] distanceToPosition:[target position]] > theCombatProfile.healingRange ) continue;							
+
 						if ( [blacklistController isBlacklisted: target] ) continue;
+
+						if ( [[playerController position] distanceToPosition:[target position]] > theCombatProfile.healingRange ) continue;							
+						
+						if ([[playerController position] verticalDistanceToPosition: [target position]] > vertOffset) continue;
+						
 						// player: make sure they're not a ghost
 						NSArray *auras = [auraController aurasForUnit: target idsOnly: YES];
 						if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ) {
@@ -1413,7 +1437,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 			
 		// target if needed!
-		if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [rule target] != TargetNone)
+		if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [rule target] != TargetNone) 
 			[combatController stayWithUnit:target withType:[rule target]];
 		
 		// send in pet if needed
@@ -1445,10 +1469,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if ( canPerformAction ){
 					
 					// target yourself
-					if ( [rule target] == TargetSelf ){
+					if ( [rule target] == TargetSelf ) {
 						log(LOG_DEV, @"Targeting self");
 						[playerController setPrimaryTarget: [playerController player]];
-					} else if ( [rule target] != TargetNone ){
+					} else 
+					if ( [rule target] != TargetNone ){
+						_castingUnit = target;
 						[playerController setPrimaryTarget: target];
 					}
 					
@@ -1507,17 +1533,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_DEV, @"Rule executed, trying for more rules!");
 
 		// If we resurected them lets give them a moment to repop before we assess them again
-		if (wasResurrected && [playerController isFriendlyWithFaction: [target factionTemplate]]) {
+		if (wasResurrected && [playerController isFriendlyWithFaction: [target factionTemplate]] && [target isValid]) {
+
+			log(LOG_DEV, @"Adding resurrection CD to %@", target);
+
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyResurrected];
 			
 		}
 		// The idea is that this will improve decision making for healers and keep the bot from looking stupid
 		if (wasFriend &&
+			[target isValid] &&
 			target != [playersController playerWithGUID:theCombatProfile.assistUnitGUID] &&
 			target != [playersController playerWithGUID:theCombatProfile.tankUnitGUID] &&
 			[playerController isFriendlyWithFaction: [target factionTemplate]]
 			) {
-			
+			log(LOG_DEV, @"Adding friend GCD to %@", target);
+
 			// If they were a friendly then lets put them on the friend GCD so we don't double heal or buff.
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyHelpedFriend];
 
@@ -4085,7 +4116,7 @@ NSMutableDictionary *_diffDict = nil;
 	// save the old spell + write the new one
 	[memory loadDataForObject: self atAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
-	
+
 	// write gibberish to the error location
 	char string[3] = {'_', '_', '\0'};
 	[[controller wowMemoryAccess] saveDataForAddress: [offsetController offset:@"LAST_RED_ERROR_MESSAGE"] Buffer: (Byte *)&string BufLength:sizeof(string)];
@@ -4136,10 +4167,10 @@ NSMutableDictionary *_diffDict = nil;
 		
 		// do something?
 		if ( lastErrorMessage == ErrSpellNot_Ready){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];	
+			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];
 		}
-		else if ( lastErrorMessage == ErrTargetNotInLOS ){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInLOS object: nil];	
+		else if ( lastErrorMessage == ErrTargetNotInLOS ) {
+			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInLOS object: nil];
 		}
 		else if ( lastErrorMessage == ErrInvalidTarget ){
 			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];

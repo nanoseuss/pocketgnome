@@ -20,7 +20,7 @@
 #define BLACKLIST_TIME		45.0f
 
 // We got a line of sight error
-#define BLACKLIST_TIME_NOT_IN_LOS		10.0f
+#define BLACKLIST_TIME_NOT_IN_LOS		20.0f
 
 // We got a line of sight error
 #define BLACKLIST_TIME_OUT_OF_RANGE		10.0f
@@ -70,12 +70,14 @@
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason {
 	
-	log(LOG_BLACKLIST, @"Obj %@ with retain count %d", obj, [obj retainCount]);
+	if (!obj || obj == nil) return;
+
+	log(LOG_BLACKLIST, @"Blacklisting %@ for reason %d with retain count %d", obj, reason, [obj retainCount]);
 	
 	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
 	NSMutableArray *infractions = [_blacklist objectForKey:guid];
 	
-	if ( [infractions count] == 0 ){
+	if ( [infractions count] == 0 ) {
 		infractions = [NSMutableArray array];
 	}
 
@@ -89,7 +91,8 @@
 // simply add an object to our blacklist!
 - (void)blacklistObject: (WoWObject*)obj{
 	
-	[self blacklistObject:obj withReason:Reason_None];
+	if (obj && obj != nil) [self blacklistObject:obj withReason:Reason_None];
+	
 }
 
 // remove old objects from the blacklist
@@ -178,9 +181,10 @@
 		NSDate *date	= [infraction objectForKey:@"Date"];
 		float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 		
-		if ( reason == Reason_NotInLoS && timeSinceBlacklisted <= 5.0f ){
+		if ( reason == Reason_NotInLoS){
 			log(LOG_BLACKLIST, @"%@ was blacklisted for not being in LoS.", obj, timeSinceBlacklisted);
 			totalLos++;
+			return YES;
 		}
 
 		if ( reason == Reason_OutOfRange ) {

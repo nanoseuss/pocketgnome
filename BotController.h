@@ -116,6 +116,7 @@
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
     Unit *preCombatUnit;
+	Unit *_castingUnit;		// the unit we're casting on!
     NSMutableArray *_mobsToLoot;
     int _reviveAttempt, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
@@ -276,7 +277,7 @@
 @property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
-
+@property (readonly, retain) Unit *castingUnit;
 
 - (void)testRule: (Rule*)rule;
 
