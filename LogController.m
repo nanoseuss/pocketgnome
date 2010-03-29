@@ -28,7 +28,7 @@
 		if (type_s == LOG_CONDITION) return NO;
 		if (type_s == LOG_RULE) return NO;
 		if (type_s == LOG_MOVEMENT) return NO;
-		if (type_s == LOG_DEV) return YES;
+		if (type_s == LOG_DEV) return NO;
 		if (type_s == LOG_WAYPOINT) return NO;
 		if (type_s == LOG_BINDINGS) return NO;
 		if (type_s == LOG_STATISTICS) return NO;
