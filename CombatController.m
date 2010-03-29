@@ -67,7 +67,7 @@
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorOutOfRange object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorTargetNotInLOS object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInLOS:) name: ErrorTargetNotInLOS object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInFront:) name: ErrorTargetNotInFront object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(unitDied:) 
@@ -150,45 +150,56 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
-	log(LOG_COMBAT, @"%@ Player has died!", [self unitHealthBar: _castingUnit]);
+	log(LOG_COMBAT, @"Player has died!");
 	
 	[self cancelAllCombat];
 }
 
 // invalid target
 - (void)invalidTarget: (NSNotification*)notification {
-	
-	// is there a unit we should be attacking
-	if ( _castingUnit ){
-		log(LOG_BLACKLIST, @"%@ %@ is not valid, blacklisting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
-		[blacklistController blacklistObject:_castingUnit withReason:Reason_InvalidTarget];
+	log(LOG_COMBAT, @"[Notification] %@ %@ is an Invalid Target!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+
+	if ([botController castingUnit]) {
+		log(LOG_BLACKLIST, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_InvalidTarget];
 	}
+
+	self.attackUnit = nil;
 	
+	[botController cancelCurrentProcedure];
+	[botController evaluateSituation];
 }
 
 // not in LoS
 - (void)targetNotInLOS: (NSNotification*)notification {
+	log(LOG_COMBAT, @"[Notification] %@ %@ is not in LoS!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
-	// is there a unit and its not in LOS
-	if ( _castingUnit ) {
-		log(LOG_BLACKLIST, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
-		[blacklistController blacklistObject:_castingUnit withReason:Reason_NotInLoS];
+	if ([botController castingUnit]) {
+		log(LOG_BLACKLIST, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_NotInLoS];
 	}
-	
+
+	self.attackUnit = nil;
+
+	[botController cancelCurrentProcedure];
+	[botController evaluateSituation];
 }
 
 // target is out of range
 - (void)outOfRange: (NSNotification*)notification {
-	// Should be no need to blacklist here, if it's OOR it wont't be picked up as a valid target again
 
-	if ( !_castingUnit || [playerData targetID] != [_castingUnit GUID] ) return;
-		
-	log(LOG_COMBAT, @"%@ %@ is out of range, disengaging.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+	log(LOG_COMBAT, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
-	log(LOG_BLACKLIST, @"%@ %@ out of range, blacklisting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
-	[blacklistController blacklistObject:_castingUnit withReason:Reason_OutOfRange];
-	
+	if ([botController castingUnit]) {
+		log(LOG_BLACKLIST, @"%@ %@ is put pf range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_OutOfRange];
+	}
+
 	self.attackUnit = nil;
+
+	[botController cancelCurrentProcedure];
+	[botController evaluateSituation];
+
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
@@ -574,7 +585,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		for ( Unit *unit in allPotentialUnits ){
 
 			if ( [blacklistController isBlacklisted:unit] ) {
-				log(LOG_COMBAT, @":Ignoring blacklisted unit: %@", unit);
+				log(LOG_DEV, @":Ignoring blacklisted unit: %@", unit);
 				continue;
 			}
 
