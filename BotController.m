@@ -2491,6 +2491,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're not a healer, not on assist and set to only attack when attacked then lets return false.
 	if ( !theCombatProfile.healingEnabled && !theCombatProfile.assistUnit && theCombatProfile.onlyRespond) return NO;
 
+	// If we're supposed to be following then follow!
+	if ( theCombatProfile.followUnit && [[playersController playerWithGUID:theCombatProfile.followUnitGUID] isMounted]) return NO;
+	
 	log(LOG_EVALUATE, @"Evaluating for Combat Start");
 
 	Position *playerPosition = [playerController position];
@@ -2639,6 +2642,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're mounted and in the air lets just skip loot scans
 	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
 	
+	// If we're supposed to be following then follow!
+	if ( theCombatProfile.followUnit && [[playersController playerWithGUID:theCombatProfile.followUnitGUID] isMounted]) return NO;
+
 	log(LOG_EVALUATE, @"Evaluating for Loot");
 
     // get potential units and their distances
@@ -2782,7 +2788,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForFishing {
 	if ( [movementController moveToObject] ) return NO;
 	if ( !_doFishing ) return NO;
-	
+
+	// If we're supposed to be following then follow!
+	if ( theCombatProfile.followUnit && [[playersController playerWithGUID:theCombatProfile.followUnitGUID] isMounted]) return NO;
+
 	log(LOG_EVALUATE, @"Evaluating for Fishing.");
 	
 	Position *playerPosition = [playerController position];
@@ -3108,7 +3117,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( errID == ErrNone ){				
 			log(LOG_MOUNT, @"Mounting started! No errors!");
 			_mountAttempt = 0;
-			usleep(1200000);
+			usleep(1500000);
 		} else {
 			log(LOG_MOUNT, @"Mounting failed! Error: %d", errID);
 		}				
