@@ -1639,13 +1639,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_PROCEDURE, @"Stopping movement to cast on %@.", target);
 		[movementController stopMovement];
 	}
-	
-//	if ([movementController checkUnitOutOfRange:target]) return YES;
 
-	// They're running and they're nothing we can do so lets bail
-	log(LOG_PROCEDURE, @"Disengaging!");
-	[combatController resetAllCombat];
-	return NO;
+	return YES;
 }
 
 #pragma mark -
@@ -2129,19 +2124,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			float distance = [[playerController position] distanceToPosition2D: [unit position]];
 			// not in range, continue moving!
 			if ( distance > 5.0f ){
-				log(LOG_COMBAT, @"Still %0.2f away, moving to %@", distance, unit);
+				log(LOG_DEV, @"Still %0.2f away, moving to %@", distance, unit);
 				[movementController moveToObject:unit];		//andNotify:YES
 			}
 			// we're in range
 			else{
-				log(LOG_COMBAT, @"In range, attacking!");
+				log(LOG_DEV, @"In range, attacking!");
 				readyToAttack = YES;
 				//[movementController stopMovement];
 			}
 		} else {
 			UInt32 movementFlags = [playerController movementFlags];
 			if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
-				log(LOG_COMBAT, @"Don't need to be in melee, stopping movement");
+				log(LOG_DEV, @"Don't need to be in melee, stopping movement");
 				[movementController stopMovement];
 			}
 			readyToAttack = YES;
