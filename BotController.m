@@ -1640,7 +1640,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[movementController stopMovement];
 	}
 	
-	if ([movementController checkUnitOutOfRange:target]) return YES;
+//	if ([movementController checkUnitOutOfRange:target]) return YES;
 
 	// They're running and they're nothing we can do so lets bail
 	log(LOG_PROCEDURE, @"Disengaging!");

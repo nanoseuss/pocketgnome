@@ -23,7 +23,7 @@
 #define BLACKLIST_TIME_NOT_IN_LOS		20.0f
 
 // We got a line of sight error
-#define BLACKLIST_TIME_OUT_OF_RANGE		10.0f
+#define BLACKLIST_TIME_OUT_OF_RANGE		2.0f
 
 // We got an Invalid Target error
 #define BLACKLIST_TIME_INVALID_TARGET		45.0f
@@ -35,7 +35,7 @@
 #define BLACKLIST_TIME_NOT_IN_COMBAT_PERM		45.0f
 
 // After we res them we don't want to instanty try to res them again
-#define BLACKLIST_TIME_RECENTLY_RESURRECTED		6.0f
+#define BLACKLIST_TIME_RECENTLY_RESURRECTED		10.0f
 
 // This is meant as a GCD for friends so we don't double buff/heal.  It's not applied to tanks/assists
 // Basically this should be long enough for the unit to refresh.

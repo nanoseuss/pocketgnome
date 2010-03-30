@@ -711,14 +711,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	weight += healthLeft;
 	
 	// our add?
-	if ( unit == _addUnit ) weight -= 100;
+	if ( unit == _addUnit ) weight -= 150;
 		
 	// non-friendly checks only
 	if ( !isFriendly ) {
 		if ( attackRange > 0 ) weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
 
+		
 		// current target
-		if ( [playerData targetID] == [unit GUID] ) weight += 25;
+		if ( [playerData targetID] == [unit GUID] ) weight += 30;
+		
+		// Players get more weight than mobs
+		if ([unit isPlayer]) weight += 20;
+			else weight -=20;
 
 		// Assist mode - assists target
 		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.assistUnit && botController.theCombatProfile.assistUnitGUID > 0x0 ) {
@@ -893,6 +898,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 	
+	// unit died, fire off notification
+	if ( [unit isDead] ){
+		log(LOG_DEV, @"Firing death notification for unit %@", unit);
+		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
+		return;
+	}
+	
+	// unit has ghost aura (so is dead, fire off notification
+	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
+	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
+		log(LOG_COMBAT, @"%@ Firing death notification for player %@", [self unitHealthBar: unit], unit);
+		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
+		return;
+	}
+	
 	// Unit not in combat check
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
 
@@ -914,7 +934,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
 			
 			// not in combat after 2 seconds try moving forward to unbug casting
-			if ( secondsInCombat > 2) {
+			if ( secondsInCombat > 1) {
 
 				// Try Stepping forward in case we're just position bugged for casting
 				if (![playerData isCasting] && ![movementController isMoving] && !_hasStepped) {
@@ -961,22 +981,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		leftCombatCount = 0;
 	}
 	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
-	
-	
-	// unit died, fire off notification
-	if ( [unit isDead] ){
-		log(LOG_DEV, @"Firing death notification for unit %@", unit);
-		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
-		return;
-	}
-	
-	// unit has ghost aura (so is dead, fire off notification
-	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
-	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
-		log(LOG_COMBAT, @"%@ Firing death notification for player %@", [self unitHealthBar: unit], unit);
-		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
-		return;
-	}
 	
 	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
 }
