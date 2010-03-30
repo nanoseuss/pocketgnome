@@ -187,6 +187,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // target is out of range
 - (void)targetOutOfRange: (NSNotification*)notification {
 
+	// If this is a combat target
+	if ([botController castingUnit] == [self castingUnit]) {
+		// if we can correct this error then do nothing
+		if ([movementController checkUnitOutOfRange:[self castingUnit]]) return;
+	}
+	
+	
 	log(LOG_DEV, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
 	if ([botController castingUnit]) {

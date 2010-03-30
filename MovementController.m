@@ -679,7 +679,8 @@ typedef enum MovementState{
 	//log(LOG_MOVEMENT, @" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
 	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && 
 			[[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] &&
-			![[playerData player] isFlyingMounted] ){
+			![[playerData player] isFlyingMounted] && 
+			[self isMoving]) {
 		
 		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ) [self jump];
 

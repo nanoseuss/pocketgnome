@@ -25,6 +25,8 @@
 @class OffsetController;
 @class MovementController;
 @class MobController;
+@class MacroController;
+@class ChatController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -65,6 +67,8 @@ enum ePlayer_RuneTypes {
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet MovementController		*movementController;
 	IBOutlet MobController			*mobController;
+	IBOutlet MacroController		*macroController;
+	IBOutlet ChatController			*chatController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;

@@ -20,6 +20,8 @@
 #import "NodeController.h"
 #import "OffsetController.h"
 #import "MobController.h"
+#import "MacroController.h"
+#import "ChatController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -657,11 +659,31 @@ static PlayerDataController* sharedController = nil;
         // and to the player table
         ret3 = [memory saveDataForAddress: ([self infoAddress] + UnitField_Target) Buffer: (Byte *)&targetID BufLength: sizeof(targetID)];
 		
-        if(ret1 && ret3)    
+        if (ret1 && ret3) {
+/* 
+// An attempt at target fix
+// This is where it should be implemented, no joy as of yet though
+			// Start Target Fix
+			log(LOG_COMBAT, @"Resetting target...");
+			usleep(200000);
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", '\n']];
+			usleep(100000);
+
+			[chatController sendKeySequence: [NSString stringWithFormat: @"/cleartarget%c", '\n']];
+			usleep(100000);
+
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", '\n']];
+			usleep(100000);
+
+			[chatController sendKeySequence: [NSString stringWithFormat: @"/targetlasttarget%c", '\n']];
+			usleep(100000);
+
+ */
             return YES;
-        else
+        } else {
             return NO;
-    }
+		}
+	}
     return NO;
 	
 }
@@ -670,18 +692,19 @@ static PlayerDataController* sharedController = nil;
 	
 	// is target valid
 	if ( !target || ![target isValid] ){
-		log(LOG_DEV, @"[Player] Unable to target %@", target);
+		log(LOG_ERROR, @"[Player] Unable to target %@", target);
 		[mobController clearTargets];
 		return [self setTarget:0];
 	}
 	
 	// need to make sure we hit the mob selection variable as well!
-	if ( [target isNPC] ){
+	if ( [target isNPC] ) {
 		Mob *mob = (Mob*)target;
 		[mob select];			
 	}
-	
+
 	return [self setTarget:[target GUID]];
+	
 }
 
 

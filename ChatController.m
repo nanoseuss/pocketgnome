@@ -102,7 +102,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
             // found ascii value: now we must determine which block it is
             keycode = ix & 0x7f; // 0111 1111 mask
             numbloc = ix >> 7;
-            // PGLog(@"Found ascii at %d; block = %d, keycode = %d", ix, numbloc, keycode);
+            // log(LOG_DEV, @"Found ascii at %d; block = %d, keycode = %d", ix, numbloc, keycode);
             break;
         }
     }
@@ -162,13 +162,13 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
         return;
     }
 	
-	//PGLog(@"[Chat] Sending '%@'", keySequence);
+	log(LOG_DEV, @"[Chat] Sending '%@'", keySequence);
     
     // get our C string from the NSString
     int strLen = [keySequence length];
     unichar buffer[strLen+1];
     [keySequence getCharacters: buffer];
-    //PGLog(@"Sequence \"%@\" has %d characters.", keySequence, strLen);
+    log(LOG_DEV, @"Sequence \"%@\" has %d characters.", keySequence, strLen);
     
     // create the event source
     CGEventRef tempEvent = CGEventCreate(NULL);
@@ -192,7 +192,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
             
             // if we have a valid keycode, hit it
             if(keyCode >= 0) {
-                //PGLog(@"%d (shift: %d)", keyCode, shift);
+                log(LOG_DEV, @"%d (shift: %d)", keyCode, shift);
                 
                 // create key events
                 CGEventRef keyDn = CGEventCreateKeyboardEvent(source, (CGKeyCode)keyCode, TRUE);
@@ -267,7 +267,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
     if((hotkey < 0) || (hotkey > 128)) return;
     //if(modifier < 0 || modifier > 3) return;
 	
-    //PGLog(@"[Chat] Pressing %d with flags 0x%X", hotkey, modifier);
+    log(LOG_DEV, @"[Chat] Pressing %d with flags 0x%X", hotkey, modifier);
     
     unsigned int flags = modifier;
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
@@ -355,7 +355,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
         if(keyUp)  CFRelease(keyUp);
         // CFRelease(source);
     } else {
-        PGLog(@"invalid source with hotkey %d", hotkey);
+        log(LOG_GENERAL, @"invalid source with hotkey %d", hotkey);
     }
 }
 

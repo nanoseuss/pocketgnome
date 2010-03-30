@@ -1153,6 +1153,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
+	// If this is a continuation of regen from a bot start durring regen
+	if ([[self procedureInProgress] isEqualToString: RegenProcedure] ) {
+		
+		BOOL eatClear = NO;
+		// check health
+		if ( [playerController health] == [playerController maxHealth] ) eatClear = YES;
+		// no buff for eating anyways
+		else if ( ![auraController unit: [playerController player] hasBuffNamed: @"Food"] ) eatClear = YES;
+		
+		BOOL drinkClear = NO;
+		// check mana
+		if ( [playerController mana] == [playerController maxMana] ) drinkClear = YES;
+		// no buff for drinking anyways
+		else if ( ![auraController unit: [playerController player] hasBuffNamed: @"Drink"] ) drinkClear = YES;
+
+		// we're not done eating/drinking
+			if ( !eatClear && !drinkClear ) {
+				[self finishCurrentProcedure: state];
+				return;
+			}
+	}
+	
     // have we completed all the rules?
     int ruleCount = [procedure ruleCount];
     if ( !procedure /*|| completed >= ( ruleCount * 2 )*/ ) {
@@ -1685,7 +1707,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
-	// playr moving, wait to loot
+	// plaeyr moving, wait to loot
 	if ( [movementController isMoving] ){
 		log(LOG_DEV, @"Still moving, waiting to loot");
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
@@ -1715,13 +1737,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self interactWithMouseoverGUID: [unit GUID]];
 			
 			// normal lute delay
-			float delayTime = 0.5;
+			float delayTime = 1.0;
 			
 			// If we do skinning and it may become skinnable
 			if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
-				delayTime = 1.5;				// if it's missing mobs that it should have skinned then increase this
+				delayTime = 2.0;				// if it's missing mobs that it should have skinned then increase this
 
-			if (isNode) delayTime = 1.5; // if it's trying on nodes it just hit increase this
+			if (isNode) delayTime = 2.0; // if it's trying on nodes it just hit increase this
 
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
 		} else {
@@ -1924,43 +1946,59 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Unit *unit = [notification object];
 	
 	log(LOG_COMBAT, @"%@ %@ entered combat!", [combatController unitHealthBar:unit], unit);
+
+	// If we're supposed to ignore combat while flying
+	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) {
+		log(LOG_DEV, @"Ignoring combat with %@ since we're set to ignore combat while flying.", unit);
+		return;
+	}
+	
 	
 	// start a combat procedure if we're not in one!
 	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
+				
 		
-		// If we're supposed to ignore combat while flying
-		if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) {
-			log(LOG_DEV, @"Ignoring combat with %@ since we're set to ignore combat while flying.", unit);
+		// If it's a player attacking us and we're on a mob then lets attack the player!
+		if ( [unit isPlayer] ) {
+			
+			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
+			[self cancelCurrentProcedure];
+			[self actOnUnit:unit];
+			
 			return;
+			
 		}
 		
-		// make sure we're not flying mounted and in the air
-		if ( self.theCombatProfile.ignoreFlying && ![playerController isOnGround] ){
-			log(LOG_DEV, @"Ignoring combat with %@ since we're in the air!", unit);
-			return;
-		}
-		
-		log(LOG_COMBAT, @"Looks like an ambush, taking action!");
+		// Don't log this if it's being triggered because of a pet
+		if (playerController.pet == nil) log(LOG_COMBAT, @"Looks like an ambush, taking action!");
 
 		[self cancelCurrentProcedure];
-
 		[self actOnUnit:unit];
+		
+		return;
+
 	} else {
+		// We are already in combat
+		
 		// If it's a player attacking us and we're on a mob then lets attack the player!
 		if ( ( [[combatController castingUnit] isKindOfClass: [Mob class]] || [[combatController castingUnit] isPet] ) &&
 			[combatController combatEnabled] &&
 			!theCombatProfile.healingEnabled &&
 			[unit isPlayer]) {
-
-			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
-			[self cancelCurrentProcedure];
 			
+			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
+			
+			[self cancelCurrentProcedure];		
 			[self actOnUnit:unit];
 			
-		} else {
-			log(LOG_DEV, @"Already in combat procedure! Not acting on unit");
+			return;
+			
 		}
+		
 	}
+
+	log(LOG_DEV, @"Already in combat procedure! Not acting on unit");
+
 }
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
@@ -2234,7 +2272,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
-	Unit *player = [playerController player];	
+	Unit *player = [playerController player];
 	BOOL eatClear = NO, drinkClear = NO;
 	
 	// check health
@@ -2252,6 +2290,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// we're done eating/drinking! continue
 	if ( eatClear && drinkClear ){
 		log(LOG_REGEN, @"Finished after %0.2f seconds", timeSinceStart);
+		if ([[playerController player] isSitting]) [movementController stepForward];
 		[self evaluateSituation];
 		return;
 	} else 
@@ -2587,7 +2626,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Check to continue regen if the bot was started durring regen
 	
-	if ( [auraController unit: [playerController player] hasBuffNamed: @"Food"] || [auraController unit: [playerController player] hasBuffNamed: @"Drink"] ){
+	BOOL eatClear = NO;
+	// check health
+	if ( [playerController health] == [playerController maxHealth] ) eatClear = YES;
+	// no buff for eating anyways
+	else if ( ![auraController unit: [playerController player] hasBuffNamed: @"Food"] ) eatClear = YES;
+	
+	BOOL drinkClear = NO;
+	// check mana
+	if ( [playerController mana] == [playerController maxMana] ) drinkClear = YES;
+	// no buff for drinking anyways
+	else if ( ![auraController unit: [playerController player] hasBuffNamed: @"Drink"] ) drinkClear = YES;
+	
+	// we're not done eating/drinking
+	if ( !eatClear && !drinkClear ) {
+		
 		[self performSelector: @selector(performProcedureWithState:) 
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 								RegenProcedure,		  @"Procedure",
@@ -3529,7 +3582,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		
 		// normal, non-PvP
-		else if ( self.theRouteSet ){
+		else if ( self.theRouteSet ) {
 			[movementController setPatrolRouteSet:self.theRouteSet];
 			
 			// player is dead but not a ghost - we need to res!
@@ -3537,7 +3590,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[self rePop:[NSNumber numberWithInt:0]];
 			}
 			else{
-				[movementController resumeMovement];
+// We may need to mount or regen so don't start the movement at this point... wait for evaluation.
+// if you need to resumeMovement somewhere then it should be  implemented further down the line as evaluateSituation will move when it needs to
+//				[movementController resumeMovement];
 			}
 			
 			[self evaluateSituation];
