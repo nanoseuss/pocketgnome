@@ -25,6 +25,11 @@
 
 #import "ImageAndTextCell.h"
 
+@interface CombatController ()
+@property (readwrite, retain) Unit *attackUnit;
+@property (readwrite, retain) Unit *castingUnit;
+@property (readwrite, retain) Unit *addUnit;
+@end
 
 @interface CombatController (Internal)
 - (NSArray*)friendlyUnits;
@@ -35,7 +40,6 @@
 - (void)updateCombatTable;
 - (void)monitorUnit: (Unit*)unit;
 @end
-
 
 @implementation CombatController
 
@@ -56,6 +60,7 @@
 		_unitsAllCombat = [[NSMutableArray array] retain];
 		_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
 		
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
@@ -141,6 +146,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[self cancelAllCombat];
 }
 
+- (void)playerHasDied: (NSNotification*)notification {
+    PGLog(@"[Combat] Player has died!");
+	
+	[self cancelAllCombat];
+}
+
 // invalid target
 - (void)invalidTarget: (NSNotification*)notification {
 	
@@ -157,6 +168,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// blacklist?
 	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
 		
+		[blacklistController blacklistObject: _castingUnit withReason:Reason_NotInLoS];
+		
+		/*
 		// don't blacklist if melee + moving to!
 		if ( ! ([botController.theBehavior meleeCombat] && [movementController moveToObject] == _castingUnit ) ){
 			PGLog(@"[Combat] Out of range/LOS, blacklisting %@", _castingUnit);
@@ -164,13 +178,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 		else{
 			PGLog(@"BLACKLIST [Combat] Moving to unit, not blacklisting");
-		}
+		}*/
 	}
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
-	PGLog(@"[Combat] Target not in front!");
-	[movementController backEstablishPosition];
+	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
+	[movementController establishPlayerPosition];
 }
 
 - (void)unitDied: (NSNotification*)notification{
@@ -194,13 +210,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	// add the other units if we need to
-	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] ){
+	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ){
 		[units addObject:_attackUnit];
+		PGLog(@"[Bot] Adding attack unit: %@", _attackUnit);
 	}
 	
 	// add our add
-	if ( _addUnit != nil && ![units containsObject:_addUnit] ){
+	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] ){
 		[units addObject:_addUnit];
+		PGLog(@"[Bot] Adding add unit: %@", _addUnit);
 	}
 	
 	// sort
@@ -402,13 +420,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		PGLog(@"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
 		
 		// set player facing and establish position
-		BOOL useSmooth = [movementController useSmoothTurning];
+		//BOOL useSmooth = [movementController useSmoothTurning];
 		
-		if(!isCasting) [movementController pauseMovement];
+		//if(!isCasting) [movementController pauseMovement];
 		[movementController turnTowardObject: _castingUnit];
-		if(!isCasting && !useSmooth) {
-			[movementController backEstablishPosition];
-		}
+		//if(!isCasting && !useSmooth) {
+		//	[movementController backEstablishPosition];
+		//}
 	}
 	
 	if( !isCasting ) {
@@ -430,7 +448,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( [playerPosition distanceToPosition: [_castingUnit position]] > 5.0f ){
 				PGLog(@"[Combat] Moving to %@", _castingUnit);
 				
-				[movementController moveToObject:_castingUnit andNotify: NO];
+				[movementController moveToObject:_castingUnit];	//andNotify: NO
 			}
 		}
 	}
@@ -451,9 +469,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	//[NSObject cancelPreviousPerformRequestsWithTarget: self];		// we're not calling this as it kills our monitor function + the death might not be fired!
 
 	// reset our variables
-	[_castingUnit release]; _castingUnit = nil;
-	[_attackUnit release];	_attackUnit = nil;
-	[_addUnit release];		_addUnit = nil;
+	self.castingUnit = nil;
+	self.attackUnit = nil;
+	self.addUnit = nil;
 	[_friendUnit release];	_friendUnit =  nil;
 	
 	// remove blacklisted units (TO DO: we should only remove those of type Unit)
@@ -848,6 +866,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		PGLog(@"[**********] Unit not in combat! %d", leftCombatCount);
 		leftCombatCount++;
 		
+		// not in combat after 10 seconds, blacklist?
+		if ( leftCombatCount > 100 ){
+			if ( unit == _attackUnit ){
+				PGLog(@"[**********] Unit not in combat after 10 seconds, blacklisting");
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatAfter10];
+				self.attackUnit = nil;
+				return;
+			}
+		}
+		
 		// after a minute stop monitoring
 		if ( leftCombatCount > 600 ){
 			PGLog(@"[**********]  No longer monitoring %@, unit didn't enter combat after a minute!", unit);
@@ -887,6 +915,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		PGLog(@"[Combat] Dead, removing all objects!");
 		
 		[_unitsAttackingMe removeAllObjects];
+		self.attackUnit = nil;
+		self.addUnit = nil;
+		self.castingUnit = nil;
 		
 		return;
 	}

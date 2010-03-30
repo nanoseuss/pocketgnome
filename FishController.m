@@ -314,7 +314,6 @@
 	if ( ![_facedSchool containsObject:school] ){
 		PGLog(@"[Fishing] Turning toward %@", school);
 		[movementController turnTowardObject:school];
-		[movementController backEstablishPosition];
 	}
 	
 	[_facedSchool addObject:[school retain]];	

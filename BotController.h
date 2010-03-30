@@ -18,6 +18,7 @@
 @class RouteSet;
 @class RouteCollection;
 @class CombatProfile;
+@class PvPBehavior;
 
 @class PTHotKey;
 @class SRRecorderControl;
@@ -48,6 +49,7 @@
 @class BlacklistController;
 @class StatisticsController;
 @class BindingsController;
+@class PvPController;
 
 @class ScanGridView;
 
@@ -87,6 +89,7 @@
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet BindingsController		*bindingsController;
+	IBOutlet PvPController			*pvpController;
 
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;
@@ -94,9 +97,10 @@
     IBOutlet NSView *view;
     
 	RouteCollection *_theRouteCollection;
-    RouteSet *theRoute;
+    RouteSet *theRouteSet;
     Behavior *theBehavior;
     CombatProfile *theCombatProfile;
+	PvPBehavior *_pvpBehavior;
     //BOOL attackPlayers, attackNeutralNPCs, attackHostileNPCs, _ignoreElite;
     //int _currentAttackDistance, _minLevel, _maxLevel, _attackAnyLevel;
     
@@ -127,8 +131,7 @@
 	
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;
-	int _lootAttempt;
-	NSDictionary *_lootDismountAttempt;
+	NSMutableDictionary *_lootDismountCount;
 	int _lootMacroAttempt;
 	WoWObject *_unitToLoot;
 	NSDate *lootStartTime;
@@ -199,6 +202,7 @@
     IBOutlet id combatProfilePopup;
     IBOutlet id minLevelPopup;
     IBOutlet id maxLevelPopup;
+	IBOutlet NSPopUpButton *pvpBehaviorPopUp;
     IBOutlet NSTextField *minLevelText, *maxLevelText;
     IBOutlet NSButton *anyLevelCheckbox;
     
@@ -267,8 +271,9 @@
 @property (retain) NSString *procedureInProgress;
 
 @property (readonly, retain) RouteCollection *theRouteCollection;
-@property (readwrite, retain) RouteSet *theRoute;
+@property (readwrite, retain) RouteSet *theRouteSet;
 @property (readonly, retain) Behavior *theBehavior;
+@property (readonly, retain) PvPBehavior *pvpBehavior;
 @property (readwrite, retain) CombatProfile *theCombatProfile;
 @property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
@@ -284,7 +289,7 @@
 - (void)actOnUnit: (Unit*)unit;
 
 // Input from MovementController;
-- (void)reachedUnit: (WoWObject*)unit;
+//- (void)reachedUnit: (WoWObject*)unit;
 - (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
@@ -334,6 +339,5 @@
 
 // from movement controller (for new WP actions!)
 - (void)changeCombatProfile:(CombatProfile*)profile;
-- (void)changeRouteSet:(RouteSet*)route;
 
 @end

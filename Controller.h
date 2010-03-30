@@ -28,6 +28,7 @@
 @class StatisticsController;
 @class CombatProfileEditor;
 @class ObjectsController;
+@class PvPController;
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
@@ -53,11 +54,12 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet ObjectsController		*objectsController;
+	IBOutlet PvPController			*pvpController;
 	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *spellsToolbarItem;
-    IBOutlet NSToolbarItem *routesToolbarItem, *behavsToolbarItem;
+    IBOutlet NSToolbarItem *routesToolbarItem, *behavsToolbarItem, *pvpToolbarItem;
     IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *statisticsToolbarItem, *objectsToolbarItem;
 	
 	IBOutlet NSPopUpButton *wowInstancePopUpButton;

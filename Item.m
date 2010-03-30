@@ -35,10 +35,10 @@ enum eItemFields {
         // size: 0x90; 12 enchant slots, each size 0xC
 	ITEM_FIELD_PROPERTY_SEED =          0xE8,
 	ITEM_FIELD_RANDOM_PROPERTIES_ID =   0xEC,
-//	ITEM_FIELD_ITEM_TEXT_ID =           0xF0,  // Removed in 3.3.3
-	ITEM_FIELD_DURABILITY =             0xF0,
-	ITEM_FIELD_MAXDURABILITY =          0xF4,
-	ITEM_FIELD_PADDING =                0xF8,
+    // ITEM_FIELD_ITEM_TEXT_ID =           0xF0,  // Removed in 3.3.3
+    ITEM_FIELD_DURABILITY =             0xF0,
+    ITEM_FIELD_MAXDURABILITY =          0xF4,
+    ITEM_FIELD_PADDING =                0xF8,
 	TOTAL_ITEM_FIELDS =                 0x26
 };
 

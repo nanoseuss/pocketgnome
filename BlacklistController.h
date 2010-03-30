@@ -22,6 +22,7 @@
 	
 
 	NSMutableDictionary *_blacklist;
+	NSMutableDictionary *_attemptList;
 
 }
 
@@ -30,12 +31,22 @@ enum{
 	Reason_None					= 0,
 	Reason_NotInLoS				= 1,
 	Reason_NodeMadeMeFall		= 2,
-	Reason_next					= 4,
+	Reason_CantReachObject		= 4,
+	Reason_NotInCombatAfter10	= 8,
+	
 };
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason;
 - (void)blacklistObject: (WoWObject*)obj;
 - (BOOL)isBlacklisted: (WoWObject*)obj;
 - (void)removeAllUnits;
+
+// sick of putting more dictionaries in bot controller, will just use this
+- (int)attemptsForObject:(WoWObject*)obj;
+- (void)incrementAttemptForObject:(WoWObject*)obj;
+- (void)clearAttemptsForObject:(WoWObject*)obj;
+- (void)clearAttempts;
+
+- (void)clearAll;
 
 @end

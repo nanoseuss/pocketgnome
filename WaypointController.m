@@ -46,7 +46,6 @@ enum AutomatorIntervalType {
 @interface WaypointController (Internal)
 - (void)toggleGlobalHotKey:(id)sender;
 - (void)automatorPulse;
-- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID;
 - (id)selectedRouteObject;
 - (void)selectItemInOutlineViewToEdit:(id)item;
 - (void)setViewTitle;
@@ -85,7 +84,7 @@ enum AutomatorIntervalType {
 		NSArray *routes = [[self loadAllDataForKey:@"Routes" withClass:[RouteSet class]] retain];
 		
 		// pull routes from .route files
-		_myHackVariable = YES;
+		_myHackVariableToLoadOldData = YES;
 		if ( !routes ){
 			routes = [[self loadAllObjects] retain];
 		}
@@ -97,7 +96,7 @@ enum AutomatorIntervalType {
 		}
 		
 		// stop using .route
-		_myHackVariable = NO;
+		_myHackVariableToLoadOldData = NO;
 		
 		// then we need to convert our routes above, I love how much I change things QQ
 		if ( [routes count] > 0 ){
@@ -182,6 +181,7 @@ enum AutomatorIntervalType {
 	}
 	
 	// we no longer use this anymore! Yay!
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"IgnoreRoute"];
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"Routes"];
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -228,6 +228,16 @@ enum AutomatorIntervalType {
     if( [routeTypeSegment selectedTag] == 1 )
         return CorpseRunRoute;
     return @"";
+}
+
+- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID{
+	for ( RouteCollection *rc in _routeCollectionList ){
+		if ( [UUID isEqualToString:[rc UUID]] ){
+			return [[rc retain] autorelease];
+		}
+	}
+
+	return nil;
 }
 
 - (NSArray*)routeCollections{
@@ -415,7 +425,7 @@ enum AutomatorIntervalType {
 - (void)selectCurrentWaypoint:(int)index{
 	
 	if ( [[waypointTable window] isVisible] && [scrollWithRoute state] ) {
-		if ( self.currentRouteSet == botController.theRoute ){
+		if ( self.currentRouteSet == botController.theRouteSet ){
 			[waypointTable selectRow:index byExtendingSelection:NO];
 			[waypointTable scrollRowToVisible:index];
 		}
@@ -550,13 +560,13 @@ enum AutomatorIntervalType {
 
 - (IBAction)testWaypointSequence: (id)sender {
     if(![self currentRoute] || ![[self currentRoute] waypointCount])    return;
-    
-    [movementController setPatrolRoute: [self currentRoute]];
-    [movementController beginPatrol: 1];
+	
+	[movementController setPatrolRouteSet: [self currentRouteSet]];
+	[movementController resumeMovement];
 }
 
 - (IBAction)stopMovement: (id)sender {
-    [movementController setPatrolRoute: nil];
+	[movementController stopMovement];
 }
 
 #pragma mark -
@@ -1354,16 +1364,6 @@ enum AutomatorIntervalType {
 	[routesTable editColumn:0 row:row withEvent:nil select:YES];
 }
 
-- (RouteCollection*)routeCollectionForUUID:(NSString*)UUID{
-	
-	for ( RouteCollection *rc in _routeCollectionList ){
-		if ( [[rc UUID] isEqualToString:UUID] ){
-			return rc;
-		}
-	}
-	return nil;
-}
-
 - (id)selectedRouteObject{
 	
 	// make sure only 1 item is selected!
@@ -1639,7 +1639,7 @@ enum AutomatorIntervalType {
 // for saving
 - (NSString*)objectExtension{
 	// just to load old data
-	if ( _myHackVariable ){
+	if ( _myHackVariableToLoadOldData ){
 		return @"route";
 	}
 	
@@ -1647,7 +1647,7 @@ enum AutomatorIntervalType {
 }
 
 - (NSString*)objectName:(id)object{
-	if ( _myHackVariable ){
+	if ( _myHackVariableToLoadOldData ){
 		return [(RouteSet*)object name];
 	}
 	

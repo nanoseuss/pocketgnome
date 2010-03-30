@@ -29,6 +29,7 @@
     self = [super init];
     if (self != nil) {
 		_blacklist = [[NSMutableDictionary alloc] init];
+		_attemptList = [[NSMutableDictionary alloc] init];
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(unitDied:) 
@@ -120,27 +121,31 @@
 	// check each infraction, based on the reason we may not care!
 	//  making the assumption that ALL infractions are w/in the time frame since we refreshed above
 	int totalNone = 0;
+	int totalFailedToReach = 0;
+	int totalLos = 0;
 	for ( NSDictionary *infraction in infractions ){
 		
 		int reason		= [[infraction objectForKey:@"Reason"] intValue];
 		NSDate *date	= [infraction objectForKey:@"Date"];
+		float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 		
-		if ( reason == Reason_None ){
-			totalNone++;
-		}
-		else if ( reason == Reason_NotInLoS ){
-			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
-			
-			// only blacklisted for 5 seconds, since we'll now move, and could potentially get out of LOS?
-			if ( timeSinceBlacklisted <= 5.0f ){
-				PGLog(@"[Blacklist] LOS still blacklisted, has only been %0.2f seconds", timeSinceBlacklisted);
-				return YES;
-			}
+		if ( reason == Reason_NotInLoS && timeSinceBlacklisted <= 5.0f ){
+			PGLog(@"[Blacklist] LOS , has only been %0.2f seconds", timeSinceBlacklisted);
+			totalLos++;
 		}
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
 		else if ( reason == Reason_NodeMadeMeFall ){
 			PGLog(@"[Blacklist] Blacklisted %@ for making us fall!", obj);
 			return YES;
+		}
+		else if ( reason == Reason_CantReachObject ){
+			totalFailedToReach++;
+		}
+		else if ( reason == Reason_NotInCombatAfter10 ){
+			return YES;
+		}
+		else{
+			totalNone++;
 		}
 	}
 	
@@ -149,10 +154,23 @@
 		PGLog(@"[Blacklist] Unit %@ blacklisted for total count!", obj);
 		return YES;
 	}
+	else if ( totalFailedToReach >= 3 ){
+		PGLog(@"[Blacklist] Object %@ blacklisted because we couldn't reach it!", obj);
+		return YES;
+	}
+	/*else if ( totalLos >= 2 ){
+		PGLog(@"[Blacklist] Blacklisted due to LOS");
+		return YES;
+	}*/
 	
 	PGLog(@"[Blacklist] Not blacklisted but %d infractions", [infractions count]);
 
     return NO;
+}
+
+- (void)clearAll{
+	[_blacklist removeAllObjects];
+	[_attemptList removeAllObjects];	
 }
 
 - (void)removeAllUnits{
@@ -190,6 +208,41 @@
 		if ( [_blacklist objectForKey:guid] )
 			[_blacklist removeObjectForKey:guid];
 	}
+}
+
+#pragma mark Attempts
+
+- (int)attemptsForObject:(WoWObject*)obj{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
+	NSNumber *count = [_attemptList objectForKey:guid];
+	if ( count ){
+		return [count intValue];
+	}
+	
+	return 0;
+}
+
+- (void)incrementAttemptForObject:(WoWObject*)obj{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
+	NSNumber *count = [_attemptList objectForKey:guid];
+	if ( count ){
+		count = [NSNumber numberWithInt:[count intValue] + 1];
+	}
+	else{
+		count = [NSNumber numberWithInt:1];
+	}
+	
+	PGLog(@"[Blacklist] Incremented to %@ for %@", count, obj);
+	[_attemptList setObject:count forKey:guid];
+}
+
+- (void)clearAttemptsForObject:(WoWObject*)obj{
+	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
+	[_attemptList removeObjectForKey:guid];
+}
+
+- (void)clearAttempts{
+	[_attemptList removeAllObjects];
 }
 
 @end

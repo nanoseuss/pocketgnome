@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGScrollUp</key>
+	<dict>
+		<key>Macro</key>
+		<string>/click PVPBattlegroundFrameTypeScrollFrameScrollBarScrollUpButton</string>
+		<key>Description</key>
+		<string>This will scroll up in the Battleground list</string>
+	</dict>
 	<key>PartyGreedLoot</key>
 	<dict>
 		<key>Macro</key>
@@ -145,35 +152,35 @@
 	<key>BGClickType1</key>
 	<dict>
 		<key>Macro</key>
-		<string>BattlegroundType1 </string>
+		<string>/click BattlegroundType1 </string>
 		<key>Description</key>
 		<string>This will click the first item in the BG list</string>
 	</dict>
 	<key>BGClickType2</key>
 	<dict>
 		<key>Macro</key>
-		<string>BattlegroundType2</string>
+		<string>/click BattlegroundType2</string>
 		<key>Description</key>
 		<string>This will click the second item in the BG list</string>
 	</dict>
 	<key>BGClickType3</key>
 	<dict>
 		<key>Macro</key>
-		<string>BattlegroundType3</string>
+		<string>/click BattlegroundType3</string>
 		<key>Description</key>
 		<string>This will click the third item in the BG list</string>
 	</dict>
 	<key>BGClickType4</key>
 	<dict>
 		<key>Macro</key>
-		<string>BattlegroundType4</string>
+		<string>/click BattlegroundType4</string>
 		<key>Description</key>
 		<string>This will click the fourth item in the BG list</string>
 	</dict>
 	<key>BGClickType5</key>
 	<dict>
 		<key>Macro</key>
-		<string>BattlegroundType5</string>
+		<string>/click BattlegroundType5</string>
 		<key>Description</key>
 		<string>This will click the fifth item in the BG list</string>
 	</dict>

@@ -67,6 +67,7 @@
 - (id)copyWithZone:(NSZone *)zone{
     RouteCollection *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
+	PGLog(@"copy is changed?");
 	copy.changed = YES;
 	copy.startUUID = self.startUUID;
 	copy.startRouteOnDeath = self.startRouteOnDeath;
