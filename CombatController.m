@@ -905,7 +905,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 	
-	// unit has ghost aura (so is dead, fire off notification
+	// unit has ghost aura (so is dead, fire off notification)
 	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
 	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
 		log(LOG_COMBAT, @"%@ Firing death notification for player %@", [self unitHealthBar: unit], unit);
@@ -913,11 +913,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 	
+	// Tanaris4: I'd recommend using cachedGUID, as (in theory) an object's GUID shouldn't change + this saves memory reads
+	GUID guid = [unit cachedGUID];
+	
 	// Unit not in combat check
-	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
+	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
 
-	// This is to set timers for of the unit is our taret
-	int leftCombatTargetCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
+	// Tanaris4: what is the below comment?
+	// This is to set timers for of the unit is our target
+	int leftCombatTargetCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
 
 	if ( ![unit isInCombat] ) {
 		
@@ -964,7 +968,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			}
 			
 			leftCombatTargetCount++;
-			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
+			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
 		}
 		// after a minute stop monitoring
 		if ( secondsInCombat > 60 ){
@@ -972,7 +976,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			log(LOG_COMBAT, @"%@ No longer monitoring %@, didn't enter combat after  %d seconds.", [self unitHealthBar: unit], unit, secondsInCombat);
 
 			leftCombatTargetCount = 0;
-			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
+			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
 
 			return;
 		}
@@ -980,7 +984,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		leftCombatCount = 0;
 	}
-	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
+	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
 	
 	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
 }
