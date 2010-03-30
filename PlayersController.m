@@ -60,7 +60,7 @@ static PlayersController *sharedPlayers = nil;
     GUID playerTarget = [playerData targetID];
     
     for(Player *player in _objectList) {
-        if( playerTarget == [player GUID]) {
+        if( playerTarget == [player cachedGUID]) {
             return [[player retain] autorelease];
         }
     }
@@ -69,7 +69,7 @@ static PlayersController *sharedPlayers = nil;
 
 - (Player*)playerWithGUID: (GUID)guid {
     for(Player *player in _objectList) {
-        if( guid == [player GUID]) {
+        if( guid == [player cachedGUID]) {
             return [[player retain] autorelease];
         }
     }

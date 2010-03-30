@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="402"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -62,7 +62,7 @@
 										<object class="NSTextFieldCell" key="NSCell" id="877530466">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">4326400</int>
-											<string key="NSContents">If you only enable certain battlegrounds, PG will cycle through them in alphabetical order</string>
+											<string key="NSContents">Note: Currently PvP behaviors ONLY support random battlegrounds, so you must enable all 6 BGs below</string>
 											<object class="NSFont" key="NSSupport" id="26">
 												<string key="NSName">LucidaGrande</string>
 												<double key="NSSize">11</double>
@@ -80,7 +80,7 @@
 											</object>
 											<object class="NSColor" key="NSTextColor">
 												<int key="NSColorSpace">1</int>
-												<bytes key="NSRGB">MC4yMDAwMDAwMDMgMC4yMDAwMDAwMDMgMC4yMDAwMDAwMDMAA</bytes>
+												<bytes key="NSRGB">MSAwIDAAA</bytes>
 											</object>
 										</object>
 									</object>
@@ -3667,7 +3667,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">740</int>
+			<int key="maxID">742</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3861,8 +3861,6 @@
 							<string>miningCheckbox</string>
 							<string>miningSkillText</string>
 							<string>mobController</string>
-							<string>mountCheckbox</string>
-							<string>mountType</string>
 							<string>movementController</string>
 							<string>netherwingEggCheckbox</string>
 							<string>ninjaSkinCheckbox</string>
@@ -3948,8 +3946,6 @@
 							<string>NSButton</string>
 							<string>id</string>
 							<string>MobController</string>
-							<string>NSButton</string>
-							<string>NSPopUpButton</string>
 							<string>MovementController</string>
 							<string>NSButton</string>
 							<string>NSButton</string>

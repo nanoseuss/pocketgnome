@@ -77,8 +77,7 @@
     return [[[CombatProfile alloc] initWithName: name] autorelease];
 }
 
-- (id)copyWithZone:(NSZone *)zone
-{
+- (id)copyWithZone:(NSZone *)zone{
     CombatProfile *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
     copy.entries = self.entries;
@@ -204,8 +203,7 @@
     [coder encodeObject: self.entries forKey: @"IgnoreList"];
 }
 
-- (void) dealloc
-{
+- (void) dealloc{
     self.name = nil;
     self.entries = nil;
     [super dealloc];
@@ -269,7 +267,7 @@
 	return NO;
 }
 
-- (void)setEntries: (NSArray*)newEntries {
+- (void)setEntries: (NSMutableArray*)newEntries {
     [self willChangeValueForKey: @"entries"];
     [_combatEntries autorelease];
     if(newEntries) {
@@ -286,23 +284,65 @@
 
 - (IgnoreEntry*)entryAtIndex: (unsigned)index {
     if(index >= 0 && index < [self entryCount])
-        return [[[_combatEntries objectAtIndex: index] retain] autorelease];
+        return [[[self.entries objectAtIndex: index] retain] autorelease];
     return nil;
 }
 
 - (void)addEntry: (IgnoreEntry*)entry {
     if(entry != nil)
-        [_combatEntries addObject: entry];
+        [self.entries addObject: entry];
 }
 
 - (void)removeEntry: (IgnoreEntry*)entry {
     if(entry == nil) return;
-    [_combatEntries removeObject: entry];
+    [self.entries removeObject: entry];
 }
 
 - (void)removeEntryAtIndex: (unsigned)index; {
     if(index >= 0 && index < [self entryCount])
-        [_combatEntries removeObjectAtIndex: index];
+        [self.entries removeObjectAtIndex: index];
+}
+
+#pragma mark SaveDataObject
+
+- (void)addObservers{
+	PGLog(@" adding observers for %@", self);
+	[self addObserver: self forKeyPath: @"entries" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"tankUnitGUID" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"assistUnitGUID" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"followUnitGUID" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"combatEnabled" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"onlyRespond" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackNeutralNPCs" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackHostileNPCs" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackPlayers" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackPets" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackAnyLevel" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"ignoreElite" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"ignoreLevelOne" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"ignoreFlying" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"assistUnit" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"tankUnit" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"followUnit" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"partyEnabled" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"healingEnabled" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"autoFollowTarget" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"followDistanceToMove" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"yardsBehindTargetStart" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"yardsBehindTargetStop" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"healingRange" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"mountEnabled" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"disableRelease" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackRange" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"engageRange" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackLevelMin" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"attackLevelMax" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	self.changed = YES;
 }
 
 @end

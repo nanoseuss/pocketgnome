@@ -48,7 +48,7 @@
 - (void)removeEntry: (IgnoreEntry*)entry;
 - (void)removeEntryAtIndex: (unsigned)index;
 
-@property (readwrite, retain) NSArray *entries;
+@property (readwrite, retain) NSMutableArray *entries;
 @property (readwrite, copy) NSString *name;
 @property (readwrite, assign) UInt64 tankUnitGUID;
 @property (readwrite, assign) UInt64 assistUnitGUID;

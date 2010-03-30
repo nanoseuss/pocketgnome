@@ -105,7 +105,6 @@
 - (void)showCombatPanel;
 - (void)updateCombatTable;
 
-- (void)monitorUnit;
 - (NSString*)unitHealthBar: (Unit*)unit;
 
 @end

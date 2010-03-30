@@ -2388,8 +2388,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForPartyFollow {
 	if ( !theCombatProfile.partyEnabled || 
 		!theCombatProfile.followUnit || 
-		!theCombatProfile.followUnitGUID > 0x0 ) return NO;
+		theCombatProfile.followUnitGUID <= 0x0 ) return NO;
 
+	// Tanaris4: Think it would be worthwhile to have a "current state" variable? (i.e. looting, killing, skinning, mining, etc.... vs. checking the status?)
 	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
 		log(LOG_PARTY, @"Skipping party follow since we're looting.");
 		return NO;
@@ -2561,8 +2562,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 			}
 		}
-	} else
-	if ( theCombatProfile.partyEnabled && theCombatProfile.assistUnit) {
+	}
+	else if ( theCombatProfile.partyEnabled && theCombatProfile.assistUnit) {
 		// IF assist is broke let's stop here.
 		return NO;
 	}
@@ -2624,7 +2625,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_EVALUATE, @"Evaluating for Regen");
 
-	// Check to continue regen if the bot was started durring regen
+	// Check to continue regen if the bot was started during regen
 	
 	BOOL eatClear = NO;
 	// check health
@@ -2942,7 +2943,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
-// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
+	// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
 	if ( !performPatrolProc && _includeFriendlyPatrol) {
 		NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
 		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
@@ -2964,7 +2965,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
-	// Look for corpses - resurection
+	// Look for corpses - resurrection
 	if ( !performPatrolProc && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
 		NSMutableArray *allPotentialUnits = [NSMutableArray array];
 		[allPotentialUnits addObjectsFromArray: [playersController allPlayers]];
@@ -3190,7 +3191,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_MOUNT, @"Attempting to load mounts...");
 			[spellController reloadPlayerSpells];				
 		}
-
 	}
 		
 	return NO;
@@ -3468,8 +3468,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
+	if ( self.pvpBehavior && ![self.pvpBehavior canDoRandom] ){
+		log(LOG_STARTUP, @"Currently PG will only do random BGs, you must enabled all battlegrounds + select a route for each");
+		NSBeep();
+		NSRunAlertPanel(@"Enable all battlegrounds", @"Currently PG will only do random BGs, you must enabled all battlegrounds + select a route for each", @"Okay", NULL, NULL);
+		return;
+		
+	}
+	
 	// not a valid pvp behavior
-	if ( self.pvpBehavior && ![self.pvpBehavior isValid] ){
+	/*if ( self.pvpBehavior && ![self.pvpBehavior isValid] ){
 		
 		if ( [self.pvpBehavior random] ){
 			log(LOG_STARTUP, @"You must have all battlegrounds enabled in your PvP behavior to do random!", zone);
@@ -3483,7 +3491,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			NSRunAlertPanel(@"Enable 1 battleground", @"You need at least 1 battleground enabled in your PvP behavior to do PvP!", @"Okay", NULL, NULL);
 			return;
 		}
-	}
+	}*/
 	
 	// TO DO: verify starting routes for ALL PvP routes
 	
@@ -4078,6 +4086,15 @@ NSMutableDictionary *_diffDict = nil;
 		if ( averageDurability > 0 && averageDurability < durabilityPercentage ){
 			logOutNow = YES;
 			logMessage = [NSString stringWithFormat:@"Item durability has reached %02.f, logging out!", averageDurability];
+		}
+	}
+	
+	// check honor
+	if ( self.pvpBehavior && [self.pvpBehavior stopHonor] ){
+		UInt32 currentHonor = [playerController honor];
+		if ( currentHonor && currentHonor >= [self.pvpBehavior stopHonorTotal] ){
+			logOutNow = YES;
+			logMessage = [NSString stringWithFormat:@"Honor has reached %u, logging out!", currentHonor];
 		}
 	}
 	
