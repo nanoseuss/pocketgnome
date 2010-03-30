@@ -197,7 +197,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	log(LOG_DEV, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
 	if ([botController castingUnit]) {
-		log(LOG_BLACKLIST, @"%@ %@ is put of range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+		log(LOG_BLACKLIST, @"%@ %@ is out of range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_OutOfRange];
 	}
 
