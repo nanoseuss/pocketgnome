@@ -100,6 +100,8 @@
 @property (readwrite, retain) WoWObject *unitToLoot;
 @property (readwrite, retain) WoWObject *lastAttemptedUnitToLoot;
 @property (readwrite, retain) Unit *preCombatUnit;
+@property (readwrite, retain) Unit *castingUnit;
+
 
 @property (readwrite, retain) RouteCollection *theRouteCollection;
 
@@ -157,8 +159,6 @@
 
 
 @implementation BotController
-
-@synthesize castingUnit = _castingUnit;
 
 + (void)initialize {
     
@@ -229,7 +229,7 @@
 	_movingTowardMobCount = 0;
 	_lootDismountCount = [[NSMutableDictionary dictionary] retain];
 	_mountLastAttempt = nil;
-	_castingUnit	= nil;
+	self.castingUnit	= nil;
 	
 	_routesChecked = [[NSMutableArray array] retain];
 	_mobsToLoot = [[NSMutableArray array] retain];
@@ -324,6 +324,7 @@
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
 @synthesize preCombatUnit;
+@synthesize castingUnit;
 @synthesize pvpPlayWarning = _pvpPlayWarning;
 @synthesize pvpLeaveInactive = _pvpLeaveInactive;
 @synthesize pvpAntiAFKCounter = _pvpAntiAFKCounter;
@@ -1429,13 +1430,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// take the action here
 	if ( matchFound && rule ) {
 	
-		if ( [rule target] != TargetNone ) {
-			log(LOG_PROCEDURE, @"%@ %@ doing %@", [combatController unitHealthBar:target], target, rule );
+		if ( [rule target] == TargetNone ) {
+			log(LOG_PROCEDURE, @"%@ %@", [combatController unitHealthBar:[playerController player]], [playerController player] );
 		} else {
-			log(LOG_PROCEDURE, @"%@ %@ doing %@", [combatController unitHealthBar:target], target, rule );
-//			log(LOG_PROCEDURE, @"Doing %@", rule );
+			log(LOG_PROCEDURE, @"%@ %@", [combatController unitHealthBar:target], target );
 		}
-			
+		log(LOG_PROCEDURE, @"	%@", rule );
+
 		// target if needed!
 		if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && [rule target] != TargetNone) 
 			[combatController stayWithUnit:target withType:[rule target]];
@@ -1474,7 +1475,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						[playerController setPrimaryTarget: [playerController player]];
 					} else 
 					if ( [rule target] != TargetNone ){
-						_castingUnit = target;
+						self.castingUnit = target;
 						[playerController setPrimaryTarget: target];
 					}
 					
@@ -1487,7 +1488,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// error of some kind :/
 					if ( actionResult != ErrNone ){
-						log(LOG_PROCEDURE, @"Attempted to do %u on %@ %d %d times", actionID, target, attempts, completed);
+						log(LOG_DEV, @"Attempted to do %u on %@ %d %d times", actionID, target, attempts, completed);
 						if ( originalTarget == target ) log(LOG_DEV, @"Same target");
 						
 						NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
@@ -1538,7 +1539,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_DEV, @"Adding resurrection CD to %@", target);
 
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyResurrected];
-			
+
+			// Let's retarget ourselves so it doesn't look like we're in love
+			[playerController setPrimaryTarget: [playerController player]];
+
 		}
 		// The idea is that this will improve decision making for healers and keep the bot from looking stupid
 		if (wasFriend &&
@@ -1551,6 +1555,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			// If they were a friendly then lets put them on the friend GCD so we don't double heal or buff.
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyHelpedFriend];
+
+			// Let's retarget ourselves so it doesn't look like we're in love
+			[playerController setPrimaryTarget: [playerController player]];
 
 		}
 
@@ -4172,7 +4179,7 @@ NSMutableDictionary *_diffDict = nil;
 		
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		_lastActionErrorCode = lastErrorMessage;
-		log(LOG_GENERAL, @"[Bot] Spell %d didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
+		log(LOG_PROCEDURE, @"%@ %@ Spell %d didn't cast: %@", [combatController unitHealthBar: castingUnit], castingUnit,  actionID, [playerController lastErrorMessage] );
 		
 		// do something?
 		if ( lastErrorMessage == ErrSpellNot_Ready){
@@ -4185,7 +4192,10 @@ NSMutableDictionary *_diffDict = nil;
 			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];
 		}
 		else if ( lastErrorMessage == ErrTargetOutRange ){
-			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorOutOfRange object: nil];
+			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetOutOfRange object: nil];
+		}
+		else if ( lastErrorMessage == ErrMorePowerfullSpellActive ){
+			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorMorePowerfullSpellActive object: nil];
 		}
 		else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ){
 			if ( ![playerController isOnGround] ){
@@ -4259,6 +4269,9 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	else if ( [errorMessage isEqualToString:TARGET_DEAD] ){
 		return ErrInvalidTarget;
+	}
+	else if ( [errorMessage isEqualToString:MORE_POWERFUL_SPELL_ACTIVE] ){
+		return ErrMorePowerfullSpellActive;
 	}
 	
 	return ErrNotFound;

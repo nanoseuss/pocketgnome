@@ -12,8 +12,8 @@
 typedef enum CastError {
     ErrNone = 0,
 	ErrNotFound = 1,
-    ErrInventoryFull = 2,				// @"Inventory is Full"
-    ErrTargetNotInLOS = 3,
+	ErrInventoryFull = 2,				// @"Inventory is Full"
+    	ErrTargetNotInLOS = 3,
 	ErrCantMove = 4,
 	ErrTargetNotInFrnt = 5,	
 	ErrWrng_Way = 6,
@@ -28,6 +28,7 @@ typedef enum CastError {
 	ErrTargetDead = 15,
 	ErrCantAttackMounted = 16,
 	ErrYouAreMounted = 17,
+	ErrMorePowerfullSpellActive = 18,
 } CastError;
 
 #define INV_FULL			@"Inventory is full."
@@ -47,6 +48,7 @@ typedef enum CastError {
 #define CANT_ATTACK_MOUNTED	@"Can't attack while mounted."
 #define YOU_ARE_MOUNTED		@"You are mounted."
 #define CANT_ATTACK_TARGET	@"You cannot attack that target."
+#define MORE_POWERFUL_SPELL_ACTIVE	@"A more powerful spell is already active"
 
 
 //Must have a Fishing Pole equipped

@@ -54,11 +54,12 @@
 
 @class ScanGridView;
 
-#define ErrorSpellNotReady			@"ErrorSpellNotReady"
-#define ErrorTargetNotInLOS			@"ErrorTargetNotInLOS"
-#define ErrorInvalidTarget			@"ErrorInvalidTarget"
-#define ErrorOutOfRange				@"ErrorOutOfRange"
-#define ErrorTargetNotInFront		@"ErrorTargetNotInFront"
+#define ErrorSpellNotReady				@"ErrorSpellNotReady"
+#define ErrorTargetNotInLOS				@"ErrorTargetNotInLOS"
+#define ErrorInvalidTarget				@"ErrorInvalidTarget"
+#define ErrorTargetOutOfRange			@"ErrorTargetOutOfRange"
+#define ErrorTargetNotInFront			@"ErrorTargetNotInFront"
+#define ErrorMorePowerfullSpellActive	@"ErrorMorePowerfullSpellActive"
 
 // Hotkey set flags
 #define	HotKeyStartStop				0x1
@@ -116,7 +117,7 @@
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
     Unit *preCombatUnit;
-	Unit *_castingUnit;		// the unit we're casting on!
+	Unit *castingUnit;		// the unit we're casting on!
     NSMutableArray *_mobsToLoot;
     int _reviveAttempt, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;

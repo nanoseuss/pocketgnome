@@ -66,9 +66,10 @@
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(outOfRange:) name: ErrorOutOfRange object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetOutOfRange:) name: ErrorTargetOutOfRange object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInLOS:) name: ErrorTargetNotInLOS object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInFront:) name: ErrorTargetNotInFront object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(morePowerfullSpellActive:) name: ErrorMorePowerfullSpellActive object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(unitDied:) 
                                                      name: UnitDiedNotification 
@@ -157,7 +158,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // invalid target
 - (void)invalidTarget: (NSNotification*)notification {
-	log(LOG_COMBAT, @"[Notification] %@ %@ is an Invalid Target!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+	log(LOG_DEV, @"[Notification] %@ %@ is an Invalid Target!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
 	if ([botController castingUnit]) {
 		log(LOG_BLACKLIST, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
@@ -166,13 +167,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	self.attackUnit = nil;
 	
-	[botController cancelCurrentProcedure];
-	[botController evaluateSituation];
+//	[botController cancelCurrentProcedure];
+//	[botController evaluateSituation];
 }
 
 // not in LoS
 - (void)targetNotInLOS: (NSNotification*)notification {
-	log(LOG_COMBAT, @"[Notification] %@ %@ is not in LoS!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+	log(LOG_DEV, @"[Notification] %@ %@ is not in LoS!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
 	if ([botController castingUnit]) {
 		log(LOG_BLACKLIST, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
@@ -181,25 +182,30 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	self.attackUnit = nil;
 
-	[botController cancelCurrentProcedure];
-	[botController evaluateSituation];
 }
 
 // target is out of range
-- (void)outOfRange: (NSNotification*)notification {
+- (void)targetOutOfRange: (NSNotification*)notification {
 
-	log(LOG_COMBAT, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+	log(LOG_DEV, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
 	if ([botController castingUnit]) {
-		log(LOG_BLACKLIST, @"%@ %@ is put pf range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+		log(LOG_BLACKLIST, @"%@ %@ is put of range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_OutOfRange];
 	}
 
 	self.attackUnit = nil;
 
-	[botController cancelCurrentProcedure];
-	[botController evaluateSituation];
+}
 
+- (void)morePowerfullSpellActive: (NSNotification*)notification {
+	log(LOG_ERROR, @"You need to adjust your behavior so the previous spell doesn't cast if the player has a more powerfull buff!");
+	
+	if ([botController castingUnit]) {
+		log(LOG_BLACKLIST, @"%@ %@ is put pf range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_RecentlyHelpedFriend];
+	}
+	
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {

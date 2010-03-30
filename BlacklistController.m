@@ -70,28 +70,24 @@
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason {
 	
-	if (!obj || obj == nil) return;
-
 	log(LOG_BLACKLIST, @"Blacklisting %@ for reason %d with retain count %d", obj, reason, [obj retainCount]);
 	
 	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
 	NSMutableArray *infractions = [_blacklist objectForKey:guid];
 	
-	if ( [infractions count] == 0 ) {
-		infractions = [NSMutableArray array];
-	}
+	if ( [infractions count] == 0 ) infractions = [NSMutableArray array];
 
 	[infractions addObject:[NSDictionary dictionaryWithObjectsAndKeys: 
 							  [NSNumber numberWithInt:reason],			@"Reason",
 							  [NSDate date],							@"Date", nil]];	
-	
+
 	[_blacklist setObject:infractions forKey:guid];
 }
 
 // simply add an object to our blacklist!
 - (void)blacklistObject: (WoWObject*)obj{
 	
-	if (obj && obj != nil) [self blacklistObject:obj withReason:Reason_None];
+	[self blacklistObject:obj withReason:Reason_None];
 	
 }
 
@@ -99,7 +95,7 @@
 - (void)refreshBlacklist{
 	if ( ![_blacklist count] ) return;
 	NSArray *allKeys = [_blacklist allKeys];
-		
+	
 	for ( NSNumber *guid in allKeys ) {
 		
 		NSArray *infractions = [_blacklist objectForKey:guid];
@@ -145,20 +141,21 @@
 				if ( timeSinceBlacklisted < BLACKLIST_TIME ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 			}
-			
-			// Either unblacklist or update the number of infractions
-			if ([infractionsToKeep count]) {
-				[_blacklist setObject:infractionsToKeep forKey:guid];
-			} else {
-				log(LOG_BLACKLIST, @"Removing %@", (Unit*)guid);
-				[_blacklist removeObjectForKey:guid];
-			}
+		}
+
+		// Either unblacklist or update the number of infractions
+		if ([infractionsToKeep count]) {
+			[_blacklist setObject:infractionsToKeep forKey:guid];
+		} else {
+			log(LOG_BLACKLIST, @"Removing %@", (Unit*)guid);
+			[_blacklist removeObjectForKey:guid];
 		}
 	}
+
 }
 
 - (BOOL)isBlacklisted: (WoWObject*)obj {
-	
+		
 	// refresh the blacklist (we could do this on a timer to be more "efficient"
 	[self refreshBlacklist];
 	

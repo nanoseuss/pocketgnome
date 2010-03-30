@@ -677,13 +677,13 @@ typedef enum MovementState{
 	
 	// should we jump?
 	//log(LOG_MOVEMENT, @" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
-	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] ){
+	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && 
+			[[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] &&
+			![[playerData player] isFlyingMounted] ){
 		
-		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ){
-			[self jump];
-		}
-	}
-	else {
+		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ) [self jump];
+
+	} else {
 		[self correctDirection: NO];
 	}
 	
@@ -904,8 +904,11 @@ typedef enum MovementState{
 		// Face the target
 		[playerData faceToward: [target position]];
 		usleep([controller refreshDelay]);
+		
+// Have not tested timing n such here
 		// Move, Jump, Stop
 		[self moveForwardStart];
+		usleep(10000);
 		[self jump];
 		usleep(10000);
 		[self moveForwardStop];
@@ -1703,7 +1706,7 @@ typedef enum MovementState{
 	}
 	
 	// just in case people have problems, we'll print something to their log file
-	if ( ![playerData isOnGround] ) {
+	if ( ![[playerData player] isOnGround] ) {
 		log(LOG_MOVEMENT, @"[Movement] Unable to dismount player! In theory we should never be here! Mount ID: %d", mountID);
     }
 	
@@ -1712,6 +1715,9 @@ typedef enum MovementState{
 
 - (void)jump{
 
+	// If we're air mounted and not on the ground then let's not jump
+	if ([[playerData player] isFlyingMounted] && ![[playerData player] isOnGround] ) return;
+	
 	log(LOG_MOVEMENT, @"Jumping!");
     // correct direction
     [self correctDirection: YES];
