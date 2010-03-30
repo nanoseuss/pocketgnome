@@ -1169,7 +1169,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		else if ( ![auraController unit: [playerController player] hasBuffNamed: @"Drink"] ) drinkClear = YES;
 
 		// we're not done eating/drinking
-			if ( !eatClear && !drinkClear ) {
+			if ( !eatClear || !drinkClear ) {
 				[self finishCurrentProcedure: state];
 				return;
 			}
@@ -1702,7 +1702,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
-	// plaeyr moving, wait to loot
+	// player moving, wait to loot
 	if ( [movementController isMoving] ){
 		log(LOG_DEV, @"Still moving, waiting to loot");
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
@@ -1732,13 +1732,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self interactWithMouseoverGUID: [unit GUID]];
 			
 			// normal lute delay
-			float delayTime = 1.7;
+			float delayTime = 1.0;
 			
 			// If we do skinning and it may become skinnable
 			if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
-				delayTime = 2.5;				// if it's missing mobs that it should have skinned then increase this
+				delayTime = 2.0;				// if it's missing mobs that it should have skinned then increase this
 
-			if (isNode) delayTime = 2.5; // if it's trying on nodes it just hit increase this
+			if (isNode) delayTime = 2.0; // if it's trying on nodes it just hit increase this
 
 			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
 		} else {
@@ -1755,7 +1755,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ){
-		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 0.1f];
+		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 0.3f];
 		return;
 	}
 
@@ -2721,7 +2721,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// if the mob is close, just loot it!
 	if ( mobToLootDist <= 5.0 ) {
-		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.1f];
+		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.3f];
 		return YES;
 	} else
 		// do we need to start moving to it?
@@ -3015,7 +3015,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 							PatrollingProcedure,		  @"Procedure",
 							[NSNumber numberWithInt: 0],	  @"CompletedRules", nil] 
-			   afterDelay: (needToPause ? 0.7 : 0.1)];	// Havin a problem with mounts not completing so I'm increasing this
+			   afterDelay: (needToPause ? 1.0 : 0.1)];	// Havin a problem with mounts not completing so I'm increasing this
 
 //	if (needToPause) return YES;
 

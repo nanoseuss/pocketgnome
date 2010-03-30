@@ -717,7 +717,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	weight += healthLeft;
 	
 	// our add?
-	if ( unit == _addUnit ) weight -= 150;
+	if ( unit == _addUnit ) weight -= 125;
 		
 	// non-friendly checks only
 	if ( !isFriendly ) {
@@ -727,9 +727,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// current target
 		if ( [playerData targetID] == [unit GUID] ) weight += 30;
 		
-		// Players get more weight than mobs
-		if ([unit isPlayer]) weight += 20;
-			else weight -=20;
+		// Hostile Players get even more weight
+		if ([unit isPlayer]) weight += 25;
 
 		// Assist mode - assists target
 		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.assistUnit && botController.theCombatProfile.assistUnitGUID > 0x0 ) {
