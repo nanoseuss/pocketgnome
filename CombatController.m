@@ -226,6 +226,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( unit == _addUnit ) {
 		log(LOG_COMBAT, @"%@ %@ died, removing add.", [self unitHealthBar: unit] ,unit);
 		[_addUnit release]; _addUnit = nil;
+	} else 
+		
+	if ( unit == _castingUnit ) {
+		_castingUnit = nil;
+		[botController cancelCurrentProcedure];
+		[botController evaluateSituation];
 	}
 }
 	
@@ -903,7 +909,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"Firing death notification for unit %@", unit);
 		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
 		return;
-	}
+	} 
 	
 	// unit has ghost aura (so is dead, fire off notification)
 	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
