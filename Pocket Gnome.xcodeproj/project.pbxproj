@@ -105,6 +105,7 @@
 		03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD595110CB5440046AEDF /* InteractObjectActionController.m */; };
 		03FFD59A110CB55A0046AEDF /* InteractNPCAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD598110CB55A0046AEDF /* InteractNPCAction.xib */; };
 		03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD599110CB55A0046AEDF /* InteractObjectAction.xib */; };
+		28BF8AD01162E3FE00166879 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 28BF8ACF1162E3FE00166879 /* LICENSE */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
@@ -542,6 +543,7 @@
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		28BF8ACF1162E3FE00166879 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -959,38 +961,38 @@
 				7D370B0C0E7350DD002FE3A4 /* Action.m */,
 				03168EE210FF713000EF241B /* ActionController.h */,
 				03168EE310FF713000EF241B /* ActionController.m */,
-				03168EFC10FF72DF00EF241B /* RepairActionController.h */,
-				03168EFD10FF72DF00EF241B /* RepairActionController.m */,
-				0316904510FF89FC00EF241B /* SwitchRouteActionController.h */,
-				0316904610FF89FC00EF241B /* SwitchRouteActionController.m */,
-				031694CB110103C000EF241B /* SpellActionController.h */,
-				031694CC110103C000EF241B /* SpellActionController.m */,
-				031694CE110103CC00EF241B /* ItemActionController.h */,
-				031694CF110103CC00EF241B /* ItemActionController.m */,
-				031694D1110103DA00EF241B /* MacroActionController.h */,
-				031694D2110103DA00EF241B /* MacroActionController.m */,
-				031694D4110103E000EF241B /* DelayActionController.h */,
-				031694D5110103E000EF241B /* DelayActionController.m */,
-				031694D7110103E900EF241B /* JumpActionController.h */,
-				031694D8110103E900EF241B /* JumpActionController.m */,
-				03685FAB1103D768001CE552 /* QuestGrabActionController.h */,
-				03685FAC1103D768001CE552 /* QuestGrabActionController.m */,
-				03685FAE1103D77A001CE552 /* QuestTurnInActionController.h */,
-				03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */,
 				0322D6D811065D0700EF3EEF /* CombatProfileActionController.h */,
 				0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */,
-				0393F531110A55DB00296CF8 /* MailActionController.h */,
-				0393F532110A55DB00296CF8 /* MailActionController.m */,
-				0393F534110A55E300296CF8 /* VendorActionController.h */,
-				0393F535110A55E300296CF8 /* VendorActionController.m */,
-				0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */,
-				0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */,
+				031694D4110103E000EF241B /* DelayActionController.h */,
+				031694D5110103E000EF241B /* DelayActionController.m */,
 				03FFD592110CB5440046AEDF /* InteractNPCActionController.h */,
 				03FFD593110CB5440046AEDF /* InteractNPCActionController.m */,
 				03FFD594110CB5440046AEDF /* InteractObjectActionController.h */,
 				03FFD595110CB5440046AEDF /* InteractObjectActionController.m */,
+				031694CE110103CC00EF241B /* ItemActionController.h */,
+				031694CF110103CC00EF241B /* ItemActionController.m */,
+				031694D7110103E900EF241B /* JumpActionController.h */,
+				031694D8110103E900EF241B /* JumpActionController.m */,
 				03A320D3114E88A9000D23EE /* JumpToWaypointActionController.h */,
 				03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */,
+				031694D1110103DA00EF241B /* MacroActionController.h */,
+				031694D2110103DA00EF241B /* MacroActionController.m */,
+				0393F531110A55DB00296CF8 /* MailActionController.h */,
+				0393F532110A55DB00296CF8 /* MailActionController.m */,
+				03685FAB1103D768001CE552 /* QuestGrabActionController.h */,
+				03685FAC1103D768001CE552 /* QuestGrabActionController.m */,
+				03685FAE1103D77A001CE552 /* QuestTurnInActionController.h */,
+				03685FAF1103D77A001CE552 /* QuestTurnInActionController.m */,
+				03168EFC10FF72DF00EF241B /* RepairActionController.h */,
+				03168EFD10FF72DF00EF241B /* RepairActionController.m */,
+				0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */,
+				0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */,
+				031694CB110103C000EF241B /* SpellActionController.h */,
+				031694CC110103C000EF241B /* SpellActionController.m */,
+				0316904510FF89FC00EF241B /* SwitchRouteActionController.h */,
+				0316904610FF89FC00EF241B /* SwitchRouteActionController.m */,
+				0393F534110A55E300296CF8 /* VendorActionController.h */,
+				0393F535110A55E300296CF8 /* VendorActionController.m */,
 			);
 			name = WaypointActions;
 			sourceTree = "<group>";
@@ -1026,51 +1028,51 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				0341DD68111B104100074CED /* Object Controllers */,
-				7DAAE7180D148972003F1E3C /* Controller.h */,
-				7DAAE7190D148972003F1E3C /* Controller.m */,
+				7D370C050E7366DC002FE3A4 /* ActionMenusController.h */,
+				7D370C060E7366DC002FE3A4 /* ActionMenusController.m */,
+				7D06F0400D23058B00DA4E99 /* AuraController.h */,
+				7D06F0410D23058B00DA4E99 /* AuraController.m */,
+				03BD330C11120A7A00941971 /* BindingsController.h */,
+				03BD330D11120A7A00941971 /* BindingsController.m */,
+				038709B810D576E100DF5B90 /* BlacklistController.h */,
+				038709B910D576E100DF5B90 /* BlacklistController.m */,
+				7D45A6B80E4461CA008A3601 /* BonjourController.h */,
+				7D45A6B90E4461CA008A3601 /* BonjourController.m */,
 				7DB2C4480D3BFE4100100B4D /* BotController.h */,
 				7DB2C4490D3BFE4100100B4D /* BotController.m */,
-				7D5498940F02232500DD46F8 /* FishController.h */,
-				7D5498950F02232500DD46F8 /* FishController.m */,
 				7D70E7E00DC65372006B8826 /* ChatController.h */,
 				7D70E7E10DC65372006B8826 /* ChatController.m */,
 				7D1BEDEE0F8717CF00DF5FBF /* ChatLogController.h */,
 				7D1BEDEF0F8717CF00DF5FBF /* ChatLogController.m */,
-				7DAAE7670D14917E003F1E3C /* PlayerDataController.h */,
-				7DAAE7680D14917E003F1E3C /* PlayerDataController.m */,
-				7DD3D4090D1B2FEB0023D097 /* SpellController.h */,
-				7DD3D40A0D1B2FEB0023D097 /* SpellController.m */,
 				03567AAB10DDAB52001ACE43 /* CombatController.h */,
 				03567AAC10DDAB52001ACE43 /* CombatController.m */,
-				03981E76112B898E0081835F /* MovementController.h */,
-				03981E77112B898E0081835F /* MovementController.m */,
-				7D06F0400D23058B00DA4E99 /* AuraController.h */,
-				7D06F0410D23058B00DA4E99 /* AuraController.m */,
-				7D45A6B80E4461CA008A3601 /* BonjourController.h */,
-				7D45A6B90E4461CA008A3601 /* BonjourController.m */,
-				7D370C050E7366DC002FE3A4 /* ActionMenusController.h */,
-				7D370C060E7366DC002FE3A4 /* ActionMenusController.m */,
-				034429BE0FAA3E5600E9DE03 /* QuestController.h */,
-				034429BF0FAA3E5600E9DE03 /* QuestController.m */,
+				7DAAE7180D148972003F1E3C /* Controller.h */,
+				7DAAE7190D148972003F1E3C /* Controller.m */,
 				03CEF7860FCCD93100B47336 /* CorpseController.h */,
 				03CEF7870FCCD93100B47336 /* CorpseController.m */,
-				030C2E4B0FDC09B300E80F7E /* LootController.h */,
-				030C2E4C0FDC09B300E80F7E /* LootController.m */,
-				030604F11088162100C57D77 /* OffsetController.h */,
-				030604F21088162100C57D77 /* OffsetController.m */,
-				0306057A10881CAE00C57D77 /* MacroController.h */,
-				0306057B10881CAE00C57D77 /* MacroController.m */,
-				03A01B0B109A2A9600E6098E /* StatisticsController.h */,
-				03A01B0C109A2A9600E6098E /* StatisticsController.m */,
 				0313B4D610BAEA0B009E74E4 /* EventController.h */,
 				0313B4D710BAEA0B009E74E4 /* EventController.m */,
-				038709B810D576E100DF5B90 /* BlacklistController.h */,
-				038709B910D576E100DF5B90 /* BlacklistController.m */,
-				03BD330C11120A7A00941971 /* BindingsController.h */,
-				03BD330D11120A7A00941971 /* BindingsController.m */,
+				7D5498940F02232500DD46F8 /* FishController.h */,
+				7D5498950F02232500DD46F8 /* FishController.m */,
 				03981F36112C819E0081835F /* LogController.h */,
 				03981F37112C819E0081835F /* LogController.m */,
+				030C2E4B0FDC09B300E80F7E /* LootController.h */,
+				030C2E4C0FDC09B300E80F7E /* LootController.m */,
+				0306057A10881CAE00C57D77 /* MacroController.h */,
+				0306057B10881CAE00C57D77 /* MacroController.m */,
+				03981E76112B898E0081835F /* MovementController.h */,
+				03981E77112B898E0081835F /* MovementController.m */,
+				0341DD68111B104100074CED /* Object Controllers */,
+				030604F11088162100C57D77 /* OffsetController.h */,
+				030604F21088162100C57D77 /* OffsetController.m */,
+				7DAAE7670D14917E003F1E3C /* PlayerDataController.h */,
+				7DAAE7680D14917E003F1E3C /* PlayerDataController.m */,
+				034429BE0FAA3E5600E9DE03 /* QuestController.h */,
+				034429BF0FAA3E5600E9DE03 /* QuestController.m */,
+				7DD3D4090D1B2FEB0023D097 /* SpellController.h */,
+				7DD3D40A0D1B2FEB0023D097 /* SpellController.m */,
+				03A01B0B109A2A9600E6098E /* StatisticsController.h */,
+				03A01B0C109A2A9600E6098E /* StatisticsController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1113,22 +1115,32 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		28BF8AD31162E71600166879 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				7DA95ECD0E23537A00AC85E2 /* alarm.mp3 */,
+				7D3109430EFDCBA700ECFABE /* splash.mp3 */,
+			);
+			name = Sounds;
+			sourceTree = "<group>";
+		};
 		29B97314FDCFA39411CA2CEA /* WoWWaypoint */ = {
 			isa = PBXGroup;
 			children = (
 				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */,
 				7D65C8F60D2EE0B100C50DF7 /* GUI Subclasses */,
-				7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */,
-				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
-				034126E21135773900BE6819 /* PvP */,
-				7D72453E0D1511E20094665C /* Units */,
-				29B97315FDCFA39411CA2CEA /* Other Sources */,
-				29B97317FDCFA39411CA2CEA /* Resources */,
-				7D1B3A560F89885D005CA0CD /* Mail.app */,
 				7D1B3A940F898D89005CA0CD /* iChat.app */,
-				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				28BF8ACF1162E3FE00166879 /* LICENSE */,
+				7D1B3A560F89885D005CA0CD /* Mail.app */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				034126E21135773900BE6819 /* PvP */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */,
+				7D72453E0D1511E20094665C /* Units */,
+				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
 			);
 			name = WoWWaypoint;
 			sourceTree = "<group>";
@@ -1175,41 +1187,35 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				03981DE8112B22E90081835F /* dsa_pub.pem */,
-				7DA95ECD0E23537A00AC85E2 /* alarm.mp3 */,
-				7D3109430EFDCBA700ECFABE /* splash.mp3 */,
-				7D3108E20EFDBCCB00ECFABE /* Bobber.png */,
-				7D41E99A0DEA731E00118EA0 /* Hotkey Help */,
-				7D5B92960D9F179D00423FC6 /* gnome.icns */,
-				7DC7A9A50DFC869400F6FA63 /* gnome2.icns */,
-				7DC7A9570DFB70CA00F6FA63 /* pgRoute.icns */,
-				7DC7A9850DFC85C700F6FA63 /* pgBehavior.icns */,
-				7DBC344F0DB57665000C9BCF /* SRImages */,
-				7DD64B090D5D191B00773CAB /* Images */,
-				7DBA60570D51D27100FD6A5F /* WoW Icons */,
-				614CD7891106182100BA1B2F /* Bot.xib */,
-				034126C3113570E100BE6819 /* PvP.xib */,
-				03A01B39109A2CFF00E6098E /* Statistics.xib */,
-				7DD8037C0D514E62005C2F01 /* Player.xib */,
-				7DD803970D515142005C2F01 /* Spells.xib */,
-				03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */,
-				0341DD5F111B0F6B00074CED /* Objects.xib */,
-				7DD803A10D5151CA005C2F01 /* Routes.xib */,
 				7DD803A30D5153E5005C2F01 /* Behaviors.xib */,
-				7DCB5A3F0D540647001678BC /* Memory.xib */,
-				7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */,
-				7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */,
-				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
-				7DC8B60F0D419C3200B25B45 /* Growl Registration Ticket.growlRegDict */,
-				7D3C91EA0E47C8C700EDF3B3 /* Gathering.plist */,
+				614CD7891106182100BA1B2F /* Bot.xib */,
 				7D165A950D45761B00BDF5CA /* CGKeyCodeMap.plist */,
-				7DB0ABC80EABED7F00B81BC1 /* FactionTemplate.plist */,
-				8D1107310486CEB800E47090 /* Info.plist */,
-				03C42CC91096839E0085E888 /* Macros.plist */,
-				03D65A581090EC0D00537E9C /* OffsetSignatures.plist */,
-				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
-				03168ED410FF705A00EF241B /* Waypoint Action NIBs */,
+				7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */,
+				7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */,
 				7D54DCB80E08449F00E1B463 /* Condition NIBs */,
+				03981DE8112B22E90081835F /* dsa_pub.pem */,
+				7DB0ABC80EABED7F00B81BC1 /* FactionTemplate.plist */,
+				7D3C91EA0E47C8C700EDF3B3 /* Gathering.plist */,
+				7DC8B60F0D419C3200B25B45 /* Growl Registration Ticket.growlRegDict */,
+				7D41E99A0DEA731E00118EA0 /* Hotkey Help */,
+				7DD64B090D5D191B00773CAB /* Images */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+				03C42CC91096839E0085E888 /* Macros.plist */,
+				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
+				7DCB5A3F0D540647001678BC /* Memory.xib */,
+				0341DD5F111B0F6B00074CED /* Objects.xib */,
+				03D65A581090EC0D00537E9C /* OffsetSignatures.plist */,
+				7DD8037C0D514E62005C2F01 /* Player.xib */,
+				034126C3113570E100BE6819 /* PvP.xib */,
+				7DD803A10D5151CA005C2F01 /* Routes.xib */,
+				28BF8AD31162E71600166879 /* Sounds */,
+				7DD803970D515142005C2F01 /* Spells.xib */,
+				7DBC344F0DB57665000C9BCF /* SRImages */,
+				03A01B39109A2CFF00E6098E /* Statistics.xib */,
+				03168ED410FF705A00EF241B /* Waypoint Action NIBs */,
+				03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */,
+				7DBA60570D51D27100FD6A5F /* WoW Icons */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -1562,20 +1568,20 @@
 		7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */ = {
 			isa = PBXGroup;
 			children = (
-				03168EE110FF70E900EF241B /* WaypointActions */,
-				7D65C8F70D2EE14500C50DF7 /* Rule.h */,
-				7D65C8F80D2EE14500C50DF7 /* Rule.m */,
-				7D65CA460D2F04D200C50DF7 /* Procedure.h */,
-				7D65CA470D2F04D200C50DF7 /* Procedure.m */,
 				7D65CC1B0D2F69BB00C50DF7 /* Behavior.h */,
 				7D65CC1C0D2F69BB00C50DF7 /* Behavior.m */,
-				7D65C8F50D2EE06200C50DF7 /* Conditions */,
-				7DE53DD60E32B48500C59033 /* CombatProfile.h */,
-				7DE53DD70E32B48500C59033 /* CombatProfile.m */,
-				7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */,
-				7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */,
 				7D1B39400F896A96005CA0CD /* ChatAction.h */,
 				7D1B39410F896A96005CA0CD /* ChatAction.m */,
+				7DE53DD60E32B48500C59033 /* CombatProfile.h */,
+				7DE53DD70E32B48500C59033 /* CombatProfile.m */,
+				7D65C8F50D2EE06200C50DF7 /* Conditions */,
+				7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */,
+				7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */,
+				7D65CA460D2F04D200C50DF7 /* Procedure.h */,
+				7D65CA470D2F04D200C50DF7 /* Procedure.m */,
+				7D65C8F70D2EE14500C50DF7 /* Rule.h */,
+				7D65C8F80D2EE14500C50DF7 /* Rule.m */,
+				03168EE110FF70E900EF241B /* WaypointActions */,
 			);
 			name = "Rules & Procedures";
 			sourceTree = "<group>";
@@ -1712,13 +1718,18 @@
 		7DD64B090D5D191B00773CAB /* Images */ = {
 			isa = PBXGroup;
 			children = (
-				7DD64B1F0D5D192500773CAB /* off.png */,
-				7D60430B0D5FC2DF001501AF /* mixed.png */,
-				7DD64B200D5D192500773CAB /* on.png */,
 				7D4AFB320D9EDBF100A33CE1 /* bad.tif */,
+				7D3108E20EFDBCCB00ECFABE /* Bobber.png */,
+				7D5B92960D9F179D00423FC6 /* gnome.icns */,
+				7DC7A9A50DFC869400F6FA63 /* gnome2.icns */,
 				7D4AFB330D9EDBF100A33CE1 /* good.tif */,
-				7D1B3B8C0F89ACE9005CA0CD /* Mail.png */,
 				7D1B3B8E0F89AD22005CA0CD /* iChat.png */,
+				7D1B3B8C0F89ACE9005CA0CD /* Mail.png */,
+				7D60430B0D5FC2DF001501AF /* mixed.png */,
+				7DD64B1F0D5D192500773CAB /* off.png */,
+				7DD64B200D5D192500773CAB /* on.png */,
+				7DC7A9850DFC85C700F6FA63 /* pgBehavior.icns */,
+				7DC7A9570DFB70CA00F6FA63 /* pgRoute.icns */,
 			);
 			name = Images;
 			sourceTree = "<group>";
@@ -1975,6 +1986,7 @@
 				034126C4113570E100BE6819 /* PvP.xib in Resources */,
 				0352F46611376DA5005B28D6 /* PVP.png in Resources */,
 				03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */,
+				28BF8AD01162E3FE00166879 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
