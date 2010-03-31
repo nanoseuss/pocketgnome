@@ -1949,4 +1949,40 @@ AECreateDesc:;
 AEDisposeDesc(&targetProcess);
 }
 
+// 3.3.3a: 0xC9241C ClientServices_GetCurrent
+- (float)getPing{
+	
+	MemoryAccess *memory = [self wowMemoryAccess];
+	int totalPings = 0, v5 = 0, v6 = 0, samples = 0, ping = 0;
+	UInt32 gCurrentClientServices = 0;
+	[memory loadDataForObject: self atAddress: 0xC9241C Buffer: (Byte*)&gCurrentClientServices BufLength: sizeof(gCurrentClientServices)];
+	[memory loadDataForObject: self atAddress: gCurrentClientServices + 0x2E74 Buffer: (Byte*)&v6 BufLength: sizeof(v6)];
+	[memory loadDataForObject: self atAddress: gCurrentClientServices + 0x2E78 Buffer: (Byte*)&v5 BufLength: sizeof(v5)];
+	
+	if ( v6 == v5 ){
+		return 0.0f;
+	}
+	
+	do
+	{
+		if ( v6 >= 16 ){
+			v6 = 0;
+			if ( !v5 )
+				break;
+		}
+		
+		[memory loadDataForObject: self atAddress: gCurrentClientServices + 0x2E34 + (v6++ * 4) Buffer: (Byte*)&ping BufLength: sizeof(ping)];
+		totalPings += ping;
+		++samples;
+	}
+	while ( v6 != v5 );
+	
+	if ( samples > 0 ){
+		float averagePing = (float)totalPings / (float)samples;
+		return averagePing;
+	}
+
+	return 0.0f;
+}
+
 @end

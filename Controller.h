@@ -186,6 +186,8 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (IBAction)testFront: (id)sender;
 
 - (void)traverseNameList;
+
+- (float)getPing;
 @end
 
 @interface NSObject (MemoryViewControllerExtras)
