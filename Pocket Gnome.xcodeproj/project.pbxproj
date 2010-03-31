@@ -75,11 +75,14 @@
 		0393F533110A55DB00296CF8 /* MailActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F532110A55DB00296CF8 /* MailActionController.m */; };
 		0393F536110A55E300296CF8 /* VendorActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F535110A55E300296CF8 /* VendorActionController.m */; };
 		0393F539110A55EF00296CF8 /* ReverseRouteActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */; };
+		0394052F1163C67400D98403 /* WoWDbTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394052E1163C67400D98403 /* WoWDbTable.m */; };
+		039405321163C73700D98403 /* WoWDbRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 039405311163C73700D98403 /* WoWDbRow.m */; };
 		03981D8E112AEC870081835F /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03981D8D112AEC860081835F /* Sparkle.framework */; };
 		03981DA6112AECA80081835F /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 03981D8D112AEC860081835F /* Sparkle.framework */; };
 		03981DE9112B22E90081835F /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 03981DE8112B22E90081835F /* dsa_pub.pem */; };
 		03981E78112B898E0081835F /* MovementController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981E77112B898E0081835F /* MovementController.m */; };
 		03981F38112C819E0081835F /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981F37112C819E0081835F /* LogController.m */; };
+		039FAE1C1163B139007CF7C0 /* WoWDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 039FAE1B1163B139007CF7C0 /* WoWDb.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */; };
@@ -497,12 +500,18 @@
 		0393F535110A55E300296CF8 /* VendorActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VendorActionController.m; sourceTree = "<group>"; };
 		0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReverseRouteActionController.h; sourceTree = "<group>"; };
 		0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReverseRouteActionController.m; sourceTree = "<group>"; };
+		0394052D1163C67400D98403 /* WoWDbTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDbTable.h; sourceTree = "<group>"; };
+		0394052E1163C67400D98403 /* WoWDbTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDbTable.m; sourceTree = "<group>"; };
+		039405301163C73700D98403 /* WoWDbRow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDbRow.h; sourceTree = "<group>"; };
+		039405311163C73700D98403 /* WoWDbRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDbRow.m; sourceTree = "<group>"; };
 		03981D8D112AEC860081835F /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		03981DE8112B22E90081835F /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		03981E76112B898E0081835F /* MovementController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovementController.h; sourceTree = "<group>"; };
 		03981E77112B898E0081835F /* MovementController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovementController.m; sourceTree = "<group>"; };
 		03981F36112C819E0081835F /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
 		03981F37112C819E0081835F /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
+		039FAE1A1163B139007CF7C0 /* WoWDb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDb.h; sourceTree = "<group>"; };
+		039FAE1B1163B139007CF7C0 /* WoWDb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDb.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -889,7 +898,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1025,6 +1034,27 @@
 			name = "Object Controllers";
 			sourceTree = "<group>";
 		};
+		039405141163C4FE00D98403 /* WoWDb */ = {
+			isa = PBXGroup;
+			children = (
+				039FAE1A1163B139007CF7C0 /* WoWDb.h */,
+				039FAE1B1163B139007CF7C0 /* WoWDb.m */,
+				0394052D1163C67400D98403 /* WoWDbTable.h */,
+				0394052E1163C67400D98403 /* WoWDbTable.m */,
+				039405301163C73700D98403 /* WoWDbRow.h */,
+				039405311163C73700D98403 /* WoWDbRow.m */,
+			);
+			name = WoWDb;
+			sourceTree = "<group>";
+		};
+		039FAE191163B12A007CF7C0 /* Reversed */ = {
+			isa = PBXGroup;
+			children = (
+				039405141163C4FE00D98403 /* WoWDb */,
+			);
+			name = Reversed;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -1110,7 +1140,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* ggteabag.app */,
+				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1128,19 +1158,20 @@
 			isa = PBXGroup;
 			children = (
 				080E96DDFE201D6D7F000001 /* Classes */,
-				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */,
 				7D65C8F60D2EE0B100C50DF7 /* GUI Subclasses */,
+				7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */,
+				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
+				034126E21135773900BE6819 /* PvP */,
+				039FAE191163B12A007CF7C0 /* Reversed */,
+				7D72453E0D1511E20094665C /* Units */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
 				7D1B3A940F898D89005CA0CD /* iChat.app */,
 				28BF8ACF1162E3FE00166879 /* LICENSE */,
 				7D1B3A560F89885D005CA0CD /* Mail.app */,
-				29B97315FDCFA39411CA2CEA /* Other Sources */,
-				19C28FACFE9D520D11CA2CBB /* Products */,
-				034126E21135773900BE6819 /* PvP */,
-				29B97317FDCFA39411CA2CEA /* Resources */,
-				7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */,
-				7D72453E0D1511E20094665C /* Units */,
-				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
 			);
 			name = WoWWaypoint;
 			sourceTree = "<group>";
@@ -1754,7 +1785,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
+			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2135,6 +2166,9 @@
 				034126E61135774100BE6819 /* Battleground.m in Sources */,
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
 				03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */,
+				039FAE1C1163B139007CF7C0 /* WoWDb.m in Sources */,
+				0394052F1163C67400D98403 /* WoWDbTable.m in Sources */,
+				039405321163C73700D98403 /* WoWDbRow.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2250,7 +2284,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
 				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_VERSION = 4.2;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_MISSING_PARENTHESES = YES;
