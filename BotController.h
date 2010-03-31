@@ -337,7 +337,6 @@
 - (IBAction)test2: (id)sender;
 - (IBAction)maltby: (id)sender;
 - (IBAction)login: (id)sender;
-- (IBAction)doTheRelicEmanation: (id)sender;
 
 // Little more flexibility - casts spells! Uses items/macros!
 - (BOOL)performAction: (int32_t)actionID;

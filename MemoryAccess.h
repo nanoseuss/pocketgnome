@@ -42,6 +42,11 @@
 	
     NSMutableDictionary *_loaderDict;
 }
+
+// we shouldn't really use this
++ (MemoryAccess*)sharedMemoryAccess;
+
+
 - (id)init;
 - (id)initWithPID:(pid_t)PID;
 - (BOOL)isValid;

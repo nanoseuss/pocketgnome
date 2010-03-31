@@ -75,6 +75,11 @@
 #import "ScanGridView.h"
 #import "TransparentWindow.h"
 
+// for testing
+#import "WoWDbTable.h"
+#import "WoWDbRow.h"
+
+
 #import <Growl/GrowlApplicationBridge.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
 #import <ScreenSaver/ScreenSaver.h>
@@ -5255,7 +5260,7 @@ NSMutableDictionary *_diffDict = nil;
  }
  }
 */ 
-
+/*
 typedef struct WoWClientDb {
     UInt32    _vtable;		// 0x0
     UInt32  isLoaded;		// 0x4
@@ -5270,23 +5275,95 @@ typedef struct WoWClientDb {
 	UInt32 row3;			// 0x24
 	UInt32 row4;			// 0x28
 	
-} WoWClientDb;
+} WoWClientDb;*/
 
 - (IBAction)test: (id)sender{
 	
+	
+
+	float ping = [controller getPing];
+	
+	PGLog(@"Ping: %f", ping);
+	
+	WoWDbTable *table = [WoWDbTable WoWDbTableWithTablePtr: 0xD2E300];
+	int i = 0;
+	for ( ; i < 10; i++ ){
+		
+		WoWDbRow *row = [table GetRow:i];
+		
+		PGLog(@"[%d] %@", i, row);		
+	}
+	
+	return;
+	/*
 	MemoryAccess *memory = [controller wowMemoryAccess];
 
 	// hooked the spell function which was passed: 0xD87980 0xA8D268 0x194
-	UInt32 spellPtr = 0xD87980;//;
+	// 0xFEE71C
+	UInt32 spellPtr = 0xD2E300;		//0xD87980;//;
 	
 	WoWClientDb db;
 	[memory loadDataForObject: self atAddress: spellPtr Buffer:(Byte*)&db BufLength: sizeof(db)];
+	
+	PGLog(@"%d %d", sizeof(Byte), sizeof(UInt8));
 	
 	if ( db.stringTablePtr ){
 		int index;
 		for ( index = 0; index < db.numRows; index++ ){
 			
 			UInt32 rowPtr = db.row2 + ( 4 * ( index - db.minIndex ) );
+			
+			Byte buffer[0x5000] = {0};
+			[memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&buffer[0] BufLength: sizeof(buffer[0])];
+			
+			
+			int currentAddress = 1, i = 0;
+            for ( i = rowPtr + 1; currentAddress < db.numRows; ++i)
+            {
+				//PGLog(@"row: %d", i);
+				
+				[memory loadDataForObject: self atAddress: i Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress])];
+				currentAddress++;
+				
+				// snag previous I's
+				UInt8 atI = 0, prevI = 0;
+				[memory loadDataForObject: self atAddress: i Buffer:(Byte*)&atI BufLength: sizeof(atI)];
+				[memory loadDataForObject: self atAddress: i - 1 Buffer:(Byte*)&prevI BufLength: sizeof(prevI)];
+				
+				if ( atI == prevI ){
+					
+					UInt8 j = 0;
+					[memory loadDataForObject: self atAddress: (i + 1) Buffer:(Byte*)&j BufLength: sizeof(j)];
+					[memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
+					
+					for (; j != 0; )
+                    {
+						//PGLog(@"here: %d", j);
+                        j--;
+						[memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
+						PGLog(@"currentaddressasdf: %d", currentAddress);
+					}
+                    i += 2;
+                    if (currentAddress < db.numRows)
+                    {
+						PGLog(@"currentaddress: %d", currentAddress);
+						[memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
+                    }	
+				}
+			}
+			
+			Byte newBuffer[0x2C0];
+			memcpy( newBuffer, buffer, 0x2C0);
+			
+			PGLog(@"done!");
+			
+			int k = 0;
+			for ( k = 0; k < 0x2C0; k++ ){
+				PGLog(@"%c", newBuffer[k]);
+			}
+			
+			
+			/*
 			UInt32 addressOfSpellStruct = 0x0;
 			[memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&addressOfSpellStruct BufLength: sizeof(addressOfSpellStruct)];
 			
@@ -5299,8 +5376,8 @@ typedef struct WoWClientDb {
 				if ( spellID <= db.maxIndex ){
 					PGLog(@"[%d:0x%X]  %d", index, addressOfSpellStruct, spellID);
 				}
-			}
-		}
+			}*/
+		//}
 		
 		
 		
@@ -5369,7 +5446,7 @@ typedef struct WoWClientDb {
 				PGLog(@"Reading 0x%X", address);
 			}
 		}*/
-	}
+	//}
 		
 		
 		/*public Row GetRow(int index)
@@ -5398,7 +5475,7 @@ typedef struct WoWClientDb {
 	
 	// ugh why won't the below work!	
 	//MemoryAccess *memory = [controller wowMemoryAccess];
-	UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
+	/*UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];
 	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x20 Buffer: (Byte*)&factionPointer BufLength: sizeof(factionPointer)];
@@ -5431,7 +5508,7 @@ typedef struct WoWClientDb {
 		PGLog(@"Result of compare: %d", [self CompareFactionHash:hash1 withHash2:hash2]);
 	}
 
-	
+	*/
 	/*
 	//[playerController isOnRightBoatInStrand];
 	
@@ -5816,93 +5893,8 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 	}
 }
 
-#define SimonAuraBlueEntryID	185872
-#define SimonAuraYellowEntryID	185875
-#define SimonAuraRedEntryID		185874
-#define SimonAuraGreenEntryID	185873
-//#define SimonRelicDischarger	185894
-#define SimonApexisRelic		185890
+#pragma Testing/Development Info (Generally Reversing)
 
-#define BlueCluster				185828
-#define GreenCluster			185830
-#define RedCluster				185831
-#define YellowCluster			185829
-
-- (IBAction)doTheRelicEmanation: (id)sender{
-	
-	
-	// interact with discharger
-	// wait 1.2 seconds
-	// send macro or command to click!
-	
-	// MUST rescan after each time, the object change!!
-	
-	/*Node *green = [nodeController closestNode:SimonAuraGreenEntryID];
-	Node *red = [nodeController closestNode:SimonAuraRedEntryID];
-	Node *blue = [nodeController closestNode:SimonAuraBlueEntryID];
-	Node *yellow = [nodeController closestNode:SimonAuraYellowEntryID];
-	
-	if ( green == nil ){
-		[self performSelector:@selector(doTheRelicEmanation:) withObject:nil afterDelay:0.1f];
-		return;
-	}
-	
-	PGLog(@"Green: %@", green);
-	PGLog(@"Red: %@", red);
-	PGLog(@"Blue: %@", blue);
-	PGLog(@"Yellow: %@", yellow);
-	
-	//NSArray *objects = [NSArray arrayWithObjects:green, red, blue, yellow, nil];
-	
-	//[memoryViewController monitorObjects:objects];
-	
-	
-	green = [nodeController closestNode:BlueCluster];
-	red = [nodeController closestNode:GreenCluster];
-	blue = [nodeController closestNode:RedCluster];
-	yellow = [nodeController closestNode:YellowCluster];
-	
-	
-	[self monitorObject: green];
-	[self monitorObject: red];
-	[self monitorObject: blue];
-	[self monitorObject: yellow];*/
-	
-	/*[memoryViewController monitorObject:green];
-	[memoryViewController monitorObject:red];
-	[memoryViewController monitorObject:blue];
-	[memoryViewController monitorObject:yellow];*/
-	//[self performSelector:@selector(doTheRelicEmanation:) withObject:nil afterDelay:0.1];
-}
-
-- (void)monitorObject: (WoWObject*)obj{
-	
-	
-	UInt32 addr1 = [obj baseAddress] + 0x1F8;
-	UInt32 addr2 = [obj baseAddress] + 0x230;
-	UInt32 addr3 = [obj baseAddress] + 0x250;
-	UInt32 addr4 = [obj baseAddress] + 0x260;
-	
-	MemoryAccess *memory = [controller wowMemoryAccess];
-    if(memory) {
-        UInt16 value1 = 0, value2 = 0, value3 = 0, value4 = 0;
-        [memory loadDataForObject: self atAddress: addr1 Buffer: (Byte *)&value1 BufLength: sizeof(value1)];
-		[memory loadDataForObject: self atAddress: addr2 Buffer: (Byte *)&value2 BufLength: sizeof(value2)];
-		[memory loadDataForObject: self atAddress: addr3 Buffer: (Byte *)&value3 BufLength: sizeof(value3)];
-		[memory loadDataForObject: self atAddress: addr4 Buffer: (Byte *)&value4 BufLength: sizeof(value4)];
-
-		PGLog(@"%d %d %d %d %@", value1, value2, value3, value4, obj);
-	}
-	
-	
-	if ( [obj isValid] ){
-		[self performSelector:@selector(monitorObject:) withObject:obj afterDelay:0.1f];
-	}
-	else{
-		PGLog(@"%@ is no longer valid...", obj);
-	}
-	
-}
 
 
 

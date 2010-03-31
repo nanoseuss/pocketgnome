@@ -35,6 +35,8 @@
 
 @implementation MemoryAccess
 
+static MemoryAccess *sharedMemoryAccess = nil;
+
 - (id)init {
     return [self initWithPID:0];
 }
@@ -55,7 +57,20 @@
     
     //if(!MEMORY_GOD_MODE) [self performToolVersionCheck];
     [NSTimer scheduledTimerWithTimeInterval: 5.0 target: self selector: @selector(refreshThroughput:) userInfo: nil repeats: YES];
+	
+	// for those using shared memory - lets hope not many!!
+	if ( sharedMemoryAccess ){
+		[sharedMemoryAccess release];
+	}
+	sharedMemoryAccess = [self retain];
+	
     return self;
+}
+
++ (MemoryAccess*)sharedMemoryAccess{
+	if (sharedMemoryAccess == nil)
+		sharedMemoryAccess = [[[self class] alloc] init];
+	return sharedMemoryAccess;
 }
 
 @synthesize throughput;
