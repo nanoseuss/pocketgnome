@@ -184,7 +184,7 @@ typedef struct WoWBinding {
 	[_keyCodesWithCommands removeAllObjects];
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	UInt32 offset = [offsetController offset:@"lua_GetBindingKey"];
+	UInt32 offset = [offsetController offset:@"Lua_GetBindingKey"];
 	UInt32 bindingsManager = 0, structPointer = 0, firstStruct = 0;
 	WoWBinding bindingStruct;
 	
