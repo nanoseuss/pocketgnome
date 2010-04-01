@@ -105,6 +105,7 @@ typedef enum MovementType {
 
 // move to a position (I'd prefer we don't do this often, but it is sometimes needed :()
 - (void)moveToPosition: (Position*)position;
+- (void)moveToFollowUnit: (Position*)position :(Position*)positionLast;
 
 // the object we're moving to
 - (WoWObject*)moveToObject;

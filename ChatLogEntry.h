@@ -45,6 +45,7 @@
 @property (readonly) BOOL isWhisperSent;
 @property (readonly) BOOL isWhisperReceived;
 @property (readonly) BOOL isChannel;
+@property (readonly) BOOL isParty;
 
 @property (readonly) NSArray *whisperTypes;
 

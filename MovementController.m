@@ -523,13 +523,10 @@ typedef enum MovementState{
     }
 	
 	// no object, no actions, just trying to move to the next WP!
-	// dont try this if we're in party follow mode
-	if (![[controller currentStatus] isEqualToString: @"Bot: Following"]) {
-		if ( !_moveToObject && ![_destinationWaypoint actions] && distance < [playerData speedMax] / 2.0f ){
-			log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
-			[self moveToNextWaypoint];
-			return;
-		}
+	if ( !_moveToObject && ![_destinationWaypoint actions] && distance < [playerData speedMax] / 2.0f ){
+		log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
+		[self moveToNextWaypoint];
+		return;
 	}
 
 	// we're moving to a new position!
@@ -572,6 +569,46 @@ typedef enum MovementState{
 	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
 }
 
+- (void)moveToFollowUnit: (Position*)position :(Position*)positionLast{
+	
+	if (![[botController followUnit] isOnGround]) [botController jumpIfAirMountOnGround];
+
+	[self resetMovementTimer];
+
+	Position *playerPosition = [playerData position];
+    float distance = [playerPosition distanceToPosition: position];
+	
+
+	// only reset the stuck counter if we're going to a new position
+	if ( ![position isEqual:self.lastAttemptedPosition] ) _stuckCounter = 0;
+
+	self.lastAttemptedPosition		= position;
+	self.lastAttemptedPositionTime	= [NSDate date];
+	self.lastPlayerPosition			= playerPosition;	
+	
+	// actually move!
+	if ( [self movementType] == MovementType_Keyboard ){
+		UInt32 movementFlags = [playerData movementFlags];
+		if ( !(movementFlags & MovementFlag_Forward) ) [self moveForwardStop];
+        [self correctDirection: YES];
+        if ( !(movementFlags & MovementFlag_Forward) )  [self moveForwardStart];
+	}
+	else if ( [self movementType] == MovementType_Mouse ){
+		[self moveForwardStop];
+		[self correctDirection: YES];
+		[self moveForwardStart];
+	}
+	else if ( [self movementType] == MovementType_CTM ) {
+		[self setClickToMove:position andType:ctmWalkTo andGUID:0];
+	}
+
+	self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
+	
+	if (![[playerData player] isMounted]) _movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
+	
+}
+
+
 - (void)checkCurrentPosition: (NSTimer*)timer {
 	
 	// stopped botting?  end!
@@ -594,20 +631,18 @@ typedef enum MovementState{
 	//float distanceToDestination2D = [playerPosition distanceToPosition2D: destPosition];
 	
     // sanity check, incase something happens
-    if ( distanceToDestination == INFINITY ) {
+	// Skip this check if we're on follow
+    if ( distanceToDestination == INFINITY && !botController.theCombatProfile.followUnit ) {
         log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
 		
 		[self resetMovementTimer];
-		if ([[controller currentStatus] isEqualToString: @"Bot: Following"]) {
-			[controller setCurrentStatus: @"Bot: Endabled"];
-			[botController evaluateSituation];
-		}
 		// do something here
         return;
     }
 	
 	// evaluate situation - should we do something?
-	if ( [botController isBotting] && !self.moveToObject ){
+	// Skip this if you're evaluating for party  follow and you have a vlaid follow unit
+	if ( [botController isBotting] && !self.moveToObject && (!botController.theCombatProfile.followUnit || ![[botController followUnit] isValid])){
 		if ( [botController evaluateSituation] ){
 			// don't need to reset our movement timer b/c it will be done when we're told to move somewhere else!
 			log(LOG_MOVEMENT, @"Action taken, not checking movement");
@@ -687,6 +722,13 @@ typedef enum MovementState{
 	} else {
 		[self correctDirection: NO];
 	}
+
+	// If we're doin party follow let's just stop here
+    if ( botController.followUnit ) {
+		[self resetMovementTimer];
+        return;
+    }
+	
 	
 	// *******************************************************
 	// if we we get here, we're not close enough :(

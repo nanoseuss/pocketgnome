@@ -114,10 +114,13 @@
     BOOL _isBotting;
     BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
+	NSString *_evaluationInProgress;
+	
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
     Unit *preCombatUnit;
 	Unit *castingUnit;		// the unit we're casting on!
+
     NSMutableArray *_mobsToLoot;
     int _reviveAttempt, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
@@ -192,6 +195,18 @@
 	// log out options
 	NSTimer *_logOutTimer;
     
+	// Party Follow
+	NSMutableArray *_followSteps;
+	NSMutableArray *_badWaypoints;
+
+	BOOL _partyFollowSuspended;
+	Unit *followUnit;
+	Unit *assistUnit;
+	Unit *tankUnit;
+	
+	Position *_lastAttemptedStep;
+	int _stepAttempts;
+	
     // -----------------
     // -----------------
     
@@ -269,6 +284,7 @@
 @property (readwrite, assign) BOOL isBotting;
 @property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
+@property (retain) NSString *evaluationInProgress;
 
 @property (readonly, retain) RouteCollection *theRouteCollection;
 @property (readwrite, retain) RouteSet *theRouteSet;
@@ -279,6 +295,10 @@
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
 @property (readonly, retain) Unit *castingUnit;
+@property (readonly, retain) Unit *followUnit;
+@property (readonly, retain) Unit *assistUnit;
+@property (readonly, retain) Unit *tankUnit;
+@property (readwrite, assign) BOOL partyFollowSuspended;
 
 - (void)testRule: (Rule*)rule;
 
@@ -307,8 +327,17 @@
 - (BOOL)evaluateForMiningAndHerbalism;
 - (BOOL)evaluateForFishing;
 - (BOOL)evaluateForPatrol;
+
+// PvP stuff
+- (void)pvpGetBattlegroundStatus;
+
+// Party stuff
 - (BOOL)mountNow;
 - (BOOL)mountNowParty;
+- (BOOL)isOnAssist;
+- (BOOL)isTankUnit;
+- (void)targetReset;
+- (void)followStepsClear;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

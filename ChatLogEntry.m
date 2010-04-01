@@ -266,6 +266,11 @@
     return ((type >= 17) && (type <= 22) && [[self channel] length]);
 }
 
+- (BOOL)isParty {
+    NSInteger type = [self.type integerValue];
+    return (type == 2);
+}
+
 - (NSString*)wellFormattedText {
     
     if([self isEmote]) {

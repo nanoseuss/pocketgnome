@@ -541,29 +541,33 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"Adding friendlies to the list of valid units");
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
-	
-	// only want to add the assist unit
-	if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.assistUnit && botController.theCombatProfile.assistUnitGUID > 0x0 ) {
-		Player *assistPlayer = [playersController playerWithGUID:botController.theCombatProfile.assistUnitGUID];
 
-		if ( assistPlayer && [assistPlayer isValid] ) {
-			if ([assistPlayer isInCombat]) {
-				UInt64 targetGUID = [assistPlayer targetID];
-				// only assist if the assist player is in combat
-				if ( targetGUID > 0x0) {
-					Mob *mob = [mobController mobWithGUID:targetGUID];
-					if ( mob ) {
-						[allPotentialUnits addObject:mob];
-						log(LOG_COMBAT, @"Adding my assist's target to list of valid units");
-					}
-				}
+	// Get the assist players target
+	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat]) {
+		UInt64 targetGUID = [[botController assistUnit] targetID];
+		if ( targetGUID > 0x0) {
+			Mob *mob = [mobController mobWithGUID:targetGUID];
+			if ( mob ) {
+				[allPotentialUnits addObject:mob];
+				log(LOG_DEV, @"Adding my assist's target to list of valid units");
 			}
-		} else {
-			log(LOG_COMBAT, @"Player not found for assisting with GUID: 0x%qX", botController.theCombatProfile.assistUnitGUID);
 		}
-	} else 
+	}
+	
+	// Get the tanks target
+	if ( [botController isTankUnit] && [[botController tankUnit] isInCombat]) {
+		UInt64 targetGUID = [[botController tankUnit] targetID];
+		if ( targetGUID > 0x0) {
+			Mob *mob = [mobController mobWithGUID:targetGUID];
+			if ( mob ) {
+				[allPotentialUnits addObject:mob];
+				log(LOG_DEV, @"Adding my tanks target to list of valid units");
+			}
+		}
+	}
+
 	// add new units w/in range if we're not on assist
-	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat ) {
+	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat && ![botController isOnAssist] ) {
 		log(LOG_DEV, @"Adding ALL available combat units");
 		// determine attack range
 		float attackRange = [botController.theCombatProfile engageRange];
@@ -718,7 +722,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// our add?
 	if ( unit == _addUnit ) weight -= 125;
-		
+	
 	// non-friendly checks only
 	if ( !isFriendly ) {
 		if ( attackRange > 0 ) weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
@@ -731,14 +735,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ([unit isPlayer]) weight += 25;
 
 		// Assist mode - assists target
-		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.assistUnit && botController.theCombatProfile.assistUnitGUID > 0x0 ) {
-			Player *assistPlayer = [playersController playerWithGUID:botController.theCombatProfile.assistUnitGUID];
-			if ( assistPlayer && [assistPlayer isValid] && [assistPlayer isInCombat]) {
-				UInt64 targetGUID = [assistPlayer targetID];
-				if ( targetGUID > 0x0) {
-					Mob *assistMob = [mobController mobWithGUID:targetGUID];
-					if ( unit == assistMob ) weight += 100;
-				}
+		if ( [botController isOnAssist] && [[botController assistUnit] isInCombat]) {
+			UInt64 targetGUID = [[botController assistUnit] targetID];
+			if ( targetGUID > 0x0) {
+				Mob *assistMob = [mobController mobWithGUID:targetGUID];
+				if ( unit == assistMob ) weight += 100;
+			}
+		}
+		
+		// Tanks target
+		if ( [botController isTankUnit] && [[botController tankUnit] isInCombat]) {
+			UInt64 targetGUID = [[botController tankUnit] targetID];
+			if ( targetGUID > 0x0) {
+				Mob *tankMob = [mobController mobWithGUID:targetGUID];
+				if ( unit == tankMob ) weight += 50;	// Still less than the assist just in case
 			}
 		}
 		

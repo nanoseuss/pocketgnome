@@ -25,6 +25,7 @@
 #import "CombatProfileEditor.h"
 #import "ObjectsController.h"
 #import "PvPController.h"
+#import "MovementController.h"
 
 #import "CGSPrivate.h"
 
@@ -529,6 +530,15 @@ typedef struct NameObjectStruct{
 						log(LOG_CONTROLLER, @"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
 						
 						[self setCurrentState: playerValidState];
+						
+						// Restart us when we zone into instances in a party
+						if ( botController.theCombatProfile.partyEnabled ) {
+							botController.evaluationInProgress = nil;
+							[botController followStepsClear];
+							[movementController resetMovementState];
+							[botController evaluateSituation];
+							
+						}
 					}			
 				}
 				

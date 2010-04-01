@@ -30,6 +30,7 @@
 @class ObjectsController;
 @class PvPController;
 @class CombatController;
+@class MovementController;
 
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
@@ -57,6 +58,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet ObjectsController		*objectsController;
 	IBOutlet PvPController			*pvpController;
+	IBOutlet MovementController		*movementController;
 	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
