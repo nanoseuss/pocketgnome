@@ -27,22 +27,31 @@
 
 #define EventZoneChanged					@"EventZoneChanged"
 #define EventBattlegroundStatusChange		@"EventBattlegroundStatusChange"
+#define EventBattlegroundOver				@"EventBattlegroundOver"
 
 @class Controller;
 @class BotController;
 @class PlayerDataController;
+@class OffsetController;
+
+@class MemoryAccess;
 
 @interface EventController : NSObject {
 	IBOutlet Controller				*controller;
 	IBOutlet BotController			*botController;
 	IBOutlet PlayerDataController	*playerController;
+	IBOutlet OffsetController		*offsetController;
 	
 	NSTimer *_uberQuickTimer;
+	NSTimer *_oneSecondTimer;
 	NSTimer *_fiveSecondTimer;
 	NSTimer *_twentySecondTimer;
 	
 	int _lastPlayerZone;
 	int _lastBGStatus;
+	int _lastBattlefieldWinnerStatus;
+	
+	MemoryAccess *_memory;
 }
 
 @end

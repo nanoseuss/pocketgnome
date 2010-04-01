@@ -398,7 +398,7 @@ typedef struct NameObjectStruct{
 	// + 0x58 is another pointer to within the list, not sure what it means?  first or last?
 	MemoryAccess *memory = [self wowMemoryAccess];
 	[memory resetLoadCount];
-	if ( memory && [memory loadDataForObject: self atAddress: offset Buffer: (Byte*)&curObjAddress BufLength: sizeof(curObjAddress)] && curObjAddress ){
+	if ( memory && [memory loadDataForObject: self atAddress: offset + 0x24 Buffer: (Byte*)&curObjAddress BufLength: sizeof(curObjAddress)] && curObjAddress ){
 		
 		// check to make sure the first value is 0x4!
 		NameListStruct nameListStruct;
@@ -586,7 +586,7 @@ typedef struct NameObjectStruct{
     MemoryAccess *memory = [self wowMemoryAccess];
 	
 	// grab our global GUID
-	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_NAME"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
 	//PGLog(@"[Controller] Player GUID: 0x%qX 0x%qX Low32:0x%X High32:0x%X HiPart:0x%X", _globalGUID, CFSwapInt64HostToLittle(_globalGUID), GUID_LOW32(_globalGUID), GUID_HIGH32(_globalGUID), GUID_HIPART(_globalGUID));
 	
 	// object manager

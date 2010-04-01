@@ -2,16 +2,98 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Lua_GetBattlefieldWinner</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x89\xE5\x83\xEC\x28\xA1\x5C\xA6\xC8\x00\x8B\x55\x08\x85\xC0\x75\x1E\x89\x14\x24\xE8\xD6\xE5\x39\x00\xB8\x01\x00\x00\x00\xC9\xC3</string>
+			<key>Mask</key>
+			<string>xxxxxxx????xxxxxxxxxxx????xxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: lua_GetBattlefieldWinner</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
+	<key>Lua_GetPartyMember</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x8B\x04\xD5\x24\xD4\xDA\x00\x0B\x04\xD5\x20\xD4\xDA\x00\x74\x30\x89\x1C\x24\xC7\x44\x24\x04\x00\x00\x00\x00\xC7\x44\x24\x08\x00\x00\xF0\x3F\xE8\xA8\xF9\x2A\x00\x83\xC4\x24\xB8\x01\x00\x00\x00\x5B\xC9\xC3</string>
+			<key>Mask</key>
+			<string>xxx%%%%xxx????xxxxxxxxxxxxxxxxxxxxxx????xxxxxxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: lua_GetPartyMember</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
+	<key>PLAYER_GUID_NAME</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x89\xE5\x83\xEC\x18\x8B\x45\x08\xC7\x44\x24\x08\x82\x01\x00\x00\xC7\x04\x24\xE0\x95\xE1\x00\x89\x44\x24\x04\xE8\x13\x82\x8B\x00\xC9\xC3</string>
+			<key>Mask</key>
+			<string>xxxxxxxxxxxxxxxxxxxx????xxxxx????xx</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: sub_738540</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
+	<key>Lua_GetNumCompanions</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\xC1\xE6\x04\x8B\x86\x04\xAB\xDB\x00\x2D\x00\x00\x00\x80\x66\x0F\x6E\xC0\x8B\x45\x08\xF3\x0F\xE6\xC0\xF2\x0F\x58\x05\xE0\x2D\xC0\x00\x66\x0F\x29\x45\xD8\xDD\x45\xD8\xDD\x5C\x24\x04\x89\x04\x24\xE8\x21\x2A\x27\x00\xB8\x01\x00\x00\x00\xEB\xB9</string>
+			<key>Mask</key>
+			<string>xxxxx????xxxxxxxxxxxxxxxxxxxx%%%%xxxxxxxxxxxxxxxx%%%%xxxxxxx</string>
+			<key>Comment</key>
+			<string>3.3.3a: lua_GetNumCompanions</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string></string>
+			<key>Mask</key>
+			<string></string>
+		</dict>
+	</dict>
 	<key>Lua_GetBindingKey</key>
 	<dict>
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xA1\xE0\x2F\xC8\x00\x31\xDB\x89\x45\xE4\xC7\x44\x24\x08\x00\x00\x00\x00\xC7\x44\x24\x04\x01\x00\x00\x00</string>
+			<string>\xA1\x60\xEA\xC8\x00\x31\xDB\x89\x45\xE4\xC7\x44\x24\x08\x00\x00\x00\x00\xC7\x44\x24\x04\x01\x00\x00\x00\x8B\x45\x08\x89\x04\x24\xE8\xF7\x3F\x24\x00\x89\xC7\xEB\x13\x0F\x1F\x00\x89\x44\x24\x04\x8B\x45\x08\x43\x89\x04\x24\xE8\x80\x2D\x24\x00\x89\x5C\x24\x0C\x89\x7C\x24\x08\x89\x74\x24\x04\x8B\x45\xE4\x89\x04\x24\xE8\x99\xFD\xFF\xFF\x85\xC0\x75\xD5\x83\xC4\x2C\x89\xD8\x5B\x5E\x5F\xC9\xC3</string>
 			<key>Mask</key>
-			<string>x????xxxxxxxxxxxxxxxxxxxxx</string>
+			<string>x????xxxxxxxxxxxxxxxxxxxxxxxxxxxx%%%%xxxxxxxxxxxxxxxxxxx%%%%xxxxxxxxxxxxxxxxxxx%%%%xxxxxxxxxxxxxx</string>
 			<key>Comment</key>
-			<string>From 3.3.0a: lua_GetBindingKey</string>
+			<string>From 3.3.3a: lua_GetBindingKey</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -116,23 +198,6 @@
 			<string></string>
 		</dict>
 	</dict>
-	<key>KEYBINDINGS_PTR</key>
-	<dict>
-		<key>Intel</key>
-		<dict>
-			<key>Signature</key>
-			<string>\xA1\x60\x50\xBA\x00\x89\x45\xE0\xC7\x44\x24\x04\x01\x00\x00\x00\x89\x3C\x24</string>
-			<key>Mask</key>
-			<string>x????xxxxxxxxxxxxxx</string>
-		</dict>
-		<key>ppc</key>
-		<dict>
-			<key>Signature</key>
-			<string></string>
-			<key>Mask</key>
-			<string></string>
-		</dict>
-	</dict>
 	<key>MACRO_LIST_PTR</key>
 	<dict>
 		<key>Intel</key>
@@ -159,13 +224,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x89\x5C\x24\x04\x89\x74\x24\x08\xC7\x04\x24\xA0\xC3\xF3\x00\xE8\x17</string>
+			<string>\x8B\x45\xC4\x8B\x55\xC8\x89\x7C\x24\x04\xC7\x04\x24\x40\xD2\xD2\x00\x89\x44\x24\x08\x89\x54\x24\x0C\xE8\xFD\x15\xFD\xFF\x8B\x75\xC8\x31\xC0\x8B\x5D\xC4\x89\xF2\x81\xE2\x00\x00\x00\xF0\x89\xD1\x81\xF1\x00\x00\x00\x10\x09\xC1\x75\x51</string>
 			<key>Mask</key>
-			<string>xxxxxxxxxxx????xx</string>
-			<key>AdditionalOffset</key>
-			<string>0x24</string>
+			<string>xxxxxxxxxxxxx????xxxxxxxxx%%%%xxxxxxxxxxxxxxxxxxxxxxxxxxxx</string>
 			<key>Comment</key>
-			<string>For 3.3.0: sub_1A8860</string>
+			<string>For 3.3.3a: sub_185EF0</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -197,11 +260,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\xC7\x05\x50\xA3\xC7\x00\x09\x00\x00\x00\xC7\x44\x24\x08\x00\x00\x00\x00\xC7\x44\x24\x04\xFF\xFF\xFF\xFF\xC7\x04\x24\x08\x14\xA9\x00\xE8\xBA\x62\x54\x00</string>
+			<string>\xC7\x05\x74\x43\xC8\x00\x05\x00\x00\x00\xC7\x05\xFC\x3D\xC8\x00\x00\x00\x00\x00\xC7\x04\x24\x2E\x00\x00\x00\xE8\x42\x38\x48\x00\xC7\x44\x24\x08\x00\x00\x00\x00\xC7\x44\x24\x04\xFF\xFF\xFF\xFF\x89\x04\x24\xE8\x9A\x08\x55\x00\xC7\x44\x24\x08\x32\x54\xA9\x00\xC7\x44\x24\x04\x24\x8C\xAE\x00\xC7\x04\x24\x03\x00\x00\x00\x89\x44\x24\x0C\xE8\xFA\x1F\x55\x00\xE8\xB5\x29\x48\x00\x89\x5C\x24\x04\x89\x04\x24\xE8\x69\x66\x48\x00</string>
 			<key>Mask</key>
-			<string>xx????xxxxxxxxxxxxxxxxxxxxxxx????x????</string>
+			<string>xx????xxxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxxxxxxxxx????xxxx????xxxx????xxxxxxxxxxxx????x????xxxxxxxx????</string>
 			<key>Comment</key>
-			<string>3.3.2: from sub_2B9000</string>
+			<string>3.3.3a: sub_2B4C30</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -283,29 +346,6 @@
 			<string>\x3C\x40\x01\x47\x55\x29\x18\x38\x7C\x09\x00\x50\x38\x42\x1E\xB8\x7C\x40\x12\x15\x41\x82\x00\x24\x80\x02\x00\x30</string>
 			<key>Mask</key>
 			<string>xx??xxxxxxxxxx??xxxxxxxxxxxx</string>
-		</dict>
-	</dict>
-	<key>MOUNT_LIST_NUM</key>
-	<dict>
-		<key>Intel</key>
-		<dict>
-			<key>Comment</key>
-			<string>For 3.3.0: sub_65CA80</string>
-			<key>Signature</key>
-			<string>\x53\xBB\xBC\x9B\xFC\x00\x83\xEC\x10\x8B</string>
-			<key>Mask</key>
-			<string>xx????xx%x</string>
-			<key>Count</key>
-			<string>24</string>
-		</dict>
-		<key>ppc</key>
-		<dict>
-			<key>Signature</key>
-			<string>\x3C\x40\x01\x4C\x38\x42\xBE\x7C\x81\x62\x00\x04\x81\x22\x00\x08\x55\x60\x10\x3A\x39\x6B\x00\x01\x7D\x69\x03\xA6\x7C\x40\x4A\x14</string>
-			<key>Mask</key>
-			<string>xx??xx??xxxxxxxxxxxxxxxxxxxxxxxx</string>
-			<key>SubtractOffset</key>
-			<string>0x10008</string>
 		</dict>
 	</dict>
 	<key>LAST_RED_ERROR_MESSAGE</key>
@@ -528,11 +568,11 @@
 		<key>Intel</key>
 		<dict>
 			<key>Signature</key>
-			<string>\x8B\x8D\xE0\xF2\xFF\xFF\x3B\x0D\x38\x4B\x0B\x01\x89\xC2</string>
+			<string>\x8B\x45\x10\x3B\x05\x04\x59\xEA\x00\x8B\x55\x10\x0F\x94\xC0\x0F\xB6\xC0\x89\x15\x04\x59\xEA\x00\x89\x85\xF8\xF2\xFF\xFF\xE8\x09\xBC\x5C\x00\x8B\x8D\xF0\xF2\xFF\xFF\x3B\x0D\x14\x59\xEA\x00\x89\xC2\x0F\x85\x1A\xF8\xFF\xFF\x0F\x1F\x44\x00\x00</string>
 			<key>Mask</key>
-			<string>xxxxxxxx????xx</string>
+			<string>xxxxx%%%%xxxxxxxxxxx%%%%xxxxxxx%%%%xxxxxxxx????xxxx%%%%xxxxx</string>
 			<key>Comment</key>
-			<string>From 3.3.0: sub_323A30</string>
+			<string>From 3.3.3a: sub_2DFD60</string>
 		</dict>
 		<key>ppc</key>
 		<dict>
@@ -643,52 +683,6 @@
 			<string>\x7C\x08\x02\xA6\xBF\xA1\xFF\xF4\x3F\xA0\x00\xB3\x3B\xBD\xEA\x70\x7C\x64\x1B\x78\x38\xA0\x05\x00</string>
 			<key>Mask</key>
 			<string>xxxxxxxxxx??xx??xxxxxxxx</string>
-			<key>SubtractOffset</key>
-			<string>0x10000</string>
-		</dict>
-	</dict>
-	<key>PLAYER_GUID_STATIC</key>
-	<dict>
-		<key>Intel</key>
-		<dict>
-			<key>Signature</key>
-			<string>\xC7\x44\x24\x08\x5E\x01\x00\x00\xC7\x04\x24\xC0\x87\x02\x01</string>
-			<key>Mask</key>
-			<string>xxxxxxxxxxx????</string>
-			<key>Comment</key>
-			<string>From 3.3.0: sub_8474E0</string>
-		</dict>
-		<key>ppc</key>
-		<dict>
-			<key>Signature</key>
-			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
-			<key>Mask</key>
-			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
-			<key>SubtractOffset</key>
-			<string>0x10000</string>
-		</dict>
-	</dict>
-	<key>PLAYER_NAME_STATIC</key>
-	<dict>
-		<key>Intel</key>
-		<dict>
-			<key>Signature</key>
-			<string>\x55\x31\xC0\x89\xE5\xBA\xC8\x87\x02\x01\x80\x3D\xC8\x87\x02\x01\x00\xC9\x0F\x45\xC2\xC3</string>
-			<key>Mask</key>
-			<string>xxxxxx????xx====xxxxxx</string>
-			<key>Count</key>
-			<string>4</string>
-			<key>Comment</key>
-			<string>From 3.3.0: sub_847580</string>
-		</dict>
-		<key>ppc</key>
-		<dict>
-			<key>Signature</key>
-			<string>\x3C\x40\x01\x41\x38\x42\xFA\x40\x88\x02\x00\x08\x38\x62\x00\x08\x2F\x80\x00\x00\x4C\xBE\x00\x20\x38\x60\x00\x00\x4E\x80\x00\x20</string>
-			<key>Mask</key>
-			<string>xx??xx??xxxxxxxxxxxxxxxxxxxxxxxx</string>
-			<key>AdditionalOffset</key>
-			<string>0x8</string>
 			<key>SubtractOffset</key>
 			<string>0x10000</string>
 		</dict>

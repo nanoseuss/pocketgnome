@@ -158,7 +158,7 @@ static PlayerDataController* sharedController = nil;
 
 - (NSString*)playerHeader {
     if( [self playerIsValid:self]  ) {
-		unsigned long offset = [offsetController offset:@"PLAYER_NAME_STATIC"];
+		unsigned long offset = [offsetController offset:@"PLAYER_GUID_NAME"] + 0x8;
         // get the player name if we can
         NSString *playerName = nil;
         if( offset ) {
@@ -201,7 +201,7 @@ static PlayerDataController* sharedController = nil;
 }
 
 - (NSString*)playerName {
-	unsigned long offset = [offsetController offset:@"PLAYER_NAME_STATIC"];
+	unsigned long offset = [offsetController offset:@"PLAYER_NAME_STATIC"] + 0x8;
     if( offset ) {
         char str[13];
         str[12] = 0;
@@ -269,7 +269,7 @@ static PlayerDataController* sharedController = nil;
     
     UInt32 selfGUID = 0, previousPtr = 0, objectType = 0;
 	UInt64 globalGUID = 0;
-    [memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
+    [memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_NAME"] Buffer: (Byte*)&globalGUID BufLength: sizeof(globalGUID)];
     [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_GUID_LOW32) Buffer: (Byte*)&selfGUID BufLength: sizeof(selfGUID)];
 	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_STRUCT3_POINTER) Buffer: (Byte*)&previousPtr BufLength: sizeof(previousPtr)];
 	[memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];

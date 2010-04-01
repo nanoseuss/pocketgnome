@@ -209,31 +209,42 @@ static SpellController *sharedSpells = nil;
 	if( [playerController playerIsValid:self] ){
 		UInt32 mountAddress = 0;
 		
-		// grab the total number of mounts
-		UInt32 mountListNum = [offsetController offset:@"MOUNT_LIST_NUM"];
-		UInt32 totalMounts = 0;
-		[memory loadDataForObject: self atAddress: mountListNum Buffer: (Byte *)&totalMounts BufLength: sizeof(totalMounts)];
+		UInt32 companionOffset = [offsetController offset:@"Lua_GetNumCompanions"];
 		
-		//PGLog(@"[Mount] You have %d mounts, starting to load!", totalMounts);
+		// grab the total number of mounts
+		int32_t totalMounts = 0;
+		[memory loadDataForObject: self atAddress: companionOffset + 0x10 Buffer: (Byte *)&totalMounts BufLength: sizeof(totalMounts)];
+		
+		PGLog(@"[Mount] You have %d mounts, loading!", totalMounts);
 		
 		// grab the pointer to the list
-		if([memory loadDataForObject: self atAddress: mountListNum + 0x4 Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
+		if([memory loadDataForObject: self atAddress: companionOffset + 0x14 Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
 			
-			for(i=0; i < totalMounts ; i++) {
+			int i = 0;
+			for ( ; i < totalMounts ; i++ ) {
 				// load all known spells into a temp array
-				if([memory loadDataForObject: self atAddress: mountAddress + (i*0x4) Buffer: (Byte *)&value BufLength: sizeof(value)] && value < 100000 && value > 0) {
+				if ( [memory loadDataForObject: self atAddress: mountAddress + (i*0x4) Buffer: (Byte *)&value BufLength: sizeof(value)] ) {
 					Spell *spell = [self spellForID: [NSNumber numberWithUnsignedInt: value]];
-					if( !spell ) {
+					if ( !spell ) {
+						
 						// create a new spell if necessary
 						spell = [Spell spellWithID: [NSNumber numberWithUnsignedInt: value]];
 						if ( !spell ){
 							PGLog(@"[Spell] Mount %d not found!", value );
 							continue;
 						}
+						
+						// spell isn't a mount? snap we probably need to reload it's data!
+						if ( ![spell isMount] ){
+							PGLog(@"[Spell] Mount %d isn't registered as a mount! Reloading data", value);
+							[spell reloadSpellData];
+						}
+						
 						[self addSpellAsRecognized: spell];
 					}
 					[playerMounts addObject: spell];
-				} else {
+				}
+				else {
 					break;
 				}
 			}

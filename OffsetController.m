@@ -212,8 +212,12 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 				
 			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
-			if ( offset > 0x0 )
+			if ( offset > 0x0 ){
 				PGLog(@"%@: 0x%X", key, offset);
+			}
+			else{
+				PGLog(@"[Offset] Error! No offset found for key %@", key);
+			}
 		}
 		
 		// can hard code some here
@@ -231,12 +235,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		//[offsets setObject:[NSNumber numberWithUnsignedLong:0xC7A350] forKey:@"WorldState"];				// 3.3.2
         //[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
  		
-        [offsets setObject:[NSNumber numberWithUnsignedLong:0xC88F58] forKey:@"PLAYER_GUID_STATIC"];
-        [offsets setObject:[NSNumber numberWithUnsignedLong:0xEA5914] forKey:@"LAST_SPELL_THAT_DIDNT_CAST_STATIC"];
-        [offsets setObject:[NSNumber numberWithUnsignedLong:0xD2D240 + 0x24] forKey:@"PLAYER_NAME_LIST"];
-        [offsets setObject:[NSNumber numberWithUnsignedLong:0xC8EA60] forKey:@"KEYBINDINGS_PTR"];
-        [offsets setObject:[NSNumber numberWithUnsignedLong:0xDBAB14] forKey:@"MOUNT_LIST_NUM"];
-        		
+
         // 0xD8BD20 - charselect, login, charcreate, patchdownload		
 		
         _offsetsLoaded = YES;
@@ -277,7 +276,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
             while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
 
 				
-				PGLog(@"[Offset] Success for reading from 0x%X to 0x%X  SourceInfo: 0x%X 0x%X", SourceAddress, SourceSize, SourceInfo, SourceInfoSize);
+				//PGLog(@"[Offset] Success for reading from 0x%X to 0x%X  SourceInfo: 0x%X 0x%X", SourceAddress, SourceSize, SourceInfo, SourceInfoSize);
                 // ensure we have access to this block
                 if ((SourceInfo.protection & VM_PROT_READ)) {
                     NS_DURING {
@@ -291,7 +290,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 								ReturnedBufferContentSize = TEXT_SEGMENT_MAX_ADDRESS;
 							}
 							
-							PGLog(@"Reading from %d to %d", SourceAddress, SourceAddress + SourceSize);
+							//PGLog(@"Reading from %d to %d", SourceAddress, SourceAddress + SourceSize);
 							
 							// Lets grab all our offsets!
 							[self findOffsets: ReturnedBuffer Len:SourceSize StartAddress: SourceAddress];
@@ -633,5 +632,26 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	return [[list retain] autorelease];
 }
 
-
 @end
+
+/*
+ 
+ Official place for notes on offsets!!
+ 
+ GetNumCompanions
+	0x0		- Number of Pets
+	0x4		- Pointers to list of pets
+	0x10	- Number of mounts
+	0x14	- Pointer to list of mounts
+ 
+ PLAYER_NAME_LIST	- Basically you have a bunch of linked lists here, wish I understand some calling functions better
+	0x10	- Friends list
+	0x14	- Guildies
+	0x24	- People within range
+ 
+ PLAYER_GUID_NAME	- This has the player's 64-bit GUID + name!
+	0x0		- 64-bit GUID
+	0x8		- Player name
+ 
+ 
+ */
