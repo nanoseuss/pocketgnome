@@ -446,18 +446,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//}
 	}
 	
-	if( !isCasting ) {
-		
-		// ensure unit is our target
-		UInt64 unitUID = [_castingUnit GUID];
-		//PGLog(@"[Combat] Not casting 0x%qX 0x%qX", [playerData targetID], unitUID);
-		if ( ( [playerData targetID] != unitUID) || [_castingUnit isFeignDeath] ) {
-			Position *playerPosition = [playerData position];
-			PGLog(@"[Combat] Targeting %@  Weight: %d", _castingUnit, [self weight:_castingUnit PlayerPosition:playerPosition] );
-			
-			[playerData setPrimaryTarget: _castingUnit];
-			usleep([controller refreshDelay]);
-		}
+	// ensure unit is our target
+	UInt64 unitGUID = [_castingUnit GUID];
+	if ( [playerData targetID] != unitGUID || [_castingUnit isFeignDeath] ){
+		[playerData targetGuid:unitGUID];
+	}
+	
+	if ( !isCasting ) {
 		
 		// move toward unit?
 		if ( [botController.theBehavior meleeCombat] ){
@@ -877,6 +872,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 	
+	// unit died, fire off notification
+	if ( [unit isDead] ){
+		PGLog(@"[**********] Firing death notification for unit %@", unit);
+		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
+		return;
+	}
+	
+	// unit has ghost aura (so is dead, fire off notification)
+	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
+	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
+		PGLog(@"[**********] Firing death notification for player %@", unit);
+		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
+		return;
+	}
+	
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit GUID]]] intValue];
 	// unit left combat?
 	if ( ![unit isInCombat] ){
@@ -904,22 +914,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		leftCombatCount = 0;
 	}
 	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit GUID]]];
-	
-	
-	// unit died, fire off notification
-	if ( [unit isDead] ){
-		PGLog(@"[**********] Firing death notification for unit %@", unit);
-		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
-		return;
-	}
-	
-	// unit has ghost aura (so is dead, fire off notification
-	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
-	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
-		PGLog(@"[**********] Firing death notification for player %@", unit);
-		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
-		return;
-	}
 	
 	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
 }

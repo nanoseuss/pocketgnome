@@ -165,6 +165,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (MemoryAccess*)wowMemoryAccess;
 - (ProcessSerialNumber)getWoWProcessSerialNumber;
 - (CGPoint)screenPointForGamePosition: (Position*)gamePosition;
+- (int)gameState;
 
 - (void)showMemoryView;
 

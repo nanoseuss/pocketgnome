@@ -71,6 +71,7 @@
 #import "CombatProfile.h"
 #import "Errors.h"
 #import "PvPBehavior.h"
+#import "Battleground.h"
 
 #import "ScanGridView.h"
 #import "TransparentWindow.h"
@@ -127,7 +128,7 @@
 // pvp
 @property (readwrite, assign) BOOL pvpPlayWarning;
 @property (readwrite, assign) BOOL pvpLeaveInactive;
-@property (readwrite, assign) int pvpCheckCount;
+@property (readwrite, assign) int pvpAntiAFKCounter;
 
 @property (readwrite, assign) BOOL doLooting;
 @property (readwrite, assign) float gatherDistance;
@@ -145,14 +146,7 @@
 - (void)performProcedureWithState: (NSDictionary*)state;
 - (void)playerHasDied: (NSNotification*)noti;
 
-// pvp
-- (void)pvpStop;
-- (void)pvpStart;
-- (void)pvpCheck;
-- (void)pvpGetBGInfo;
-
 - (void)rePop: (NSNumber *)count;
-- (void)startBotForPvP;
 
 - (void)skinMob: (Mob*)mob;
 - (void)skinOrFinish;
@@ -168,6 +162,18 @@
 - (void)executeRegen: (BOOL)delay;
 
 - (NSString*)isRouteSetSound: (RouteSet*)route;
+
+- (void)stopBotActions;
+
+// pvp
+- (void)pvpQueueOrStart;
+- (void)pvpQueueBattleground;
+- (BOOL)pvpSetEnvironmentForZone;
+- (void)pvpAntiAFK;
+- (void)pvpBattlegroundOver;
+- (void)pvpStop;
+- (void)pvpStart;
+- (void)pvpGetBGInfo;
 
 @end
 
@@ -266,10 +272,8 @@
 		_jumpAttempt = 0;
 		_includeFriendly = NO;
 		_lastSpellCast = 0;
-        _mountAttempt = 0;
 		_movingTowardMobCount = 0;
 		_lootDismountCount = [[NSMutableDictionary dictionary] retain];
-		_mountLastAttempt = nil;
 		
 		_routesChecked = [[NSMutableArray array] retain];
         _mobsToLoot = [[NSMutableArray array] retain];
@@ -278,6 +282,7 @@
         self.isPvPing = NO;
         self.pvpLeaveInactive = NO;
         self.pvpPlayWarning = NO;
+		self.pvpAntiAFKCounter = 0;
 		
 		// anti afk
 		_lastPressedWasForward = NO;
@@ -370,7 +375,7 @@
 @synthesize preCombatUnit;
 @synthesize pvpPlayWarning = _pvpPlayWarning;
 @synthesize pvpLeaveInactive = _pvpLeaveInactive;
-@synthesize pvpCheckCount = _pvpCheckCount;
+@synthesize pvpAntiAFKCounter = _pvpAntiAFKCounter;
 
 @synthesize startDate;
 @synthesize doLooting       = _doLooting;
@@ -1684,10 +1689,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// target yourself
 					if ( [rule target] == TargetSelf ){
 						PGLog(@"[Procedure] Targeting self");
-						[playerController setPrimaryTarget: [playerController player]];
+						[playerController targetGuid:[[playerController player] GUID]];
+						//[playerController setPrimaryTarget: [playerController player]];
 					}
 					else if ( [rule target] != TargetNone ){
-						[playerController setPrimaryTarget: target];
+						[playerController targetGuid:[target GUID]];
+						//[playerController setPrimaryTarget: target];
 					}
 					
 					// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
@@ -2271,6 +2278,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 }
 
+/*
 // this is called when any unit enters combat
 - (void)addingUnit: (Unit*)unit {
     if(![self isBotting]) return;
@@ -2306,7 +2314,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
     
     //[combatController disposeOfUnit: unit];
-}
+}*/
 
 - (void)unitDied: (NSNotification*)notification{
 	Unit *unit = [notification object];
@@ -2552,11 +2560,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 	
 	// Check for preparation buff
-	if ( self.isPvPing && [pvpWaitForPreparationBuff state] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
+	if ( self.isPvPing && [self.pvpBehavior preparationDelay] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
 		
 		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
 		[movementController stopMovement];
-	
+		[movementController resetMovementState];
+		
 		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 		
 		return YES;
@@ -2566,6 +2575,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.isPvPing && _strandDelay ){
 		[controller setCurrentStatus: @"PvP: Waiting for boat to arrive..."];
 		[movementController stopMovement];
+		[movementController resetMovementState];
 		
 		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 		
@@ -2597,6 +2607,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		return YES;
 	}
+	
+	// dead and PvPing?
+	if ( self.isPvPing && [playerController isDead] ){
+		[movementController stopMovement];
+		return NO;
+	}
     
     Position *playerPosition = [playerController position];
     //float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
@@ -2611,11 +2627,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // 6) Scan for valid target in range, attack if found.
     // 7) Check for nodes to harvest, harvest if necessary.
     // 8) Resume movement if needed, nothing else to do.
-        
+
     // if the player is a Ghost...
     if ( [playerController isGhost]) {
 		
-        if( [playerController corpsePosition] && [playerPosition distanceToPosition: [playerController corpsePosition]] < 26.0 ) {
+		Position *corpsePosition = [playerController corpsePosition];
+		
+        if ( corpsePosition && [playerPosition distanceToPosition:corpsePosition] < 26.0 ) {
             // we found our corpse
             [controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
             [movementController stopMovement];
@@ -2702,7 +2720,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				PGLog(@"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
 				
 				if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
-					[movementController followObject: followTarget];
+					//[movementController followObject: followTarget];
 				}
 				
 				// Check our position again shortly!
@@ -3104,65 +3122,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)mountNow{
-	
-	
-	
-	// some error checking
-	if ( _mountAttempt > 8 ){
-		float timeUntilRetry = 15.0f - (-1.0f * [_mountLastAttempt timeIntervalSinceNow]);
-		
-		if ( timeUntilRetry > 0.0f ){
-			PGLog(@"[Bot] Will not mount for another %0.2f seconds", timeUntilRetry );
-			return NO;
-		}
-		else{
-			_mountAttempt = 0;
-		}
-	}
-	
-	if ( [mountCheckbox state] && ([miningCheckbox state] || [herbalismCheckbox state] || [fishingCheckbox state]) && ![[playerController player] isSwimming] && ![[playerController player] isMounted] && ![playerController isInCombat] ){
-		
-		_mountAttempt++;
-		
-		PGLog(@"[Bot] Mounting attempt %d! Movement flags: 0x%X", _mountAttempt, [playerController movementFlags]);
-
-		// record our last attempt
-		[_mountLastAttempt release]; _mountLastAttempt = nil;
-		_mountLastAttempt = [[NSDate date] retain];
-		
-		// actually mount
-		Spell *mount = [spellController mountSpell:[mountType selectedTag] andFast:YES];
-		if ( mount ){
-			
-			// stop moving if we need to!
-			[movementController stopMovement];
-			usleep(100000);
-			
-			// Time to cast!
-			int errID = [self performAction:[[mount ID] intValue]];
-			if ( errID == ErrNone ){
-				
-				PGLog(@"[Bot] Mounting started! No errors!");
-				
-				_mountAttempt = 0;
-			}
-			else{
-				PGLog(@"[Bot] Mounting failed! Error: %d", errID);
-			}
-			
-			return YES;
-		}
-		else{
-			PGLog(@"[Bot] No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
-			
-			// should we load any mounts
-			if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ){
-				PGLog(@"[Bot] Attempting to load mounts...");
-				[spellController reloadPlayerSpells];				
-			}	
-		}
-	}
-	
 	return NO;
 }
 
@@ -3174,6 +3133,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                                            forProfileNamed: [[NSUserDefaults standardUserDefaults] objectForKey: @"CombatProfile"]];
 }
 
+// TO DO: Update for PvP
 - (IBAction)updateStatus: (id)sender {
     CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
 	
@@ -3211,37 +3171,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         status = [status stringByAppendingFormat: @" Herbalism (%d).", [herbalismSkillText intValue]];
     if([skinningCheckbox state])
         status = [status stringByAppendingFormat: @" Skinning (%d).", [skinningSkillText intValue]];
-	
-	BOOL enableMount = YES;
-	
-	// enable our any mount
-	if ( [miningCheckbox state] || [herbalismCheckbox state] || [netherwingEggCheckbox state] || [fishingCheckbox state] ){
-		enableMount = YES;
-	}
-	
-	// don't enable if looting! Sorry it doesn't work correctly yet!
-	if ( [lootCheckbox state] || [skinningCheckbox state] ){
-		enableMount = NO;
-	}
-	
-	
-	if ( enableMount ){
-		[mountCheckbox setEnabled:YES];
-		[mountType setEnabled:YES];
-	}
-	else{
-		[mountCheckbox setEnabled:NO];
-		[mountType setEnabled:NO];
-		[mountCheckbox setState:0];
-	}
     
     [statusText setStringValue: status];
 }
 
 
 - (IBAction)startBot: (id)sender {
-     BOOL ignoreRoute = ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue];
-    
+	BOOL ignoreRoute = ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue];
+	BOOL usePvPBehavior = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UsePvPBehavior"] boolValue];
+	
     // grab route info
     if ( ignoreRoute ) {
         self.theRouteSet = nil;
@@ -3257,10 +3195,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     self.doLooting = [lootCheckbox state];
     self.gatherDistance = [gatherDistText floatValue];
-	
-	// We only really need this if we are PvPing, but we want to store it in case they click "start bot" while in a BG, vs. doing the PvP route
-	_pvpMarks = [itemController pvpMarks];
     
+	// we using a PvP Behavior?
+	if ( usePvPBehavior ){
+		self.pvpBehavior = [[pvpBehaviorPopUp selectedItem] representedObject];
+	}
+	else{
+		self.pvpBehavior = nil;
+	}
+	
 	if ( ([self isHotKeyInvalid] & HotKeyPrimary) == HotKeyPrimary ){
         PGLog(@"Primary hotkey is not valid.");
         NSBeep();
@@ -3335,16 +3278,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         return;
 	}
 	
-	// make sure mounting will even work
-	if ( [mountCheckbox state] && ![[playerController player] isMounted] && ![playerController isInCombat] ){
-		if ( ![spellController mountSpell:[mountType selectedTag] andFast:YES] ){
-			PGLog(@"[Bot] Mounting will fail!");
-			NSBeep();
-			NSRunAlertPanel(@"No valid mount spells found on your action bars!", @"You must have a valid mount spell on ANY action bar in order for 'stay mounted' to function! You may also want to click 'Load All' on the spells tab if you don't see any spells listed under 'Mounts'", @"Okay", NULL, NULL);
-			return;
-		}
-	}
-	
 	// find our key bindings
 	[bindingsController reloadBindings];
 	BOOL bindingsError = NO;
@@ -3359,6 +3292,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	else if ( ![bindingsController bindingForKeyExists:BindingInteractMouseover] ){
 		[error appendString:@"\tInteract With Mouseover\n"];
+		bindingsError = YES;
+	}
+	else if ( ![bindingsController bindingForKeyExists:BindingTargetLast] ){
+		[error appendString:@"\tTarget Last Target\n"];
 		bindingsError = YES;
 	}
 	if ( bindingsError ){
@@ -3435,23 +3372,56 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 	
-	// PvP Checks
-	/*if ( [[[NSUserDefaults standardUserDefaults] objectForKey: @"UsePvPBehavior"] boolValue] ){
+	// pvp checks
+	UInt32 zone = [playerController zone];
+	if ( [playerController isInBG:zone] ){
 		
-		self.pvpBehavior = [[pvpBehaviorPopUp selectedItem] representedObject];
+		// verify we're able to actually do something (otherwise we make the assumption the user selected the correct route!)
+		if ( self.pvpBehavior ){
 			
-		// make sure the behavior is usable!
-		if ( ![self.pvpBehavior isValid] ){
-			PGLog(@"[Bot] Your PvP Behavior isn't valid!");
+			// do we have a BG for this?
+			Battleground *bg = [self.pvpBehavior battlegroundForZone:zone];
+			
+			if ( !bg ){
+				NSString *errorMsg = [NSString stringWithFormat:@"No battleground found for '%@', check your PvP Behavior!", [bg name]];
+				PGLog(@"%@", errorMsg);
+				NSBeep();
+				NSRunAlertPanel(@"Unknown error in PvP Behavior", errorMsg, @"Okay", NULL, NULL);
+				return;	
+			}
+			else if ( ![bg routeCollection] ){
+				NSString *errorMsg = [NSString stringWithFormat:@"You must select a valid Route Set in your PvP Behavior for '%@'.", [bg name]];
+				PGLog(@"No valid route found for BG %d.", zone);
+				NSBeep();
+				NSRunAlertPanel(@"No route set found for this battleground", errorMsg, @"Okay", NULL, NULL);
+				return;
+			}
+		}
+	}
+	
+	// not a valid pvp behavior
+	if ( self.pvpBehavior && ![self.pvpBehavior isValid] ){
+		if ( [self.pvpBehavior random] ){
+			PGLog(@"You must have all battlegrounds enabled in your PvP behavior to do random!", zone);
 			NSBeep();
-			NSRunAlertPanel(@"PvP Behavior is invalid", @"You need to make sure at least one BG is enabled and has a route selected", @"Okay", NULL, NULL);
+			NSRunAlertPanel(@"Enable all battlegrounds", @"You must have all battlegrounds enabled in your PvP behavior to do random!", @"Okay", NULL, NULL);
 			return;
 		}
-	}*/
+		else{
+			PGLog(@"You need at least 1 battleground enabled in your PvP behavior to do PvP!", zone);
+			NSBeep();
+			NSRunAlertPanel(@"Enable 1 battleground", @"You need at least 1 battleground enabled in your PvP behavior to do PvP!", @"Okay", NULL, NULL);
+			return;
+		}
+	}
+	
+	// TO DO: verify starting routes for ALL PvP routes
 	
 	// not really sure how this could be possible hmmm
-    if( [self isBotting])
+    if( [self isBotting]){
+		PGLog(@"[Bot] Trying to start when we're already botting? mmmm");
         [self stopBot: nil];
+	}
     
     if ( self.theCombatProfile && self.theBehavior ) {
         PGLog(@"[Bot] Starting.");
@@ -3503,81 +3473,60 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         }
         // PGLog(@"Starting bot with Sknning skill %d, allowing mobs up to level %d", _skinLevel, canSkinUpToLevel);
         
-        self.isBotting = YES;
         [startStopButton setTitle: @"Stop Bot"];
-        _didPreCombatProcedure = NO;
-        _reviveAttempt = 0;
+		_didPreCombatProcedure = NO;
+		_reviveAttempt = 0;
 		
 		// Bot started, lets reset our whisper history!
 		[chatLogController clearWhisperHistory];
-        
-		if ( !self.isPvPing || self.startDate == nil ){
-			self.startDate = [[NSDate date] retain];
-		}
+		
+		self.startDate = [[NSDate date] retain];
 		
 		// set our route
-		if ( self.theRouteSet ){
+		if ( self.theRouteSet )
 			[movementController setPatrolRouteSet:self.theRouteSet];
-		}
 		
-		// player is dead but not a ghost - we need to res!
-		if ( [playerController isDead] && ![playerController isGhost] ){
-			[self rePop:[NSNumber numberWithInt:0]];
-		}
-		// we can move!
-		else{
-			[movementController resumeMovement];
-		}
+		[controller setCurrentStatus: @"Bot: Enabled"];
+		self.isBotting = YES;
 		
-
-        
-		/*
-        if( [playerController isGhost] && self.theRouteSet) {
-            Position *playerPosition = [playerController position];
-            Route *primaryRoute  = [self.theRouteSet routeForKey: PrimaryRoute];
-            Route *corpseRunRoute = [self.theRouteSet routeForKey: CorpseRunRoute];
-            
-            PGLog(@"[Bot] Started the bot, but we're a ghost!");
-            
-            float primaryDist = primaryRoute ? [[[primaryRoute waypointClosestToPosition: playerPosition] position] distanceToPosition: playerPosition] : INFINITY;
-            float corpseDist = corpseRunRoute ? [[[corpseRunRoute waypointClosestToPosition: playerPosition] position] distanceToPosition: playerPosition] : INFINITY;
-            
-            if(primaryDist < corpseDist)
-                [movementController setPatrolRoute: primaryRoute];
-            else
-                [movementController setPatrolRoute: corpseRunRoute];
-            
-            [movementController beginPatrol: 1];
-            return;
-        }*/
-        
-		/*
-        if( [playerController isDead]) {
-            PGLog(@"[Bot] Started the bot, but we're dead! Will try to release. (%d:%d:%d:%d)", [playerController health], [playerController isGhost], [playerController maxHealth], [[playerController player] maxHealth] );
-            [self playerHasDied: nil];
-            return;
-        }*/
-        
-        [controller setCurrentStatus: @"Bot: Enabled"];
-        //[combatController setCombatEnabled: self.theCombatProfile.combatEnabled];
-        // [movementController setPatrolRoute: [self.theRouteSet routeForKey: PrimaryRoute]];
-        
-		/*
-        // if we're in combat when we start, have the mobController update
-        if([combatController inCombat] && [[playerController player] isOnGround] ) {
+		// TO DO: allow botting before u join a BG!
+		
+		if ( [playerController isDead] ){
 			
-			PGLog(@"[Bot] In combat! Finding someone to attack!");
+			[controller setCurrentStatus: @"Bot: Player is Dead"];
+			
+			if ( ![playerController isGhost] ){
+				PGLog(@"[Bot] Do we need to release?");
+				[self rePop:[NSNumber numberWithInt:0]];
+			}
+		}
+		
+		// we have a PvP behavior!
+		if ( self.pvpBehavior ){
+			
+			// TO DO - map these to bindings
+			self.pvpPlayWarning = NO;// [pvpPlayWarningCheckbox state];
+			self.pvpLeaveInactive = [self.pvpBehavior leaveIfInactive];
+			
+			// reset these in case they have them selected
+			self.theRouteSet = nil;
+			self.theRouteCollection = nil;
+			
+			PGLog(@"[PvP] Starting with PvP");
 
-			// these are weighted!
-            for ( Unit *unit in [combatController combatList] ) {
-				
-				// by calling attackUnit, we're basically just starting a CombatProcedure (which could switch the target!)
-				[self actOnUnit:unit];
-            }
-        }*/
-
-		PGLog(@"[Eval] StartBot");
-        [self evaluateSituation];
+			[self performSelector:@selector(pvpQueueOrStart) withObject:nil afterDelay:0.1f];
+		}
+		
+		// normal, non-PvP
+		else if ( self.theRouteSet ) {
+			[movementController setPatrolRouteSet:self.theRouteSet];
+			[self evaluateSituation];
+		}
+		
+		// Running in a mode with no route selected
+		else {
+			[self evaluateSituation];
+		}
     }
 }
 
@@ -3607,34 +3556,50 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (IBAction)stopBot: (id)sender {
 	
-	// Then a user clicked!
-	if ( sender != nil ){
-		self.startDate = nil;
-	}
+	// start date is gone :(
+	self.startDate = nil;
+	
 	PGLog(@"Bot Stopped: %@", sender);
-    [self cancelCurrentProcedure];
-	[movementController resetMovementState];
-    [combatController resetAllCombat];
-	[blacklistController clearAll];
 
-    [_mobsToLoot removeAllObjects];
     self.isBotting = NO;
-    self.preCombatUnit = nil;
+	self.isPvPing = NO;
     [controller setCurrentStatus: @"Bot: Stopped"];
     
     PGLog(@"[Bot] Stopped.");
 	
 	// stop our log out timer
 	[_logOutTimer invalidate];_logOutTimer=nil;
-    
-    if(self.isPvPing) {
-        PGLog(@"[Bot] Bot stopped but PvP is ongoing...");
-    }
 	
-	// make sure we're not fishing
-	[fishController stopFishing];
-    
+	[self stopBotActions];
+	
     [startStopButton setTitle: @"Start Bot"];
+}
+
+// the idea of this function is that we want to stop the bot from doing anything, but we don't want to actually stop botting ;)
+- (void)stopBotActions{
+	
+	// just in case
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(evaluateSituation) object: nil];
+	
+	[self cancelCurrentProcedure];
+	[movementController resetMovementState];
+	[movementController stopMovement];
+    [combatController resetAllCombat];
+	[blacklistController clearAll];
+    [_mobsToLoot removeAllObjects];
+    self.preCombatUnit = nil;
+
+	// stop fishing
+	if ( [fishController isFishing] ){
+		[fishController stopFishing];
+	}
+	
+	// invalidate PvP timer
+	if ( !self.isPvPing ){
+		[_pvpTimer invalidate]; _pvpTimer = nil;
+	}
+	
+	self.pvpAntiAFKCounter = 0;
 }
 
 - (void)reEnableStart {
@@ -3782,8 +3747,8 @@ NSMutableDictionary *_diffDict = nil;
 	NSNumber *lastZone = [notification object];
 	
 	if ( [playerController isInBG:[lastZone intValue]] ){
-		[self stopBot:nil];
-		PGLog(@"[PvP] Left BG, stopping bot!");
+		//[self stopBot:nil];
+		PGLog(@"[PvP] Left BG, used to stop the bot here!");
 		//asdfasfsafd TO FIX
 	}
 	
@@ -3931,10 +3896,19 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)playerIsInvalid: (NSNotification*)not {
+	PGLog(@"[Bot] No longer stopping bot if player is invalid! Good or bad? hmm");
+	
+	
+	//LoginState
+	//WorldState: 0xC84374
+	
+	// TO DO: check world state!
+	
+	/*
     if( [self isBotting]) {
         PGLog(@"[Bot] Player is no longer valid, stopping bot.");
         [self stopBot: nil];
-    }
+    }*/
 }
 
 #pragma mark ShortcutRecorder Delegate
@@ -3984,12 +3958,11 @@ NSMutableDictionary *_diffDict = nil;
 		// if we are waiting to rez, pause the bot (incase it is not)
         if( spellID == WaitingToRezSpellID ) {
             [movementController stopMovement];
-			
         }
 		
 		// Just got preparation?  Lets check to see if we're in strand + should be attacking/defending
         if( spellID == PreparationSpellID ) {
-			PGLog(@"We have preparation, checking BG info!");
+			PGLog(@"[PvP] We have preparation, checking BG info!");
 			
 			// Do it in a bit, as we need to wait for our controller to update the object list!
 			[self performSelector:@selector(pvpGetBGInfo) withObject:nil afterDelay:3.1f];
@@ -4021,420 +3994,6 @@ NSMutableDictionary *_diffDict = nil;
     }
 }
 
-- (void)pvpResetStrandDelay{
-	_strandDelay = NO;
-	
-	PGLog(@"[PvP] Delay reset!");
-	
-	[controller setCurrentStatus: @"PvP: Delay reset, am I really waiting for eval?..."];
-	
-	PGLog(@"[Eval] Reset strand");
-	[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:10.0f];
-}
-
-- (void)pvpGetBGInfo{
-	
-	// Lets gets some info?
-	if ( [playerController zone] == ZoneStrandOfTheAncients ){
-		// Determine what the player is!
-		//int faction = [playerController factionTemplate];
-		
-		/*BOOL isAlliance = ([controller reactMaskForFaction: faction] & 0x2);
-		BOOL isHorde = ([controller reactMaskForFaction: faction] & 0x4);
-					   
-		PGLog(@"Alliance: %d, Horde: %d", isAlliance, isHorde);*/
-		
-		/*
-		Position *playerPosition = [playerController position];
-		NSArray *allianceNodes = [NSArray arrayWithObjects:
-								   [NSNumber numberWithInt:StrandAllianceBanner],
-								   [NSNumber numberWithInt:StrandAllianceBannerAura],
-								   nil];
-		NSArray *hordeNodes = [NSArray arrayWithObjects:
-								  [NSNumber numberWithInt:StrandHordeBanner],
-								  [NSNumber numberWithInt:StrandeHordeBannerAura],
-								  nil];
-		
-		// Since we're only check @ the start, we just have to check to see which exist @ the beginning!
-		if ( [[nodeController nodesWithinDistance: 5000.0f NodeIDs:allianceNodes position:playerPosition] count] > 0 ){
-			PGLog(@"[PvP] Alliance is defending in strand!");
-			if ( isHorde ){
-				_attackingInStrand = YES;
-			}
-			else if ( isAlliance ){
-				_attackingInStrand = NO;
-			}
-		}
-		
-		// Horde is defending!
-		if ( [[nodeController nodesWithinDistance: 5000.0f NodeIDs:hordeNodes position:playerPosition] count] > 0 ){
-			PGLog(@"[PvP] Horde is defending in strand!");
-			if ( isHorde ){
-				_attackingInStrand = NO;
-			}
-			else if ( isAlliance ){
-				_attackingInStrand = YES;
-			}
-		}*/
-		
-		NSArray *antipersonnelCannons = [mobController mobsWithEntryID:StrandAntipersonnelCannon];
-		
-		if ( [antipersonnelCannons count] > 0 ){
-			BOOL foundFriendly = NO, foundHostile = NO;
-			for ( Mob *mob in antipersonnelCannons ){
-				
-				int faction = [mob factionTemplate];
-				BOOL isHostile = [playerController isHostileWithFaction: faction];
-				//PGLog(@"[PvP] Faction %d (%d) of Mob %@", faction, isHostile, mob);
-				
-				if ( isHostile ){
-					foundHostile = YES;
-				}
-				else if ( !isHostile ){
-					foundFriendly = YES;
-				}
-			}
-			
-			if ( foundHostile && foundFriendly ){
-				PGLog(@"[PvP] New round for Strand! Found hostile and friendly! Were we attacking last round? %d", _attackingInStrand);
-				_attackingInStrand = _attackingInStrand ? NO : YES;
-			}
-			else if ( foundHostile ){
-				_attackingInStrand = YES;
-				PGLog(@"[PvP] We're attacking in strand!");
-			}
-			else if ( foundFriendly ){
-				_attackingInStrand = NO;
-				PGLog(@"[PvP] We're defending in strand!");
-			}
-		}
-		// If we don't see anything, then we're attacking!
-		else{
-			_attackingInStrand = YES;
-			PGLog(@"[PvP] We're attacking in strand!");
-		}
-		
-		// Check to see if we're on the boat!
-		if ( _attackingInStrand && [playerController isOnBoatInStrand]){
-			_strandDelay = YES;
-			PGLog(@"[PvP] We're on a boat so lets delay our movement until it settles!");
-		}
-	}
-}
-
-// This little guy controls most of our PvP functions!
-- (void)pvpMonitor: (NSTimer*)timer{
-	if(!self.isPvPing)						return;
-	if(![playerController playerIsValid:self])   return;
-	
-	BOOL isPlayerInBG = [playerController isInBG:[playerController zone]];
-	Player *player = [playerController player];
-	
-	// Player just left the BG!
-	if ( _pvpIsInBG && !isPlayerInBG ){
-		_pvpIsInBG = NO;
-		
-		PGLog(@"[PvP] Player has left the battleground...");
-		
-		// Stop the bot! (this could be triggered by our marks check, but of course someone could have maxed marks)
-		if ( self.isBotting ){
-			[self stopBot: nil];
-		}
-		
-		[movementController stopMovement];
-		
-		// Only requeue if we're PvPing!
-		if ( self.isPvPing ){
-
-			// check for deserter
-			BOOL hasDeserter = NO;
-			if( [player isValid] && [auraController unit: player hasAura: DeserterSpellID] ) {
-				hasDeserter = YES;
-			}
-			
-			if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
-				// [GrowlApplicationBridge setGrowlDelegate: @""];
-				[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Battleground Complete"]
-											description: (hasDeserter ? @"Waiting for Deserter to fade." : @"Will re-queue in 15 seconds.")
-									   notificationName: @"BattlegroundLeave"
-											   iconData: (([controller reactMaskForFaction: [player factionTemplate]] & 0x2) ? [[NSImage imageNamed: @"BannerAlliance"] TIFFRepresentation] : [[NSImage imageNamed: @"BannerHorde"] TIFFRepresentation])
-											   priority: 0
-											   isSticky: NO
-										   clickContext: nil];             
-			}
-			if(hasDeserter) {
-				PGLog(@"[PvP] Deserter! Waiting for deserter to go away :(");
-				[controller setCurrentStatus: @"PvP: Waiting for Deserter to fade..."];
-				[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 10.0];
-				return;
-			}
-			
-			// Requeue after 15 seconds (to account for some crappy computers)
-			[controller setCurrentStatus: @"PvP: Re-queueing for BG in 15 seconds..."];
-			[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 15.0f];
-		}
-	}
-	
-	// Player just joined the BG!
-	else if ( !_pvpIsInBG && isPlayerInBG ){
-		_pvpIsInBG = YES;
-		
-		// cancel the PvP checks
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
-		
-		if ( self.isPvPing ){
-			_pvpMarks = [itemController pvpMarks];
-			
-			if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
-				// [GrowlApplicationBridge setGrowlDelegate: @""];
-				[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Battleground Entered"]
-											description: [NSString stringWithFormat: @"Starting bot in 5 seconds."]
-									   notificationName: @"BattlegroundEnter"
-											   iconData: (([controller reactMaskForFaction: [[playerController player] factionTemplate]] & 0x2) ? [[NSImage imageNamed: @"BannerAlliance"] TIFFRepresentation] : [[NSImage imageNamed: @"BannerHorde"] TIFFRepresentation])
-											   priority: 0
-											   isSticky: NO
-										   clickContext: nil];             
-			}
-			
-			// Start bot after 5 seconds!
-			PGLog(@"[PvP] PvP environment valid. Starting bot in 5 seconds...");
-			[controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
-			[self performSelector: @selector(startBotForPvP) withObject: nil afterDelay: 5.0f];
-		}
-	}
-	
-	
-	// We can do some checks in here amirite?
-	if ( _pvpIsInBG && isPlayerInBG ){
-		
-		if ( self.isPvPing ){
-			// Play warning!
-			if( self.pvpPlayWarning ) {
-				if( [auraController unit: player hasAura: IdleSpellID] || [auraController unit: player hasAura: InactiveSpellID]) {
-					[[NSSound soundNamed: @"alarm"] play];
-					PGLog(@"[PvP] Idle/Inactive debuff detected!");
-				}
-			}
-			
-			// Leave BG?
-			if( [auraController unit: player hasAura: InactiveSpellID] && self.pvpLeaveInactive ) {
-				// leave the battleground
-				PGLog(@"[PvP] Leaving battleground due to Inactive debuff.");
-				
-				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
-			}
-		}
-		
-		// Check to see if we have been awarded a mark!  If so the BG has closed!
-		if ( _pvpMarks > 0 && [itemController pvpMarks] > _pvpMarks ){
-			
-			// Lets stop botting!
-			if ( self.isBotting ){
-				[self stopBot: nil];
-				
-				PGLog(@"[PvP] BG has ended, botting stopped. %d > %d", [itemController pvpMarks], _pvpMarks );
-				[controller setCurrentStatus: @"PvP: BG has ended, botting stopped."];
-			}
-		}
-	}
-	
-	if ( !isPlayerInBG && self.isBotting ){
-		PGLog(@"WE SHOULD NEVER BE HERE! Why are we botting outside of the BG?!?!?!");
-	}
-}
-
-- (void)startBotForPvP{
-	// Make sure player is valid, sometimes it takes longer than 5 seconds :(
-	if ( self.isPvPing ){
-		if ( ![playerController playerIsValid:self] ){
-			[self performSelector: @selector(startBotForPvP) withObject: nil afterDelay: 1.0f];
-			return;
-		}
-	
-		[self startBot:nil];
-	}
-}
-
-- (void)pvpQueueRetry{
-	if ( [playerController battlegroundStatus] != BGNone ){
-		return;
-	}
-	
-	PGLog(@"[PvP] Still not queued, trying again!");
-	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
-	
-	float nextCheck = SSRandomFloatBetween(1.0f, 5.0f);
-	[self performSelector: @selector(pvpQueueRetry) withObject: nil afterDelay:nextCheck];
-}
-
-- (void)pvpQueueBattleground{
-	if(!self.isPvPing)										return;
-	if(![playerController playerIsValid:self])				return;
-	if ([playerController isInBG:[playerController zone]])	return;
-	
-	if ( [playerController battlegroundStatus] == BGQueued ){
-		PGLog(@"[PvP] Already queued, no need to try again!");
-		return;
-	}
-	
-	// check for deserter
-    if( [auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
-		[controller setCurrentStatus: @"PvP: Waiting for deserter to fade..."];
-		
-		// Will jump once every 1-3 minutes
-        if(self.pvpCheckCount++ >= 4) {
-            self.pvpCheckCount = 0;
-            if(![controller isWoWChatBoxOpen]) {
-				[self noAFK];
-			}
-        }
-		
-		// make sure pvpCheck isn't going - it shouldn't be
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
-		
-		float nextQueueAttempt = SSRandomFloatBetween(15.0f, 45.0f);
-		[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextQueueAttempt];
-        return;
-    }
-	
-	PGLog(@"[PvP] Queueing...");
-	
-	// Open PvP screen
-	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
-	usleep(10000);
-	
-	// Lets queue!
-	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
-	        
-	[self noAFK];
-	self.pvpCheckCount = 0;
-	[controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
-	[self pvpCheck];
-	
-	// To account for sometimes the queue failing, lets try to join after minute or two just in case?
-	float nextCheck = SSRandomFloatBetween(60.0f, 120.0f);
-	[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextCheck];
-	
-	// try to queue again in case it failed!
-	[self performSelector: @selector(pvpQueueRetry) withObject: nil afterDelay:1.0f];
-}
-
-// this will keep us from going afk
-- (void)pvpCheck {
-	if(![playerController playerIsValid:self])   return;
-	
-    if(self.isPvPing) {
-		if ( [playerController isInBG:[playerController zone]] ){
-			return;
-		}
-		
-        [NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpCheck) object: nil];
-        
-		// Will jump once every minute
-        if(self.pvpCheckCount++ >= 60) {
-            self.pvpCheckCount = 0;
-            [self noAFK];
-        }
-		
-        [self performSelector: @selector(pvpCheck) withObject: nil afterDelay: 1.0f];
-    }
-}
-
-- (NSString*)pvpButtonTitle {
-    if(self.isPvPing)   return @"Stop PvP";
-    else                return @"Start PvP";
-}
-
-- (void)pvpStop {
-    [self stopBot: nil];
-    
-    self.isPvPing = NO;
-    self.pvpLeaveInactive = NO;
-    self.pvpPlayWarning = NO;
-    self.pvpCheckCount = 0;
-	
-	[_pvpTimer invalidate]; _pvpTimer = nil;
-	
-    PGLog(@"[PvP] Stopped.");
-    
-    [self willChangeValueForKey: @"pvpButtonTitle"];
-    [self didChangeValueForKey: @"pvpButtonTitle"];
-}
-
-- (void)pvpStart {
-    Player *player = [playerController player];
-    if(![player isValid]) return;
-	
-	// If we're not PvPing - we want to start!
-    if(!self.isPvPing) {
-		[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
-
-        if(([controller reactMaskForFaction: [player factionTemplate]] & 0x2)) {
-            [pvpBannerImage setImage: [NSImage imageNamed: @"BannerAlliance"]];
-        } else {
-            [pvpBannerImage setImage: [NSImage imageNamed: @"BannerHorde"]];
-        }
-        
-        [NSApp beginSheet: pvpBMSelectPanel
-           modalForWindow: [self.view window]
-            modalDelegate: self
-           didEndSelector: @selector(pvpSheetDidEnd: returnCode: contextInfo:)
-              contextInfo: nil];
-        return;
-    }
-	
-	// Reset our start date!
-	self.startDate = [[NSDate date] retain];
-	
-	// Close the PvP window!
-	[chatController sendKeySequence:[NSString stringWithFormat: @"%c", 'h']];
-	
-    self.pvpCheckCount = 0;
-    self.pvpPlayWarning = [pvpPlayWarningCheckbox state];
-    self.pvpLeaveInactive = [pvpLeaveInactiveCheckbox state];
-    
-    // off we go...?
-    PGLog(@"[PvP] Starting...");
-	[self pvpQueueBattleground];
-	
-	// Start our monitor!
-	_pvpIsInBG = NO;
-	_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(pvpMonitor:) userInfo: nil repeats: YES];
-    
-    [self willChangeValueForKey: @"pvpButtonTitle"];
-    [self didChangeValueForKey: @"pvpButtonTitle"];
-}
-
-- (IBAction)pvpStartStop: (id)sender {
-    if(self.isPvPing) {
-        [self pvpStop];
-    } else {
-        [self pvpStart];
-    }
-}
-
-- (void)pvpSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
-    [pvpBMSelectPanel orderOut: nil];
-
-    if(returnCode == NSCancelButton) {
-		self.isPvPing = NO;
-        return;
-    }
-    
-    if(returnCode == NSOKButton) {
-		self.isPvPing = YES;
-        [self pvpStart];
-    }
-}
-
-- (IBAction)pvpBMSelectAction: (id)sender {
-    [NSApp endSheet: pvpBMSelectPanel returnCode: [sender tag]];
-}
-
-- (IBAction)pvpTestWarning: (id)sender {
-    [[NSSound soundNamed: @"alarm"] play];
-}
-
 - (void)logOutWithMessage:(NSString*)message{
 	
 	PGLog(@"[Bot] %@", message);
@@ -4448,7 +4007,7 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark Timers
 
 - (void)logOutTimer: (NSTimer*)timer {
-	if ( !self.isBotting )
+	if ( !self.isBotting && !self.isPvPing )
 		PGLog(@"[Bot] We should never be here!!");
 	
 	BOOL logOutNow = NO;
@@ -5279,11 +4838,13 @@ typedef struct WoWClientDb {
 
 - (IBAction)test: (id)sender{
 	
+	PGLog(@"Current Game State: %d", [controller gameState]);
 	
-
 	float ping = [controller getPing];
 	
 	PGLog(@"Ping: %f", ping);
+	
+	return;
 	
 	WoWDbTable *table = [WoWDbTable WoWDbTableWithTablePtr: 0xD2E300];
 	int i = 0;
@@ -5895,6 +5456,422 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 
 #pragma Testing/Development Info (Generally Reversing)
 
+
+#pragma mark New PvP
+
+- (void)pvpQueueOrStart{
+	
+	self.isPvPing = YES;
+	
+	// is the player already in a BG?
+	UInt32 zone = [playerController zone];
+	if ( [playerController isInBG:zone] ){
+		
+		if ( [self pvpSetEnvironmentForZone] ){
+			[self pvpStart];
+		}
+		else{
+			PGLog(@"[PvP] should never be here really, but if so, we weren't able to set the PvP environment!");
+		}
+	}
+	// player isn't in a BG, so we need to queue!
+	else{
+		[self pvpQueueBattleground];
+	}
+}
+
+// this will set up the pvp environment based on the zone we're in (basically set the RouteSet)
+- (BOOL)pvpSetEnvironmentForZone{
+	
+	UInt32 zone = [playerController zone];
+	if ( [playerController isInBG:zone] ){
+		
+		Battleground *bg = [self.pvpBehavior battlegroundForZone:zone];
+		// we have a BG
+		if ( bg ){
+			
+			RouteCollection *rc = [bg routeCollection];
+			if ( rc ){
+				self.theRouteSet = [[rc startingRoute] retain];
+				self.theRouteCollection = [rc retain];
+				PGLog( @"[PvP] Setting PvP route set to %@", self.theRouteSet);
+				return YES;
+			}
+		}
+	}
+	
+	PGLog(@"PvP No pvp route found!");
+	
+	return NO;	
+}
+
+- (void)finishQueue{
+	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
+	usleep(100000);
+	
+	if ( [playerController battlegroundStatus] != BGQueued ){
+		PGLog( @"[PvP] Error, we just queued for the BG, but we're not queued? hmmm");
+	}
+	
+}
+
+- (void)pvpQueueBattleground{
+	
+	// error checking (removed valid player and !isPvPing)
+	UInt32 zone = [playerController zone];
+	
+	if ( [playerController isInBG:zone] ){
+		PGLog( @"[PvP Not queueing for BG, already in a BG!");
+		return;
+	}
+	if ( [playerController battlegroundStatus] == BGQueued ){
+		PGLog( @"[PvP] Already queued, no need to try again!");
+		return;
+	}
+	if ( !self.pvpBehavior ){
+		PGLog( @"[PvP] No valid pvp behavior found, unable to queue!");
+		return;
+	}
+	
+	// check for deserter
+    if ( [auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
+		[controller setCurrentStatus: @"PvP: Waiting for deserter to fade..."];
+		
+		// Will jump once every 1-3 minutes
+		if ( self.pvpAntiAFKCounter++ >= 4 ){
+			self.pvpAntiAFKCounter = 0;
+			[movementController antiAFK];
+		}
+		
+		// make sure pvpAntiAFK isn't running - it shouldn't be
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpAntiAFK) object: nil];
+		
+		float nextQueueAttempt = SSRandomFloatBetween(15.0f, 45.0f);
+		[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextQueueAttempt];
+		return;
+    }
+	
+	PGLog(@"[PvP] Queueing...");
+	
+	NSString *macroEnd = [macroController macroTextForKey:@"QueueForBattleground"];
+
+	// doing a random? ezmode!
+	if ( [self.pvpBehavior random] ){
+		
+		// execute the macro
+		NSString *fullMacro = [NSString stringWithFormat:@"/run a,b={%d},{}; %@", 32, macroEnd];
+		[macroController useMacroOrSendCmd:fullMacro];
+
+		// actually join
+		[self performSelector:@selector(finishQueue) withObject:nil afterDelay:1.0f];
+	}
+	// we have some checked!
+	else{
+		
+		NSString *fullMacro = [NSString stringWithFormat:@"/run a,b={%@},{}; %@", [self.pvpBehavior formattedForJoinMacro], macroEnd];
+		[macroController useMacroOrSendCmd:fullMacro];
+		
+		// actually join
+		[self performSelector:@selector(finishQueue) withObject:nil afterDelay:1.0f];
+	}
+	
+	self.pvpAntiAFKCounter = 0;
+	[controller setCurrentStatus: @"PvP: Waiting to join Battleground."];
+	[self pvpAntiAFK];
+	
+	// To account for sometimes the queue failing, lets try to join after minute or two just in case?
+	/*float nextCheck = SSRandomFloatBetween(60.0f, 120.0f);
+	 [self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay:nextCheck];*/
+	
+	// try to queue again in case it failed!
+	[self performSelector: @selector(pvpQueueRetry) withObject: nil afterDelay:5.0f];
+	
+	// start our monitor
+	_pvpIsInBG = NO;
+	if ( !_pvpTimer )
+		_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(pvpMonitor:) userInfo: nil repeats: YES];
+}
+
+// try to requeue if we need to
+- (void)pvpQueueRetry{
+	if ( [playerController battlegroundStatus] != BGNone ){
+		return;
+	}
+	
+	PGLog( @" still not queued, trying again!");
+	
+	// cancel previous requests
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpQueueBattleground) object: nil];
+	[self pvpQueueBattleground];
+}
+
+// so simple
+- (void)pvpStart{
+	
+	PGLog( @"[PvP] Starting...");
+	
+	// these conditions will be true:
+	//	player is in a BG
+	//	valid route collection
+	//	valid route set
+	//	valid behavior
+	//	valid pvp behavior
+	//	valid combat profile
+	
+	// reset movement state
+	[movementController resetMovementState];
+	
+	// set the route set
+	[movementController setPatrolRouteSet:self.theRouteSet];
+	
+	// start to evaluate!
+	[self evaluateSituation];
+	
+	// Start our monitor!
+	_pvpIsInBG = YES;
+	if ( !_pvpTimer )
+		_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(pvpMonitor:) userInfo: nil repeats: YES];
+}
+
+- (void)pvpStop {
+	PGLog( @"[PvP] pvp stopped");
+	
+	self.isPvPing = NO;
+	
+	[self stopBotActions];
+	
+    self.pvpLeaveInactive = NO;
+    self.pvpPlayWarning = NO;
+}
+
+
+- (void)pvpResetStrandDelay{
+	_strandDelay = NO;
+	
+	log(LOG_GENERAL, @"[PvP] Delay reset!");
+	
+	[controller setCurrentStatus: @"PvP: Delay reset, am I really waiting for eval?..."];
+	
+	log(LOG_GENERAL, @"[Eval] Reset strand");
+	[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:10.0f];
+}
+
+- (void)pvpGetBGInfo{
+	
+	// Lets gets some info?
+	if ( [playerController zone] == ZoneStrandOfTheAncients ){
+		
+		NSArray *antipersonnelCannons = [mobController mobsWithEntryID:StrandAntipersonnelCannon];
+		
+		if ( [antipersonnelCannons count] > 0 ){
+			BOOL foundFriendly = NO, foundHostile = NO;
+			for ( Mob *mob in antipersonnelCannons ){
+				
+				int faction = [mob factionTemplate];
+				BOOL isHostile = [playerController isHostileWithFaction: faction];
+				//log(LOG_GENERAL, @"[PvP] Faction %d (%d) of Mob %@", faction, isHostile, mob);
+				
+				if ( isHostile ){
+					foundHostile = YES;
+				}
+				else if ( !isHostile ){
+					foundFriendly = YES;
+				}
+			}
+			
+			if ( foundHostile && foundFriendly ){
+				log(LOG_GENERAL, @"[PvP] New round for Strand! Found hostile and friendly! Were we attacking last round? %d", _attackingInStrand);
+				_attackingInStrand = _attackingInStrand ? NO : YES;
+			}
+			else if ( foundHostile ){
+				_attackingInStrand = YES;
+				log(LOG_GENERAL, @"[PvP] We're attacking in strand!");
+			}
+			else if ( foundFriendly ){
+				_attackingInStrand = NO;
+				log(LOG_GENERAL, @"[PvP] We're defending in strand!");
+			}
+		}
+		// If we don't see anything, then we're attacking!
+		else{
+			_attackingInStrand = YES;
+			log(LOG_GENERAL, @"[PvP] We're attacking in strand!");
+		}
+		
+		// Check to see if we're on the boat!
+		if ( _attackingInStrand && [playerController isOnBoatInStrand]){
+			_strandDelay = YES;
+			log(LOG_GENERAL, @"[PvP] We're on a boat so lets delay our movement until it settles!");
+		}
+	}
+}
+
+// This little guy controls most of our PvP functions!
+- (void)pvpMonitor: (NSTimer*)timer{
+	if ( !self.isPvPing )							return;
+	if ( ![playerController playerIsValid:self] )   return;
+	
+	BOOL isPlayerInBG = [playerController isInBG:[playerController zone]];
+	Player *player = [playerController player];
+	
+	// Player just left the BG!
+	if ( _pvpIsInBG && !isPlayerInBG ){
+		_pvpIsInBG = NO;
+
+		PGLog( @"[PvP] Player has left the battleground...");
+		
+		// technically we shouldn't have to do this, but just in case (it's done by the offset check)
+		[self stopBotActions];
+		
+		// Only requeue if we're PvPing!
+		if ( self.isPvPing ){
+			
+			// check for deserter
+			BOOL hasDeserter = NO;
+			if( [player isValid] && [auraController unit: player hasAura: DeserterSpellID] ) {
+				hasDeserter = YES;
+			}
+			
+			if ( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+				[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Battleground Complete"]
+											description: (hasDeserter ? @"Waiting for Deserter to fade." : @"Will re-queue in 10 seconds.")
+									   notificationName: @"BattlegroundLeave"
+											   iconData: (([controller reactMaskForFaction: [player factionTemplate]] & 0x2) ? [[NSImage imageNamed: @"BannerAlliance"] TIFFRepresentation] : [[NSImage imageNamed: @"BannerHorde"] TIFFRepresentation])
+											   priority: 0
+											   isSticky: NO
+										   clickContext: nil];		   
+			}
+			
+			if ( hasDeserter ) {
+				PGLog( @"[PvP] Deserter! Waiting for deserter to go away :(");
+				[controller setCurrentStatus: @"PvP: Waiting for Deserter to fade..."];
+				[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 10.0];
+				return;
+			}
+			
+			// Requeue after 10 seconds (to account for some crappy computers)
+			[controller setCurrentStatus: @"PvP: Re-queueing for BG in 10 seconds..."];
+			[self performSelector: @selector(pvpQueueBattleground) withObject: nil afterDelay: 10.0f];
+		}
+	}
+	
+	// player just joined the BG!
+	else if ( !_pvpIsInBG && isPlayerInBG ){
+		_pvpIsInBG = YES;
+		_waitingToLeaveBattleground = NO;
+		
+		// cancel anti-afk
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpAntiAFK) object: nil];
+		
+		if ( self.isPvPing ){
+			if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
+				// [GrowlApplicationBridge setGrowlDelegate: @""];
+				[GrowlApplicationBridge notifyWithTitle: [NSString stringWithFormat: @"Battleground Entered"]
+											description: [NSString stringWithFormat: @"Starting bot in 5 seconds."]
+									   notificationName: @"BattlegroundEnter"
+											   iconData: (([controller reactMaskForFaction: [[playerController player] factionTemplate]] & 0x2) ? [[NSImage imageNamed: @"BannerAlliance"] TIFFRepresentation] : [[NSImage imageNamed: @"BannerHorde"] TIFFRepresentation])
+											   priority: 0
+											   isSticky: NO
+										   clickContext: nil];		   
+			}
+			
+			// Start bot after 5 seconds!
+			PGLog( @" PvP environment valid. Starting bot in 5 seconds...");
+			[controller setCurrentStatus: @"PvP: Starting Bot in 5 seconds..."];
+			
+			// in theory this shouldn't happen as there should be enough error check before we start the bot (although I guess someone could change the PvP behavior while it's running)
+			if ( ![self pvpSetEnvironmentForZone] ){
+				PGLog( @" no valid environment found for pvp! Nooo! Starting will fail :(");
+				[controller setCurrentStatus: @"PvP: Unable to start PvP, check log files"];
+			}
+			[self performSelector: @selector(pvpStart) withObject: nil afterDelay: 5.0f];
+		}
+	}
+	
+	// We can do some checks in here amirite?
+	if ( _pvpIsInBG && isPlayerInBG ){
+		
+		if ( self.isPvPing ){
+			
+			// is the BG over?
+			if ( !_waitingToLeaveBattleground ){
+				UInt32 offset = [offsetController offset:@"Lua_GetBattlefieldWinner"], status = 0;
+				[[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte*)&status BufLength: sizeof(status)];
+				PGLog(@"[PvP] BG End Status: %d", status);
+				if ( status != 0 ){
+					PGLog(@"[PvP] Battleground ending!");
+					[self stopBotActions];
+					
+					if ( [self.pvpBehavior waitToLeave] && [self.pvpBehavior waitTime] >= 0.0f ){
+						_waitingToLeaveBattleground = YES;
+						[controller setCurrentStatus: [NSString stringWithFormat:@"PvP: Battleground over, waiting %0.2f seconds to leave", [self.pvpBehavior waitTime]]];
+						[self performSelector: @selector(pvpBattlegroundOver) withObject: nil afterDelay: [self.pvpBehavior waitTime]];
+					}
+					
+					return;
+				}
+			}
+			
+			// Play warning!
+			if( self.pvpPlayWarning ) {
+				if( [auraController unit: player hasAura: IdleSpellID] || [auraController unit: player hasAura: InactiveSpellID]) {
+					[[NSSound soundNamed: @"alarm"] play];
+					PGLog( @"[PvP] Idle/Inactive debuff detected!");
+				}
+			}
+			
+			// Leave BG?
+			if( [auraController unit: player hasAura: InactiveSpellID] && self.pvpLeaveInactive ) {
+				// leave the battleground
+				PGLog( @"[PvP] Leaving battleground due to Inactive debuff.");
+				
+				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
+			}
+			
+			// check for status change?  or wait for event to fire when BG is over?
+		}
+	}
+}
+
+- (void)pvpBattlegroundOver{
+	PGLog(@"[PvP] Leaving battleground!");
+
+    self.pvpLeaveInactive = NO;
+    self.pvpPlayWarning = NO;
+    self.pvpAntiAFKCounter = 0;
+	
+	// now leave
+	[macroController useMacroOrSendCmd:@"LeaveBattlefield"];	
+}
+
+// this will keep us from going afk
+- (void)pvpAntiAFK {
+	if ( !self.isBotting )							return;
+	if ( ![playerController playerIsValid:self] )   return;
+	
+    if ( self.isPvPing ) {
+		
+		if ( [playerController isInBG:[playerController zone]] ){
+			PGLog( @" player is in BG, cancelling anti-afk");
+			return;
+		}
+		
+		// in theory there shouldn't be others
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpAntiAFK) object: nil];
+		
+		// Will move once every minute
+		if ( self.pvpAntiAFKCounter++ >= 60 ) {
+			self.pvpAntiAFKCounter = 0;
+			[movementController antiAFK];
+		}
+		
+		[self performSelector: @selector(pvpAntiAFK) withObject: nil afterDelay: 1.0f];
+    }
+}
+
+- (IBAction)pvpTestWarning: (id)sender {
+    [[NSSound soundNamed: @"alarm"] play];
+}
 
 
 

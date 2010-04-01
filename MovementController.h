@@ -125,7 +125,7 @@ typedef enum MovementType {
 // reset the move to object and returns true on success
 - (BOOL)resetMoveToObject;
 
-// begin patrolling with this routeset and type (type indicates PrimaryRoute or CorpseRunRoute)
+// begin patrolling with this routeset
 - (void)setPatrolRouteSet: (RouteSet*)route;
 
 // stop all movement

@@ -551,7 +551,6 @@ typedef struct WoWBinding {
 	}
 	
 	if ( code != -1 ){
-		
 		[_bindingsToCodes setObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									 [NSNumber numberWithInt:offset],		@"Offset",
 									 [NSNumber numberWithInt:code],			@"Code",
@@ -562,6 +561,39 @@ typedef struct WoWBinding {
 	else{
 		PGLog(@"[Bindings] No Interact with Mouseover key found! Bind a key to 'Interact with Mouseover'!");
 	}
+	
+	//
+	//	TARGET LAST TARGET
+	//
+	
+	// reset
+	offset = -1; code = -1; modifier = 0x0;
+	
+	// get pet attack!
+	if ( [self codeForBinding:@"TARGETLASTTARGET"] >= 0 ){
+		code = [self codeForBinding:@"TARGETLASTTARGET"];
+		modifier = [self modifierForBinding:@"TARGETLASTTARGET"];
+		offset = BAR6_OFFSET;
+		
+		PGLog(@"[Bindings] Found binding for target last target: %d 0x%X 0x%X", code, modifier, offset);
+	}
+	
+	if ( code != -1 ){
+		[_bindingsToCodes setObject:[NSDictionary dictionaryWithObjectsAndKeys:
+									 [NSNumber numberWithInt:offset],		@"Offset",
+									 [NSNumber numberWithInt:code],			@"Code",
+									 [NSNumber numberWithInt:modifier],		@"Modifier",
+									 nil]
+							 forKey:BindingTargetLast];
+	}
+	else{
+		PGLog(@"[Bindings] No Target Last Target found! Bind a key to 'Target Last Target'!");
+	}
+	
+	
+	
+	
+	
 }
 
 - (BOOL)executeBindingForKey:(NSString*)key{

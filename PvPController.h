@@ -29,11 +29,12 @@
 @class WaypointController;
 
 @class PvPBehavior;
+@class RouteSet;
 
 @interface PvPController : SaveData {
 	
 	IBOutlet WaypointController *waypointController;
-
+	
 	IBOutlet NSPanel *renamePanel;
 	IBOutlet NSView *view;
 	

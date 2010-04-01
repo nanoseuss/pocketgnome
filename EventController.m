@@ -83,7 +83,7 @@
 
 - (void)playerIsValid: (NSNotification*)not {
 	_uberQuickTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1f target: self selector: @selector(uberQuickTimer:) userInfo: nil repeats: YES];
-	_oneSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(oneSecondTimer:) userInfo: nil repeats: YES];
+	//_oneSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(oneSecondTimer:) userInfo: nil repeats: YES];
 	//_fiveSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(fiveSecondTimer:) userInfo: nil repeats: YES];
 	//_twentySecondTimer = [NSTimer scheduledTimerWithTimeInterval: 10.0f target: self selector: @selector(twentySecondTimer:) userInfo: nil repeats: YES];
 }
@@ -111,19 +111,6 @@
 
 - (void)oneSecondTimer: (NSTimer*)timer {
 
-	if ( _memory && [_memory isValid] ){
-		UInt32 offset = [offsetController offset:@"Lua_GetBattlefieldWinner"], status = 0;
-		[_memory loadDataForObject: self atAddress: offset Buffer: (Byte*)&status BufLength: sizeof(status)];
-		
-		if ( status != _lastBattlefieldWinnerStatus ){
-			
-			if ( _lastBattlefieldWinnerStatus != -1 && status != 0 ){
-				[[NSNotificationCenter defaultCenter] postNotificationName: EventBattlegroundOver object: nil];
-			}
-			PGLog(@"[Events] BattlefieldStatus changed to %d", status);
-			_lastBattlefieldWinnerStatus = status;
-		}
-	}
 }
 
 - (void)fiveSecondTimer: (NSTimer*)timer {

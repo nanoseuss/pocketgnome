@@ -68,6 +68,9 @@
 - (NSArray*)macros;
 
 - (NSString*)nameForID:(UInt32)macroID;
+
+- (NSString*)macroTextForKey:(NSString*)key;
+
 /*
  "Swift Flight Form" >>> "Forme de vol rapide"
  "Flight Form" >>> "Forme de vol"

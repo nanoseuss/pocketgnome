@@ -270,14 +270,14 @@ typedef enum MovementState{
 	return YES;	
 }
 
-// being patrol
+// set our patrolling routeset
 - (void)setPatrolRouteSet: (RouteSet*)route{
 	PGLog(@"[Move] Switching from route %@ to %@", _currentRouteSet, route);
 	
 	self.currentRouteSet = route;
 	
 	// player is dead
-	if ( [playerData isGhost] || [playerData isDead] ){
+	if ( ( [playerData isGhost] || [playerData isDead] ) && ![botController isPvPing] ){
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	}
@@ -312,6 +312,7 @@ typedef enum MovementState{
 	}
 	else{
 		PGLog(@"[Move] Player is not moving! No reason to stop. Flags: 0x%X", movementFlags);
+		[self resetMovementTimer];
 	}
 }
 
@@ -1145,14 +1146,13 @@ typedef enum MovementState{
 
 
 #pragma mark Notifications
-
 - (void)playerHasDied:(NSNotification *)aNotification{
 	
 	// reset our movement state!
 	[self resetMovementState];
 	
 	// do nothing
-	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ){
+	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] && ![botController isPvPing] ){
 		return;
 	}
 	
@@ -1164,9 +1164,18 @@ typedef enum MovementState{
 	
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ){
-		self.currentRouteKey = CorpseRunRoute;
-		self.currentRouteSet = [botController.theRouteCollection startingRoute];
-		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+		
+		// normal route if PvPing
+		if ( [botController isPvPing] ){
+			self.currentRouteKey = PrimaryRoute;
+			self.currentRouteSet = [botController.theRouteCollection startingRoute];
+			self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+		}
+		else{
+			self.currentRouteKey = CorpseRunRoute;
+			self.currentRouteSet = [botController.theRouteCollection startingRoute];
+			self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+		}
 		PGLog(@"[Move] Died, switching to main starting route! %@", self.currentRoute);
 	}
 	// be normal!
@@ -1185,7 +1194,7 @@ typedef enum MovementState{
 - (void)playerHasRevived:(NSNotification *)aNotification{
 	
 	// do nothing
-	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ){
+	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] && ![botController isPvPing] ){
 		return;
 	}
 	
@@ -1202,7 +1211,6 @@ typedef enum MovementState{
 		[self resumeMovement];
 	}
 }
-
 - (void)applicationWillTerminate:(NSNotification *)aNotification{
     /*if( [playerData playerIsValid:self] ) {
         [self resetMovementState];
@@ -1807,8 +1815,11 @@ typedef enum MovementState{
 				// switch the botController's route!
 				[botController setTheRouteSet:route];
 				
-				// start patrolling!
-				[self patrolWithRouteSet:route];
+				[self setPatrolRouteSet:route];
+				
+				[self resumeMovement];
+				
+				// after we switch routes, we don't want to continue any other actions!
 				return;
 			}
 		}
