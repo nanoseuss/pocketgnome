@@ -2056,8 +2056,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [playerController isDead] ) return;
 
 	// if we're already looting lets not interfere
-	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
-		log(LOG_DEV, @"Skipping post combat since we're already looting.");
+//	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
+	if ( [self evaluationInProgress] ) {
+		log(LOG_DEV, @"Skipping post combat since we're already doing something.");
 		return;
 	}
 	// start post-combat after specified delay
@@ -3358,7 +3359,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					withLure:_fishingLureSpellID
 				  withSchool:nil];		
 		return YES;
-	}	
+	}
 	
 	// if we get here, we shouldn't be fishing, stop if we are
 	if ( [fishController isFishing] ) [fishController stopFishing];
@@ -3367,28 +3368,25 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForPatrol {
-	
+
 	// Skip this if we are already in evaluation
 	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Patrol"]) return NO;
 
-//	if( ![self isBotting]) return NO;
-//	if( [playerController isDead]) return NO;
-	
 	// If we're already mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
 
 	// If your leader is mounted then stop buffing others
 	if ( followUnit && [followUnit isMounted]) return NO;
-	
+
 	// If we're already evaluating something then let's skip this.
 	if ( [self evaluationInProgress] ) return NO;
-	
+
 	if ( [playerController isCasting] )return NO;
-	
+
 	if ( [self isOnAssist] && [[self assistUnit] isInCombat]) return NO;
 
 	if ( [self isTankUnit] && [[self tankUnit] isInCombat]) return NO;
-	
+
 	log(LOG_EVALUATE, @"Evaluating for Patrol");
 
 	// see if we would be performing anything in the patrol procedure
@@ -3401,7 +3399,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			break;
 		}
 	}
-	
+
 	// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
 	if ( !performPatrolProc && _includeFriendlyPatrol) {
 		NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
@@ -3434,11 +3432,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
 			for ( Unit *unit in allPotentialUnits ){
 				log(LOG_DEV, @"[CorpseScan] looking for corpses: %@", unit);
-				
+
 				if ( ![unit isPlayer] || ![unit isDead] ) continue;
 				if ( [[unit position] verticalDistanceToPosition: [playerController position]] > vertOffset ) continue;
 				if ( [[playerController position] distanceToPosition:[unit position]] > theCombatProfile.healingRange ) continue;
-				
+
 				if ( [blacklistController isBlacklisted:unit] ) {
 					log(LOG_DEV, @":[CorpseScan] Ignoring blacklisted unit: %@", unit);
 					continue;
