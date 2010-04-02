@@ -143,6 +143,7 @@
 - (void)skinOrFinish;
 - (BOOL)unitValidToHeal: (Unit*)unit;
 - (void)lootNode: (WoWObject*) unit;
+- (void)resetLootScanTimer;
 
 - (BOOL)mountNow;
 
@@ -239,6 +240,8 @@
 	followUnit	= nil;
 	assistUnit	= nil;
 	tankUnit	= nil;
+	
+	_lootScanIdleTimer = 0;
 
 	self.partyFollowSuspended = NO;
 	_stepAttempts = 0;
@@ -1064,6 +1067,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[_lastProcedureExecuted release]; _lastProcedureExecuted = nil;
 	if ( self.procedureInProgress ) _lastProcedureExecuted = [NSString stringWithString:self.procedureInProgress];
 	[self setProcedureInProgress: nil];
+	
+	// Reset the evaluation as well
+	self.evaluationInProgress = nil;
+
 }
 
 - (void)finishCurrentProcedure: (NSDictionary*)state {	
@@ -1099,12 +1106,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
     if ( [[state objectForKey: @"Procedure"] isEqualToString: RegenProcedure] ) {
+		self.evaluationInProgress = @"Regen";
 		if ( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
 			log(LOG_REGEN, @"Starting regen!");
 			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 1.0];
 		} else {
 			// or if we didn't regen, go back to evaluate
 			log(LOG_DEV, @"No regen, back to evaluate");
+			self.evaluationInProgress = nil;
 			[self evaluateSituation];
 		}
 	}
@@ -1129,7 +1138,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self cancelCurrentProcedure];
 		return;
 	}
-	
+
     // if there's another procedure running, we gotta stop it
     if( self.procedureInProgress && ![self.procedureInProgress isEqualToString: [state objectForKey: @"Procedure"]]) {
 		[self cancelCurrentProcedure];
@@ -1138,12 +1147,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
     if (![self procedureInProgress]) {
 		[self setProcedureInProgress: [state objectForKey: @"Procedure"]];
-		log(LOG_DEV, @"No Procedure in progress, setting it to: %@", self.procedureInProgress);	
+		
+		log(LOG_DEV, @"No Procedure in progress, setting it to: %@", self.procedureInProgress);
+
 		if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure])	[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
-			else if( [[self procedureInProgress] isEqualToString: PostCombatProcedure]) [controller setCurrentStatus: @"Bot: Post-Combat Phase"];
-			else if( [[self procedureInProgress] isEqualToString: RegenProcedure]) [controller setCurrentStatus: @"Bot: Regen Phase"];
-			else if( [[self procedureInProgress] isEqualToString: PatrollingProcedure]) [controller setCurrentStatus: @"Bot: Patrolling Phase"];
+			if( [[self procedureInProgress] isEqualToString: PreCombatProcedure]) {
+				[controller setCurrentStatus: @"Bot: Pre-Combat Phase"];
+			} else 
+			if ( [[self procedureInProgress] isEqualToString: PostCombatProcedure]) {
+				[controller setCurrentStatus: @"Bot: Post-Combat Phase"];
+			} else 
+			if( [[self procedureInProgress] isEqualToString: RegenProcedure]) {
+				[controller setCurrentStatus: @"Bot: Regen Phase"];
+				self.evaluationInProgress = @"Regen";
+			} else 
+			if( [[self procedureInProgress] isEqualToString: PatrollingProcedure]) {
+				[controller setCurrentStatus: @"Bot: Patrolling Phase"];
+				self.evaluationInProgress = @"Patrol";
+			}
 		}
     }
 	
@@ -1192,6 +1213,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// we're not done eating/drinking
 			if ( !eatClear || !drinkClear ) {
+				self.evaluationInProgress = @"Regen";
 				[self finishCurrentProcedure: state];
 				return;
 			}
@@ -1696,10 +1718,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 }
 
+- (void)resetLootScanIdleTimer {
+	_lootScanIdleTimer = 0;
+}
+
 - (void)lootUnit: (WoWObject*) unit{
 
 	// are we still in the air?  shit we can't loot yet!
-	if ( ![playerController isOnGround] ) {
+	if ( ![[playerController player] isOnGround] ) {
 		
 		// once the macro failed, so dismount if we need to
 		if ( [[playerController player] isMounted] ) [movementController dismount];
@@ -1725,46 +1751,48 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	BOOL isNode = [unit isKindOfClass: [Node class]];
 	
 	// looting?
-    if ( self.doLooting || isNode ) {
-		Position *playerPosition = [playerController position];
-		float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
-		[movementController turnTowardObject: unit];
-		[controller setCurrentStatus: @"Bot: Looting"];
+	Position *playerPosition = [playerController position];
+	float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
+	[movementController turnTowardObject: unit];
+	[controller setCurrentStatus: @"Bot: Looting"];
 		
-		self.lastAttemptedUnitToLoot = unit;
+	self.lastAttemptedUnitToLoot = unit;
 		
-		if ( [unit isValid] && ( distanceToUnit <= 5.0 ) ) { //	 && (unitIsMob ? [(Mob*)unit isLootable] : YES)
-			if ( [[playerController player] isMounted] ) [movementController dismount];
-			log(LOG_LOOT, @"Looting : %@", unit);
-			self.lootStartTime = [NSDate date];
-			self.unitToLoot = unit;
-			self.mobToSkin = (Mob*)unit;
-			[blacklistController incrementAttemptForObject:unit];
+	if ( [unit isValid] && ( distanceToUnit <= 5.0 ) ) { //	 && (unitIsMob ? [(Mob*)unit isLootable] : YES)
+		if ( [[playerController player] isMounted] ) [movementController dismount];
+		log(LOG_LOOT, @"Looting : %@", unit);
+		self.lootStartTime = [NSDate date];
+		self.unitToLoot = unit;
+		self.mobToSkin = (Mob*)unit;
+		[blacklistController incrementAttemptForObject:unit];
 
-			// Lets do this instead of the loot hotkey!
-			[self interactWithMouseoverGUID: [unit GUID]];
+		// Lets do this instead of the loot hotkey!
+		[self interactWithMouseoverGUID: [unit GUID]];
+
+		// normal lute delay
+		float delayTime = 0.6;
 			
-			// normal lute delay
-			float delayTime = 1.0;
-			
-			// If we do skinning and it may become skinnable
-			if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
-				delayTime = 2.0;				// if it's missing mobs that it should have skinned then increase this
+		// If we do skinning and it may become skinnable
+		if (_doSkinning && [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC]) 
+			delayTime = 2.0;				// if it's missing mobs that it should have skinned then increase this
 
-			if (isNode) delayTime = 2.0; // if it's trying on nodes it just hit increase this
+		if (isNode) delayTime = 2.0; // if it's trying on nodes it just hit increase this
 
-			[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
-		} else {
-			log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit <= 5.0, ![unit isValid], unit );
-			// remove from list
-			if ( ![self.unitToLoot isKindOfClass: [Node class]] ) [_mobsToLoot removeObject: self.unitToLoot];
-			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-		}
+		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
+	} else {
+		log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit <= 5.0, ![unit isValid], unit );
+		// remove from list
+		if ( ![self.unitToLoot isKindOfClass: [Node class]] ) [_mobsToLoot removeObject: self.unitToLoot];
+		self.evaluationInProgress = nil;
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	}
 }
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
 - (void)verifyLootSuccess {
+	
+	// Reset the loot scan idle timer
+	[self resetLootScanIdleTimer];
 	
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ){
@@ -1783,6 +1811,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	} else if ( _lootMacroAttempt >= 3 ){
 		log(LOG_LOOT, @"Attempted to loot %d times, moving on...", _lootMacroAttempt);
+		self.evaluationInProgress = nil;
 	}
 	
 	// fire off notification (sometimes needed if the mob only had $$, or the loot failed)
@@ -1790,10 +1819,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_DEV, @"Firing off loot success");
 		// is it a mob?
 		if ( [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC] ) log(LOG_DEV, @"Is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );
+		self.evaluationInProgress = nil;
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
 	} else {
 		log(LOG_DEV, @"verifyLootSuccess was called, but there was no mob luted.");
 		// Return to evaluate since our luting was bugged r we attempted to relute
+		self.evaluationInProgress = nil;
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	}
 }
@@ -1902,10 +1933,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// If you are trying to skin a disappeared corse you may need to increase the delay here
 		if (_doSkinning) delayTime = 0.4;
+		self.evaluationInProgress = nil;
 
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delayTime];
 	}
-
+	
+	self.evaluationInProgress = nil;
 	if ( ![playerController isCasting] ) [self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 }
 
@@ -2204,6 +2237,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	log(LOG_DEV, @"Unit %@ killed %@", unit, [unit class]);
 	
+	[self resetLootScanIdleTimer];
+	
 	// unit dead, reset!
 	[movementController resetMoveToObject];
 	
@@ -2224,7 +2259,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			log(LOG_DEV, @"Adding %@ to loot list.", unit);
 			[_mobsToLoot addObject: (Mob*)unit];
-		} else{
+		} else {
 			log(LOG_DEV, @"Mob %@ isn't lootable, ignoring", unit);
 		}
 	}
@@ -2511,35 +2546,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
--(void)targetReset {
-/*
-	Some ideas *sigh*
- it would be cool if we could make a macro or detect one hmmm.
- 
- this does work.. it's just slow
- 
-*/
-	[chatController sendKeySequence: [NSString stringWithFormat: @"%c/cleartarget%c", '\n', '\n']];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"%c/targetlasttarget%c", '\n', '\n']];
-	return;
-/*
- Frankenstien? lawl
- 
-	[chatController sendKeySequence: [NSString stringWithFormat: @"%c", '\n']];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"/"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"c"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"l"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"e"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"a"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"r"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"t"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"a"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"r"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"g"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"e"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"t"]];
-	[chatController sendKeySequence: [NSString stringWithFormat: @"%c", '\n']];
-*/
+- (void)jumpIfAirMountOnGround {
+	// Is the player air mounted, and on the ground?  Me no likey - lets jump!
+	UInt32 movementFlags = [playerController movementFlags];
+	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
+		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
+			usleep(200000);
+			log(LOG_MOVEMENT, @"Player on ground while air mounted, jumping!");
+			[movementController jump];
+			usleep(10000);
+		}
+		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
+	}
 }
 
 #pragma mark -
@@ -2683,20 +2701,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
-- (void)jumpIfAirMountOnGround {
-	// Is the player air mounted, and on the ground?  Me no likey - lets jump!
-	UInt32 movementFlags = [playerController movementFlags];
-	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
-		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
-			usleep(200000);
-			log(LOG_MOVEMENT, @"Player on ground while air mounted, jumping!");
-			[movementController jump];
-			usleep(10000);
-		}
-		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
-	}
-}
-
 - (BOOL)evaluateForPartyFollow {
 
 	// Return no if this isn't turned on
@@ -2705,13 +2709,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we've recieved a chat command to wait then we'll skip this
 	if (self.partyFollowSuspended) return NO;
 	
-	log(LOG_EVALUATE, @"Evaluating for Party Follow");
-
 	// If we're doing something (should only be looting or regen) lets still record the steps of our follow target
-	if (followUnit && [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"PartyFollow"]) {
+	if (self.followUnit && [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"PartyFollow"]) {
 		[self followStepsRecord];
 		return NO;
+	} else 
+		
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"PartyFollow"]) {
+		return NO;
 	}
+
+	log(LOG_EVALUATE, @"Evaluating for Party Follow");
 
 	if ( ![_followSteps count] ) {
 
@@ -2929,6 +2938,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForCombatStart {
 	
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"CombatStart"]) return NO;
+
 	// Don't look for new combat if we're fishin
 	if ( [fishController isFishing] && !theCombatProfile.partyEnabled) return NO;
 
@@ -2936,7 +2948,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.preCombatUnit = nil;
 		return NO;
 	}
-	
+		
 	// If we're supposed to ignore combat while flying lets return false
 	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
 	
@@ -3002,7 +3014,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 -(BOOL) evaluateForRegen {
-	
+
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Regen"]) return NO;
+
 	// If we're mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
 
@@ -3081,6 +3096,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForLoot {
+
+	// Enforce the loot scan idle
+	int secondsPassed = _lootScanIdleTimer/10;
+	if (secondsPassed > 30) return NO;
+
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Loot"]) return NO;
+
 
 	// Don't try if we're fishin
 	if ( [fishController isFishing] ) return NO;	// pretty sure this will be a good thing.. make sure it doesn't prevent fishing looting!
@@ -3180,9 +3203,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If we're already mounted in party mode then
 	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
-
-	// Don't try this in party follow mode!
-	if ([[self evaluationInProgress] isEqualToString: @"PartyFollow"]) return NO;
+	
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"MiningAndHerbalism"]) return NO;
 	
 	// Don't try if we're fishin
 	if ( [fishController isFishing] ) return NO;
@@ -3265,6 +3288,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForFishing {
+	
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Fishing"]) return NO;
+
 	if ( [movementController moveToObject] ) return NO;
 	if ( !_doFishing ) return NO;
 
@@ -3340,8 +3367,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForPatrol {
-	if( ![self isBotting]) return NO;
-	if( [playerController isDead]) return NO;
+	
+	// Skip this if we are already in evaluation
+	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Patrol"]) return NO;
+
+//	if( ![self isBotting]) return NO;
+//	if( [playerController isDead]) return NO;
 	
 	// If we're already mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
@@ -3486,7 +3517,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [self evaluateForRegen] ) return YES;
 
 	if ( [self evaluateForLoot] ) return YES;
-
+	
+	// Increment the loot scan idle timer if it's not already past it's cut off
+	if (_lootScanIdleTimer < (60*10)) _lootScanIdleTimer++;
+	
    	if ( [self evaluateForPatrol] ) return YES;
 
 	if ( [self evaluateForCombatStart] ) return YES;
@@ -3495,27 +3529,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [self evaluateForFishing] ) return YES;
 	
-    // If there's nothing to do, make sure we keep moving if we aren't
 	// If we have a follow unit then skip your route
     if ( self.theRouteSet && ( ![self followUnit] || [self partyFollowSuspended] ) ) {
+		// If there's nothing to do, make sure we keep moving if we aren't
 		
 		// resume movement if we're not moving!
-		if (![movementController isPatrolling] ){
-			[movementController resumeMovement];
-		}
+		if (![movementController isPatrolling] ) [movementController resumeMovement];
 		
 		[controller setCurrentStatus: @"Bot: Patrolling"];
 
 		// resume movement if we're not moving and we've been in follow mode
-		if ( ( ![self followUnit] || [self partyFollowSuspended] ) && ![movementController isMoving] ){
-			[movementController resumeMovement];
-		}
+		if ( ( ![self followUnit] || [self partyFollowSuspended] ) && ![movementController isMoving] ) [movementController resumeMovement];
 		
     } else {
 		
-//		if ( ![[self evaluationInProgress] isEqualToString: @"PartyFollow"] ) {
 		if ( ![self evaluationInProgress] ) [controller setCurrentStatus: @"Bot: Enabled"];
-//		}
 		
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
     }
@@ -3913,7 +3941,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_nodeIgnoreMobDistance			= [nodeIgnoreMobDistanceText floatValue];
 		
 		_lootUseItems					= [lootUseItemsCheckbox state];
-		
+		_lootScanIdleTimer	= 0;
 		
 		// Party resets
 		[self followStepsClear];
@@ -4071,6 +4099,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// make sure we're not fishing
 	[fishController stopFishing];
+	
+	// Reset the evaluation
+	self.evaluationInProgress = nil;
     
     [startStopButton setTitle: @"Start Bot"];
 }
@@ -4329,6 +4360,9 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	
 	log(LOG_GHOST, @"Trying to repop (%d:%d)", [playerController isGhost], [playerController isDead] );
+	
+	// Reset the loot scan idle timer
+	[self resetLootScanIdleTimer];
 	
 	// We need to repop!
 	if ( ![playerController isGhost] && [playerController isDead] ) {

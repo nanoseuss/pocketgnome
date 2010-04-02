@@ -207,6 +207,8 @@
 	Position *_lastAttemptedStep;
 	int _stepAttempts;
 	
+	int _lootScanIdleTimer;
+
     // -----------------
     // -----------------
     
@@ -304,6 +306,7 @@
 
 - (BOOL)performProcedureMobCheck: (Unit*)target;
 - (void)lootScan;
+- (void)resetLootScanIdleTimer;
 
 // Input from CombatController
 //- (void)addingUnit: (Unit*)unit;
@@ -318,7 +321,6 @@
 - (BOOL)evaluateSituation;
 - (BOOL)evaluateForPVP;
 - (BOOL)evaluateForGhost;
-- (void)jumpIfAirMountOnGround;
 - (BOOL)evaluateForPartyFollow;
 - (BOOL)evaluateForCombatContinuation;
 - (BOOL)evaluateForRegen;
@@ -336,8 +338,8 @@
 - (BOOL)mountNowParty;
 - (BOOL)isOnAssist;
 - (BOOL)isTankUnit;
-- (void)targetReset;
 - (void)followStepsClear;
+- (void)jumpIfAirMountOnGround;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

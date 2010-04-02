@@ -530,12 +530,13 @@ typedef struct NameObjectStruct{
 						log(LOG_CONTROLLER, @"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
 						
 						[self setCurrentState: playerValidState];
-						
+
+						botController.evaluationInProgress = nil;
+
 						// Restart us when we zone into instances in a party
-						if ( botController.theCombatProfile.partyEnabled && !botController.partyFollowSuspended && botController.theCombatProfile.followUnit) {
+						if ( !botController.isPvPing && botController.theCombatProfile.partyEnabled && !botController.partyFollowSuspended && botController.theCombatProfile.followUnit) {
 							[movementController stopMovement];
 							[movementController resetMovementState];
-							botController.evaluationInProgress = nil;
 							[botController followStepsClear];
 							usleep(200000);
 							[botController evaluateSituation];

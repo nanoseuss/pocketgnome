@@ -219,17 +219,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)unitDied: (NSNotification*)notification{
 	Unit *unit = [notification object];
-	
+
 	if ( unit == _addUnit ) {
 		log(LOG_COMBAT, @"%@ %@ died, removing add.", [self unitHealthBar: unit] ,unit);
 		[_addUnit release]; _addUnit = nil;
 	} else 
 		
-	if ( unit == _castingUnit ) {
-		_castingUnit = nil;
-		[botController cancelCurrentProcedure];
-		[botController evaluateSituation];
-	}
+	if ( unit == _castingUnit ) _castingUnit = nil;
+//		[botController cancelCurrentProcedure];
+//		[botController evaluateSituation];
+//	}
 }
 	
 #pragma mark Public
@@ -945,7 +944,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
 
 	// Tanaris4: what is the below comment?
-	// This is to set timers for of the unit is our target
+	// slipmat: looks like I mis worded it, but basically the timer used to start at the same time for everyone which would cause premature fails
+	// This is to set timer if the unit actually our target vs being an add
 	int leftCombatTargetCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
 
 	if ( ![unit isInCombat] ) {
