@@ -569,46 +569,6 @@ typedef enum MovementState{
 	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
 }
 
-- (void)moveToFollowUnit: (Position*)position :(Position*)positionLast{
-	
-	if (![[botController followUnit] isOnGround]) [botController jumpIfAirMountOnGround];
-
-	[self resetMovementTimer];
-
-	Position *playerPosition = [playerData position];
-    float distance = [playerPosition distanceToPosition: position];
-	
-
-	// only reset the stuck counter if we're going to a new position
-	if ( ![position isEqual:self.lastAttemptedPosition] ) _stuckCounter = 0;
-
-	self.lastAttemptedPosition		= position;
-	self.lastAttemptedPositionTime	= [NSDate date];
-	self.lastPlayerPosition			= playerPosition;	
-	
-	// actually move!
-	if ( [self movementType] == MovementType_Keyboard ){
-		UInt32 movementFlags = [playerData movementFlags];
-		if ( !(movementFlags & MovementFlag_Forward) ) [self moveForwardStop];
-        [self correctDirection: YES];
-        if ( !(movementFlags & MovementFlag_Forward) )  [self moveForwardStart];
-	}
-	else if ( [self movementType] == MovementType_Mouse ){
-		[self moveForwardStop];
-		[self correctDirection: YES];
-		[self moveForwardStart];
-	}
-	else if ( [self movementType] == MovementType_CTM ) {
-		[self setClickToMove:position andType:ctmWalkTo andGUID:0];
-	}
-
-	self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
-	
-	if (![[playerData player] isMounted]) _movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
-	
-}
-
-
 - (void)checkCurrentPosition: (NSTimer*)timer {
 	
 	// stopped botting?  end!
@@ -631,8 +591,7 @@ typedef enum MovementState{
 	//float distanceToDestination2D = [playerPosition distanceToPosition2D: destPosition];
 	
     // sanity check, incase something happens
-	// Skip this check if we're on follow
-    if ( distanceToDestination == INFINITY && !botController.theCombatProfile.followUnit ) {
+    if ( distanceToDestination == INFINITY ) {
         log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
 		
 		[self resetMovementTimer];
@@ -641,8 +600,7 @@ typedef enum MovementState{
     }
 	
 	// evaluate situation - should we do something?
-	// Skip this if you're evaluating for party  follow and you have a vlaid follow unit
-	if ( [botController isBotting] && !self.moveToObject && (!botController.theCombatProfile.followUnit || ![[botController followUnit] isValid])){
+	if ( [botController isBotting] && !self.moveToObject ){
 		if ( [botController evaluateSituation] ){
 			// don't need to reset our movement timer b/c it will be done when we're told to move somewhere else!
 			log(LOG_MOVEMENT, @"Action taken, not checking movement");
@@ -723,6 +681,136 @@ typedef enum MovementState{
 		[self correctDirection: NO];
 	}
 
+	// *******************************************************
+	// if we we get here, we're not close enough :(
+	// *******************************************************
+	
+	// make sure we're still moving
+	if ( _positionCheck > 3 && _stuckCounter < 3 && ![self isMoving] ){
+		log(LOG_MOVEMENT, @"For some reason we're not moving! Let's start moving again!");
+		
+		[self resumeMovement];
+		
+		_stuckCounter++;
+		return;
+	}
+	
+	// *******************************************************
+	// stuck checking
+	// *******************************************************
+	
+	// copy the old stuck counter
+	int oldStuckCounter = _stuckCounter;
+	
+	// we're stuck?
+	if ( _stuckCounter > 3 ){
+		// stop this timer
+		[self resetMovementTimer];
+		
+		[controller setCurrentStatus: @"Bot: Stuck, entering anti-stuck routine"];
+		
+		log(LOG_MOVEMENT, @"Player is stuck, trying anti-stuck routine");
+		
+		[self unStickify];
+		
+		return;
+	}
+	
+	// check to see if we are stuck
+	if ( _positionCheck > 5 ) {
+		float maxSpeed = [playerData speedMax];
+		float distanceTraveled = [self.lastPlayerPosition distanceToPosition:playerPosition];
+		
+		log(LOG_DEV, @" Checking speed: %0.2f <= %.02f  (max: %0.2f)", playerSpeed, (maxSpeed/10.0f), maxSpeed );
+		log(LOG_DEV, @" Checking distance: %0.2f <= %0.2f", distanceTraveled, (maxSpeed/10.0f)/5.0f);
+		
+		// distance + speed check
+		if ( distanceTraveled <= (maxSpeed/10.0f)/5.0f || playerSpeed <= maxSpeed/10.0f ){
+			_stuckCounter++;
+		}
+		
+		self.lastPlayerPosition = playerPosition;
+	}
+	
+	// reset if stuck didn't change!
+	if ( _positionCheck > 13 && oldStuckCounter == _stuckCounter ){
+		_stuckCounter = 0;
+	}
+	
+	// are we stuck moving up?
+	UInt32 movementFlags = [playerData movementFlags];
+	if ( movementFlags & MovementFlag_FlyUp && !_movingUp ){
+		log(LOG_MOVEMENT, @"We're stuck moving up! Fixing!");
+		[self moveUpStop];
+		
+		[self resumeMovement];
+		return;
+	}
+	
+	// TO DO: moving in the wrong direction check? (can sometimes happen when doing mouse movements based on the speed of the machine)
+}
+
+- (void)moveToFollowUnit: (Position*)position {
+	
+	if (![[botController followUnit] isOnGround]) [botController jumpIfAirMountOnGround];
+	
+	[self resetMovementTimer];
+	
+	Position *playerPosition = [playerData position];
+    float distance = [playerPosition distanceToPosition: position];
+	
+	// only reset the stuck counter if we're going to a new position
+	if ( ![position isEqual:self.lastAttemptedPosition] ) _stuckCounter = 0;
+	
+	if ( distance < [playerData speedMax] / 2.0f ){
+		log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, [playerData speedMax] / 2.0f );
+		return;
+	}
+	
+	self.lastAttemptedPosition		= position;
+	self.lastAttemptedPositionTime	= [NSDate date];
+	self.lastPlayerPosition			= playerPosition;	
+
+	[self setClickToMove:position andType:ctmWalkTo andGUID:0];
+	
+	self.movementExpiration = [NSDate dateWithTimeIntervalSinceNow: (distance/[playerData speedMax]) + 4.0];
+
+	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPositionFollow:) userInfo: nil repeats: YES];
+
+}
+
+- (void)checkCurrentPositionFollow: (NSTimer*)timer {
+	
+	// stopped botting?  end!
+	if ( ![botController isBotting] ) {
+		log(LOG_MOVEMENT, @"We're not botting, stop the timer!");
+		[self resetMovementState];
+		return;
+	}
+
+	_positionCheck++;
+	
+	if (_stuckCounter > 0) log(LOG_MOVEMENT, @"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
+
+	Position *playerPosition = [playerData position];
+	float playerSpeed = [playerData speed];
+    Position *destPosition = [self lastAttemptedPosition];
+	
+	float distanceToDestination = [playerPosition distanceToPosition: destPosition];
+
+	// should we jump?
+	//log(LOG_MOVEMENT, @" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
+	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && 
+		[[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] &&
+		![[playerData player] isFlyingMounted] && 
+		[self isMoving]) {
+		
+		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ) [self jump];
+		
+	} else {
+		if ( [self movementType] != MovementType_CTM && ![[playerData player] isFlyingMounted]) [self correctDirection: NO];
+	}
+	
 	// If we're doin party follow let's just stop here
     if ( botController.followUnit ) {
 		[self resetMovementTimer];

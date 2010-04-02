@@ -532,14 +532,16 @@ typedef struct NameObjectStruct{
 						[self setCurrentState: playerValidState];
 						
 						// Restart us when we zone into instances in a party
-						if ( botController.theCombatProfile.partyEnabled ) {
+						if ( botController.theCombatProfile.partyEnabled && !botController.partyFollowSuspended && botController.theCombatProfile.followUnit) {
+							[movementController stopMovement];
+							[movementController resetMovementState];
 							botController.evaluationInProgress = nil;
 							[botController followStepsClear];
-							[movementController resetMovementState];
+							usleep(200000);
 							[botController evaluateSituation];
 							
 						}
-					}			
+					}
 				}
 				
 				//log(LOG_CONTROLLER, @"[Controller] Player GUID: 0x%X Yours: 0x%X 0x%qX", guid, GUID_LOW32(_globalGUID), _globalGUID);

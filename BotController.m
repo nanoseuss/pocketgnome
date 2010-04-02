@@ -2122,8 +2122,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"Acting on unit %@", unit);
 	
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
+		
 		// I notice that readyToAttack is set here, but not used?? hmmm (older revisions are the same)
 		BOOL readyToAttack = NO;
+
 		// check to see if we are supposed to be in melee range
 		if ( self.theBehavior.meleeCombat) {
 			float distance = [[playerController position] distanceToPosition2D: [unit position]];
@@ -2157,9 +2159,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 										  [NSNumber numberWithInt: 0],	    @"CompletedRules",
 										  unit,				    @"Target", nil]];
 	}
-	//	else {
-	//		log(LOG_COMBAT, @"We are already performing %@ so actOnUnit should not have been called!?", [self procedureInProgress]);
-	//	}
+
 	return;
 }
 
@@ -2332,11 +2332,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Player *followTarget = nil;
 	float distance = 0.0;
 
-	/*
-	 * Note here.... we need to be able to validate the followUnitGUID even if it's not 0x0... I've seen some errors if it's not set right
-	 */
-	
-	
 	// Look for the actual follow unit
 	if (theCombatProfile.followUnitGUID > 0x0) {
 		followTarget = [playersController playerWithGUID:theCombatProfile.followUnitGUID];
@@ -2465,7 +2460,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !theCombatProfile.partyEnabled || !theCombatProfile.assistUnit || theCombatProfile.assistUnitGUID <= 0x0 ) return NO;
 
 	// If we're in suspend mode and theres a route lets get to grindin
-	if ( theRouteSet && [self partyFollowSuspended] ) return NO;
+	if ( self.theRouteSet && [self partyFollowSuspended] ) return NO;
 
 	// If we've already found an assist and it's valid just return true
 	if ( assistUnit && [assistUnit isValid] ) return YES;
@@ -2478,12 +2473,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[playerController faceToward: [assistPlayer position]];
 		log(LOG_PARTY, @"Found the player I'm assisting.");
 		[playerController setPrimaryTarget: assistPlayer];
+		return YES;
 	} else {
 		log(LOG_PARTY, @"Assist player not found! GUID: 0x%qX", theCombatProfile.assistUnitGUID);
 		self.assistUnit = nil;
+
+		// Return no if we have a route we can do
+		if ( self.theRouteSet ) return NO;
+		
 	}
-	
-	// Return yes whether or not we are able to find our assist
+
 	return YES;
 }
 
@@ -2731,6 +2730,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self evaluateSituation];
 			return NO;
 		}
+
 	}
 	
 	// If we need to mount lets return
@@ -2749,17 +2749,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// We're not out of range and not in follow mode then do nothing
 		if ( distance <=  theCombatProfile.followDistanceToMove && ![[self evaluationInProgress] isEqualToString: @"PartyFollow"]) {
+			[controller setCurrentStatus: @"Bot: Enabled"];
+			self.evaluationInProgress = nil;
 			[self followStepsClear];
+			_stepAttempts=0;
 			return NO;
 		}
 		
 	// We're still in follow mode
-		
-		// If we're close ehough to stop
+
+		// If we're close enough to stop
 		if ( distance <=  theCombatProfile.yardsBehindTargetStop ) {
-			if ([[self evaluationInProgress] isEqualToString: @"PartyFollow"]) {
-				[controller setCurrentStatus: @"Bot: Enabled"];
-			}
+			[controller setCurrentStatus: @"Bot: Enabled"];
 			[movementController stopMovement];
 			[playerController faceToward: [followUnit position]];
 			self.evaluationInProgress = nil;
@@ -2881,21 +2882,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
-	// If this is the last waypoint then let's not retry it again if we're in a reasonable range
-//	if ([_followSteps count] == 0 && (distanceToWaypoint < waypointSpacing*2.0f)) {
-//		[self followStepsClear];
-//	}
-	
 	int stepsLeft = [_followSteps count];
 	log(LOG_DEV, @"Target is %0.2f away, following. (%d steps left, %d attempts, wp distance: %0.2f, stride: %0.2f) ", distance, stepsLeft, _stepAttempts, distanceToWaypoint, waypointSpacing);
-
 	
-	[movementController  moveToFollowUnit:positionToMove:_lastAttemptedStep];
+	[movementController  moveToFollowUnit:positionToMove];
 
 	_lastAttemptedStep = positionToMove;
 	
 	// Check our position again shortly!
-	[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+	[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
 
 	return YES;
 }
@@ -2907,22 +2902,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
 
 	// Let's try just usin the player controller to match n see if this gives any better results
-    if (![playerController isInCombat] && !theCombatProfile.partyEnabled) {
+    if (![playerController isInCombat] && (!theCombatProfile.partyEnabled || [self partyFollowSuspended] ) ) {
 		// If we're actually not in combat and not in a party lets reset the combat table as there is no combat 'contination'
 		[combatController resetAllCombat];
 		return NO;
 	}
-	
+
 	Unit *bestUnit = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
-	if ( !bestUnit ) return NO;
-	
+
+	if ( !bestUnit ) {
+		[combatController resetAllCombat];
+		return NO;
+	}
+
 	log(LOG_DEV, @"checking %@ for validity", bestUnit);
+
 	if ([self combatProcedureValidForUnit:bestUnit] ) {
 		log(LOG_DEV, @"[Combat Continuation] Found %@ to act on!", bestUnit);
 		[self actOnUnit:bestUnit];
 		[movementController stopMovement];
 		return YES;
 	}
+
 	return NO;
 }
 
@@ -2952,39 +2953,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for Combat Start");
 
 	Position *playerPosition = [playerController position];
-	
-	// check for party mode assist
-	
-	// Get the assist players target
-	if ( [self isOnAssist] && [assistUnit isInCombat]) {
-		UInt64 targetGUID = [assistUnit targetID];
-		if ( targetGUID > 0x0) {
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob ) {
-				[movementController turnTowardObject: mob];
-				log(LOG_PARTY, @" [Combat Start] assisting with %@", mob);
-				[self actOnUnit: mob];
-				return YES;
-			}
-		}
-	}
-
-	// Get the assist players target
-	if ( [self isTankUnit] && [tankUnit isInCombat]) {
-		UInt64 targetGUID = [tankUnit targetID];
-		if ( targetGUID > 0x0) {
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob ) {
-				[movementController turnTowardObject: mob];
-				log(LOG_PARTY, @" [Combat Start] assisting tank with %@", mob);
-				[self actOnUnit: mob];
-				return YES;
-			}
-		}
-	}
-	
-	// If we have a valid assist then return no, else continue in case we're doing a route
-	if ( [self isOnAssist] && [assistUnit isValid] ) return NO;
 
 	// Look for a new target
 	Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
@@ -3136,6 +3104,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.evaluationInProgress = nil;
 		return NO;
 	}
+	
 	Position *playerPosition = [playerController position];
     Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
     
@@ -3143,7 +3112,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
     
     // if theres a unit that needs our attention that's closer than the lute.
-    if ( mobToLootDist > unitToActOnDist ) {
+    if ( mobToLootDist > unitToActOnDist && [playerController isHostileWithFaction: [unitToActOn factionTemplate]]) {
 		log(LOG_LOOT, @"Mob is too close to loot: %0.2f > %0.2f", mobToLootDist, unitToActOnDist);
 		return NO;
 	}
@@ -3186,6 +3155,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					log(LOG_LOOT, @"Unable to reach %@, removing from loot list", mobToLoot);
 					[_mobsToLoot removeObject:mobToLoot];
 					[self evaluateSituation];
+					return NO;
 				}
 				return YES;
 			} else 
@@ -3209,7 +3179,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
 
 	// If we're already mounted in party mode then
-	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit &&[[playerController player] isMounted]) return NO;
+	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
 
 	// Don't try this in party follow mode!
 	if ([[self evaluationInProgress] isEqualToString: @"PartyFollow"]) return NO;
@@ -3299,7 +3269,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !_doFishing ) return NO;
 
 	// If we're supposed to be following then follow!
-	if ( theCombatProfile.followUnit && [[playersController playerWithGUID:theCombatProfile.followUnitGUID] isMounted]) return NO;
+	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Fishing.");
 	
@@ -3383,7 +3353,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [self evaluationInProgress] ) return NO;
 	
 	if ( [playerController isCasting] )return NO;
+	
+	if ( [self isOnAssist] && [[self assistUnit] isInCombat]) return NO;
 
+	if ( [self isTankUnit] && [[self tankUnit] isInCombat]) return NO;
+	
 	log(LOG_EVALUATE, @"Evaluating for Patrol");
 
 	// see if we would be performing anything in the patrol procedure
@@ -3511,9 +3485,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [self evaluateForRegen] ) return YES;
 
-
 	if ( [self evaluateForLoot] ) return YES;
-
 
    	if ( [self evaluateForPatrol] ) return YES;
 
@@ -3522,35 +3494,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [self evaluateForMiningAndHerbalism] ) return YES;
 	
 	if ( [self evaluateForFishing] ) return YES;
-
-	// Should we be mounted?
-	// DISABLED this as it's no longer needed... if u reanable please know that it conflicts with party mount
-//		if ( ![movementController moveToObject] && [self mountNow] ) {
-//			log(LOG_MOUNT, @"Mounting...");
-//			[self performSelector: _cmd withObject: nil afterDelay: 2.0f];
-//			return YES;
-//		}
 	
-    // if there's nothing to do, make sure we keep moving if we aren't
+    // If there's nothing to do, make sure we keep moving if we aren't
 	// If we have a follow unit then skip your route
-    if ( self.theRouteSet && (![self followUnit] || [self partyFollowSuspended])) {
+    if ( self.theRouteSet && ( ![self followUnit] || [self partyFollowSuspended] ) ) {
 		
 		// resume movement if we're not moving!
-		if ( /*![movementController isMoving] &&*/ ![movementController isPatrolling] ){
+		if (![movementController isPatrolling] ){
 			[movementController resumeMovement];
 		}
 		
 		[controller setCurrentStatus: @"Bot: Patrolling"];
-		
-		if ( (![self followUnit] || [self partyFollowSuspended]) && ![movementController isMoving] ){
+
+		// resume movement if we're not moving and we've been in follow mode
+		if ( ( ![self followUnit] || [self partyFollowSuspended] ) && ![movementController isMoving] ){
 			[movementController resumeMovement];
 		}
 		
     } else {
 		
-		if ( ![[self evaluationInProgress] isEqualToString: @"PartyFollow"] ) {
-			[controller setCurrentStatus: @"Bot: Enabled"];
-		}
+//		if ( ![[self evaluationInProgress] isEqualToString: @"PartyFollow"] ) {
+		if ( ![self evaluationInProgress] ) [controller setCurrentStatus: @"Bot: Enabled"];
+//		}
 		
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
     }
@@ -3949,6 +3914,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		_lootUseItems					= [lootUseItemsCheckbox state];
 		
+		
+		// Party resets
+		[self followStepsClear];
+		self.followUnit = nil;
+		self.tankUnit = nil;
+		
 		// friendly shit
 		_includeFriendly = [self includeFriendlyInCombat];
 		_includeFriendlyPatrol = [self includeFriendlyInPatrol];
@@ -4083,9 +4054,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[blacklistController clearAll];
 
 	// Party resets
-	[_followSteps removeAllObjects];
-	self.partyFollowSuspended = NO;
+	[self followStepsClear];
 	self.followUnit = nil;
+	self.tankUnit = nil;
 	_mountAttempt = 0;
 	
     [_mobsToLoot removeAllObjects];
@@ -4273,13 +4244,15 @@ NSMutableDictionary *_diffDict = nil;
 	
 	//TO DO: Check to make sure you only respond to people around you that you are healing!
 		
-	if ( [[entry text] isEqualToString: @"Stay there"] ){
+	if ( ( [[entry text] isEqualToString: @"Stay there"] || [[entry text] isEqualToString: @"Stay here"] ) && theCombatProfile.partyEnabled && theCombatProfile.followUnit ) {
 		log(LOG_PARTY, @"Command recieved, stop following.");
 		self.partyFollowSuspended = YES;
-		if (followUnit) [playerController setPrimaryTarget: [self followUnit]];
+		self.evaluationInProgress = nil;
+		if ( [self followUnit] ) [playerController setPrimaryTarget: [self followUnit]];
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%c/salute%c", '\n', '\n']];
+		self.followUnit = nil;		
 	} else 
-	if ( [[entry text] isEqualToString: @"Come on"] ) {
+	if ( [[entry text] isEqualToString: @"Come on"] && theCombatProfile.partyEnabled && theCombatProfile.followUnit ) {
 		log(LOG_PARTY, @"Command recieved, following again.");
 		self.partyFollowSuspended = NO;
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%c/train%c", '\n', '\n']];
@@ -4294,6 +4267,7 @@ NSMutableDictionary *_diffDict = nil;
     log(LOG_GENERAL, @"---- Player has revived!");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
+	[self followStepsClear];
 	[self evaluateSituation];
 }
 
@@ -4538,7 +4512,7 @@ NSMutableDictionary *_diffDict = nil;
 	// don't need this if we're botting since we're doing things!
 	if ( (self.isBotting || ![playerController playerIsValid]) && 
 		// Addition to kick in AFK when in party mode on flying mounts
-		(![[playerController player] isFlyingMounted] && [movementController movementType] == MovementType_CTM ) )
+		(![movementController movementType] == MovementType_CTM || ![antiAFKButton state] ) )
 		return;
 	
 	//log(LOG_GENERAL, @"[AFK] Attempt: %d", _afkTimerCounter);

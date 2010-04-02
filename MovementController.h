@@ -76,6 +76,7 @@ typedef enum MovementType {
 	
 	// stuck checking
 	Position	*_lastAttemptedPosition;
+	Position	*_followNextPosition;
 	NSDate		*_lastAttemptedPositionTime;
 	NSDate		*_lastDirectionCorrection;
 	Position	*_lastPlayerPosition;
@@ -105,7 +106,7 @@ typedef enum MovementType {
 
 // move to a position (I'd prefer we don't do this often, but it is sometimes needed :()
 - (void)moveToPosition: (Position*)position;
-- (void)moveToFollowUnit: (Position*)position :(Position*)positionLast;
+- (void)moveToFollowUnit: (Position*)position;
 
 // the object we're moving to
 - (WoWObject*)moveToObject;

@@ -123,7 +123,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( w2 )
 		weight2 = [w2 intValue];
 	
-	//log(LOG_COMBAT, @"(%@)%d vs. (%@)%d", unit1, weight1, unit2, weight2);
+	log(LOG_DEV, @"WeightCompare: (%@)%d vs. (%@)%d", unit1, weight1, unit2, weight2);
+
     if (weight1 > weight2)
         return NSOrderedAscending;
     else if (weight1 < weight2)
@@ -166,9 +167,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	self.attackUnit = nil;
-	
-//	[botController cancelCurrentProcedure];
-//	[botController evaluateSituation];
 }
 
 // not in LoS
@@ -209,7 +207,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	log(LOG_ERROR, @"You need to adjust your behavior so the previous spell doesn't cast if the player has a more powerfull buff!");
 	
 	if ([botController castingUnit]) {
-		log(LOG_BLACKLIST, @"%@ %@ is put pf range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_RecentlyHelpedFriend];
 	}
 	
@@ -532,8 +529,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	//		Add hostile/neutral units if we should
 	//		Add units attacking us
 	// *************************************************
-	
+
 	NSMutableArray *allPotentialUnits = [NSMutableArray array];
+	BOOL needToAssist = NO;
 	
 	// add friendly units w/in range
 	// only do this if we dont have the onlyHostilesInCombat flag
@@ -543,13 +541,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// Get the assist players target
-	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat]) {
+	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat] ) {
+//		 Player *player = [playersController playerWithGUID: botController.theCombatProfile.assistUnitGUID];
+//		 UInt64 targetGUID = [player targetID];
 		UInt64 targetGUID = [[botController assistUnit] targetID];
+		log(LOG_DEV, @"On assist, checking to see if I need to assist.");
+		
 		if ( targetGUID > 0x0) {
+			log(LOG_DEV, @"Assist has a target.");
 			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob ) {
+			if ( mob && ![mob isDead]) {
 				[allPotentialUnits addObject:mob];
 				log(LOG_DEV, @"Adding my assist's target to list of valid units");
+				needToAssist = YES;
 			}
 		}
 	}
@@ -557,17 +561,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// Get the tanks target
 	if ( [botController isTankUnit] && [[botController tankUnit] isInCombat]) {
 		UInt64 targetGUID = [[botController tankUnit] targetID];
-		if ( targetGUID > 0x0) {
+		if ( targetGUID > 0x0 ) {
 			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob ) {
+			if ( mob && ![mob isDead]) {
 				[allPotentialUnits addObject:mob];
 				log(LOG_DEV, @"Adding my tanks target to list of valid units");
+				needToAssist = YES;
 			}
 		}
 	}
 
 	// add new units w/in range if we're not on assist
-	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat && ![botController isOnAssist] ) {
+	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat && ![botController isOnAssist] && !needToAssist) {
 		log(LOG_DEV, @"Adding ALL available combat units");
 		// determine attack range
 		float attackRange = [botController.theCombatProfile engageRange];
@@ -577,7 +582,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	// remove units attacking us from the list
-	if ( [_unitsAttackingMe count] ) [allPotentialUnits removeObjectsInArray:_unitsAttackingMe];
+	if ( [_unitsAttackingMe count] && !needToAssist) [allPotentialUnits removeObjectsInArray:_unitsAttackingMe];
 	
 	// add combat units that have been validated! (includes attack unit + add)
 	NSArray *inCombatUnits = [self combatListValidated];
@@ -597,8 +602,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	//		Ghost
 	// *************************************************
 
-	NSMutableArray *validUnits = [NSMutableArray array];
 	Position *playerPosition = [playerData position];
+	NSMutableArray *validUnits = [NSMutableArray array];
 	
 	if ( [allPotentialUnits count] ){
 		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
@@ -660,7 +665,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	if ( ![validUnits count] ) return nil;
 
-	int highestWeight = 0;
+	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
+	int highestWeight = -500;
+
 	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
 		// begin weight calculation
@@ -700,8 +707,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // health: +(100-percentHealth)
 // distance: 100*(attackRange - distance)/attackRange
 - (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition{
+
 	float attackRange = (botController.theCombatProfile.engageRange > botController.theCombatProfile.attackRange) ? botController.theCombatProfile.engageRange : botController.theCombatProfile.attackRange;
+
 	float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
+
 	BOOL isFriendly = [playerData isFriendlyWithFaction: [unit factionTemplate]];
 	
 	// begin weight calculation
@@ -739,7 +749,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			UInt64 targetGUID = [[botController assistUnit] targetID];
 			if ( targetGUID > 0x0) {
 				Mob *assistMob = [mobController mobWithGUID:targetGUID];
-				if ( unit == assistMob ) weight += 100;
+				if ( unit == assistMob ) weight += 150;
 			}
 		}
 		
@@ -748,7 +758,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			UInt64 targetGUID = [[botController tankUnit] targetID];
 			if ( targetGUID > 0x0) {
 				Mob *tankMob = [mobController mobWithGUID:targetGUID];
-				if ( unit == tankMob ) weight += 50;	// Still less than the assist just in case
+				if ( unit == tankMob ) weight += 100;	// Still less than the assist just in case
 			}
 		}
 		
