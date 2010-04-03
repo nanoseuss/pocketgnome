@@ -77,8 +77,6 @@
 		0393F539110A55EF00296CF8 /* ReverseRouteActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */; };
 		0394052F1163C67400D98403 /* WoWDbTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394052E1163C67400D98403 /* WoWDbTable.m */; };
 		039405321163C73700D98403 /* WoWDbRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 039405311163C73700D98403 /* WoWDbRow.m */; };
-		03981D8E112AEC870081835F /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 03981D8D112AEC860081835F /* Sparkle.framework */; };
-		03981DA6112AECA80081835F /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 03981D8D112AEC860081835F /* Sparkle.framework */; };
 		03981DE9112B22E90081835F /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 03981DE8112B22E90081835F /* dsa_pub.pem */; };
 		03981E78112B898E0081835F /* MovementController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981E77112B898E0081835F /* MovementController.m */; };
 		03981F38112C819E0081835F /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981F37112C819E0081835F /* LogController.m */; };
@@ -108,6 +106,8 @@
 		03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD595110CB5440046AEDF /* InteractObjectActionController.m */; };
 		03FFD59A110CB55A0046AEDF /* InteractNPCAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD598110CB55A0046AEDF /* InteractNPCAction.xib */; };
 		03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD599110CB55A0046AEDF /* InteractObjectAction.xib */; };
+		283E08911166E13400DE13C5 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
+		283E089B1166E13900DE13C5 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
 		28BF8AD01162E3FE00166879 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 28BF8ACF1162E3FE00166879 /* LICENSE */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
@@ -383,7 +383,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				03981DA6112AECA80081835F /* Sparkle.framework in CopyFiles */,
+				283E089B1166E13900DE13C5 /* Sparkle.framework in CopyFiles */,
 				03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */,
 				7DBF31CE0E94679900A592BD /* Growl.framework in CopyFiles */,
 			);
@@ -504,7 +504,6 @@
 		0394052E1163C67400D98403 /* WoWDbTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDbTable.m; sourceTree = "<group>"; };
 		039405301163C73700D98403 /* WoWDbRow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDbRow.h; sourceTree = "<group>"; };
 		039405311163C73700D98403 /* WoWDbRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDbRow.m; sourceTree = "<group>"; };
-		03981D8D112AEC860081835F /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		03981DE8112B22E90081835F /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		03981E76112B898E0081835F /* MovementController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovementController.h; sourceTree = "<group>"; };
 		03981E77112B898E0081835F /* MovementController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovementController.m; sourceTree = "<group>"; };
@@ -552,6 +551,7 @@
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		283E08901166E13400DE13C5 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		28BF8ACF1162E3FE00166879 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
@@ -898,7 +898,7 @@
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -916,7 +916,7 @@
 				030604B71088140000C57D77 /* ShortcutRecorder.framework in Frameworks */,
 				0322D72F110744D500EF3EEF /* CoreData.framework in Frameworks */,
 				0393F413110A205800296CF8 /* libcrypto.dylib in Frameworks */,
-				03981D8E112AEC870081835F /* Sparkle.framework in Frameworks */,
+				283E08911166E13400DE13C5 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1110,6 +1110,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				283E08901166E13400DE13C5 /* Sparkle.framework */,
 				0393F412110A205800296CF8 /* libcrypto.dylib */,
 				0322D72E110744D500EF3EEF /* CoreData.framework */,
 				7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */,
@@ -1129,7 +1130,6 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				03981D8D112AEC860081835F /* Sparkle.framework */,
 				030604B61088140000C57D77 /* ShortcutRecorder.framework */,
 				7DBF31C50E94679500A592BD /* Growl.framework */,
 				7DB260D40DB30922007DB867 /* libz.1.2.3.dylib */,
@@ -1140,7 +1140,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* ggteabag.app */,
+				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1785,7 +1785,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
+			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
