@@ -1989,13 +1989,83 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 	// normal lute delay
-	float delayTime = 0.9;	// You want this to be long enough not to trigger the loot window open all the time
+	float delayTime = 1.5;
 	
-//	if (isNode) delayTime = 1.8; // if it's trying on nodes it just hit increase this
-
-	log(LOG_LOOT, @"Looting : %@m will veryify in %.2f", unit, delayTime);
-
+	if (isNode) delayTime = 6.0;
+	
+	log(LOG_LOOT, @"Looting : %@m", unit);
+	
+	// In the off chance that no items are actually looted
 	[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: delayTime];
+}
+
+- (void)skinToFinish {
+	self.evaluationInProgress = @"Loot";
+	
+	// Up to skinning 100, you can find out the highest level mob you can skin by: ((Skinning skill)/10)+10.
+	// From skinning level 100 and up the formula is simply: (Skinning skill)/5.
+	int canSkinUpToLevel = 0;
+	if (_skinLevel <= 100) canSkinUpToLevel = (_skinLevel/10)+10; else canSkinUpToLevel = (_skinLevel/5);
+	
+	if ( canSkinUpToLevel >= [self.mobToSkin level] ) {
+		_skinAttempt = 0;
+		[self skinMob:self.mobToSkin];
+		return;
+	} else {
+		log(LOG_LOOT, @"The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
+		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
+	}
+	
+}
+
+// It actually takes 1.2 - 2.0 seconds for [mob isSkinnable] to change to the correct status, this makes me very sad as a human, seconds wasted!
+- (void)skinMob: (Mob*)mob {
+    float distanceToUnit = [[playerController position] distanceToPosition2D: [mob position]];
+	
+	// We tried for 2.0 seconds, lets bail
+	if ( _skinAttempt++ > 20 ) {
+		log(LOG_LOOT, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
+		
+		// We'll give this a blacklist
+		[blacklistController blacklistObject: mob withReason:Reason_RecentlySkinned];
+		
+		[_mobsToLoot removeObject: mob];
+		self.mobToSkin = nil;
+		self.unitToLoot = nil;
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		return;
+	}
+	
+	// Set to null so our loot notifier realizes we shouldn't try to skin again :P
+	self.mobToSkin = nil;
+	self.skinStartTime = [NSDate date];
+	
+	// Not able to skin :/
+	if( ![mob isValid] || ![mob isSkinnable] || distanceToUnit > 5.0f ) {
+		log(LOG_LOOT, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
+		
+		// We'll give this a blacklist
+		[blacklistController blacklistObject: mob withReason:Reason_RecentlySkinned];
+		
+		[_mobsToLoot removeObject: mob];
+		
+		self.mobToSkin = nil;
+		self.unitToLoot = nil;
+		self.isCurrentlyLooting = NO;
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		return;
+    }
+	
+	[controller setCurrentStatus: @"Bot: Skinning"];
+	
+	log(LOG_LOOT, @"Skinning!");
+	
+	// Lets interact w/the mob!
+	[self interactWithMouseoverGUID: [mob GUID]];
+	
+	// In the off chance that no items are actually looted
+	[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 5.0f];
+	
 }
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
@@ -2016,7 +2086,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_LOOT, @"Loot window open? ZOMG lets close it!");
 		_lootMacroAttempt++;
 		[lootController acceptLoot];
-		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 0.5f];
+		[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 1.0f];
 		return;
 	} else 
 	if ( _lootMacroAttempt >= 3 ) {
@@ -2029,40 +2099,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
 }
 
-- (void)verifySkinningSuccess: (Mob*)mob {
-	self.evaluationInProgress = @"Loot";
-
-	// Check if the player is casting still (herbalism/mining/skinning)
-	if ( [playerController isCasting] ){
-		[self performSelector: @selector(verifySkinningSuccess:) withObject: mob afterDelay: 0.1f];
-		return;
-	}
-	
-	log(LOG_DEV, @"Verifying skinning succes...");
-	
-	// Is the loot window stuck being open?
-	if ( [lootController isLootWindowOpen] && _lootMacroAttempt < 3 ) {
-		self.wasLootWindowOpen	= YES;
-		log(LOG_LOOT, @"Loot window open? ZOMG lets close it!");
-		_lootMacroAttempt++;
-		[lootController acceptLoot];
-		[self performSelector: @selector(verifySkinningSuccess:) withObject: mob afterDelay: 0.5f];
-		return;
-	} else if ( _lootMacroAttempt >= 3 ){
-		log(LOG_LOOT, @"Attempted to loot %d times, moving on...", _lootMacroAttempt);
-	}
-	
-	log(LOG_DEV, @"Firing off skinning success");
-
-	// We'll give this a short blacklist so we don't try to reskin due to ninja skin
-	if (_doNinjaSkin) [blacklistController blacklistObject: mob withReason:Reason_RecentlySkinned];
-
-	usleep(300000); // Let it fade so we don't reskin it
-	[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
-
-}
-
-
 // This is called when all items have actually been looted (the loot window will NOT be open at this point)
 - (void)itemsLooted: (NSNotification*)notification {
 	if ( !self.isBotting ) return;
@@ -2073,7 +2109,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// If this event fired, we don't need to verifyLootSuccess! We ONLY need verifyLootSuccess when a body has nothing to loot!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifySkinningSuccess:) object: nil];
+//	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifySkinningSuccess:) object: nil];
 
 	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
 	if ( self.unitToLoot ) {
@@ -2098,22 +2134,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Here from looting, but need to skin!
 	if ( self.unitToLoot && self.mobToSkin ) {
-		if ( !self.wasLootWindowOpen ) {
-			log(LOG_LOOT, @"Waiting for mob to become skinnable...");
-			usleep(2200000);
-			hasPaused =YES;
-		}
 		self.wasLootWindowOpen = NO;
-		[self skinToFinish];
+		
+		// Pause for a moment for the unit to become skinnable
+		[self performSelector: @selector(skinToFinish) withObject: nil afterDelay: 1.0f];
 		return;
 	}
-	
+
 	// Here from skinning!
 	else if ( self.mobToSkin ) {
 
 		NSDate *currentTime = [NSDate date];
 
 		log(LOG_LOOT, @"Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);
+		
+		// We'll give this a blacklist so we don't try to reskin due to ninja skin
+		if (_doNinjaSkin) [blacklistController blacklistObject: self.mobToSkin withReason:Reason_RecentlySkinned];
 		
 		[_mobsToLoot removeObject: self.mobToSkin];
 		self.mobToSkin = nil;
@@ -2138,12 +2174,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If the loot window was open the we paused
 	if ( !hasPaused && self.wasLootWindowOpen ) hasPaused = YES;
 	
+	float delay = 0.1;
 	// Allow the lute to fade
-	if (!hasPaused) usleep(500000);
+	if (!hasPaused) delay = 0.5;
+
+	self.wasLootWindowOpen = NO;
 	
-	self.wasLootWindowOpen = NO;	
 	[self resetLootScanIdleTimer];
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.5f];
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
 
 // called when ONE item is looted
@@ -2169,75 +2207,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
-	
-}
-
-- (void)skinToFinish{	
-	self.evaluationInProgress = @"Loot";
-
-	// Up to skinning 100, you can find out the highest level mob you can skin by: ((Skinning skill)/10)+10.
-	// From skinning level 100 and up the formula is simply: (Skinning skill)/5.
-	int canSkinUpToLevel = 0;
-	if (_skinLevel <= 100) canSkinUpToLevel = (_skinLevel/10)+10; else canSkinUpToLevel = (_skinLevel/5);
-		
-	if ( canSkinUpToLevel >= [self.mobToSkin level] ) {
-		_skinAttempt = 0;
-		[self skinMob:self.mobToSkin];
-		return;
-	} else {
-		log(LOG_LOOT, @"The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
-		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
-	}
-
-}
-
-// It actually takes 1.2 - 2.0 seconds for [mob isSkinnable] to change to the correct status, this makes me very sad as a human, seconds wasted!
-- (void)skinMob: (Mob*)mob {
-    float distanceToUnit = [[playerController position] distanceToPosition2D: [mob position]];
-	
-	// We tried for 2.0 seconds, lets bail
-	if ( _skinAttempt++ > 20 ) {
-		log(LOG_LOOT, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
-
-		// We'll give this a blacklist
-		[blacklistController blacklistObject: mob withReason:Reason_RecentlySkinned];
-		
-		[_mobsToLoot removeObject: mob];
-		self.mobToSkin = nil;
-		self.unitToLoot = nil;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-		return;
-	}
-	
-	// Set to null so our loot notifier realizes we shouldn't try to skin again :P
-	self.mobToSkin = nil;
-	self.skinStartTime = [NSDate date];
-	
-	// Not able to skin :/
-	if( ![mob isValid] || ![mob isSkinnable] || distanceToUnit > 5.0f ) {
-		log(LOG_LOOT, @"[Skinning] Mob is not valid (%d), not skinnable (%d) or is too far away (%d)", ![mob isValid], ![mob isSkinnable], distanceToUnit > 5.0f );
-
-		// We'll give this a blacklist
-		[blacklistController blacklistObject: mob withReason:Reason_RecentlySkinned];
-
-		[_mobsToLoot removeObject: mob];
-		
-		self.mobToSkin = nil;
-		self.unitToLoot = nil;
-		self.isCurrentlyLooting = NO;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-		return;
-    }
-	
-	[controller setCurrentStatus: @"Bot: Skinning"];
-	
-	log(LOG_LOOT, @"Skinning!");
-	
-	// Lets interact w/the mob!
-	[self interactWithMouseoverGUID: [mob GUID]];
-	
-	// In the off chance that no items are actually looted
-	[self performSelector: @selector(verifySkinningSuccess:) withObject: mob afterDelay: 2.0f];
 	
 }
 

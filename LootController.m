@@ -213,8 +213,7 @@
 	
 	// Only call our notifier if the loot window isn't open!
 	if ( ![self isLootWindowOpen] ){
-// No need to notify from here, it's interfering with the BotCollers attempts to notify
-//		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: nil];
+		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: nil];
 	}
 	// Lets check again shortly!
 	else{

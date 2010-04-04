@@ -576,6 +576,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				[allPotentialUnits addObject:mob];
 				log(LOG_DEV, @"Adding my assist's target to list of valid units");
 				needToAssist = YES;
+			} else {
+				log(LOG_DEV, @"My assist's target is dead!");
 			}
 		}
 	}
