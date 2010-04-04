@@ -1988,10 +1988,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (!_doSkinning || ![self.mobToSkin isKindOfClass: [Mob class]] || ![self.mobToSkin isNPC])  self.mobToSkin = nil;
 
 
-	// normal lute delay
-	float delayTime = 1.5;
-	
-	if (isNode) delayTime = 6.0;
+	// verify delays
+	float delayTime = 2.0;
+	if (isNode) delayTime = 5.0;
 	
 	log(LOG_LOOT, @"Looting : %@m", unit);
 	
@@ -2105,11 +2104,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	self.evaluationInProgress = @"Loot";
 
-	BOOL hasPaused = NO;
+	BOOL wasNode = NO;
 	
 	// If this event fired, we don't need to verifyLootSuccess! We ONLY need verifyLootSuccess when a body has nothing to loot!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
-//	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifySkinningSuccess:) object: nil];
 
 	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
 	if ( self.unitToLoot ) {
@@ -2121,8 +2119,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [self.unitToLoot isKindOfClass: [Node class]] ){
 			log(LOG_DEV, @"Node looted in %0.2f seconds after %d attempt%@", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s");
 			// Allow the node to fade
-			hasPaused =YES;
-			usleep(2200000);
+			wasNode =YES;
 		} else {
 			log(LOG_DEV, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
@@ -2171,12 +2168,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.isCurrentlyLooting = NO;
 	}
 
-	// If the loot window was open the we paused
-	if ( !hasPaused && self.wasLootWindowOpen ) hasPaused = YES;
-	
-	float delay = 0.1;
 	// Allow the lute to fade
-	if (!hasPaused) delay = 0.5;
+	float delay = 0.5;
+	if (wasNode) delay = 1.0;
 
 	self.wasLootWindowOpen = NO;
 	
