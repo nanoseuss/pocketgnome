@@ -2170,9 +2170,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Allow the lute to fade
 	float delay = 0.5;
-	if (wasNode) delay = 1.0;
+	if (wasNode) delay = 1.5;
 
 	self.wasLootWindowOpen = NO;
+	self.evaluationInProgress = nil;
+	self.isCurrentlyLooting = NO;
 	
 	[self resetLootScanIdleTimer];
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
