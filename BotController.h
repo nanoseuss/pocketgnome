@@ -338,7 +338,6 @@
 - (void)pvpGetBattlegroundStatus;
 
 // Party stuff
-- (BOOL)mountNow;
 - (BOOL)mountNowParty;
 - (BOOL)isOnAssist;
 - (BOOL)isTankUnit;
