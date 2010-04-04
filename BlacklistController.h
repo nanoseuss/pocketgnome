@@ -37,6 +37,7 @@ enum{
 	Reason_RecentlyHelpedFriend = 7,
 	Reason_InvalidTarget		= 8,
 	Reason_OutOfRange			= 9,
+	Reason_RecentlySkinned		= 10,
 	
 };
 

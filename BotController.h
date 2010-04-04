@@ -208,7 +208,9 @@
 	int _stepAttempts;
 	
 	int _lootScanIdleTimer;
-
+	BOOL _isCurrentlyLooting;
+	BOOL _wasLootWindowOpen;
+	
     // -----------------
     // -----------------
     
@@ -301,11 +303,13 @@
 @property (readonly, retain) Unit *assistUnit;
 @property (readonly, retain) Unit *tankUnit;
 @property (readwrite, assign) BOOL partyFollowSuspended;
+@property (readwrite, assign) BOOL isCurrentlyLooting;
+@property (readwrite, assign) BOOL wasLootWindowOpen;
 
 - (void)testRule: (Rule*)rule;
 
 - (BOOL)performProcedureMobCheck: (Unit*)target;
-- (void)lootScan;
+- (BOOL)lootScan;
 - (void)resetLootScanIdleTimer;
 
 // Input from CombatController
@@ -372,6 +376,8 @@
 - (void)interactWithNode:(UInt32)entryID;
 - (void)logOut;
 
+- (void)logOutWithMessage:(NSString*)message;
+	
 // for new action/conditions
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
 

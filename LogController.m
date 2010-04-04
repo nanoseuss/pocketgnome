@@ -21,6 +21,7 @@
 		NSString* type = [NSString stringWithFormat:@"ExtendedLogging%s", type_s];
 		if ([[NSUserDefaults standardUserDefaults] objectForKey: type])
 			return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+//			return( [[[NSUserDefaults standardUserDefaults] objectForKey: type] boolValue] );
 
 	} else {
 		// These are the types we supress when Extended Logging isn't enabled
@@ -35,6 +36,9 @@
 		if (type_s == LOG_MACRO) return NO;
 		if (type_s == LOG_EVALUATE) return NO;
 		if (type_s == LOG_BLACKLIST) return NO;
+		if (type_s == LOG_FUNCTION) return NO;
+		if (type_s == LOG_MEMORY) return NO;
+		if (type_s == LOG_PROCEDURE) return NO;
 
 	}
 

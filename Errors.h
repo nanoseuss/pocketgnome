@@ -13,7 +13,7 @@ typedef enum CastError {
     ErrNone = 0,
 	ErrNotFound = 1,
 	ErrInventoryFull = 2,				// @"Inventory is Full"
-    	ErrTargetNotInLOS = 3,
+	ErrTargetNotInLOS = 3,
 	ErrCantMove = 4,
 	ErrTargetNotInFrnt = 5,	
 	ErrWrng_Way = 6,

@@ -41,6 +41,10 @@
 // Basically this should be long enough for the unit to refresh.
 #define BLACKLIST_TIME_RECENTLY_HELPED_FRIEND		0.2f
 
+// Basically this should be long enough for the unit to refresh.
+#define BLACKLIST_TIME_RECENTLY_SKINNED		45.0f
+
+
 @interface BlacklistController (Internal)
 
 @end
@@ -137,6 +141,10 @@
 				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_HELPED_FRIEND ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 
+			} else if ( reason == Reason_RecentlySkinned) {
+				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_SKINNED ) [infractionsToKeep addObject:infraction];
+				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+				
 			} else {
 				if ( timeSinceBlacklisted < BLACKLIST_TIME ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
@@ -216,6 +224,11 @@
 		
 		else if ( reason == Reason_RecentlyHelpedFriend ){
 			log(LOG_BLACKLIST, @"%@ was blacklisted because I just helped them and I'm allowing their unit to refresh.", obj);
+			return YES;
+		}
+
+		else if ( reason == Reason_RecentlySkinned ){
+			log(LOG_BLACKLIST, @"%@ was blacklisted because I just skinned it.", obj);
 			return YES;
 		}
 		

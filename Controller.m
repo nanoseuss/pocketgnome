@@ -111,10 +111,23 @@ BUG to NOTE here.  Enabling the following option allowed the logging on my deskt
 for this call... [[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] 
  I'm uncommenting the next item here, because the interface button works on both my desktop and laptop with out it!
 
- My guess is that everything else defined here is subject to the same condition !?
+FIXED: This was due to improper settings in the Interface builder checkboxes.
  
-								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEnable",
  */
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEnable",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingDev",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLogginEvaluate",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingBindings",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMacro",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMovement",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingWaypoint",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLogging",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingCondition",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingRule",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingBlacklist",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingStatistics",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingFunction",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMemory",
 								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];

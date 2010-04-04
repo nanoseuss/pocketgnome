@@ -13,7 +13,7 @@
 #define LOG_DEV						"Dev"
 #define LOG_DEV1					"Dev1"
 #define LOG_DEV2					"Dev2"
-#define LOG_TARGET					"Darget"
+#define LOG_TARGET					"Target"
 #define LOG_MOVEMENT_CORRECTION		"Movement_Correction"
 #define LOG_MOVEMENT				"Movement"
 #define LOG_RULE					"Rule"

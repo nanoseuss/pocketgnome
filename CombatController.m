@@ -148,7 +148,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	_inCombat = NO;
 	
-	[self cancelAllCombat];
+//	[self cancelAllCombat];
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
@@ -166,7 +166,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_InvalidTarget];
 	}
 
-	self.attackUnit = nil;
+	[botController cancelCurrentProcedure];
+	[self cancelAllCombat];
+	[botController evaluateSituation];
+	
 }
 
 // not in LoS
@@ -178,8 +181,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_NotInLoS];
 	}
 
-	self.attackUnit = nil;
-
+	[botController cancelCurrentProcedure];
+	[self cancelAllCombat];
+	[botController evaluateSituation];
+	
 }
 
 // target is out of range
@@ -199,8 +204,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_OutOfRange];
 	}
 
-	self.attackUnit = nil;
-
+	[botController cancelCurrentProcedure];
+	[self cancelAllCombat];
+	[botController evaluateSituation];
+	
 }
 
 - (void)morePowerfullSpellActive: (NSNotification*)notification {
@@ -209,12 +216,30 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ([botController castingUnit]) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_RecentlyHelpedFriend];
 	}
+
+	[botController cancelCurrentProcedure];
+	[self cancelAllCombat];
+	[botController evaluateSituation];
 	
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
+	[botController cancelCurrentProcedure];
+
 	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+	/*
+	log(LOG_COMBAT, @"Stepping forward to try to unbug a bad casting position.");
+	[movementController stepForward];
+	usleep(50000);
+	[movementController stopMovement];
+	usleep(50000);
+	[playerData faceToward: [_castingUnit position]];
+	usleep(200000);
+	 */
 	[movementController establishPlayerPosition];
+
+	[botController actOnUnit: _castingUnit];
+	
 }
 
 - (void)unitDied: (NSNotification*)notification{
@@ -225,10 +250,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[_addUnit release]; _addUnit = nil;
 	} else 
 		
-	if ( unit == _castingUnit ) _castingUnit = nil;
-//		[botController cancelCurrentProcedure];
-//		[botController evaluateSituation];
-//	}
+	if ( unit == _castingUnit ) [self cancelAllCombat];
+
 }
 	
 #pragma mark Public
@@ -469,7 +492,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//log(LOG_COMBAT, @"[Combat] Not casting 0x%qX 0x%qX", [playerData targetID], unitUID);
 		if ( ( [playerData targetID] != unitUID) || [_castingUnit isFeignDeath] ) {
 			Position *playerPosition = [playerData position];
-			log(LOG_COMBAT, @"[Combat] Targeting %@  Weight: %d", _castingUnit, [self weight:_castingUnit PlayerPosition:playerPosition] );
+			log(LOG_COMBAT, @"%@ Targeting %@  Weight: %d", _castingUnit, [self unitHealthBar: _castingUnit], [self weight:_castingUnit PlayerPosition:playerPosition] );
 			
 			[playerData setPrimaryTarget: _castingUnit];
 			usleep([controller refreshDelay]);
@@ -508,7 +531,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[_friendUnit release];	_friendUnit =  nil;
 	
 	// remove blacklisted units (TO DO: we should only remove those of type Unit)
-	[blacklistController removeAllUnits];
+//	[blacklistController removeAllUnits];
 }
 
 - (void)resetAllCombat{
@@ -943,11 +966,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// Unit not in combat check
 	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
 
-	// Tanaris4: what is the below comment?
-	// slipmat: looks like I mis worded it, but basically the timer used to start at the same time for everyone which would cause premature fails
-	// This is to set timer if the unit actually our target vs being an add
-	int leftCombatTargetCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
-
 	if ( ![unit isInCombat] ) {
 		
 		float secondsInCombat = leftCombatCount/10;
@@ -958,30 +976,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// If it's our target let's do some checks as we should be in combat
 		if ( unit == _attackUnit ) {
 
-			secondsInCombat = leftCombatTargetCount/10;
-
-			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
+			// This is to set timer if the unit actually our target vs being an add
+			int leftCombatTargetCount = [[_unitLeftCombatTargetCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
 			
-			// not in combat after 2 seconds try moving forward to unbug casting
-			if ( secondsInCombat > 1) {
-
-				// Try Stepping forward in case we're just position bugged for casting
-				if (![playerData isCasting] && ![movementController isMoving] && !_hasStepped) {
-					_hasStepped = YES;
-					log(LOG_COMBAT, @"Stepping forward to try to unbug a bad casting position.");
-					[movementController stepForward];
-					[playerData faceToward: [unit position]];
-					usleep([controller refreshDelay]);
-					[movementController stopMovement];
-				}
-			} else 
+			secondsInCombat = leftCombatTargetCount/10;
+			
+			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
 
 			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
 			if ( secondsInCombat >  combatBlacklistDelay ) {
 				_hasStepped = NO;
-				log(LOG_COMBAT, @"%@ Unit not in combat after %d seconds, temp blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
+				log(LOG_COMBAT, @"%@ Unit not in combat after %.2f seconds, temp blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatTemp];
-				self.attackUnit = nil;
+				[self cancelAllCombat];
+				return;
 			} else
 
 			// not in combat after 25 seconds we blacklist perm
@@ -989,22 +997,27 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				_hasStepped = NO;
 				log(LOG_COMBAT, @"%@ Unit not in combat after 25 seconds, seriously blacklisting", [self unitHealthBar: unit]);
 				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatPerm];
-				self.attackUnit = nil;
+				[self cancelAllCombat];
+				return;
 			}
 			
 			leftCombatTargetCount++;
-			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
+			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
+			log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		}
+
+		// Unit is an add or not our primary target
 		// after a minute stop monitoring
 		if ( secondsInCombat > 60 ){
 			_hasStepped = NO;
 			log(LOG_COMBAT, @"%@ No longer monitoring %@, didn't enter combat after  %d seconds.", [self unitHealthBar: unit], unit, secondsInCombat);
 
-			leftCombatTargetCount = 0;
-			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
+			leftCombatCount = 0;
+			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
 
 			return;
 		}
+		
 	} else {
 		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		leftCombatCount = 0;

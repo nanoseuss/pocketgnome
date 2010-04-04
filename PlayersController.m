@@ -210,7 +210,7 @@ static PlayersController *sharedPlayers = nil;
 
 - (BOOL)playerWithinRangeOfUnit: (float)distance Unit:(Unit*)unit includeFriendly:(BOOL)friendly includeHostile:(BOOL)hostile {
 	
-	PGLog(@"checking distance %0.2f  %@ %d %d", distance, unit, friendly, hostile);
+//	PGLog(@"checking distance %0.2f  %@ %d %d", distance, unit, friendly, hostile);
 	Position *position = [unit position];
 	
 	// loop through all players
