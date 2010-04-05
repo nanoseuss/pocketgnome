@@ -107,9 +107,9 @@
 @implementation MovementController
 
 typedef enum MovementState{
-	MovementState_Unit			= 0,
-	MovementState_Backtrack		= 1,
-	MovementState_Patrol		= 2,
+	MovementState_MovingToObject	= 0,
+	MovementState_Patrolling		= 1,
+	MovementState_Stuck				= 1,
 }MovementState;
 
 + (void)initialize {
@@ -128,7 +128,6 @@ typedef enum MovementState{
     self = [super init];
     if ( self != nil ) {
 		
-		_backtrack = [[NSMutableArray array] retain];
 		_stuckDictionary = [[NSMutableDictionary dictionary] retain];
 		
 		_currentRouteSet = nil;
@@ -166,7 +165,6 @@ typedef enum MovementState{
 }
 
 - (void) dealloc{
-	[_backtrack release];
 	[_stuckDictionary release];
 	
     [super dealloc];
@@ -197,24 +195,24 @@ typedef enum MovementState{
 	
 	// moving forward or backward
 	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
-		PGLog(@"[Move] isMoving: Moving forward/backward");
+		//PGLog(@"[Move] isMoving: Moving forward/backward");
 		return YES;
 	}
 	
 	// moving up or down
 	else if ( movementFlags & MovementFlag_FlyUp || movementFlags & MovementFlag_FlyDown ){
-		PGLog(@"[Move] isMoving: Moving up/down");
+		//PGLog(@"[Move] isMoving: Moving up/down");
 		return YES;
 	}
 	
 	// CTM active
 	else if ( [self movementType] == MovementType_CTM  && [self isCTMActive] ){
-		PGLog(@"[Move] isMoving: CTM Active");
+		//PGLog(@"[Move] isMoving: CTM Active");
 		return YES;
 	}
 	
 	else if ( [playerData speed] > 0 ){
-		PGLog(@"[Move] isMoving: Speed > 0");
+		//PGLog(@"[Move] isMoving: Speed > 0");
 		return YES;
 	}
 	
@@ -242,6 +240,7 @@ typedef enum MovementState{
 // in case the object moves
 - (void)stayWithObject:(WoWObject*)obj{
 	
+	// to ensure we don't do this when we shouldn't!
 	if ( ![obj isValid] || obj != self.moveToObject ){
 		return;
 	}
@@ -298,21 +297,20 @@ typedef enum MovementState{
 	// check to make sure we are even moving!
 	UInt32 movementFlags = [playerData movementFlags];
 	
+	[self resetMovementTimer];
+	
 	// player is moving
 	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
 		PGLog(@"[Move] Player is moving! Stopping!");
-		[self resetMovementTimer];
 		[self moveForwardStop];
 	}
 	
 	else if ( movementFlags & MovementFlag_FlyUp || movementFlags & MovementFlag_FlyDown ){
 		PGLog(@"[Move] Player is flying up or down!");
-		[self resetMovementTimer];
 		[self moveUpStop];
 	}
 	else{
-		PGLog(@"[Move] Player is not moving! No reason to stop. Flags: 0x%X", movementFlags);
-		[self resetMovementTimer];
+		//PGLog(@"[Move] Player is not moving! No reason to stop. Flags: 0x%X", movementFlags);
 	}
 }
 
@@ -332,17 +330,15 @@ typedef enum MovementState{
 	
 	// moving to an object
 	if ( _moveToObject ){
+		_movementState = MovementState_MovingToObject;
 		[self moveToPosition:[self.moveToObject position]];
 	}
 	else if ( _currentRouteSet ){
 		
-		// we need to backtrack (we probably chased down a unit or something)
-		if ( [_backtrack count] ){
-			PGLog(@"[Move] Backtracking to our route!");
-			
-		}
+		_movementState = MovementState_Patrolling;
+		
 		// previous waypoint to move to
-		else if ( self.destinationWaypoint ){
+		if ( self.destinationWaypoint ){
 			
 			// check for patrol procedure before we move (thanks slipknot)
 			if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
@@ -427,12 +423,9 @@ typedef enum MovementState{
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 	
 	PGLog(@"[Move] Moving to a waypoint: %@", waypoint);
-	
-	[_destinationWaypoint release];
-	_destinationWaypoint = [waypoint retain];
+	self.destinationWaypoint = waypoint;
 	
 	[self moveToPosition:[waypoint position]];
-	
 }
 
 - (void)moveToNextWaypoint{
@@ -479,6 +472,8 @@ typedef enum MovementState{
 		if ( index == [waypoints count] - 1 ){
 			PGLog(@"[Move] We've reached the end of the route!");
 
+			// TO DO: keep a dictionary w/the route collection (or set) to remember how many times we've run a route
+			
 			[self routeEnded];
 			return;
 		}
@@ -501,6 +496,14 @@ typedef enum MovementState{
 
 - (void)routeEnded{
 	
+	// player is currently on the primary route and is dead, if they've finished, then we ran the entire route and didn't find our body :(
+	if ( self.currentRouteKey == PrimaryRoute && [playerData isGhost] ){
+		[botController stopBot:nil];
+		[controller setCurrentStatus:@"Bot: Unable to find body, stopping bot"];
+		PGLog(@"[Move] Unable to find your body after running the full route, stopping bot");
+		return;
+	}
+	
 	//NSArray *currentWaypoints = [self.currentRoute waypoints];
 	//Waypoint *curWP = [currentWaypoints indexOfObject:self.destinationWaypoint];
 	
@@ -513,12 +516,13 @@ typedef enum MovementState{
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 		
 		// find the closest WP
+		self.destinationWaypoint = [self.currentRoute waypointClosestToPosition:[playerData position]];
 	}
 	
-	//[self.currentRoute waypointClosestToPosition:playerPosition]
-
-	// use the first WP	
-	self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
+	// use the first waypoint
+	else{
+		self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
+	}
 	
 	[self resumeMovement];
 }
@@ -692,7 +696,6 @@ typedef enum MovementState{
 	// should we jump?
 	//PGLog(@" %0.2f > %0.2f %d", distanceToDestination, (playerSpeed * 1.5f), [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue]);
 	if ( ( distanceToDestination > (playerSpeed * 1.5f) ) && [[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] ){
-		
 		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ){
 			[self jump];
 		}
@@ -772,6 +775,8 @@ typedef enum MovementState{
 
 - (void)unStickify{
 	
+	_movementState = MovementState_Stuck;
+	
 	// *************************************************
 	// Check for alarm/log out
 	// *************************************************
@@ -848,7 +853,10 @@ typedef enum MovementState{
 			return;
 		}
 		
-		PGLog(@"[Move] Moving to an object + stuck and not flying?  shux");
+		// TODO: move left?
+		
+		// TODO: move right?
+
 		[self resumeMovement];
 	}
 	
@@ -868,7 +876,7 @@ typedef enum MovementState{
 			return;
 		}
 		
-		if ( _unstickifyTry > 5 ){
+		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ){
 			
 			// move to the previous waypoint and try this again
 			NSArray *waypoints = [[self currentRoute] waypoints];
@@ -883,7 +891,11 @@ typedef enum MovementState{
 			else{
 				PGLog(@"[Move] Trying to move to a previous WP, previously we would finish the route");
 			}
-			
+		}
+		
+		else if ( _unstickifyTry > 10 ){
+			// move to the closest WP?
+			self.destinationWaypoint = [self.currentRoute waypointClosestToPosition:[playerData position]];
 		}
 		
 		[self resumeMovement];
@@ -900,9 +912,6 @@ typedef enum MovementState{
 		[self setClickToMove:nil andType:ctmIdle andGUID:0x0];
 	}
 	
-	/*self.currentRoute				= nil;
-	self.currentRouteSet			= nil;
-	self.currentRouteKey			= nil;*/
 	self.moveToObject				= nil;
 	self.destinationWaypoint		= nil;
 	self.lastAttemptedPosition		= nil;
