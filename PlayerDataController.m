@@ -37,6 +37,7 @@
 #import "NodeController.h"
 #import "OffsetController.h"
 #import "MobController.h"
+#import "BindingsController.h"
 
 #import "Spell.h"
 #import "Player.h"
@@ -681,6 +682,25 @@ static PlayerDataController* sharedController = nil;
     }
     return NO;
 	
+}
+
+- (BOOL)targetGuid: (GUID)guid{
+	
+	PGLog(@"[PlayerData] Attempted to target 0x%qX", guid);
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+    if ( memory && [memory isValid] && [memory saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_LAST) Buffer: (Byte *)&guid BufLength: sizeof(guid)] ) {
+		
+		usleep([controller refreshDelay]*2);
+		
+		[bindingsController executeBindingForKey:BindingTargetLast];
+		
+		PGLog(@"[PlayerData] Targetting last target: 0x%qX", guid);
+		
+		return YES;       
+	}
+
+	return NO;
 }
 
 - (BOOL)setPrimaryTarget: (WoWObject*)target {

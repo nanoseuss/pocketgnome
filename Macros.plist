@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>QueueForBattleground</key>
+	<dict>
+		<key>Macro</key>
+		<string>for i=1,GetNumBattlegroundTypes() do _,e,_,_,z=GetBattlegroundInfo(i); for j=1,#a do if (e==1 and a[j]==z) then tinsert(b,i); end end end if (#b&gt;0) then RequestBattlegroundInstanceInfo(b[random(#b)]); end</string>
+		<key>Description</key>
+		<string>This will queue for battlegrounds!</string>
+	</dict>
 	<key>BGScrollUp</key>
 	<dict>
 		<key>Macro</key>
@@ -215,7 +222,7 @@
 	<key>JoinBattlefield</key>
 	<dict>
 		<key>Macro</key>
-		<string>/script JoinBattlefield(0);</string>
+		<string>/run JoinBattlefield(0);</string>
 		<key>Description</key>
 		<string>This will queue you for the battleground</string>
 	</dict>

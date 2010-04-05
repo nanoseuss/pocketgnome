@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1956"/>
 			<integer value="2378"/>
+			<integer value="1956"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -10691,6 +10691,22 @@
 					</object>
 					<int key="connectionID">4278</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">bindingsController</string>
+						<reference key="source" ref="983345874"/>
+						<reference key="destination" ref="963237447"/>
+					</object>
+					<int key="connectionID">4279</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">bindingsController</string>
+						<reference key="source" ref="1002180867"/>
+						<reference key="destination" ref="963237447"/>
+					</object>
+					<int key="connectionID">4280</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -15621,7 +15637,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4278</int>
+			<int key="maxID">4280</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15877,8 +15893,6 @@
 							<string>miningCheckbox</string>
 							<string>miningSkillText</string>
 							<string>mobController</string>
-							<string>mountCheckbox</string>
-							<string>mountType</string>
 							<string>movementController</string>
 							<string>netherwingEggCheckbox</string>
 							<string>nodeController</string>
@@ -15967,8 +15981,6 @@
 							<string>NSButton</string>
 							<string>id</string>
 							<string>MobController</string>
-							<string>NSButton</string>
-							<string>NSPopUpButton</string>
 							<string>MovementController</string>
 							<string>NSButton</string>
 							<string>NodeController</string>
@@ -16893,6 +16905,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>bindingsController</string>
 							<string>botController</string>
 							<string>combatController</string>
 							<string>combatTable</string>
@@ -16909,6 +16922,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>BindingsController</string>
 							<string>BotController</string>
 							<string>CombatController</string>
 							<string>NSTableView</string>

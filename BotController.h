@@ -177,23 +177,19 @@
 	// new flying shit
 	int _jumpAttempt;
 	
-	// mount correction (sometimes we can't mount)
-	int _mountAttempt;
-	NSDate *_mountLastAttempt;
-	
     // pvp shit
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
-    int _pvpCheckCount;
+    int _pvpAntiAFKCounter;
     IBOutlet NSButton *pvpStartStopButton;
     IBOutlet NSPanel *pvpBMSelectPanel;
     IBOutlet NSImageView *pvpBannerImage;
     IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox, *pvpWaitForPreparationBuff;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
-	int _pvpMarks;
 	BOOL _attackingInStrand;
 	BOOL _strandDelay;
+	BOOL _waitingToLeaveBattleground;
 	
 	// auto join WG options
 	NSTimer *_wgTimer;
@@ -241,8 +237,6 @@
     IBOutlet id skinningSkillText;
     IBOutlet id gatherDistText;
     IBOutlet NSButton *lootCheckbox;
-	IBOutlet NSButton *mountCheckbox;
-	IBOutlet NSPopUpButton *mountType;
 	
 	IBOutlet NSTextField *fishingGatherDistanceText;
 	IBOutlet NSButton *fishingCheckbox;
@@ -300,7 +294,7 @@
 - (void)testRule: (Rule*)rule;
 
 // Input from CombatController
-- (void)addingUnit: (Unit*)unit;
+//- (void)addingUnit: (Unit*)unit;
 
 // Input from CombatController
 - (void)actOnUnit: (Unit*)unit;

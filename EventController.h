@@ -27,7 +27,6 @@
 
 #define EventZoneChanged					@"EventZoneChanged"
 #define EventBattlegroundStatusChange		@"EventBattlegroundStatusChange"
-#define EventBattlegroundOver				@"EventBattlegroundOver"
 
 @class Controller;
 @class BotController;

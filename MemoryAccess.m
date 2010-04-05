@@ -225,23 +225,4 @@ static MemoryAccess *sharedMemoryAccess = nil;
 	[_loaderDict removeAllObjects];
 }
 
-- (NSString*)stringForAddress: (UInt32)address withSize:(int)size{
-	
-	char *str = malloc( sizeof(char) * size );
-	
-	if ( [self loadDataForObject: self atAddress: address Buffer: (Byte *)&str BufLength: sizeof(str)] ){
-		
-		// null terminat just in case
-		str[size - 1] = 0;
-		
-		// create the string
-		NSString *newString = [NSString stringWithUTF8String: str];  // will stop after it's first encounter with '\0'
-		if ( [newString length] ){
-			return [[newString retain] autorelease];
-		}
-	}
-	
-	return nil;
-}
-
 @end

@@ -74,7 +74,6 @@ typedef enum MovementType {
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementTypePopUp;
 
-	NSMutableArray *_backtrack;			// this will contain a list of positions we must move through to get back to our route!
 	NSMutableDictionary *_stuckDictionary;
 	
 	NSString *_currentRouteKey;
@@ -125,7 +124,7 @@ typedef enum MovementType {
 // reset the move to object and returns true on success
 - (BOOL)resetMoveToObject;
 
-// begin patrolling with this routeset and type (type indicates PrimaryRoute or CorpseRunRoute)
+// begin patrolling with this routeset
 - (void)setPatrolRouteSet: (RouteSet*)route;
 
 // stop all movement

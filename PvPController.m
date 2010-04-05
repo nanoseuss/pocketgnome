@@ -68,7 +68,7 @@
 - (void)awakeFromNib {
     self.minSectionSize = [self.view frame].size;
     self.maxSectionSize = [self.view frame].size;
-
+	
 	// delay setting our current behavior (as the route objects might not have loaded yet)
 	[self performSelector:@selector(initCurrentRoute) withObject:nil afterDelay:0.5f];
 }
@@ -195,7 +195,7 @@
     // save this route into our array
     [self willChangeValueForKey: @"behaviors"];
 	[self willChangeValueForKey: @"validBehavior"];
-    [self.behaviors addObject: behavior];
+    [_objects addObject: behavior];
     [self didChangeValueForKey: @"behaviors"];
 	[self didChangeValueForKey: @"validBehavior"];
 	
