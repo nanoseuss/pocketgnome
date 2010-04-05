@@ -108,9 +108,16 @@ typedef enum MovementType {
 	BOOL _movingUp;
 	BOOL _afkPressForward;
 	BOOL _lastCorrectionForward;
+	
+	//Pather 
+	float closeEnough;
 }
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
+
+// PPather: moved here from .m file:
+@property (readwrite, retain) Waypoint *destinationWaypoint;
+@property (readwrite) float closeEnough;
 
 // move to an object (takes priority over a route)
 - (BOOL)moveToObject: (WoWObject*)object;

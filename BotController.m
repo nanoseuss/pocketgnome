@@ -381,6 +381,8 @@
 @synthesize doLooting       = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
 
+@synthesize patherEnabled;
+
 - (NSString*)sectionTitle {
     return @"Start/Stop Bot";
 }
@@ -1343,6 +1345,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // when we finish PostCombat, run regen
     if([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		
+		// if enabled, Let PPather RestTask handle this
+		if (patherEnabled) return;
+		
 		if ( [playerController isInCombat] ){
 			PGLog(@"[Procedure] Still in combat, waiting for regen!");
 			_doRegenProcedure = 1;
@@ -1810,7 +1815,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Loot Helpers
 
 - (void)lootUnit: (WoWObject*) unit{
-   
+
+   // let the Pather LootTask handle looting.
+	if (patherEnabled) return;
+	
 	// are we still in the air?  shit we can't loot yet!
 	if ( ![playerController isOnGround] ){
 
@@ -2003,6 +2011,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)skinOrFinish{
+
+	// let the PPather Loot Task handle skinning.
+	if (patherEnabled) return;
 	
 	if ( [fishController isFishing] )
 		return;
@@ -2554,6 +2565,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateSituation {
     if(![self isBotting])						return NO;
     if(![playerController playerIsValid:self])  return NO;
+	if([self patherEnabled])					return NO;	// let Pather handle this logic if it is running.
 	
 	PGLog(@"[Bot] Evaluate Situation");
     
@@ -3480,6 +3492,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		self.isBotting = YES;
+		
+		//// This process is good up to here even if Pather is enabled.  
+		//// now skip the ghostwalking and combat and leave it to Pather ... 
+		if ([self patherEnabled])	return;
 		
 		// TO DO: allow botting before u join a BG!
 		
@@ -4418,6 +4434,60 @@ NSMutableDictionary *_diffDict = nil;
 	
 	return string;
 }
+
+
+
+
+#pragma mark -
+#pragma mark PPather Additions
+
+// ppather needs the ability to initiate a PG PreCombat Procedure:
+- (void)preCombatWithMob:(Mob *)mobToAttack {
+    
+	[self performProcedureWithState: [NSDictionary dictionaryWithObjectsAndKeys: 
+									  PreCombatProcedure,               @"Procedure",
+									  [NSNumber numberWithInt: 0],      @"CompletedRules",
+									  mobToAttack,                     @"Target",  nil]];
+}
+
+// ppather wants to use botcontroller's blacklist, and needs to check to see if a unit is already blacklisted:
+- (BOOL) isBlacklisted: (WoWObject *) unit {
+	
+	//return [_unitsBlacklisted containsObject:unit];
+	return NO;
+}
+
+
+- (void) removeLootMob: (WoWObject*) unit {
+	[_mobsToLoot removeObject: unit];
+}
+
+
+// ppather needs the ability to initiate a PG Regen Procedure:
+- (void)patherInitiatedRegen {
+    
+	float regenDelay = 1.5f;
+
+	[self performSelector: @selector(performProcedureWithState:) 
+			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
+							RegenProcedure,                   @"Procedure",
+							[NSNumber numberWithInt: 0],      @"CompletedRules", nil] 
+			   afterDelay: regenDelay];
+}
+
+
+// ppather's task helper wants to get at the selected Behavior Data before startBot is called:
+- (Procedure *) procedureRegen {
+	return [[[behaviorPopup selectedItem] representedObject] procedureForKey:RegenProcedure];
+}
+
+
+// ppather's task helper wants to know if we clicked the Skinning option
+- (BOOL) doSkinning {
+	return [skinningCheckbox state];
+}
+
+
 
 #pragma mark Waypoint Action stuff
 

@@ -55,7 +55,7 @@
 
 @interface MovementController ()
 @property (readwrite, retain) WoWObject *moveToObject;
-@property (readwrite, retain) Waypoint *destinationWaypoint;
+//@property (readwrite, retain) Waypoint *destinationWaypoint;  // PPather: moved to .h so we can access it
 @property (readwrite, retain) NSString *currentRouteKey;
 @property (readwrite, retain) Route *currentRoute;
 
@@ -157,6 +157,9 @@ typedef enum MovementState{
 		_afkPressForward = NO;
 		_lastCorrectionForward = NO;
 		
+		// PPather
+		closeEnough = 5.0f;
+		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasRevived:) name: PlayerHasRevivedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
@@ -187,6 +190,8 @@ typedef enum MovementState{
 @synthesize movementExpiration = _movementExpiration;
 @synthesize jumpCooldown = _jumpCooldown;
 @synthesize lastJumpTime = _lastJumpTime;
+
+@synthesize closeEnough; //PPather
 
 // checks to see if the player is moving - duh!
 - (BOOL)isMoving{
@@ -633,7 +638,7 @@ typedef enum MovementState{
 	}
 	
 	// check to see if we're near our target
-	float distanceToObject = 5.0f;			// this used to be (playerSpeed/2.0)
+	float distanceToObject = closeEnough; //5.0f;			// this used to be (playerSpeed/2.0)
 											//	when on mount:	7.0
 											//  when on ground: 3.78
 	

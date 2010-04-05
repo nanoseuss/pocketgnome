@@ -41,6 +41,7 @@
 @class PlayerDataController;
 @class CorpseController;
 @class FishController;
+@class PatherController;
 @class OffsetController;
 @class StatisticsController;
 @class CombatProfileEditor;
@@ -67,6 +68,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet ProcedureController	*behaviorController;
     IBOutlet ChatLogController		*chatLogController;
 	IBOutlet CorpseController		*corpseController;
+	IBOutlet PatherController       *patherController;
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
@@ -77,7 +79,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *routesToolbarItem, *behavsToolbarItem, *pvpToolbarItem;
-    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *statisticsToolbarItem, *objectsToolbarItem;
+    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *statisticsToolbarItem, *objectsToolbarItem, *patherToolbarItem;
 	
 	IBOutlet NSPopUpButton *wowInstancePopUpButton;
 	int _selectedPID;

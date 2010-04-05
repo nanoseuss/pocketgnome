@@ -67,6 +67,7 @@
 @class StatisticsController;
 @class BindingsController;
 @class PvPController;
+@class Procedure;
 
 @class ScanGridView;
 
@@ -203,7 +204,10 @@
 	
 	// log out options
 	NSTimer *_logOutTimer;
-    
+
+    // Pather is enabled Flag
+	BOOL patherEnabled;
+	
     // -----------------
     // -----------------
     
@@ -290,6 +294,7 @@
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
 
+@property (readwrite, assign) BOOL patherEnabled;
 
 - (void)testRule: (Rule*)rule;
 
@@ -349,5 +354,16 @@
 
 // from movement controller (for new WP actions!)
 - (void)changeCombatProfile:(CombatProfile*)profile;
+
+
+
+// PPather required
+- (void)preCombatWithMob:(Mob *)mobToAttack;
+- (Mob*)mobToLoot;
+- (BOOL)isBlacklisted:(WoWObject *) unit;
+- (void) removeLootMob:(WoWObject *)unit;
+- (void)patherInitiatedRegen;
+- (Procedure *) procedureRegen;
+- (BOOL) doSkinning;
 
 @end

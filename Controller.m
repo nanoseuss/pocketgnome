@@ -37,6 +37,7 @@
 #import "MemoryViewController.h"
 #import "PlayersController.h"
 #import "CorpseController.h"
+#import "PatherController.h"
 #import "OffsetController.h"
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
@@ -799,6 +800,12 @@ typedef struct NameObjectStruct{
         minSize = [pvpController minSectionSize];
         maxSize = [pvpController maxSectionSize];
 	}
+    if( [sender tag] == 42) {  
+        newView = [patherController view];
+        addToTitle = [patherController sectionTitle];
+        minSize = [patherController minSectionSize];
+        maxSize = [patherController maxSectionSize];
+    }
 	
     if(newView) {
         [self loadView: newView withTitle: addToTitle];
