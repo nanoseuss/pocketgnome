@@ -3,8 +3,10 @@
 [*]New toolbar icons should now display correctly[/list]
 
 [list]Behaviors 
-[*]Increased weight for current target, hopefully it will switch less[/list]
-[*]You will now re-mount when moving to a new node (if it's in patrolling)[/list]
+[*]Increased weight for current target, hopefully it will switch less
+[*]You will now re-mount when moving to a new node (if it's in patrolling)
+[*]Fixed bug where PG would stop engaging enemies after it failed looting a mob's pet[/list]
+
 
 [b]Pocket Gnome 1.4.5 (Build 345) Release Notes [/b]
 
