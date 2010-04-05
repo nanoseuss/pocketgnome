@@ -1416,11 +1416,6 @@ typedef struct NameObjectStruct{
 
 #pragma mark WorldState/LoginState
 
-#define GameState_Unknown		-1
-#define GameState_LoggingIn		0
-#define GameState_Valid			1
-#define GameState_Loading		2
-
 - (int)gameState{
 	
 	// we want to check the object list pointer to make sure it's valid, if it is, we can assume we'll have a valid player (altho maybe we shouldn't?)
@@ -1429,19 +1424,7 @@ typedef struct NameObjectStruct{
 	
 	if ( memory && [memory isValid] ){
 		
-		// do we have a valid o
-		UInt32 offset = [offsetController offset:@"OBJECT_LIST_LL_PTR"];
-		UInt32 objectManager = 0x0;	
-		
-		if ( [memory loadDataForObject: self atAddress:offset  Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager ){
-			
-			
-		}
-		
-		
-		
-		
-		offset = [offsetController offset:@"LoginState"];
+		UInt32 offset = [offsetController offset:@"LoginState"];
 		
 		char state[21];
 		state[20] = 0;
@@ -1471,12 +1454,22 @@ typedef struct NameObjectStruct{
 			if ( worldState == 10 ){
 				return GameState_Loading;
 			}
-			else if ( worldState == 0 ){
+			/*else if ( worldState == 0 ){
 				return GameState_Valid;
-			}
+			}*/
 			else if ( (worldState >=0 && worldState <= 3) || worldState == 7 || worldState == 8 || worldState == 9 ){
 				return GameState_LoggingIn;
 			}
+		}
+		
+		// check object list pointer!
+		offset = [offsetController offset:@"OBJECT_LIST_LL_PTR"];
+		UInt32 objectManager = 0x0;	
+		
+		if ( [memory loadDataForObject: self atAddress:offset  Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] ){
+			if ( objectManager > 0x0 ){
+				return GameState_Valid;
+			}			
 		}
 	}
 
@@ -1487,7 +1480,7 @@ typedef struct NameObjectStruct{
 	// char decline in progress = 8
 	// char rename in progress = 7
 	// game loading = 10?
-	// game loaded = 0
+	// game loaded = 0 (it can also be 0 when we're on the login screen :( )
 	
 	// LoginState - charselect, login, charcreate, patchdownload		
 	

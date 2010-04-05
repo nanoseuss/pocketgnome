@@ -51,8 +51,12 @@
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
 #define DidLoadViewInMainWindowNotification @"DidLoadViewInMainWindowNotification"
 
-BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
+#define GameState_Unknown		-1
+#define GameState_LoggingIn		0
+#define GameState_Valid			1
+#define GameState_Loading		2
 
+BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 
 @interface Controller : NSObject <GrowlApplicationBridgeDelegate> {
     IBOutlet PlayerDataController	*playerData;
