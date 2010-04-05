@@ -1258,7 +1258,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: _cmd withObject: state afterDelay: delayTime];
 		return;
     }
-	
+
 	// We don't want to cast if our GCD is active!
 	if ( [spellController isGCDActive] ) {
 		log(LOG_DEV, @"GCD is active, trying again shortly...");
@@ -1986,7 +1986,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 	// verify delays
-	float delayTime = 2.0;
+	float delayTime = 2.5;
 	if (isNode) delayTime = 5.0;
 	
 	log(LOG_LOOT, @"Looting : %@m", unit);
@@ -2161,13 +2161,27 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.lastAttemptedUnitToLoot = nil;
 	}
 
-	// Allow the lute to fade
 	float delay = 0.5;
-	if (wasNode) delay = 1.5;
+
+	// If this was the last item in the list
+	if ( ![_mobsToLoot count] && !wasNode) {
+		
+		// Do this so that your reads can refresh and the GCD check don't fail if you get ambushed.
+		// This is only a temp solution, but it also solves the bugged casting position after you have looted
+		[movementController stepForward];
+		
+		// reset the loot scanner!
+		[self resetLootScanIdleTimer];
+		
+		// Since we stepped forward we can ignore the delay
+		delay = 0.1;
+	}
+	
+	// Allow the lute to fade
+	if (wasNode) delay = 0.6;
 
 	self.wasLootWindowOpen = NO;
 	self.evaluationInProgress = nil;
-	[self resetLootScanIdleTimer];
 	
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
@@ -2213,13 +2227,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_DEV, @"Ignoring combat with %@ since we're set to ignore combat while flying.", unit);
 		return;
 	}
-	
-	self.evaluationInProgress = nil;
 
 	// start a combat procedure if we're not in one!
 	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
 
+		// Do this so that your reads can refresh and the GCD check don't fail if you get ambushed.
+		// This is only a temp solution, but it also solves the bugged casting position after you have looted
+		if (self.evaluationInProgress) [movementController stepForward];
+
+		self.evaluationInProgress = nil;
+		
 		// If it's a player attacking us and we're on a mob then lets attack the player!
+		
 		if ( [unit isPlayer] ) {
 			
 			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
@@ -2238,28 +2257,25 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		return;
 
-	} else {
-		// We are already in combat
+	} 
+	
+	// We are already in combat
 		
-		// If it's a player attacking us and we're on a mob then lets attack the player!
-		if ( ( [[combatController castingUnit] isKindOfClass: [Mob class]] || [[combatController castingUnit] isPet] ) &&
+	// If it's a player attacking us and we're on a mob then lets attack the player!
+	if ( ( [[combatController castingUnit] isKindOfClass: [Mob class]] || [[combatController castingUnit] isPet] ) &&
 			[combatController combatEnabled] &&
 			!theCombatProfile.healingEnabled &&
 			[unit isPlayer]) {
 			
-			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
+		log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
 			
-			[self cancelCurrentProcedure];		
-			[self actOnUnit:unit];
-			
-			return;
-			
-		}
-		
+		[self cancelCurrentProcedure];		
+		[self actOnUnit:unit];
+		return;
 	}
-
+	
 	log(LOG_DEV, @"Already in combat procedure! Not acting on unit");
-
+	return;
 }
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
@@ -2278,17 +2294,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [playerController isDead] ) return;
 
-	// if we're already looting lets not interfere
-//	if ( [[controller currentStatus] isEqualToString: @"Bot: Looting"] || [[controller currentStatus] isEqualToString: @"Bot: Skinning"]) {
 	if ( [self evaluationInProgress] ) {
 		log(LOG_DEV, @"Skipping post combat since we're already doing something.");
 		return;
-	} else
+	}
+	
 	if (self.doLooting) {
 		// Pause to wait for mobs to become lootable
 		log(LOG_DEV, @"Pausing a moment to allow mobs to become lootable.");
-		usleep(100000);
+		usleep(900000);
 	}
+	
 	// start post-combat after specified delay
 	
 	// This is an odd situation that can occur (still in CombatProcedure when we leave combat)
@@ -2802,7 +2818,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) )log(LOG_COMBAT, @"Reached melee range with %@", object);
 	
 	// Back to evaluation
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	
 	return;
 }
@@ -3395,7 +3411,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for Mining and Herbalism");
 	
 	Position *playerPosition = [playerController position];
-    if ([movementController moveToObject]) return NO;
+//    if ([movementController moveToObject]) return NO;
 	
 	// check for mining and herbalism
 	NSMutableArray *nodes = [NSMutableArray array];
@@ -3451,8 +3467,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !nodeToLoot || ![nodeToLoot isValid] ) {
 		self.evaluationInProgress=nil;
 		return NO;
-	}
-
+	}	
+	
 	// If we're not supposed to loot this node due to proximity rules
 	BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
 
@@ -3471,10 +3487,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= 3 ) {
 			log(LOG_NODE, @"Unable to loot %@, blacklisting.", self.lastAttemptedUnitToLoot);
-			[self lootUnit:nodeToLoot];
 			[blacklistController blacklistObject:nodeToLoot];
 			self.evaluationInProgress=nil;
-			return NO;			
+			return NO;
 		}
 		
 		self.evaluationInProgress = @"MiningAndHerbalism";

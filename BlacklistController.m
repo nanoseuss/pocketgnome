@@ -325,7 +325,9 @@
 - (void)incrementAttemptForObject:(WoWObject*)obj{
 	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
 	NSNumber *count = [_attemptList objectForKey:guid];
+	
 	if ( count ){
+		
 		count = [NSNumber numberWithInt:[count intValue] + 1];
 	}
 	else{
