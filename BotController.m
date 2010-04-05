@@ -1450,7 +1450,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         // try to be smart about how long we wait
         float delayTime = [playerController castTimeRemaining]/2.0f;
         if(delayTime < RULE_EVAL_DELAY_LONG) delayTime = RULE_EVAL_DELAY_LONG;
-        //PGLog(@"  Player casting. Waiting %.2f to perform next rule.", delayTime);
+        PGLog(@"[Procedure] Player casting. Waiting %.2f to perform next rule.", delayTime);
         
         [self performSelector: _cmd
                    withObject: state 
@@ -1460,7 +1460,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// We don't want to cast if our GCD is active!
 	if ( [spellController isGCDActive] ){
-		//PGLog(@"[Procedure] GCD is active, trying again shortly...");
+		PGLog(@"[Procedure] GCD is active, trying again shortly...");
 		[self performSelector: _cmd
                    withObject: state 
                    afterDelay: RULE_EVAL_DELAY_SHORT];

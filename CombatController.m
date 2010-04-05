@@ -749,7 +749,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		
 		// current target
 		if ( [playerData targetID] == [unit GUID] )
-			weight += 25;
+			weight += 50;
 	}
 	
 	// friendly?

@@ -218,7 +218,7 @@
 		[_mobsKilledDictionary setObject:[NSNumber numberWithInt:count] forKey:entryID];
 	}
 	
-	PGLog(@"[**********] Unit killed: %@ %d times", obj, count);
+	//PGLog(@"[**********] Unit killed: %@ %d times", obj, count);
 }
 
 #pragma mark -

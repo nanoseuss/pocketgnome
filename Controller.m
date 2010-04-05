@@ -212,6 +212,30 @@ static Controller* sharedController = nil;
         PGLog(@"Growl not running.");
     }*/
 	
+	
+	// make sure all the toolbar items are added!
+	
+	BOOL foundChat = NO, foundPvP = NO, foundStats = NO, foundObjects = NO;
+	for ( NSToolbarItem *item in [mainToolbar items] ){
+		
+		if ( [[item itemIdentifier] isEqualToString: [chatLogToolbarItem itemIdentifier]] )
+			foundChat = YES;
+		else if ( [[item itemIdentifier] isEqualToString: [pvpToolbarItem itemIdentifier]] )
+			foundPvP = YES;
+		else if ( [[item itemIdentifier] isEqualToString: [statisticsToolbarItem itemIdentifier]] )
+			foundStats = YES;
+		else if ( [[item itemIdentifier] isEqualToString: [objectsToolbarItem itemIdentifier]] )
+			foundObjects = YES;
+	}
+	
+	if ( !foundChat )
+		[mainToolbar insertItemWithItemIdentifier: [chatLogToolbarItem itemIdentifier] atIndex: 1];
+	if ( !foundPvP )
+		[mainToolbar insertItemWithItemIdentifier: [pvpToolbarItem itemIdentifier] atIndex: 5];
+	if ( !foundStats )
+		[mainToolbar insertItemWithItemIdentifier: [statisticsToolbarItem itemIdentifier] atIndex: 8];
+	if ( !foundObjects )
+		[mainToolbar insertItemWithItemIdentifier: [objectsToolbarItem itemIdentifier] atIndex: 4];
 }
 
 - (void)finalizeUserDefaults {
@@ -228,6 +252,8 @@ static Controller* sharedController = nil;
     [settings removeObjectForKey: @"LicenseEmail"];
     [settings removeObjectForKey: @"LicenseHash"];
     [settings removeObjectForKey: @"LicenseID"];
+	[settings removeObjectForKey: @"DoMounting"];
+	[settings removeObjectForKey: @"MountType"];
     [settings synchronize];
     
     [self toggleGUIScripting: nil];
@@ -242,11 +268,6 @@ static Controller* sharedController = nil;
 	
 	// check for update?
 	//[[SUUpdater sharedUpdater] checkForUpdatesInBackground];
-    
-    // validate game version
-    //if(![self isWoWVersionValid]) {
-    //    NSRunCriticalAlertPanel(@"No valid version of WoW detected!", @"You have version %@ of WoW installed, and this program requires version %@.  There is no gaurantee that this program will work with your version of World of Warcraft.  Please check for an updated version.", @"Okay", nil, nil, [self wowVersionShort], VALID_WOW_VERSION);
-    //}
     
     [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 0.5];
 }
