@@ -108,6 +108,7 @@
 		03FFD59B110CB55A0046AEDF /* InteractObjectAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD599110CB55A0046AEDF /* InteractObjectAction.xib */; };
 		283E08911166E13400DE13C5 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
 		283E089B1166E13900DE13C5 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
+		286CF13E116A2869008C5AEF /* RELEASENOTES in Resources */ = {isa = PBXBuildFile; fileRef = 286CF13D116A2869008C5AEF /* RELEASENOTES */; };
 		28BF8AD01162E3FE00166879 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 28BF8ACF1162E3FE00166879 /* LICENSE */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
@@ -552,6 +553,7 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
 		283E08901166E13400DE13C5 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
+		286CF13D116A2869008C5AEF /* RELEASENOTES */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RELEASENOTES; sourceTree = "<group>"; };
 		28BF8ACF1162E3FE00166879 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
@@ -1172,6 +1174,7 @@
 				7D1B3A940F898D89005CA0CD /* iChat.app */,
 				28BF8ACF1162E3FE00166879 /* LICENSE */,
 				7D1B3A560F89885D005CA0CD /* Mail.app */,
+				286CF13D116A2869008C5AEF /* RELEASENOTES */,
 			);
 			name = WoWWaypoint;
 			sourceTree = "<group>";
@@ -2018,6 +2021,7 @@
 				0352F46611376DA5005B28D6 /* PVP.png in Resources */,
 				03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */,
 				28BF8AD01162E3FE00166879 /* LICENSE in Resources */,
+				286CF13E116A2869008C5AEF /* RELEASENOTES in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
