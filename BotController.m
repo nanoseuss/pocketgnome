@@ -2333,7 +2333,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
 		usleep(500000);
 		
-		if ( [(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable] ) {
+		if ( ( [(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable] ) && ![unit isPet] ) {
 			
 			// mob already in our list? in theory this should never happen (how could we kill a unit twice? lul)
 			if ([_mobsToLoot containsObject: unit]) {
@@ -3596,7 +3596,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)reEnableStart {
     [startStopButton setEnabled: YES];
-    [pvpStartStopButton setEnabled: YES];
 }
 
 - (IBAction)startStopBot: (id)sender {
@@ -5864,6 +5863,56 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
     [[NSSound soundNamed: @"alarm"] play];
 }
 
+#pragma mark Login
+
+- (void)login{
+	
+	/*
+	 
+	 Though process - verify
+	 
+	 
+	 */
+	
+	int gameState = [controller gameState];
+	
+	// yay!
+	if ( gameState == GameState_LoggingIn ){
+		
+		MemoryAccess *memory = [controller wowMemoryAccess];
+		if ( memory && [memory isValid] ){
+			UInt32 offset = [offsetController offset:@"LoginState"];
+			char state[21];
+			state[20] = 0;
+			if ( [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&state BufLength: sizeof(state)-1] ){
+				
+				NSString *stateAsString = [NSString stringWithUTF8String: state];
+				if ( [stateAsString length] ){
+					
+					if ( [stateAsString isEqualToString:@"login"] ){
+						PGLog(@"[Login] We're at the login screen! Yay!");
+						
+						// here we want to check to see if we have already been logged in w/this account (if so, the username will still be there!)
+						NSString *user = @"test";
+						NSString *pass = @"pass";
+						
+						
+					}	
+				}
+			}
+		}
+	}
+	else{
+		PGLog(@"[Login] Player is already logged in? Current state: %d", gameState);
+	}
+	
+
+	
+	
+
+	
+	
+}
 
 
 @end
