@@ -219,7 +219,6 @@
 	self.startDate = nil;
 	_unitToLoot = nil;
 	_mobToSkin = nil;
-	_isCurrentlyLooting = NO;
 	_wasLootWindowOpen = NO;
 	_shouldFollow = YES;
 	_lastUnitAttemptedToHealed = nil;
@@ -236,6 +235,7 @@
 	_lastSpellCast = 0;
 	_mountAttempt = 0;
 	_movingTowardMobCount = 0;
+	_movingTowardNodeCount = 0;
 	_lootDismountCount = [[NSMutableDictionary dictionary] retain];
 	_mountLastAttempt = nil;
 	castingUnit	= nil;
@@ -342,7 +342,6 @@
 @synthesize evaluationInProgress = _evaluationInProgress;
 @synthesize mobToSkin = _mobToSkin;
 @synthesize unitToLoot = _unitToLoot;
-@synthesize isCurrentlyLooting = _isCurrentlyLooting;
 @synthesize wasLootWindowOpen = _wasLootWindowOpen;
 @synthesize lastAttemptedUnitToLoot = _lastAttemptedUnitToLoot;
 @synthesize minSectionSize;
@@ -1127,8 +1126,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if we did the Patrolling procdure, go back to evaluate
     if([[state objectForKey: @"Procedure"] isEqualToString: PatrollingProcedure]) {
 		// Pause a moment for a potential mount cast
-		usleep(1000000);
-		[self jumpIfAirMountOnGround];
+		usleep(800000);
+		
+		// If we're mounted let's dp what ever cool thing our jump action activates whether we're air mounted or not.
+		if ( [[playerController player] isMounted] ) {
+			[movementController jump];
+			usleep(300000);
+		}
+
 		self.evaluationInProgress = nil;
 		[self evaluateSituation];
 	}
@@ -1913,11 +1918,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)lootUnit: (WoWObject*) unit{
 
-	if ( self.isCurrentlyLooting ) return;
-
-
-	self.evaluationInProgress = @"Loot";
-	
 	// are we still in the air?  shit we can't loot yet!
 	if ( ![[playerController player] isOnGround] ) {
 		
@@ -1944,22 +1944,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	BOOL isNode = [unit isKindOfClass: [Node class]];
 
-	self.isCurrentlyLooting	= YES;
 	self.wasLootWindowOpen	= NO;
 
 	// looting?
 	Position *playerPosition = [playerController position];
 	float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
 	[movementController turnTowardObject: unit];
-	[controller setCurrentStatus: @"Bot: Looting"];
 		
 	self.lastAttemptedUnitToLoot = unit;
-		
+
 	if ( ![unit isValid] || ( distanceToUnit > 5.0f ) ) {
 		log(LOG_LOOT, @"Unit not within 5 yards (%d) or is invalid (%d), unable to loot - removing %@ from list", distanceToUnit > 5.0f, ![unit isValid], unit );
 		// remove from list
 		if ( ![unit isKindOfClass: [Node class]] ) [_mobsToLoot removeObject: unit];
-		self.isCurrentlyLooting	= NO;
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return;
 	}
@@ -2050,7 +2047,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		self.mobToSkin = nil;
 		self.unitToLoot = nil;
-		self.isCurrentlyLooting = NO;
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return;
     }
@@ -2101,8 +2097,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 // This is called when all items have actually been looted (the loot window will NOT be open at this point)
 - (void)itemsLooted: (NSNotification*)notification {
 	if ( !self.isBotting ) return;
-	
-	self.evaluationInProgress = @"Loot";
 
 	BOOL wasNode = NO;
 	
@@ -2165,7 +2159,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// Reset our attempt variables!
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
-		self.isCurrentlyLooting = NO;
 	}
 
 	// Allow the lute to fade
@@ -2174,9 +2167,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	self.wasLootWindowOpen = NO;
 	self.evaluationInProgress = nil;
-	self.isCurrentlyLooting = NO;
-	
 	[self resetLootScanIdleTimer];
+	
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
 
@@ -2223,8 +2215,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	self.evaluationInProgress = nil;
-	self.isCurrentlyLooting = NO;
-	
+
 	// start a combat procedure if we're not in one!
 	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
 
@@ -2801,28 +2792,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark [Input] MovementController
 
-- (void)reachedObject: (NSNotification*)notification{
+- (void)reachedObject: (NSNotification*)notification {
 	
 	WoWObject *object = [notification object];
+
+	log(LOG_DEV, @"Reached object called for %@", object);
+
+	// if it's a player, or a non-dead NPC, we must be doing melee combat
+	if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) )log(LOG_COMBAT, @"Reached melee range with %@", object);
 	
-	// reached a node!
-	if ( [object isKindOfClass: [Node class]] ){
-		// dismount if we need to
-		if ( [[playerController player] isMounted] ) [movementController dismount];
-		
-		if (![[self evaluationInProgress] isEqualToString: @"Loot"]) [self lootUnit:object];
-		
-	} else if ( [object isNPC] && [(Unit*)object isDead] ){
-		
-		if (![[self evaluationInProgress] isEqualToString: @"Loot"]) [self lootUnit:object];
-		
-	} else {
-		// if it's a player, or a non-dead NPC, we must be doing melee combat
-		if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) ){
-			log(LOG_COMBAT, @"Reached melee range with %@", object);
-			return;
-		}
-	}
+	// Back to evaluation
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
+	
+	return;
 }
 
 // should the notification be here?  or in movementcontroller?
@@ -3309,127 +3291,95 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// We don't loot in combat
 	if ([[playerController player] isInCombat]) return NO;
 
-	log(LOG_EVALUATE, @"Evaluating for Loot: isCurrentlyLooting: %d)", self.isCurrentlyLooting);
-
-	if ( self.evaluationInProgress != @"Loot") self.isCurrentlyLooting = NO;
+	log(LOG_EVALUATE, @"Evaluating for Loot");
 
     // get potential units and their distances
     Mob *mobToLoot	= [self mobToLoot];
 	
-    if ( !mobToLoot && !self.mobToSkin && !self.unitToLoot && !self.isCurrentlyLooting) {
+    if ( !mobToLoot && !self.mobToSkin && !self.unitToLoot) {
 
-		if ( ![self evaluationInProgress] && [self lootScan] ) {
+		// If we're outta mobs to loot and the loot timer has been incremented at least once
+		if ( [self lootScan] ) {
 			mobToLoot	= [self mobToLoot];
 		} else {
 			self.evaluationInProgress = nil;
 			return NO;
 		}
-
 	}
 	
 	Unit *unitToCheck	= [self mobToLoot];
 	// If it's a node then we'll leave it to the mining evaluation
 	if ( [unitToCheck isKindOfClass: [Node class]] ) return NO;
 	
-	if (!mobToLoot) {
+	if (!mobToLoot || ![mobToLoot isValid] ) {
 		if ([_mobsToLoot count]) [_mobsToLoot removeAllObjects];
 		self.evaluationInProgress = nil;
 		return NO;
 	}
-	
+
 	Position *playerPosition = [playerController position];
 	float mobToLootDist	    = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
 	
-	 Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
-    float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
+	Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
+	float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
     
     // if theres a unit that needs our attention that's closer than the lute.
-    if ( mobToLootDist > unitToActOnDist && [playerController isHostileWithFaction: [unitToActOn factionTemplate]]) {
+    if ( mobToLootDist > unitToActOnDist && [playerController isHostileWithFaction: [unitToActOn factionTemplate]]) {		
 		log(LOG_LOOT, @"Mob is too close to loot: %0.2f > %0.2f", mobToLootDist, unitToActOnDist);
-		self.isCurrentlyLooting = NO;
 		self.evaluationInProgress = nil;
 		return NO;
 	}
 
-	// if the mob is close, just loot it!
+	// Close enough to loot it
 	if ( mobToLootDist <= 5.0 ) {
-		self.evaluationInProgress = @"Loot";
-		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.3f];
-		return YES;
-	} else
-		// do we need to start moving to it?
-		if ( mobToLoot != [movementController moveToObject] ) {
-			
-			if ( [mobToLoot isValid] && (mobToLootDist < INFINITY) ) {
-				
-				int attempts = [blacklistController attemptsForObject:mobToLoot];
-				// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
-
-				if ( self.lastAttemptedUnitToLoot == mobToLoot && attempts >= 3 ){
-					log(LOG_LOOT, @"Unable to loot %@ after %d attempts, removing from loot list", self.lastAttemptedUnitToLoot, attempts);
-					[_mobsToLoot removeObject: self.unitToLoot];
-					self.evaluationInProgress = nil;
-					self.isCurrentlyLooting = NO;
-					[self evaluateSituation];
-				} else {
-					_movingTowardMobCount = 0;
-					log(LOG_DEV, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
-					[movementController moveToObject: mobToLoot];		// andNotify: YES
-					
-					if ( ![movementController isMoving] ) [movementController resumeMovement];
-					self.isCurrentlyLooting = NO;
-					
-//					if (theCombatProfile.partyEnabled && ![self partyFollowSuspended] ) [self evaluateSituation];
-					[self evaluateSituation];
-				}
-				return YES;
-			} else {
-				log(LOG_LOOT, @"Mob found, but either isn't valid (%d), is too far away (%d)", [mobToLoot isValid], (mobToLootDist < INFINITY) );
-				self.evaluationInProgress = nil;
-				self.isCurrentlyLooting = NO;
-				return NO;
-			}
-		} else {
-			_movingTowardMobCount++;
-			self.evaluationInProgress = @"Loot";
-			
-			if (theCombatProfile.partyEnabled && ![self partyFollowSuspended] ) {
-				// gives us 6 seconds to move to the unit
-				if ( _movingTowardMobCount <= 10 ) {
-					log(LOG_DEV, @"[Party] We're already moving toward %@ (%@) %d", mobToLoot, [movementController moveToObject], _movingTowardMobCount);
-					self.isCurrentlyLooting = NO;
-					[self evaluateSituation];
-				} else {
-					log(LOG_LOOT, @"Unable to reach %@, removing from loot list", mobToLoot);
-					[_mobsToLoot removeObject:mobToLoot];
-					self.evaluationInProgress = nil;
-					self.isCurrentlyLooting = NO;
-					[self evaluateSituation];
-					return NO;
-				}
-				return YES;
-			} else 
-			if (self.theRouteSet) {
-				// gives us 6 seconds to move to the unit
-				if ( _movingTowardMobCount <= 60 ){
-					log(LOG_DEV, @"We're already moving toward %@ (%@) %d", mobToLoot, [movementController moveToObject], _movingTowardMobCount);
-					if ( ![movementController isMoving] ) [movementController resumeMovement];
-					self.isCurrentlyLooting = NO;
-					[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-				} else {
-					log(LOG_LOOT, @"Unable to reach %@, removing from loot list", mobToLoot);
-					[movementController resetMoveToObject];
-					self.evaluationInProgress = nil;
-					[_mobsToLoot removeObject:mobToLoot];
-					
-					[self evaluateSituation];
-				}
-				return YES;
-			}
+		
+		// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
+		int attempts = [blacklistController attemptsForObject:mobToLoot];
+		
+		if ( self.lastAttemptedUnitToLoot == mobToLoot && attempts >= 3 ){
+			log(LOG_LOOT, @"Unable to loot %@ after %d attempts, removing from loot list", self.lastAttemptedUnitToLoot, attempts);
+			[_mobsToLoot removeObject: self.unitToLoot];
+			self.evaluationInProgress = nil;
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+			return YES;
 		}
+		[controller setCurrentStatus: @"Bot: Looting"];		
+		self.evaluationInProgress = @"Loot";
+		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.1f];
+		return YES;
+	}
+
 	
-	self.evaluationInProgress = nil;
-	return NO;
+	// Move to it	
+	if ( self.evaluationInProgress != @"Loot") {
+		log(LOG_DEV, @"Found mob to loot: %@ at dist %.2f", mobToLoot, mobToLootDist);
+		_movingTowardMobCount = 0;
+	} else {
+		_movingTowardMobCount++;
+		self.evaluationInProgress = @"Loot";
+	}
+
+			
+	// have we exceeded the amount of attempts to move to the unit?
+	// attempts... no longer seconds
+	if ( _movingTowardMobCount > 4 ){
+		log(LOG_LOOT, @"Unable to reach %@, removing from loot list", mobToLoot);
+		[movementController resetMoveToObject];
+		self.evaluationInProgress = nil;
+		[_mobsToLoot removeObject:mobToLoot];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		return YES;
+	}
+	
+	if ( [movementController isMoving] ) [movementController stopMovement];
+	[controller setCurrentStatus: @"Bot: Moving to Loot"];
+	
+	if ( ![movementController moveToObject: mobToLoot] ) 
+		// In the off chance that we're unable to move to it
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+	
+	return YES;
+		
 }
 
 - (BOOL)evaluateForMiningAndHerbalism {
@@ -3457,6 +3407,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// If we've no node then skip this
 	if ( ![nodes count] ) {
+		self.wasLootWindowOpen = NO;
 		self.evaluationInProgress=nil;
 		return NO;
 	}
@@ -3504,24 +3455,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If we're not supposed to loot this node due to proximity rules
 	BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
+
 	if ( nearbyScaryUnits ) {
 		self.evaluationInProgress=nil;
 		[blacklistController blacklistObject:nodeToLoot];
 		return NO;
 	}
 
-	self.evaluationInProgress = @"MiningAndHerbalism";
-	if ( ![[controller currentStatus] isEqualToString: @"Bot: Moving to node"] ) {
-		[movementController stopMovement];
-		[controller setCurrentStatus: @"Bot: Moving to node"];
-	}
-	
 	log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
-
-	int attempts = [blacklistController attemptsForObject:nodeToLoot];
 
 	// Close enough to loot it
 	if ( nodeDist <= DistanceUntilDismountByNode ) {
+		
+		int attempts = [blacklistController attemptsForObject:nodeToLoot];
 
 		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= 3 ) {
 			log(LOG_NODE, @"Unable to loot %@, blacklisting.", self.lastAttemptedUnitToLoot);
@@ -3530,13 +3476,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			self.evaluationInProgress=nil;
 			return NO;			
 		}
+		
 		self.evaluationInProgress = @"MiningAndHerbalism";
 		[controller setCurrentStatus: @"Bot: Working node"];
 		[self lootUnit:nodeToLoot];
 		return YES;
 	}
 
-		
 	// if it's potentially unreachable or at a distance lets make sure we're mounted
 	// We're putting this here so we can run this check prior to the patrol evaluation
 	// This allows us to disregard the mounting if it's not in our behavior (low levels or what ever)
@@ -3559,12 +3505,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
-	self.evaluationInProgress = @"MiningAndHerbalism";
-	log(LOG_DEV, @"Moving to node...");
+	
+	// Move to it	
+	if ( self.evaluationInProgress != @"MiningAndHerbalism") {
+		log(LOG_DEV, @"Moving to node...");
+		_movingTowardNodeCount = 0;
+	} else {
+		_movingTowardNodeCount++;
+		self.evaluationInProgress = @"MiningAndHerbalism";
+	}
+	
+	// have we exceeded the amount of attempts to move to the node?
+	if ( _movingTowardNodeCount > 4 ){
+		log(LOG_NODE, @"Unable to reach %@!, blacklisting.", nodeToLoot);
+		[blacklistController blacklistObject:nodeToLoot];
+		[movementController resetMoveToObject];
+		self.evaluationInProgress = nil;
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		return YES;
+	}
+	
+	if ( [movementController isMoving] ) [movementController stopMovement];
+	[controller setCurrentStatus: @"Bot: Moving to node"];
 
 	// Safe to move to the node!
-	[movementController moveToObject: nodeToLoot];		//andNotify: YES
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+	if ( ![movementController moveToObject: nodeToLoot] ) 
+		// If for some reason we're un able to move to the node lets evaluate
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+	
 	return YES;
 }
 
@@ -3794,10 +3762,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [self evaluateForRegen] ) return YES;
 
+	if ( [self evaluateForLoot] ) return YES;
+
 	// Increment the loot scan idle timer if it's not already past it's cut off
 	if (_lootScanIdleTimer <= (20*10)) _lootScanIdleTimer++;
-
-	if ( [self evaluateForLoot] ) return YES;
 
 	if ( [self evaluateForFishing] ) return YES;
 	
@@ -4190,8 +4158,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootScanIdleTimer	= 0;
 		
 		self.mobToSkin = nil;
-		self.unitToLoot = nil;
-		self.isCurrentlyLooting = NO;		
+		self.unitToLoot = nil;	
 		
 		// Party resets
 		[self followStepsClear];
@@ -5009,7 +4976,7 @@ NSMutableDictionary *_diffDict = nil;
 // check if units are nearby
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
 	if ( doMobCheck ){
-		log(LOG_GENERAL, @"[Bot] Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
+		log(LOG_DEV, @"Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
 		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
 		if ( [mobs count] ){
 			log(LOG_NODE, @"There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);

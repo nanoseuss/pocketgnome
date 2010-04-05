@@ -601,11 +601,8 @@ typedef enum MovementState{
 	
 	// evaluate situation - should we do something?
 	if ( [botController isBotting] && !self.moveToObject ){
-		if ( [botController evaluateSituation] ){
-			// don't need to reset our movement timer b/c it will be done when we're told to move somewhere else!
-			log(LOG_MOVEMENT, @"Action taken, not checking movement");
-			return;
-		}
+		log(LOG_DEV, @"Action taken, not checking movement, checking evaluation.");
+		if ( [botController evaluateSituation] ) return;
 	}
 	
 	// check to see if we're near our target
