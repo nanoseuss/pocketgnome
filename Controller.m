@@ -124,6 +124,7 @@ typedef enum {
 								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey: @"SUFeedURL"];
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
 }
