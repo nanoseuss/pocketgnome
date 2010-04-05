@@ -38,6 +38,7 @@
 
 @interface MovementController ()
 @property (readwrite, retain) WoWObject *moveToObject;
+@property (readwrite, retain) Position *moveToPosition;
 @property (readwrite, retain) Waypoint *destinationWaypoint;
 @property (readwrite, retain) NSString *currentRouteKey;
 @property (readwrite, retain) Route *currentRoute;
@@ -118,6 +119,7 @@ typedef enum MovementState{
 		_currentRouteKey = nil;
 		
 		_moveToObject = nil;
+		_moveToPosition = nil;
 		_lastAttemptedPosition = nil;
 		_destinationWaypoint = nil;
 		_lastAttemptedPositionTime = nil;
@@ -163,6 +165,7 @@ typedef enum MovementState{
 @synthesize currentRouteKey = _currentRouteKey;
 @synthesize currentRoute = _currentRoute;
 @synthesize moveToObject = _moveToObject;
+@synthesize moveToPosition = _moveToPosition;
 @synthesize destinationWaypoint = _destinationWaypoint;
 @synthesize lastAttemptedPosition = _lastAttemptedPosition;
 @synthesize lastAttemptedPositionTime = _lastAttemptedPositionTime;
@@ -210,10 +213,18 @@ typedef enum MovementState{
 		[_moveToObject release]; _moveToObject = nil;
 		return NO;
 	}
-	
+
 	// save and move!
 	self.moveToObject = object;
-	[self moveToPosition:[object position]];
+	
+	// If this is a Node then let's change the position to one just above it
+	if ( [self.moveToObject isKindOfClass: [Node class]] && ![playerData isOnGround]) {
+		self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:([[self.moveToObject position] zPosition]+4.0f)];
+	} else {
+		self.moveToPosition =[object position];
+	}
+	
+	[self moveToPosition: self.moveToPosition];	
 	
 	if ( [self.moveToObject isKindOfClass:[Mob class]] || [self.moveToObject isKindOfClass:[Player class]] ){
 		[self performSelector:@selector(stayWithObject:) withObject:self.moveToObject afterDelay:0.1f];
@@ -516,9 +527,8 @@ typedef enum MovementState{
 	
 	// sanity check
     if ( !position || distance == INFINITY ) {
-        log(LOG_MOVEMENT, @"Invalid waypoint (distance: %f). Ending patrol.", distance);
-
-		// we should do sometihng here! finish route!
+        log(LOG_MOVEMENT, @"Invalid waypoint (distance: %f). Ending patrol.", distance);		
+		[botController evaluateSituation];
         return;
     }
 	
@@ -536,7 +546,7 @@ typedef enum MovementState{
 	
 	// only reset the stuck counter if we're going to a new position
 	if ( ![position isEqual:self.lastAttemptedPosition] ) {
-//		log(LOG_MOVEMENT, @"Resetting stuck counter");
+		log(LOG_DEV, @"Resetting stuck counter");
 		_stuckCounter					= 0;
 	}
 	
@@ -585,6 +595,8 @@ typedef enum MovementState{
 	BOOL isPlayerOnGround = [playerData isOnGround];
 	Position *playerPosition = [playerData position];
 	float playerSpeed = [playerData speed];
+	
+//    Position *destPosition = ( _moveToObject ) ? self.moveToPosition : [_destinationWaypoint position];
     Position *destPosition = ( _moveToObject ) ? [_moveToObject position] : [_destinationWaypoint position];
 	
 	float distanceToDestination = [playerPosition distanceToPosition: destPosition];
@@ -593,7 +605,6 @@ typedef enum MovementState{
     // sanity check, incase something happens
     if ( distanceToDestination == INFINITY ) {
         log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
-		
 		[self resetMovementTimer];
 		// do something here
         return;
@@ -752,6 +763,8 @@ typedef enum MovementState{
 	if (![[botController followUnit] isOnGround]) [botController jumpIfAirMountOnGround];
 	
 	[self resetMovementTimer];
+	
+	self.moveToPosition=position;
 	
 	Position *playerPosition = [playerData position];
     float distance = [playerPosition distanceToPosition: position];
@@ -1003,13 +1016,14 @@ typedef enum MovementState{
 		[self resumeMovement];
 	}
 }
+
 - (void)stepForward{
 // Meant to be used to unstick bad casting spots like when you're facing forward, but getting a 'not facing' error
 	[self moveForwardStart];
-	usleep(100000);
+	usleep(80000);
 	[self moveForwardStop];
-	usleep(100000);
 }
+
 - (BOOL)checkUnitOutOfRange: (Unit*)target {
 	// This is intended for issues like runners, a chance to correct vs blacklist
 	// Hopefully this will help to avoid bad blacklisting which comes AFTER the cast

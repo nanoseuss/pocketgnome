@@ -69,6 +69,7 @@ typedef enum MovementType {
 	int _movementState;
 	
 	WoWObject *_moveToObject;			// current object we're moving to
+	Position *_moveToPosition;
 	
 	BOOL _isMovingFromKeyboard;
 	
@@ -110,6 +111,7 @@ typedef enum MovementType {
 
 // the object we're moving to
 - (WoWObject*)moveToObject;
+- (Position*)moveToPosition;
 
 // reset the move to object and returns true on success
 - (BOOL)resetMoveToObject;

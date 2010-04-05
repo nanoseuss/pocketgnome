@@ -2233,7 +2233,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// Do this so that your reads can refresh and the GCD check don't fail if you get ambushed.
 		// This is only a temp solution, but it also solves the bugged casting position after you have looted
-		if (self.evaluationInProgress) [movementController stepForward];
+		[movementController stepForward];
 
 		self.evaluationInProgress = nil;
 		
