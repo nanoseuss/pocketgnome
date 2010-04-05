@@ -205,11 +205,11 @@
 		totalEnabled++;
 	
 	// don't have the total for random!
-	if ( self.random && totalEnabled != TotalBattlegrounds ){
+	/*if ( self.random && totalEnabled != TotalBattlegrounds ){
 		return NO;
-	}
+	}*/
 	// none enabled
-	else if ( totalEnabled == 0 ){
+	if ( totalEnabled == 0 ){
 		return NO;
 	}
 	
@@ -278,9 +278,6 @@
 		[self.WarsongGulch setChanged:NO];
 	}
 }
-
-// TO DO: prob. need to do an accessor for random, since you need all 6 checked!
-
 
 #pragma mark -
 

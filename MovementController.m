@@ -1133,6 +1133,9 @@ typedef enum MovementState{
                 
             }
         }
+		/*else if ( [self movementType] == MovementType_CTM ){
+			[self setClickToMove:position andType:ctmFaceDestination andGUID:0x0];
+		}*/
 		else{
             if ( printTurnInfo ) PGLog(@"DOING SHARP TURN to %.2f", [playerPosition angleTo: position]);
             [playerData faceToward: position];

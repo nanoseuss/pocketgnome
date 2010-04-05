@@ -436,14 +436,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 		PGLog(@"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
 		
-		// set player facing and establish position
-		//BOOL useSmooth = [movementController useSmoothTurning];
-		
-		//if(!isCasting) [movementController pauseMovement];
 		[movementController turnTowardObject: _castingUnit];
-		//if(!isCasting && !useSmooth) {
-		//	[movementController backEstablishPosition];
-		//}
 	}
 	
 	// ensure unit is our target

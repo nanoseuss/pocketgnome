@@ -62,7 +62,7 @@
 										<object class="NSTextFieldCell" key="NSCell" id="877530466">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">4326400</int>
-											<string key="NSContents">Simply enable the battlegrounds you'd like to run and select a route! (Enable all if you want to do a random)</string>
+											<string key="NSContents">Simply enable the battlegrounds you'd like to run and select a route! (If you don't enable all with random, you will leave non-enabled BGs)</string>
 											<object class="NSFont" key="NSSupport" id="26">
 												<string key="NSName">LucidaGrande</string>
 												<double key="NSSize">11</double>
@@ -144,7 +144,7 @@
 										<object class="NSButtonCell" key="NSCell" id="850967750">
 											<int key="NSCellFlags">-2080244224</int>
 											<int key="NSCellFlags2">0</int>
-											<string key="NSContents">Random battleground (all 6 above must be enabled)</string>
+											<string key="NSContents">Random battleground</string>
 											<object class="NSFont" key="NSSupport" id="1039970681">
 												<string key="NSName">LucidaGrande</string>
 												<double key="NSSize">13</double>
@@ -2374,22 +2374,6 @@
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: validBehavior</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="133707996">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled: validBehavior</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">validBehavior</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">695</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: validBehavior</string>
 						<reference key="source" ref="510892672"/>
 						<reference key="destination" ref="1001"/>
 						<object class="NSNibBindingConnector" key="connector">
@@ -2466,210 +2450,6 @@
 						</object>
 					</object>
 					<int key="connectionID">717</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled2: currentBehavior.AlteracValley.enabled</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="533497940">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled2: currentBehavior.AlteracValley.enabled</string>
-							<string key="NSBinding">enabled2</string>
-							<string key="NSKeyPath">currentBehavior.AlteracValley.enabled</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-								</object>
-							</object>
-							<reference key="NSPreviousConnector" ref="133707996"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">725</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled3: currentBehavior.ArathiBasin.enabled</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="292748918">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled3: currentBehavior.ArathiBasin.enabled</string>
-							<string key="NSBinding">enabled3</string>
-							<string key="NSKeyPath">currentBehavior.ArathiBasin.enabled</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-								</object>
-							</object>
-							<reference key="NSPreviousConnector" ref="533497940"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">727</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled4: currentBehavior.EyeOfTheStorm.enabled</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="544940288">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled4: currentBehavior.EyeOfTheStorm.enabled</string>
-							<string key="NSBinding">enabled4</string>
-							<string key="NSKeyPath">currentBehavior.EyeOfTheStorm.enabled</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-								</object>
-							</object>
-							<reference key="NSPreviousConnector" ref="292748918"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">729</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled5: currentBehavior.IsleOfConquest.enabled</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="206628640">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled5: currentBehavior.IsleOfConquest.enabled</string>
-							<string key="NSBinding">enabled5</string>
-							<string key="NSKeyPath">currentBehavior.IsleOfConquest.enabled</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-								</object>
-							</object>
-							<reference key="NSPreviousConnector" ref="544940288"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">731</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled6: currentBehavior.StrandOfTheAncients.enabled</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="848555886">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled6: currentBehavior.StrandOfTheAncients.enabled</string>
-							<string key="NSBinding">enabled6</string>
-							<string key="NSKeyPath">currentBehavior.StrandOfTheAncients.enabled</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-								</object>
-							</object>
-							<reference key="NSPreviousConnector" ref="206628640"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">733</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled7: currentBehavior.WarsongGulch.enabled</string>
-						<reference key="source" ref="878068473"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="878068473"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">enabled7: currentBehavior.WarsongGulch.enabled</string>
-							<string key="NSBinding">enabled7</string>
-							<string key="NSKeyPath">currentBehavior.WarsongGulch.enabled</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-									<integer value="-1"/>
-								</object>
-							</object>
-							<reference key="NSPreviousConnector" ref="848555886"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">735</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -3794,7 +3574,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{491, 414}, {749, 445}}</string>
+					<string>{{471, 381}, {749, 445}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{353, 328}, {625, 477}}</string>
@@ -3948,7 +3728,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">755</int>
+			<int key="maxID">776</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

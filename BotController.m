@@ -3401,18 +3401,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// not a valid pvp behavior
 	if ( self.pvpBehavior && ![self.pvpBehavior isValid] ){
-		if ( [self.pvpBehavior random] ){
-			PGLog(@"You must have all battlegrounds enabled in your PvP behavior to do random!", zone);
-			NSBeep();
-			NSRunAlertPanel(@"Enable all battlegrounds", @"You must have all battlegrounds enabled in your PvP behavior to do random!", @"Okay", NULL, NULL);
-			return;
-		}
-		else{
-			PGLog(@"You need at least 1 battleground enabled in your PvP behavior to do PvP!", zone);
-			NSBeep();
-			NSRunAlertPanel(@"Enable 1 battleground", @"You need at least 1 battleground enabled in your PvP behavior to do PvP!", @"Okay", NULL, NULL);
-			return;
-		}
+		PGLog(@"You need at least 1 battleground enabled in your PvP behavior to do PvP!", zone);
+		NSBeep();
+		NSRunAlertPanel(@"Enable 1 battleground", @"You need at least 1 battleground enabled in your PvP behavior to do PvP!", @"Okay", NULL, NULL);
+		return;
 	}
 	
 	// TO DO: verify starting routes for ALL PvP routes
@@ -5639,9 +5631,6 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 	self.isPvPing = NO;
 	
 	[self stopBotActions];
-	
-    self.pvpLeaveInactive = NO;
-    self.pvpPlayWarning = NO;
 }
 
 
@@ -5781,8 +5770,10 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 			
 			// in theory this shouldn't happen as there should be enough error check before we start the bot (although I guess someone could change the PvP behavior while it's running)
 			if ( ![self pvpSetEnvironmentForZone] ){
-				PGLog( @" no valid environment found for pvp! Nooo! Starting will fail :(");
-				[controller setCurrentStatus: @"PvP: Unable to start PvP, check log files"];
+				PGLog(@"[PvP] No valid environment found for pvp! Leaving battleground.");
+				[controller setCurrentStatus: @"PvP: No route found, leaving battleground"];
+				
+				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];				
 			}
 			[self performSelector: @selector(pvpStart) withObject: nil afterDelay: 5.0f];
 		}
