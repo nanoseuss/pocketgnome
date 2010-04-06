@@ -4,9 +4,10 @@
 
 [list]Behaviors 
 [*]Increased weight for current target, hopefully it will switch less
-[*]You will now re-mount when moving to a new node (if it's in patrolling)
-[*]Fixed bug where PG would stop engaging enemies after it failed looting a mob's pet[/list]
+[*]You will now re-mount when moving to a new node (if it's in patrolling)[/list]
 
+[list]Routes 
+[*]Fixed bug with the action "Switch route" where it would switch the route but stop moving after that[/list]
 
 [b]Pocket Gnome 1.4.5 (Build 345) Release Notes [/b]
 

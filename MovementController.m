@@ -279,11 +279,13 @@ typedef enum MovementState{
 	if ( ( [playerData isGhost] || [playerData isDead] ) && ![botController isPvPing] ){
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+        self.destinationWaypoint = nil;
 	}
 	// normal route
 	else{
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+        self.destinationWaypoint = nil;
 	}
 	
 	// set our jump time
