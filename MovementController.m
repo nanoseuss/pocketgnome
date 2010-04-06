@@ -303,7 +303,11 @@ typedef enum MovementState{
 	else{
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+		
 	}
+
+	// reset destination waypoint to make sure we re-evaluate where to go
+	self.destinationWaypoint = nil;
 	
 	// set our jump time
 	self.lastJumpTime = [NSDate date];

@@ -4778,6 +4778,7 @@ NSMutableDictionary *_diffDict = nil;
 	
 	// don't need this if we're botting since we're doing things!
 	if ( self.isBotting && 
+		
 		// Addition to kick in AFK when in party mode on flying mounts
 		( ![movementController movementType] == MovementType_CTM || ![antiAFKButton state] || [movementController isMoving] || self.evaluationInProgress) 
 		) return;
