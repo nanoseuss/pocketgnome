@@ -1201,6 +1201,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int actionsPerformed = [[state objectForKey: @"ActionsPerformed"] intValue];
 	int inCombatNoAttack = [[state objectForKey: @"InCombatNoAttack"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
+
+	// Get our current target so we can avoid retargeting
+	GUID targetID = [playerController targetID];
+	Unit *targetUnit = [[MobController sharedController] mobWithGUID: targetID];
 	
 	if ( rulesTried == nil ) {
 		//	log(LOG_PROCEDURE, @"Creating dictionary to track our tried rules!");
@@ -1562,15 +1566,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// target yourself
 					if ( [rule target] == TargetSelf ) {
 						log(LOG_DEV, @"Targeting self");
-						
 						[playerController targetGuid:[[playerController player] GUID]];
-						
-//						[playerController setPrimaryTarget: [playerController player]];
 					} else 
 					if ( [rule target] != TargetNone ) {
-						self.castingUnit = target;
-						[playerController targetGuid:[target GUID]];
-//						[playerController setPrimaryTarget: target];
+						self.castingUnit = target;						
+						// If this is a combat procedure then targeting is handled by stayWithUnit
+						if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) [playerController targetGuid:[target GUID]];
 					}
 					
 					// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
@@ -1643,7 +1644,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			// Let's retarget ourselves so it doesn't look like we're in love
 			[playerController targetGuid:[[playerController player] GUID]];
-//			[playerController setPrimaryTarget: [playerController player]];
 
 		}
 		// The idea is that this will improve decision making for healers and keep the bot from looking stupid
@@ -1657,7 +1657,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			// Let's retarget ourselves so it doesn't look like we're in love
 			[playerController targetGuid:[[playerController player] GUID]];
-//			[playerController setPrimaryTarget: [playerController player]];
 
 		}
 
@@ -1991,8 +1990,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 	// verify delays
-	float delayTime = 2.5;
-	if (isNode) delayTime = 5.0;
+	float delayTime = 1.3;
+	if (isNode) delayTime = 4.5;
 	
 	log(LOG_LOOT, @"Looting : %@m", unit);
 	
@@ -2239,7 +2238,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// Do this so that your casting position isn't  bugged if you get ambushed.
 		// This is only a temp solution, but it also solves the bugged casting position for now
-		[movementController stepForward];
+		if ( ![movementController isMoving] ) [movementController stepForward];
 
 		self.evaluationInProgress = nil;
 		
@@ -3069,6 +3068,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForCombatContinuation {
 
+	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
+	
 //    if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");

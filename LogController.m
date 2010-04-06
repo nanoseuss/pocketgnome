@@ -39,6 +39,7 @@
 		if (type_s == LOG_FUNCTION) return NO;
 		if (type_s == LOG_MEMORY) return NO;
 		if (type_s == LOG_PROCEDURE) return NO;
+		if (type_s == LOG_CONTROLLER) return NO;
 
 	}
 
