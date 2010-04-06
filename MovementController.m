@@ -273,6 +273,8 @@ typedef enum MovementState{
 - (void)setPatrolRouteSet: (RouteSet*)route{
 	PGLog(@"[Move] Switching from route %@ to %@", _currentRouteSet, route);
 	
+	[self resetMovementState];
+	
 	self.currentRouteSet = route;
 	
 	// player is dead
@@ -285,9 +287,6 @@ typedef enum MovementState{
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 	}
-	
-    // reset destination waypoint to make sure we re-evaluate where to go
-    self.destinationWaypoint = nil;
 
     // set our jump time
 	self.lastJumpTime = [NSDate date];

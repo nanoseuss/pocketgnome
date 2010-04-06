@@ -33,7 +33,7 @@
 
 @interface OffsetController (Internal)
 
-- (void)memoryChunk;
+- (void)loadEveryOffset;
 - (void)findAllOffsets: (Byte*)data Len:(unsigned long)len StartAddress:(unsigned long)startAddress;
 
 - (unsigned long) dwFindPattern: (unsigned char*)bMask 
@@ -93,7 +93,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 }
 
 - (void)memoryIsValid: (NSNotification*)notification {
-    [self memoryChunk];
+    [self loadEveryOffset];
 }
 
 // new and improved offset finder, will loop through our plist file to get the signatures! yay! Easier to store PPC/Intel
@@ -246,7 +246,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	}
 }
 
-- (void)memoryChunk{
+- (void)loadEveryOffset{
+	
 	// don't need to load them more than once!
 	if ( _offsetsLoaded )
 		return;

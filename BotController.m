@@ -1974,6 +1974,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 // called when ONE item is looted
 - (void)itemLooted: (NSNotification*)notification {
 	
+	if ( !self.isBotting )
+		return;
+	
 	PGLog(@"[Loot] Looted %@", [notification object]);
 	
 	// should we try to use the item?
@@ -2371,7 +2374,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		[self lootUnit:object];
 	}
-	else if ( [object isNPC] && [(Unit*)object isDead] ){
+	else if ( [object isNPC] && [(Unit*)object isDead] && self.doLooting ){
 		[self lootUnit:object];
 	}
 	else{
@@ -2526,6 +2529,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 - (Mob*)mobToLoot {
+	
+	if ( !self.doLooting )
+		return nil;
 	
     if ( [_mobsToLoot count] ){
     
@@ -3512,14 +3518,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// normal, non-PvP
 		else if ( self.theRouteSet ) {
 			[movementController setPatrolRouteSet:self.theRouteSet];
-			[self evaluateSituation];
+			[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:0.1f];
 		}
 		
 		// Running in a mode with no route selected
 		else {
-			[self evaluateSituation];
+			[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:0.1f];
 		}
     }
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName: BotStarted object: nil];	
 }
 
 - (void)updateRunningTimer{
@@ -3550,8 +3558,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// start date is gone :(
 	self.startDate = nil;
-	
-	PGLog(@"Bot Stopped: %@", sender);
 
     self.isBotting = NO;
 	self.isPvPing = NO;
@@ -4030,6 +4036,18 @@ NSMutableDictionary *_diffDict = nil;
 		if ( averageDurability > 0 && averageDurability < durabilityPercentage ){
 			logOutNow = YES;
 			logMessage = [NSString stringWithFormat:@"Item durability has reached %02.f, logging out!", averageDurability];
+		}
+	}
+	
+	// check honor?
+	if ( [self.pvpBehavior stopHonor] ){
+		UInt32 honor = [playerController honor];
+		PGLog(@"%d >= %d", honor, [self.pvpBehavior stopHonorTotal]);
+		
+		if ( honor >= [self.pvpBehavior stopHonorTotal] ){
+			PGLog(@"[PvP] Honor limited reached, stopping bot");
+			[self stopBot:nil];
+			[controller setCurrentStatus:@"PvP: Honor limited reached, stopped bot"];
 		}
 	}
 	
@@ -4827,450 +4845,6 @@ typedef struct WoWClientDb {
 	
 } WoWClientDb;*/
 
-- (IBAction)test: (id)sender{
-	
-	PGLog(@"Current Game State: %d", [controller gameState]);
-	
-	float ping = [controller getPing];
-	
-	PGLog(@"Ping: %f", ping);
-	
-	return;
-	
-	WoWDbTable *table = [WoWDbTable WoWDbTableWithTablePtr: 0xD2E300];
-	int i = 0;
-	for ( ; i < 10; i++ ){
-		
-		WoWDbRow *row = [table GetRow:i];
-		
-		PGLog(@"[%d] %@", i, row);		
-	}
-	
-	return;
-	/*
-	MemoryAccess *memory = [controller wowMemoryAccess];
-
-	// hooked the spell function which was passed: 0xD87980 0xA8D268 0x194
-	// 0xFEE71C
-	UInt32 spellPtr = 0xD2E300;		//0xD87980;//;
-	
-	WoWClientDb db;
-	[memory loadDataForObject: self atAddress: spellPtr Buffer:(Byte*)&db BufLength: sizeof(db)];
-	
-	PGLog(@"%d %d", sizeof(Byte), sizeof(UInt8));
-	
-	if ( db.stringTablePtr ){
-		int index;
-		for ( index = 0; index < db.numRows; index++ ){
-			
-			UInt32 rowPtr = db.row2 + ( 4 * ( index - db.minIndex ) );
-			
-			Byte buffer[0x5000] = {0};
-			[memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&buffer[0] BufLength: sizeof(buffer[0])];
-			
-			
-			int currentAddress = 1, i = 0;
-            for ( i = rowPtr + 1; currentAddress < db.numRows; ++i)
-            {
-				//PGLog(@"row: %d", i);
-				
-				[memory loadDataForObject: self atAddress: i Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress])];
-				currentAddress++;
-				
-				// snag previous I's
-				UInt8 atI = 0, prevI = 0;
-				[memory loadDataForObject: self atAddress: i Buffer:(Byte*)&atI BufLength: sizeof(atI)];
-				[memory loadDataForObject: self atAddress: i - 1 Buffer:(Byte*)&prevI BufLength: sizeof(prevI)];
-				
-				if ( atI == prevI ){
-					
-					UInt8 j = 0;
-					[memory loadDataForObject: self atAddress: (i + 1) Buffer:(Byte*)&j BufLength: sizeof(j)];
-					[memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
-					
-					for (; j != 0; )
-                    {
-						//PGLog(@"here: %d", j);
-                        j--;
-						[memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
-						PGLog(@"currentaddressasdf: %d", currentAddress);
-					}
-                    i += 2;
-                    if (currentAddress < db.numRows)
-                    {
-						PGLog(@"currentaddress: %d", currentAddress);
-						[memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
-                    }	
-				}
-			}
-			
-			Byte newBuffer[0x2C0];
-			memcpy( newBuffer, buffer, 0x2C0);
-			
-			PGLog(@"done!");
-			
-			int k = 0;
-			for ( k = 0; k < 0x2C0; k++ ){
-				PGLog(@"%c", newBuffer[k]);
-			}
-			
-			
-			/*
-			UInt32 addressOfSpellStruct = 0x0;
-			[memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&addressOfSpellStruct BufLength: sizeof(addressOfSpellStruct)];
-			
-			if ( addressOfSpellStruct ){
-			
-				UInt32 spellID = 0x0;
-				[memory loadDataForObject: self atAddress: addressOfSpellStruct Buffer:(Byte*)&spellID BufLength: sizeof(spellID)];
-			
-				// valid spell ID
-				if ( spellID <= db.maxIndex ){
-					PGLog(@"[%d:0x%X]  %d", index, addressOfSpellStruct, spellID);
-				}
-			}*/
-		//}
-		
-		
-		
-		
-		
-		/*
-		 
-		 UInt32 addr = 0x18A060 + 0x9C;		// offset ptr
-		 // offset + 0x8  (0xA4)
-		 UInt32 lowest = 0x220D970C;
-		 int i = 0;
-		 for ( i = 0; i < 100; i++ ){
-		 
-		 UInt32 ptr = 0, offset = 0;
-		 [memory loadDataForObject: self atAddress: addr Buffer:(Byte*)&ptr BufLength: sizeof(ptr)];
-		 [memory loadDataForObject: self atAddress: addr + 0x8 Buffer:(Byte*)&offset BufLength: sizeof(offset)];
-		 
-		 PGLog(@"[%d:0x%X] 0x%X:0x%X", i, addr, offset, ptr);
-		 
-		 UInt32 tmp = 0;
-		 [memory loadDataForObject: self atAddress: ptr Buffer:(Byte*)&tmp BufLength: sizeof(tmp)];
-		 if ( tmp < lowest && tmp > 0x0 ){
-		 //PGLog(@" found 0x%X at %d", tmp, i);
-		 lowest = tmp;
-		 }
-		 
-		 addr += 0xA4;
-		 }
-		 
-		 PGLog(@"Lowest: 0x%X", lowest);*/
-		
-		
-		
-		
-		/*
-		int index;
-		for ( index = 0; index < 40; index++ ){
-			UInt32 addressOfString = db.row2 + ( 4 * ( index - db.maxIndex ) );
-			
-			PGLog(@"[Read] 0x%X", addressOfString);
-			
-			if ( addressOfString ){
-				UInt32 nextAddr = 0x0;
-				[memory loadDataForObject: self atAddress: addressOfString Buffer:(Byte*)&nextAddr BufLength: sizeof(nextAddr)];
-			
-				if ( nextAddr ){
-					
-					PGLog(@" Finding string at base 0x%X", nextAddr);
-					
-					NSString *str = [memory stringForAddress:nextAddr + 0x70 withSize:50];
-					
-					PGLog(@"String %@ at 0x%X", str, nextAddr);
-				}
-			}
-		}*/
-		/*
-		
-		
-		int index;
-		for ( index = 0; index < 10; index ++ ){
-			
-			if ( index >= db.minIndex && index <= db.maxIndex ){
-				
-				UInt32 address = db.rows + ((index - db.minIndex) * 4);
-				
-				PGLog(@"Reading 0x%X", address);
-			}
-		}*/
-	//}
-		
-		
-		/*public Row GetRow(int index)
-		{
-			if (index >= MinIndex && index <= MaxIndex)
-			{
-				//g_CreatureFamilyDB.Rows[result - g_CreatureFamilyDB.minIndex];
-				return new Row(Memory.Read<IntPtr>((IntPtr) (_nativeDb.Rows.ToInt64() + ((index - MinIndex) * 4))));
-			}
-			return new Row(IntPtr.Zero);
-		}*/
-		
-
-	
-	
-
-	
-	//[bindingsController executeBindingForKey:BindingPrimaryHotkey];
-	
-	//MULTIACTIONBAR1BUTTON1
-	//INTERACTMOUSEOVER
-
-	//[bindingsController doIt];
-	
-	return;
-	
-	// ugh why won't the below work!	
-	//MemoryAccess *memory = [controller wowMemoryAccess];
-	/*UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
-	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
-	[memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];
-	[memory loadDataForObject: self atAddress: 0xD787C0 + 0x20 Buffer: (Byte*)&factionPointer BufLength: sizeof(factionPointer)];
-	
-	
-	UInt32 hash1, hash2;
-	int faction1 = [[playerController player] factionTemplate];
-	int faction2 = 3;
-	
-	
-	GUID guid = [playerController targetID];
-	
-	Unit *unit = [mobController mobWithGUID:guid];
-	if ( !unit ){
-		// player?
-		unit = [playersController playerWithGUID:guid];
-	}
-	
-	if ( unit ){
-		PGLog(@"We have a unit %@ with faction %d", unit, [unit factionTemplate]);
-		faction2 = [unit factionTemplate];
-	}
-	
-	if ( faction1 >= startIndex && faction1 < totalFactions && faction2 >= startIndex && faction2 < totalFactions ){
-		hash1 = (factionPointer + ((faction1 - startIndex)*4));
-		hash2 = (factionPointer + ((faction2 - startIndex)*4));
-		
-		PGLog(@"Hashes: 0x%X  0x%X", hash1, hash2);
-		
-		PGLog(@"Result of compare: %d", [self CompareFactionHash:hash1 withHash2:hash2]);
-	}
-
-	*/
-	/*
-	//[playerController isOnRightBoatInStrand];
-	
-	MemoryAccess *memory = [controller wowMemoryAccess];
-	int v0=0,i=0,tmp=0,ptr=0;
-	[memory loadDataForObject: self atAddress: 0x10E760C Buffer: (Byte*)&ptr BufLength: sizeof(ptr)];
-	[memory loadDataForObject: self atAddress: ptr + 180 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
-	
-	if ( v0 & 1 || !v0 )
-		v0 = 0;
-	
-	int type = 0;
-	for ( i = 0; !(v0 & 1); ){
-		[memory loadDataForObject: self atAddress: ptr + 172 Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
-		[memory loadDataForObject: self atAddress: tmp + v0 + 4 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
-		[memory loadDataForObject: self atAddress: v0 + 0x10 Buffer: (Byte*)&type BufLength: sizeof(type)];
-		PGLog(@"[Test] Address: 0x%X %d", v0, type);
-		if ( !v0 )
-			break;
-		++i;
-	}
-	
-	PGLog(@"[Test] Total : %d", i);
-	
-	int v2=0, v3=0;
-	[memory loadDataForObject: self atAddress: ptr + 12 Buffer: (Byte*)&v2 BufLength: sizeof(v2)];
-	if ( v2 & 1 || !v2 )
-		v2 = 0;
-	v3 = 0;*/
-	
-	/*
-	int v0; // eax@1
-	int i; // edi@3
-	int v2; // eax@6
-	int v3; // esi@8
-	int v4; // eax@12
-	int v5; // eax@16
-	int v6; // ebx@18
-	
-	v0 = *(_DWORD *)(dword_10E760C + 180);
-	if ( v0 & 1 || !v0 )
-		v0 = 0;
-	for ( i = 0; !(v0 & 1); v0 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 172) + v0 + 4) )
-	{
-		if ( !v0 )
-			break;
-		++i;
-	}
-	v2 = *(_DWORD *)(dword_10E760C + 12);
-	if ( v2 & 1 || !v2 )
-		v2 = 0;
-	v3 = 0;
-LABEL_9:
-	if ( !(v2 & 1) )
-	{
-		while ( v2 )
-		{
-			++v3;
-			if ( v2 )
-				v4 = *(_DWORD *)(dword_10E760C + 4) + v2;
-			else
-				v4 = dword_10E760C + 8;
-			v2 = *(_DWORD *)(v4 + 4);
-			if ( v2 & 1 )
-			{
-				v2 = 0;
-			}
-			else
-			{
-				if ( v2 )
-					goto LABEL_9;
-				v2 = 0;
-			}
-			if ( v2 & 1 )
-				break;
-		}
-	}
-	v5 = *(_DWORD *)(dword_10E760C + 56);
-	if ( v5 & 1 || !v5 )
-		v5 = 0;
-	v6 = 0;
-LABEL_19:
-	if ( !(v5 & 1) )
-	{
-		while ( v5 )
-		{
-			++v6;
-			v5 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 48) + v5 + 4);
-			if ( v5 & 1 )
-			{
-				v5 = 0;
-			}
-			else
-			{
-				if ( v5 )
-					goto LABEL_19;
-				v5 = 0;
-			}
-			if ( v5 & 1 )
-				break;
-		}
-	}
-	sub_1214D0("Object manager list status:", 7);
-	sub_122110("    Active objects:              %u objects (%u visible)", 7, v3);
-	sub_122110("    Objects waiting to be freed: %u objects", 7, v6, i);
-	return 1;
-*/	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-/*
-	Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
-	Position *playerPosition = [playerController position];
-	
-	// this is where we want to face!
-	float direction = [playerPosition angleTo:pos];
-	
-	PGLog(@"Angle to target: %0.2f", direction);
-	[playerController setDirectionFacing:direction];
-	*/
-	//0-2pi. North is 0, west is pi/2, south is pi, east is 3pi/2.
-	/*
-	int quadrant = 0;
-	
-	if ( 0.0f < direction && direction <= M_PI/2.0f ){
-		quadrant = 1;
-	}
-	else if ( M_PI/2.0f < direction && direction <= M_PI ){
-		quadrant = 2;
-	}
-	else if ( M_PI < direction && direction <= (3*M_PI)/2.0f ){
-		quadrant = 3;
-	}
-	else if ( (3.0f*M_PI)/2.0f < direction && direction <= 2*M_PI ){
-		quadrant = 4;
-	}*/
-	
-	/*
-	
-	float x, y;
-	float closeness = 10.0f;
-	
-	// negative x
-	if ( [pos xPosition] < 0.0f ){
-		x = -1.0f * (cosf(direction) * closeness);
-	}
-	// positive x
-	else{
-		x = (cosf(direction) * closeness);
-	}
-	
-	// negative y
-	if ( [pos yPosition] < 0.0f ){
-		y = -1.0f * (sinf(direction) * closeness);
-	}
-	// positive y
-	else{
-		y = (sinf(direction) * closeness);
-	}
-	
-	Position *newPos = [[Position alloc] initWithX:([pos xPosition] + x) Y:([pos yPosition] + y) Z:[pos zPosition]];
-	PGLog(@"Change in position: {%0.2f, %0.2f}", x, y);
-	
-	[movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
-	*/
-		
-	//[controller traverseNameList];
-	/*
-
-	PGLog(@"After  write:'%@'", [playerController lastErrorMessage]);
-	NSString *lastErrorMessageAltered = [playerController lastErrorMessage];*/
-	//free(string);
-
-	
-	//(BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
-	
-/*
-	
-	Position *playerPosition = [playerController position];
-	Position *destination = [Position positionWithX:5486.823f Y:297.879f Z:147.4111];
-	Position *pos = [destination positionAtDistance:15.0f withDestination:playerPosition];
-	
-	PGLog(@"10 yards from %@ is %@", destination, pos);
-	//[movementController turnToward:pos];
-	
-	[movementController moveNearPosition:pos andCloseness:0.0f];
-	
-	
-	
-	*/
-	
-	
-	
-	/*if ( self.theCombatProfile == nil )
-		self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
-	
-	
-	PGLog(@"Attack range: %0.2f", self.theCombatProfile.attackRange);
-	PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);*/
-	
-	
-
-}
 
 #define ACCOUNT_NAME_SEP	@"SET accountName \""
 #define ACCOUNT_LIST_SEP	@"SET accountList \""
@@ -5444,9 +5018,6 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 		
 	}
 }
-
-#pragma Testing/Development Info (Generally Reversing)
-
 
 #pragma mark New PvP
 
@@ -5862,6 +5433,542 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 - (IBAction)pvpTestWarning: (id)sender {
     [[NSSound soundNamed: @"alarm"] play];
 }
+
+#pragma Reversed Functions
+
+
+- (int)lua_GetWorldState: (int)index{
+	
+	UInt32 offset = [offsetController offset:@"Lua_GetWorldStateUIInfo"];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	int32_t valid = 0x0;
+	[memory loadDataForObject: self atAddress: offset + 0x8 Buffer: (Byte *)&valid BufLength: sizeof(valid)];
+	
+	if ( valid != -1 ){
+		UInt32 v2 = 0x0, structAddress = 0x0;
+		[memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&v2 BufLength: sizeof(v2)];
+		v2 += 12 * (index & valid);
+		[memory loadDataForObject: self atAddress: v2 + (2*4) Buffer: (Byte *)&structAddress BufLength: sizeof(structAddress)];
+		
+		if ( ! (structAddress & 1) ){
+			
+			int32_t readIndex = 0x0;
+			UInt32 offset = 0x0;	// potentially named wrong
+			
+			while ( structAddress ){
+				
+				// grab the next index from the world state struct
+				[memory loadDataForObject: self atAddress: structAddress Buffer: (Byte *)&readIndex BufLength: sizeof(readIndex)];
+				
+				// found the correct index?
+				if ( readIndex == index ){
+					int32_t nextWintergraspTime = 0x0;
+					[memory loadDataForObject: self atAddress: structAddress + (24) Buffer: (Byte *)&nextWintergraspTime BufLength: sizeof(nextWintergraspTime)];
+					return nextWintergraspTime;
+				}
+				
+				// try the next struct address
+				[memory loadDataForObject: self atAddress: v2 Buffer: (Byte *)&offset BufLength: sizeof(offset)];			
+				[memory loadDataForObject: self atAddress: offset+structAddress+4 Buffer: (Byte *)&structAddress BufLength: sizeof(structAddress)];
+				
+				// index not found
+				if ( structAddress & 1 ){
+					PGLog(@"[GetWorldState] Index %d not found", index);
+					return 0;
+				}
+			}			
+		}
+	}
+	
+	return 0;	
+}
+
+- (double)lua_GetWintergraspWaitTime{
+	
+	if ( [self lua_GetWorldState:3801] > 0 )
+	{
+		int state = [self lua_GetWorldState:4354];
+		MemoryAccess *memory = [controller wowMemoryAccess];
+		
+		int32_t v4 = 0x0;
+		[memory loadDataForObject: self atAddress: [offsetController offset:@"Lua_GetWorldStateUIInfo"] + 0x10 Buffer: (Byte *)&v4 BufLength: sizeof(v4)];
+		
+		int seconds = state - (v4 + time(0));
+		if ( seconds <= 0 )
+			seconds = 0;
+		
+		return (double) seconds;
+		
+	}
+	
+	PGLog(@"[Wintergrasp] Unable to find time - is wintergrasp running?");
+	
+	return -1.0f;	
+}
+
+
+#pragma Testing/Development Info (Generally Reversing)
+/*
+if select(2,GetWorldStateUIInfo(6)) == 1 then
+control = "Horde";
+elseif select(2,GetWorldStateUIInfo(5)) == 1 then
+control = "Alliance";
+else
+control = "";
+end
+*/
+
+- (IBAction)test: (id)sender{
+	
+	PGLog(@"Time left until Wintergrasp: %0.2f", [self lua_GetWintergraspWaitTime]);
+	
+	return;
+	
+	PGLog(@"Current Game State: %d", [controller gameState]);
+	
+	float ping = [controller getPing];
+	
+	PGLog(@"Ping: %f", ping);
+	
+	return;
+	
+	WoWDbTable *table = [WoWDbTable WoWDbTableWithTablePtr: 0xD2E300];
+	int i = 0;
+	for ( ; i < 10; i++ ){
+		
+		WoWDbRow *row = [table GetRow:i];
+		
+		PGLog(@"[%d] %@", i, row);		
+	}
+	
+	return;
+	/*
+	 MemoryAccess *memory = [controller wowMemoryAccess];
+	 
+	 // hooked the spell function which was passed: 0xD87980 0xA8D268 0x194
+	 // 0xFEE71C
+	 UInt32 spellPtr = 0xD2E300;		//0xD87980;//;
+	 
+	 WoWClientDb db;
+	 [memory loadDataForObject: self atAddress: spellPtr Buffer:(Byte*)&db BufLength: sizeof(db)];
+	 
+	 PGLog(@"%d %d", sizeof(Byte), sizeof(UInt8));
+	 
+	 if ( db.stringTablePtr ){
+	 int index;
+	 for ( index = 0; index < db.numRows; index++ ){
+	 
+	 UInt32 rowPtr = db.row2 + ( 4 * ( index - db.minIndex ) );
+	 
+	 Byte buffer[0x5000] = {0};
+	 [memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&buffer[0] BufLength: sizeof(buffer[0])];
+	 
+	 
+	 int currentAddress = 1, i = 0;
+	 for ( i = rowPtr + 1; currentAddress < db.numRows; ++i)
+	 {
+	 //PGLog(@"row: %d", i);
+	 
+	 [memory loadDataForObject: self atAddress: i Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress])];
+	 currentAddress++;
+	 
+	 // snag previous I's
+	 UInt8 atI = 0, prevI = 0;
+	 [memory loadDataForObject: self atAddress: i Buffer:(Byte*)&atI BufLength: sizeof(atI)];
+	 [memory loadDataForObject: self atAddress: i - 1 Buffer:(Byte*)&prevI BufLength: sizeof(prevI)];
+	 
+	 if ( atI == prevI ){
+	 
+	 UInt8 j = 0;
+	 [memory loadDataForObject: self atAddress: (i + 1) Buffer:(Byte*)&j BufLength: sizeof(j)];
+	 [memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
+	 
+	 for (; j != 0; )
+	 {
+	 //PGLog(@"here: %d", j);
+	 j--;
+	 [memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
+	 PGLog(@"currentaddressasdf: %d", currentAddress);
+	 }
+	 i += 2;
+	 if (currentAddress < db.numRows)
+	 {
+	 PGLog(@"currentaddress: %d", currentAddress);
+	 [memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
+	 }	
+	 }
+	 }
+	 
+	 Byte newBuffer[0x2C0];
+	 memcpy( newBuffer, buffer, 0x2C0);
+	 
+	 PGLog(@"done!");
+	 
+	 int k = 0;
+	 for ( k = 0; k < 0x2C0; k++ ){
+	 PGLog(@"%c", newBuffer[k]);
+	 }
+	 
+	 
+	 /*
+	 UInt32 addressOfSpellStruct = 0x0;
+	 [memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&addressOfSpellStruct BufLength: sizeof(addressOfSpellStruct)];
+	 
+	 if ( addressOfSpellStruct ){
+	 
+	 UInt32 spellID = 0x0;
+	 [memory loadDataForObject: self atAddress: addressOfSpellStruct Buffer:(Byte*)&spellID BufLength: sizeof(spellID)];
+	 
+	 // valid spell ID
+	 if ( spellID <= db.maxIndex ){
+	 PGLog(@"[%d:0x%X]  %d", index, addressOfSpellStruct, spellID);
+	 }
+	 }*/
+	//}
+	
+	
+	
+	
+	
+	/*
+	 
+	 UInt32 addr = 0x18A060 + 0x9C;		// offset ptr
+	 // offset + 0x8  (0xA4)
+	 UInt32 lowest = 0x220D970C;
+	 int i = 0;
+	 for ( i = 0; i < 100; i++ ){
+	 
+	 UInt32 ptr = 0, offset = 0;
+	 [memory loadDataForObject: self atAddress: addr Buffer:(Byte*)&ptr BufLength: sizeof(ptr)];
+	 [memory loadDataForObject: self atAddress: addr + 0x8 Buffer:(Byte*)&offset BufLength: sizeof(offset)];
+	 
+	 PGLog(@"[%d:0x%X] 0x%X:0x%X", i, addr, offset, ptr);
+	 
+	 UInt32 tmp = 0;
+	 [memory loadDataForObject: self atAddress: ptr Buffer:(Byte*)&tmp BufLength: sizeof(tmp)];
+	 if ( tmp < lowest && tmp > 0x0 ){
+	 //PGLog(@" found 0x%X at %d", tmp, i);
+	 lowest = tmp;
+	 }
+	 
+	 addr += 0xA4;
+	 }
+	 
+	 PGLog(@"Lowest: 0x%X", lowest);*/
+	
+	
+	
+	
+	/*
+	 int index;
+	 for ( index = 0; index < 40; index++ ){
+	 UInt32 addressOfString = db.row2 + ( 4 * ( index - db.maxIndex ) );
+	 
+	 PGLog(@"[Read] 0x%X", addressOfString);
+	 
+	 if ( addressOfString ){
+	 UInt32 nextAddr = 0x0;
+	 [memory loadDataForObject: self atAddress: addressOfString Buffer:(Byte*)&nextAddr BufLength: sizeof(nextAddr)];
+	 
+	 if ( nextAddr ){
+	 
+	 PGLog(@" Finding string at base 0x%X", nextAddr);
+	 
+	 NSString *str = [memory stringForAddress:nextAddr + 0x70 withSize:50];
+	 
+	 PGLog(@"String %@ at 0x%X", str, nextAddr);
+	 }
+	 }
+	 }*/
+	/*
+	 
+	 
+	 int index;
+	 for ( index = 0; index < 10; index ++ ){
+	 
+	 if ( index >= db.minIndex && index <= db.maxIndex ){
+	 
+	 UInt32 address = db.rows + ((index - db.minIndex) * 4);
+	 
+	 PGLog(@"Reading 0x%X", address);
+	 }
+	 }*/
+	//}
+	
+	
+	/*public Row GetRow(int index)
+	 {
+	 if (index >= MinIndex && index <= MaxIndex)
+	 {
+	 //g_CreatureFamilyDB.Rows[result - g_CreatureFamilyDB.minIndex];
+	 return new Row(Memory.Read<IntPtr>((IntPtr) (_nativeDb.Rows.ToInt64() + ((index - MinIndex) * 4))));
+	 }
+	 return new Row(IntPtr.Zero);
+	 }*/
+	
+	
+	
+	
+	
+	
+	//[bindingsController executeBindingForKey:BindingPrimaryHotkey];
+	
+	//MULTIACTIONBAR1BUTTON1
+	//INTERACTMOUSEOVER
+	
+	//[bindingsController doIt];
+	
+	return;
+	
+	// ugh why won't the below work!	
+	//MemoryAccess *memory = [controller wowMemoryAccess];
+	/*UInt32 factionPointer = 0, totalFactions = 0, startIndex = 0;
+	 [memory loadDataForObject: self atAddress: 0xD787C0 + 0x10 Buffer: (Byte*)&startIndex BufLength: sizeof(startIndex)];
+	 [memory loadDataForObject: self atAddress: 0xD787C0 + 0xC Buffer: (Byte*)&totalFactions BufLength: sizeof(totalFactions)];
+	 [memory loadDataForObject: self atAddress: 0xD787C0 + 0x20 Buffer: (Byte*)&factionPointer BufLength: sizeof(factionPointer)];
+	 
+	 
+	 UInt32 hash1, hash2;
+	 int faction1 = [[playerController player] factionTemplate];
+	 int faction2 = 3;
+	 
+	 
+	 GUID guid = [playerController targetID];
+	 
+	 Unit *unit = [mobController mobWithGUID:guid];
+	 if ( !unit ){
+	 // player?
+	 unit = [playersController playerWithGUID:guid];
+	 }
+	 
+	 if ( unit ){
+	 PGLog(@"We have a unit %@ with faction %d", unit, [unit factionTemplate]);
+	 faction2 = [unit factionTemplate];
+	 }
+	 
+	 if ( faction1 >= startIndex && faction1 < totalFactions && faction2 >= startIndex && faction2 < totalFactions ){
+	 hash1 = (factionPointer + ((faction1 - startIndex)*4));
+	 hash2 = (factionPointer + ((faction2 - startIndex)*4));
+	 
+	 PGLog(@"Hashes: 0x%X  0x%X", hash1, hash2);
+	 
+	 PGLog(@"Result of compare: %d", [self CompareFactionHash:hash1 withHash2:hash2]);
+	 }
+	 
+	 */
+	/*
+	 //[playerController isOnRightBoatInStrand];
+	 
+	 MemoryAccess *memory = [controller wowMemoryAccess];
+	 int v0=0,i=0,tmp=0,ptr=0;
+	 [memory loadDataForObject: self atAddress: 0x10E760C Buffer: (Byte*)&ptr BufLength: sizeof(ptr)];
+	 [memory loadDataForObject: self atAddress: ptr + 180 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
+	 
+	 if ( v0 & 1 || !v0 )
+	 v0 = 0;
+	 
+	 int type = 0;
+	 for ( i = 0; !(v0 & 1); ){
+	 [memory loadDataForObject: self atAddress: ptr + 172 Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
+	 [memory loadDataForObject: self atAddress: tmp + v0 + 4 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
+	 [memory loadDataForObject: self atAddress: v0 + 0x10 Buffer: (Byte*)&type BufLength: sizeof(type)];
+	 PGLog(@"[Test] Address: 0x%X %d", v0, type);
+	 if ( !v0 )
+	 break;
+	 ++i;
+	 }
+	 
+	 PGLog(@"[Test] Total : %d", i);
+	 
+	 int v2=0, v3=0;
+	 [memory loadDataForObject: self atAddress: ptr + 12 Buffer: (Byte*)&v2 BufLength: sizeof(v2)];
+	 if ( v2 & 1 || !v2 )
+	 v2 = 0;
+	 v3 = 0;*/
+	
+	/*
+	 int v0; // eax@1
+	 int i; // edi@3
+	 int v2; // eax@6
+	 int v3; // esi@8
+	 int v4; // eax@12
+	 int v5; // eax@16
+	 int v6; // ebx@18
+	 
+	 v0 = *(_DWORD *)(dword_10E760C + 180);
+	 if ( v0 & 1 || !v0 )
+	 v0 = 0;
+	 for ( i = 0; !(v0 & 1); v0 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 172) + v0 + 4) )
+	 {
+	 if ( !v0 )
+	 break;
+	 ++i;
+	 }
+	 v2 = *(_DWORD *)(dword_10E760C + 12);
+	 if ( v2 & 1 || !v2 )
+	 v2 = 0;
+	 v3 = 0;
+	 LABEL_9:
+	 if ( !(v2 & 1) )
+	 {
+	 while ( v2 )
+	 {
+	 ++v3;
+	 if ( v2 )
+	 v4 = *(_DWORD *)(dword_10E760C + 4) + v2;
+	 else
+	 v4 = dword_10E760C + 8;
+	 v2 = *(_DWORD *)(v4 + 4);
+	 if ( v2 & 1 )
+	 {
+	 v2 = 0;
+	 }
+	 else
+	 {
+	 if ( v2 )
+	 goto LABEL_9;
+	 v2 = 0;
+	 }
+	 if ( v2 & 1 )
+	 break;
+	 }
+	 }
+	 v5 = *(_DWORD *)(dword_10E760C + 56);
+	 if ( v5 & 1 || !v5 )
+	 v5 = 0;
+	 v6 = 0;
+	 LABEL_19:
+	 if ( !(v5 & 1) )
+	 {
+	 while ( v5 )
+	 {
+	 ++v6;
+	 v5 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 48) + v5 + 4);
+	 if ( v5 & 1 )
+	 {
+	 v5 = 0;
+	 }
+	 else
+	 {
+	 if ( v5 )
+	 goto LABEL_19;
+	 v5 = 0;
+	 }
+	 if ( v5 & 1 )
+	 break;
+	 }
+	 }
+	 sub_1214D0("Object manager list status:", 7);
+	 sub_122110("    Active objects:              %u objects (%u visible)", 7, v3);
+	 sub_122110("    Objects waiting to be freed: %u objects", 7, v6, i);
+	 return 1;
+	 */	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	 Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
+	 Position *playerPosition = [playerController position];
+	 
+	 // this is where we want to face!
+	 float direction = [playerPosition angleTo:pos];
+	 
+	 PGLog(@"Angle to target: %0.2f", direction);
+	 [playerController setDirectionFacing:direction];
+	 */
+	//0-2pi. North is 0, west is pi/2, south is pi, east is 3pi/2.
+	/*
+	 int quadrant = 0;
+	 
+	 if ( 0.0f < direction && direction <= M_PI/2.0f ){
+	 quadrant = 1;
+	 }
+	 else if ( M_PI/2.0f < direction && direction <= M_PI ){
+	 quadrant = 2;
+	 }
+	 else if ( M_PI < direction && direction <= (3*M_PI)/2.0f ){
+	 quadrant = 3;
+	 }
+	 else if ( (3.0f*M_PI)/2.0f < direction && direction <= 2*M_PI ){
+	 quadrant = 4;
+	 }*/
+	
+	/*
+	 
+	 float x, y;
+	 float closeness = 10.0f;
+	 
+	 // negative x
+	 if ( [pos xPosition] < 0.0f ){
+	 x = -1.0f * (cosf(direction) * closeness);
+	 }
+	 // positive x
+	 else{
+	 x = (cosf(direction) * closeness);
+	 }
+	 
+	 // negative y
+	 if ( [pos yPosition] < 0.0f ){
+	 y = -1.0f * (sinf(direction) * closeness);
+	 }
+	 // positive y
+	 else{
+	 y = (sinf(direction) * closeness);
+	 }
+	 
+	 Position *newPos = [[Position alloc] initWithX:([pos xPosition] + x) Y:([pos yPosition] + y) Z:[pos zPosition]];
+	 PGLog(@"Change in position: {%0.2f, %0.2f}", x, y);
+	 
+	 [movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
+	 */
+	
+	//[controller traverseNameList];
+	/*
+	 
+	 PGLog(@"After  write:'%@'", [playerController lastErrorMessage]);
+	 NSString *lastErrorMessageAltered = [playerController lastErrorMessage];*/
+	//free(string);
+	
+	
+	//(BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
+	
+	/*
+	 
+	 Position *playerPosition = [playerController position];
+	 Position *destination = [Position positionWithX:5486.823f Y:297.879f Z:147.4111];
+	 Position *pos = [destination positionAtDistance:15.0f withDestination:playerPosition];
+	 
+	 PGLog(@"10 yards from %@ is %@", destination, pos);
+	 //[movementController turnToward:pos];
+	 
+	 [movementController moveNearPosition:pos andCloseness:0.0f];
+	 
+	 
+	 
+	 */
+	
+	
+	
+	/*if ( self.theCombatProfile == nil )
+	 self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+	 
+	 
+	 PGLog(@"Attack range: %0.2f", self.theCombatProfile.attackRange);
+	 PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);*/
+	
+	
+	
+}
+
 
 #pragma mark Login
 
