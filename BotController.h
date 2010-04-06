@@ -61,6 +61,8 @@
 #define ErrorTargetNotInFront			@"ErrorTargetNotInFront"
 #define ErrorMorePowerfullSpellActive	@"ErrorMorePowerfullSpellActive"
 
+#define BotStarted						@"BotStarted"
+
 // Hotkey set flags
 #define	HotKeyStartStop				0x1
 #define HotKeyInteractMouseover		0x2

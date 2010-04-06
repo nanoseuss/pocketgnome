@@ -1872,6 +1872,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (Mob*)mobToLoot {
 	
+	if ( !self.doLooting ) return nil;
+	
 	// if our loot list is empty scan for missed mobs
     if ( ![_mobsToLoot count] ) return nil;
 	
@@ -2189,6 +2191,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // called when ONE item is looted
 - (void)itemLooted: (NSNotification*)notification {
+	
+	if ( !self.isBotting ) return;
+	
 	self.evaluationInProgress = @"Loot";
 
 	log(LOG_LOOT, @"Looted %@", [notification object]);
@@ -3764,9 +3769,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
    	if ( [self evaluateForPatrol] ) return YES;
 
 	if ( [self evaluateForCombatStart] ) return YES;
-	
-	// Evaluation Checks Complete, lets see if we're supposed to do a route
 
+	/*
+	 * Evaluation Checks Complete, lets see if we're supposed to do a route.
+	 */
+	
 	// If we're just performing a check while we're in route we can return here
 	if ( [movementController isMoving] ) {
 		log(LOG_EVALUATE, @"Nothing to do so we'll not interrupt our patrol.");
@@ -3774,6 +3781,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		log(LOG_EVALUATE, @"Nothing to do, checking for a route.");
 	}
+	
 	if ( ![self evaluationInProgress] && ![_mobsToLoot count] ) {
 		
 		// If we have a follow unit then skip your route
@@ -5868,6 +5876,80 @@ NSMutableDictionary *_diffDict = nil;
 
 - (IBAction)pvpTestWarning: (id)sender {
     [[NSSound soundNamed: @"alarm"] play];
+}
+
+#pragma Reversed Functions
+
+
+- (int)lua_GetWorldState: (int)index{
+	
+	UInt32 offset = [offsetController offset:@"Lua_GetWorldStateUIInfo"];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	int32_t valid = 0x0;
+	[memory loadDataForObject: self atAddress: offset + 0x8 Buffer: (Byte *)&valid BufLength: sizeof(valid)];
+	
+	if ( valid != -1 ){
+		UInt32 v2 = 0x0, structAddress = 0x0;
+		[memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&v2 BufLength: sizeof(v2)];
+		v2 += 12 * (index & valid);
+		[memory loadDataForObject: self atAddress: v2 + (2*4) Buffer: (Byte *)&structAddress BufLength: sizeof(structAddress)];
+		
+		if ( ! (structAddress & 1) ){
+			
+			int32_t readIndex = 0x0;
+			UInt32 offset = 0x0;	// potentially named wrong
+			
+			while ( structAddress ){
+				
+				// grab the next index from the world state struct
+				[memory loadDataForObject: self atAddress: structAddress Buffer: (Byte *)&readIndex BufLength: sizeof(readIndex)];
+				
+				// found the correct index?
+				if ( readIndex == index ){
+					int32_t nextWintergraspTime = 0x0;
+					[memory loadDataForObject: self atAddress: structAddress + (24) Buffer: (Byte *)&nextWintergraspTime BufLength: sizeof(nextWintergraspTime)];
+					return nextWintergraspTime;
+				}
+				
+				// try the next struct address
+				[memory loadDataForObject: self atAddress: v2 Buffer: (Byte *)&offset BufLength: sizeof(offset)];			
+				[memory loadDataForObject: self atAddress: offset+structAddress+4 Buffer: (Byte *)&structAddress BufLength: sizeof(structAddress)];
+				
+				// index not found
+				if ( structAddress & 1 ){
+					PGLog(@"[GetWorldState] Index %d not found", index);
+					return 0;
+				}
+			}			
+		}
+	}
+	
+	return 0;	
+}
+
+- (double)lua_GetWintergraspWaitTime{
+	
+	if ( [self lua_GetWorldState:3801] > 0 )
+	{
+		int state = [self lua_GetWorldState:4354];
+		MemoryAccess *memory = [controller wowMemoryAccess];
+		
+		int32_t v4 = 0x0;
+		[memory loadDataForObject: self atAddress: [offsetController offset:@"Lua_GetWorldStateUIInfo"] + 0x10 Buffer: (Byte *)&v4 BufLength: sizeof(v4)];
+		
+		int seconds = state - (v4 + time(0));
+		if ( seconds <= 0 )
+			seconds = 0;
+		
+		return (double) seconds;
+		
+	}
+	
+	PGLog(@"[Wintergrasp] Unable to find time - is wintergrasp running?");
+	
+	return -1.0f;	
 }
 
 #pragma mark Login
