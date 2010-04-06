@@ -30,7 +30,7 @@
 #define ReachedObjectNotification      @"ReachedObjectNotification"
 
 // How close do we need to be to a node before we dismount?
-#define DistanceUntilDismountByNode	4.5f
+#define DistanceUntilDismountByNode	4.1f
 
 // how close do we need to be to a school to fish?
 #define NODE_DISTANCE_UNTIL_FISH		17.0f
@@ -95,9 +95,11 @@ typedef enum MovementType {
 	BOOL _movingUp;
 	BOOL _afkPressForward;
 	BOOL _lastCorrectionForward;
+	BOOL _isFollowing;
 }
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
+@property (readwrite, assign) BOOL isFollowing;
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;

@@ -25,8 +25,7 @@
 @class OffsetController;
 @class MovementController;
 @class MobController;
-@class MacroController;
-@class ChatController;
+@class BindingsController;
 
 #define PlayerIsValidNotification           @"PlayerIsValidNotification"
 #define PlayerIsInvalidNotification         @"PlayerIsInvalidNotification"
@@ -67,8 +66,7 @@ enum ePlayer_RuneTypes {
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet MovementController		*movementController;
 	IBOutlet MobController			*mobController;
-	IBOutlet MacroController		*macroController;
-	IBOutlet ChatController			*chatController;
+	IBOutlet BindingsController		*bindingsController;
 	
     IBOutlet NSView *view;
     IBOutlet NSTextField *powerNameText;
@@ -155,6 +153,7 @@ enum ePlayer_RuneTypes {
 - (UInt32)honor;
 - (void)trackResources: (int)resource;
 
+- (BOOL)targetGuid: (GUID)guid;
 - (BOOL)setPrimaryTarget: (WoWObject*)target;
 - (BOOL)setMouseoverTarget: (UInt64)targetID;
 - (UInt64)targetID;

@@ -87,11 +87,24 @@
 	return [self overwriteMacro:macroCommand];
 }
 
+// returns the macro command for a key!
+- (NSString*)macroTextForKey:(NSString*)key{
+	NSDictionary *macroData = [_macroDictionary valueForKey:key];
+	NSString *macroCommand = [macroData valueForKey:@"Macro"];
+	return [[macroCommand retain] autorelease];
+}
+
 // actually will take an action (macro or send command)
 - (void)useMacroOrSendCmd: (NSString*)key{
 	
 	NSDictionary *macroData = [_macroDictionary valueForKey:key];
 	NSString *macroCommand = [macroData valueForKey:@"Macro"];
+	
+	if ( !macroCommand || [macroCommand length] == 0 ) {
+		PGLog(@"[Macro] Using the key as a command!");
+		macroCommand = key;
+	}
+	
 	BOOL macroExecuted = [self overwriteMacro:macroCommand];
 	
 	// if we didn't find a macro, lets send the command!
@@ -103,19 +116,13 @@
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
-		
-		// get the macro info
-		NSDictionary *macroData = [_macroDictionary valueForKey:key];
-		
-		// the actual command
-		NSString *macroCommand = [macroData valueForKey:@"Macro"];
-		
+
 		// send the command
 		[chatController enter];
 		usleep(100000);
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", macroCommand, '\n']];
 		
-		log(LOG_MACRO, @"[Macro] I just typed the '%@' command. Set up a macro so I don't have to type it in! Check the settings tab.", key);
+		log(LOG_MACRO, @"[Macro] I just typed the '%@' command.  I'm not really sure why.", key);
 	}
 }
 

@@ -15,6 +15,9 @@
 #define BindingPrimaryHotkey		@"BindingPrimaryHotkey"
 #define BindingPetAttack			@"BindingPetAttack"
 #define BindingInteractMouseover	@"BindingInteractMouseover"
+#define BindingTargetLast			@"BindingTargetLast"
+#define BindingStrafeRight			@"BindingStrafeRight"
+#define BindingStrafeLeft			@"BindingStrafeLeft"
 
 @interface BindingsController : NSObject {
 	
@@ -37,6 +40,9 @@
 	int _interactMouseoverActionOffset;
 	int _interactMouseoverActionCode;
 	int _interactMouseoverActionModifier;
+	int _targetLastActionOffset;
+	int _targetLastActionCode;
+	int _targetLastActionModifier;	
 	
 	NSMutableDictionary *_bindingsToCodes;		// used w/the defines above
 	

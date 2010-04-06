@@ -45,6 +45,4 @@
 // raw reading, minimal error checking, actual return result
 - (kern_return_t)readAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
 
-- (NSString*)stringForAddress: (UInt32)address withSize:(int)size;
-
 @end

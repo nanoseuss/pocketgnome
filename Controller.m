@@ -1414,6 +1414,79 @@ typedef struct NameObjectStruct{
     return CGPointMake(sx, sy);
 }
 
+#pragma mark WorldState/LoginState
+		
+- (int)gameState{
+
+	// we want to check the object list pointer to make sure it's valid, if it is, we can assume we'll have a valid player (altho maybe we shouldn't?)
+
+	MemoryAccess *memory = [self wowMemoryAccess];
+
+	if ( memory && [memory isValid] ){
+
+		// do we have a valid o
+		UInt32 offset = [offsetController offset:@"OBJECT_LIST_LL_PTR"];
+		UInt32 objectManager = 0x0;
+		
+		if ( [memory loadDataForObject: self atAddress:offset  Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager ){
+	
+	
+	}
+	
+	
+	offset = [offsetController offset:@"LoginState"];
+	
+	char state[21];
+	state[20] = 0;
+		if ( [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&state BufLength: sizeof(state)-1] ){
+	
+			NSString *stateAsString = [NSString stringWithUTF8String: state];
+			if ( [stateAsString length] ){
+	
+				if ( [stateAsString isEqualToString:@"login"] ){
+					return GameState_LoggingIn;
+				}
+				else if ( [stateAsString isEqualToString:@"charcreate"] ){
+					return GameState_LoggingIn;
+				}
+				else if ( [stateAsString isEqualToString:@"patchdownload"] ){
+					return GameState_LoggingIn;
+				}
+				// we don't check for charselect, since it is always charselect even if we're logged in
+			}
+		}
+
+		// if we get this far we now need to check WorldState
+		offset = [offsetController offset:@"WorldState"];
+		UInt32 worldState = 0;
+		if ( [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&worldState BufLength: sizeof(worldState)] ){
+
+			if ( worldState == 10 ){
+				return GameState_Loading;
+			}
+			else if ( worldState == 0 ){
+				return GameState_Valid;
+			}
+			else if ( (worldState >=0 && worldState <= 3) || worldState == 7 || worldState == 8 || worldState == 9 ){
+				return GameState_LoggingIn;
+			}
+		}
+	}
+
+	// WorldState
+	// connecting/auth/success = 1,2
+	// char list retreiving = 3
+	// race/faction change (or customize) in progress? = 9
+	// char decline in progress = 8
+	// char rename in progress = 7
+	// game loading = 10?
+	// game loaded = 0
+
+	// LoginState - charselect, login, charcreate, patchdownload
+
+	return GameState_Unknown;
+}
+
 #pragma mark -
 #pragma mark Faction Information
 

@@ -484,19 +484,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//	[movementController backEstablishPosition];
 		//}
 	}
-	
+
 	if( !isCasting ) {
 		
 		// ensure unit is our target
-		UInt64 unitUID = [_castingUnit GUID];
-		//log(LOG_COMBAT, @"[Combat] Not casting 0x%qX 0x%qX", [playerData targetID], unitUID);
-		if ( ( [playerData targetID] != unitUID) || [_castingUnit isFeignDeath] ) {
-			Position *playerPosition = [playerData position];
-			log(LOG_COMBAT, @"%@ Targeting %@  Weight: %d", _castingUnit, [self unitHealthBar: _castingUnit], [self weight:_castingUnit PlayerPosition:playerPosition] );
-			
-			[playerData setPrimaryTarget: _castingUnit];
-			usleep([controller refreshDelay]);
-		}
+		UInt64 unitGUID = [_castingUnit GUID];
+		
+		if ( ( [playerData targetID] != unitGUID) || [_castingUnit isFeignDeath] ) [playerData targetGuid:unitGUID];
 		
 		// move toward unit?
 		if ( [botController.theBehavior meleeCombat] ){

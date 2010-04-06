@@ -1563,11 +1563,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// target yourself
 					if ( [rule target] == TargetSelf ) {
 						log(LOG_DEV, @"Targeting self");
-						[playerController setPrimaryTarget: [playerController player]];
+						
+						[playerController targetGuid:[[playerController player] GUID]];
+						
+//						[playerController setPrimaryTarget: [playerController player]];
 					} else 
 					if ( [rule target] != TargetNone ) {
 						self.castingUnit = target;
-						[playerController setPrimaryTarget: target];
+						[playerController targetGuid:[target GUID]];
+//						[playerController setPrimaryTarget: target];
 					}
 					
 					// Let the target change set in (generally this shouldn't be needed, but I've noticed sometimes the target doesn't switch)
@@ -1639,7 +1643,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyResurrected];
 
 			// Let's retarget ourselves so it doesn't look like we're in love
-			[playerController setPrimaryTarget: [playerController player]];
+//			[playerController targetGuid:[[playerController player] GUID]];
+//			[playerController setPrimaryTarget: [playerController player]];
 
 		}
 		// The idea is that this will improve decision making for healers and keep the bot from looking stupid
@@ -1652,7 +1657,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyHelpedFriend];
 
 			// Let's retarget ourselves so it doesn't look like we're in love
-			[playerController setPrimaryTarget: [playerController player]];
+//			[playerController targetGuid:[[playerController player] GUID]];
+//			[playerController setPrimaryTarget: [playerController player]];
 
 		}
 
@@ -2118,8 +2124,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_DEV, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
 		
+		// Loot success is firing even when we miss so I'll disable this here
+		
 		// clear the attempts since it was successful
-		[blacklistController clearAttemptsForObject:self.unitToLoot];
+//		[blacklistController clearAttemptsForObject:self.unitToLoot];
 		
 	}
 	
@@ -2164,18 +2172,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	float delay = 0.5;
 
 	// If this was the last item in the list
-	if ( ![_mobsToLoot count] && !wasNode) {
-		
-		// Do this so that your reads can refresh and the GCD check don't fail if you get ambushed.
-		// This is only a temp solution, but it also solves the bugged casting position after you have looted
-		[movementController stepForward];
-		
-		// reset the loot scanner!
-		[self resetLootScanIdleTimer];
-		
-		// Since we stepped forward we can ignore the delay
-		delay = 0.1;
-	}
+	if ( ![_mobsToLoot count] && !wasNode) [self resetLootScanIdleTimer];
 	
 	// Allow the lute to fade
 	if (wasNode) delay = 0.6;
@@ -2233,7 +2230,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		// Do this so that your reads can refresh and the GCD check don't fail if you get ambushed.
 		// This is only a temp solution, but it also solves the bugged casting position after you have looted
-		[movementController stepForward];
+//		[movementController stepForward];
 
 		self.evaluationInProgress = nil;
 		
@@ -2283,6 +2280,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[controller setCurrentStatus: @"Bot: Player in Combat"];
 	log(LOG_COMBAT, @"Entering combat");
 	self.evaluationInProgress = nil;
+	[blacklistController clearAttempts];
 	[self evaluateSituation];
 }
 
@@ -2752,7 +2750,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.assistUnit = assistPlayer;
 		[playerController faceToward: [assistPlayer position]];
 		log(LOG_PARTY, @"Found the player I'm assisting.");
-		[playerController setPrimaryTarget: assistPlayer];
 		return YES;
 	} else {
 		log(LOG_PARTY, @"Assist player not found! GUID: 0x%qX", theCombatProfile.assistUnitGUID);
@@ -3105,21 +3102,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForCombatContinuation {
 
-    if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
+//    if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
 
 	// Let's try just usin the player controller to match n see if this gives any better results
-    if (![playerController isInCombat] && (!theCombatProfile.partyEnabled || [self partyFollowSuspended] ) ) {
+//    if (![playerController isInCombat] && (!theCombatProfile.partyEnabled || [self partyFollowSuspended] ) ) {
 		// If we're actually not in combat and not in a party lets reset the combat table as there is no combat 'contination'
-		[combatController resetAllCombat];
-		return NO;
-	}
+//		[combatController resetAllCombat];
+//		return NO;
+//	}
 	
 	Unit *bestUnit = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 
 	if ( !bestUnit ) {
-		[combatController resetAllCombat];
+		if ( [combatController inCombat] ) [combatController resetAllCombat];
 		return NO;
 	}
 
@@ -3423,6 +3420,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// If we've no node then skip this
 	if ( ![nodes count] ) {
+		[blacklistController clearAttempts];
 		self.wasLootWindowOpen = NO;
 		self.evaluationInProgress=nil;
 		return NO;
@@ -3469,13 +3467,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}	
 	
-	// If we're not supposed to loot this node due to proximity rules
-	BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
+	
+	// Only check this if we're not on the node
+	if ( nodeDist > 20.0f ) {
+		// If we're not supposed to loot this node due to proximity rules
+		BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
 
-	if ( nearbyScaryUnits ) {
-		self.evaluationInProgress=nil;
-		[blacklistController blacklistObject:nodeToLoot];
-		return NO;
+		if ( nearbyScaryUnits ) {
+			log(LOG_NODE, @"Skipping node due to proximity count");
+			self.evaluationInProgress=nil;
+			
+			if (self.evaluationInProgress) [movementController stopMovement];
+			
+			[blacklistController blacklistObject:nodeToLoot];
+			return NO;
+		}
 	}
 
 	log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
@@ -3540,7 +3546,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return YES;
 	}
 	
-	if ( [movementController isMoving] ) [movementController stopMovement];
+//	if ( [movementController isMoving] ) [movementController stopMovement];
 	[controller setCurrentStatus: @"Bot: Moving to node"];
 
 	// Safe to move to the node!
@@ -3792,14 +3798,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Evaluation Checks Complete, lets see if we're supposed to do a route
 
+	// If we're just performing a check while we're in route we can return here
+	if ( [movementController isMoving] ) {
+		log(LOG_EVALUATE, @"Nothing to do so we'll not interrupt our patrol.");
+		return NO;
+	} else {
+		log(LOG_EVALUATE, @"Nothing to do, checking for a route.");
+	}
 	if ( ![self evaluationInProgress] && ![_mobsToLoot count] ) {
 		
 		// If we have a follow unit then skip your route
 		if ( self.theRouteSet && ( ![self followUnit] || [self partyFollowSuspended] ) ) {
-			
-			// Should be safe to do this here
-			[self jumpIfAirMountOnGround];
-			
+
 			// Update the status if we need to
 			if ( ![[controller currentStatus] isEqualToString: @"Bot: Patrolling"] ) {
 				[controller setCurrentStatus: @"Bot: Patrolling"];
@@ -3974,17 +3984,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		NSRunAlertPanel(@"You need a macro!", @"You need at least one macro for Pocket Gnome to function correctly. It can be blank, simply create one in your game menu.", @"Okay", NULL, NULL);
 		return;
 	}
-	
-	// make sure mounting will even work
-	/*if ( [mountCheckbox state] && ![[playerController player] isMounted] && ![playerController isInCombat] ){
-		if ( ![spellController mountSpell:[mountType selectedTag] andFast:YES] ){
-			log(LOG_STARTUP, @"Mounting will fail!");
-			NSBeep();
-			NSRunAlertPanel(@"No valid mount spells found on your action bars!", @"You must have a valid mount spell on ANY action bar in order for 'stay mounted' to function! You may also want to click 'Load All' on the spells tab if you don't see any spells listed under 'Mounts'", @"Okay", NULL, NULL);
-			return;
-		}
-	}*/
-	
+
 	// find our key bindings
 	[bindingsController reloadBindings];
 	BOOL bindingsError = NO;
@@ -4001,6 +4001,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[error appendString:@"\tInteract With Mouseover\n"];
 		bindingsError = YES;
 	}
+	else if ( ![bindingsController bindingForKeyExists:BindingTargetLast] ){
+		[error appendString:@"\tTarget Last Target\n"];
+		bindingsError = YES;
+	}
+	else if ( ![bindingsController bindingForKeyExists:BindingStrafeRight] ){
+		[error appendString:@"\tStrafe Right\n"];
+		bindingsError = YES;
+	}
+	else if ( ![bindingsController bindingForKeyExists:BindingStrafeLeft] ){
+		[error appendString:@"\tStrafe Left\n"];
+		bindingsError = YES;
+	}	
 	if ( bindingsError ){
 		log(LOG_STARTUP, @"All keys aren't bound!");
 		NSBeep();
@@ -4511,7 +4523,7 @@ NSMutableDictionary *_diffDict = nil;
 		log(LOG_PARTY, @"Command recieved, stop following.");
 		self.partyFollowSuspended = YES;
 		self.evaluationInProgress = nil;
-		if ( [self followUnit] ) [playerController setPrimaryTarget: [self followUnit]];
+		if ( [self followUnit] ) [playerController targetGuid:[[self followUnit] GUID]];
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%c/salute%c", '\n', '\n']];
 		self.followUnit = nil;		
 	} else 
@@ -4775,13 +4787,15 @@ NSMutableDictionary *_diffDict = nil;
 // called every 30 seconds
 - (void)afkTimer: (NSTimer*)timer {
 	
-	// don't need this if we're botting since we're doing things!
-	if ( (self.isBotting || ![playerController playerIsValid]) && 
-		// Addition to kick in AFK when in party mode on flying mounts
-		(![movementController movementType] == MovementType_CTM || ![antiAFKButton state] ) )
-		return;
+	if (  ![playerController playerIsValid] ) return;
 	
-	//log(LOG_GENERAL, @"[AFK] Attempt: %d", _afkTimerCounter);
+	// don't need this if we're botting since we're doing things!
+	if ( self.isBotting && 
+		// Addition to kick in AFK when in party mode on flying mounts
+		( ![movementController movementType] == MovementType_CTM || ![antiAFKButton state] || [movementController isMoving] || self.evaluationInProgress) 
+		) return;
+	
+	log(LOG_DEV, @"[AFK] Attempt: %d", _afkTimerCounter);
 	
 	
 	if ( [antiAFKButton state] ){
