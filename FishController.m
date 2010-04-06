@@ -390,7 +390,7 @@
 		float distance = [[bobber position] distanceToPosition: [_nearbySchool position]];
 		
 		// Fish again! Didn't land in the school!
-		if ( distance > 4.1f ){
+		if ( distance > 2.6f ){
 			_ignoreIsFishing = YES;
 			
 			[self fishCast];
