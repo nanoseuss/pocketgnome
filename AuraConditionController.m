@@ -17,7 +17,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"AuraCondition" owner: self]) {
-            PGLog(@"Error loading AuraCondition.nib.");
+            log(LOG_GENERAL, @"Error loading AuraCondition.nib.");
             
             [self release];
             self = nil;

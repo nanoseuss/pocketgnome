@@ -93,7 +93,7 @@
             diff = strSize.width - pointRect.size.width;
             pointRect.size.width += diff;
             pointRect.origin.x -= (diff/2.0f);
-            PGLog(@"Fixing rect size for %f %@", strSize.width, NSStringFromRect(pointRect));
+            log(LOG_GENERAL, @"Fixing rect size for %f %@", strSize.width, NSStringFromRect(pointRect));
         }*/
         [numStr drawInRect: NSMakeRect(x, y, strSize.width, strSize.height)];
     }

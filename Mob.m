@@ -2,7 +2,7 @@
 //  Mob.m
 //  Pocket Gnome
 //
-//  Created by Jon Drummond on 12/15/07.
+//  Created by Jon Drummond on 12/20/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
 

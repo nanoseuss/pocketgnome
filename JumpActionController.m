@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"JumpAction" owner: self]) {
-            PGLog(@"Error loading JumpAction.nib.");
+            log(LOG_GENERAL, @"Error loading JumpAction.nib.");
             
             [self release];
             self = nil;

@@ -11,9 +11,10 @@
 @class RouteCollection;
 
 @interface Battleground : NSObject {
-
+	
 	NSString *_name;
-	int _zone;		// what zone is this BG associated with?
+	int _zone;			// what zone is this BG associated with
+	int _queueID;		// what ID should we send in our queue macro!
 	BOOL _enabled;
 	
 	// we'll never actually save this to the disk (it will be part of PvPBehavior, so we have to track this)
@@ -23,12 +24,13 @@
 }
 
 @property (readonly) int zone;
+@property (readonly) int queueID;
 @property (readonly, retain) NSString *name;
 @property (readwrite, assign) BOOL enabled;
 @property (readwrite, retain) RouteCollection *routeCollection;
 @property (readwrite, assign) BOOL changed;
 
-+ (id)battlegroundWithName: (NSString*)name andZone: (int)zone;
++ (id)battlegroundWithName: (NSString*)name andZone: (int)zone andQueueID: (int)queueID;
 
 - (BOOL)isValid;
 

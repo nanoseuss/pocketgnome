@@ -1,5 +1,5 @@
 //
-//  MacroController.h
+//  MacroController.m
 //  Pocket Gnome
 //
 //  Created by Josh on 9/21/09.

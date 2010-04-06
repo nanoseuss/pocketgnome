@@ -116,7 +116,7 @@ static ActionMenusController *sharedMenus = nil;
 	[item setIndentationLevel: 0];
 	[item setTag: 1];
 	[interactMenu addItem: item];
-	//PGLog(@"interact menu %@", mobController);
+	//log(LOG_GENERAL, @"interact menu %@", mobController);
 	for(Mob *mob in [mobController mobsWithinDistance:8 levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO]) {
 		item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@", [mob name]] action: nil keyEquivalent: @""] autorelease];
 		[item setTag: [mob entryID]];

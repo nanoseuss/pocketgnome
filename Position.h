@@ -2,7 +2,7 @@
 //  Position.h
 //  Pocket Gnome
 //
-//  Created by Jon Drummond on 12/17/07.
+//  Created by Jon Drummond on 12/16/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
 

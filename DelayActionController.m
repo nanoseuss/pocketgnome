@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"DelayAction" owner: self]) {
-            PGLog(@"Error loading DelayAction.nib.");
+            log(LOG_GENERAL, @"Error loading DelayAction.nib.");
             
             [self release];
             self = nil;

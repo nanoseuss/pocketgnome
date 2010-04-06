@@ -12,7 +12,7 @@
 @implementation NSString (Trash)
 
 - (BOOL)moveToTrash {
-    PGLog(@"Deleting: \"%s\"", [self fileSystemRepresentation]);
+    log(LOG_GENERAL, @"Deleting: \"%s\"", [self fileSystemRepresentation]);
     FSRef fileRef;
     if(FSPathMakeRef( (const UInt8 *)[self fileSystemRepresentation], &fileRef, NULL ) == noErr) {
         if(FSMoveObjectToTrashSync(&fileRef, NULL, kFSFileOperationDefaultOptions) == noErr) {

@@ -17,7 +17,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"InventoryCondition" owner: self]) {
-            PGLog(@"Error loading InventoryCondition.nib.");
+            log(LOG_GENERAL, @"Error loading InventoryCondition.nib.");
             
             [self release];
             self = nil;

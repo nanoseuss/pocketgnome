@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"MailAction" owner: self]) {
-            PGLog(@"Error loading MailAction.nib.");
+            log(LOG_GENERAL, @"Error loading MailAction.nib.");
             
             [self release];
             self = nil;

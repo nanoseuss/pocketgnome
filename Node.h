@@ -1,5 +1,5 @@
 //
-//  Object.h
+//  Node.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 12/27/07.

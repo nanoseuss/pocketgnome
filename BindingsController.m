@@ -1,5 +1,5 @@
 //
-//  BindingsController.m
+//  BindingsController.h
 //  Pocket Gnome
 //
 //  Created by Josh on 1/28/10.
@@ -534,7 +534,6 @@ typedef struct WoWBinding {
 	}
 	
 	if ( code != -1 ){
-		
 		[_bindingsToCodes setObject:[NSDictionary dictionaryWithObjectsAndKeys:
 									 [NSNumber numberWithInt:offset],		@"Offset",
 									 [NSNumber numberWithInt:code],			@"Code",
@@ -553,12 +552,13 @@ typedef struct WoWBinding {
 	// reset
 	offset = -1; code = -1; modifier = 0x0;
 	
+	// get pet attack!
 	if ( [self codeForBinding:@"TARGETLASTTARGET"] >= 0 ){
 		code = [self codeForBinding:@"TARGETLASTTARGET"];
 		modifier = [self modifierForBinding:@"TARGETLASTTARGET"];
 		offset = BAR6_OFFSET;
 		
-		log(LOG_BINDINGS, @"Found binding for target last target: %d 0x%X 0x%X", code, modifier, offset);
+		log(LOG_BINDINGS, @"[Bindings] Found binding for target last target: %d 0x%X 0x%X", code, modifier, offset);
 	}
 	
 	if ( code != -1 ){
@@ -568,61 +568,13 @@ typedef struct WoWBinding {
 									 [NSNumber numberWithInt:modifier],		@"Modifier",
 									 nil]
 							 forKey:BindingTargetLast];
-	} else{
-		log(LOG_BINDINGS, @"No Target Last Target found! Bind a key to 'Target Last Target'!");
+	}
+	else{
+		log(LOG_BINDINGS, @"[Bindings] No Target Last Target found! Bind a key to 'Target Last Target'!");
 	}
 	
-	//
-	//	STRAFE RIGHT
-	//
 	
-	// reset
-	offset = -1; code = -1; modifier = 0x0;
 	
-	if ( [self codeForBinding:@"STRAFERIGHT"] >= 0 ){
-		code = [self codeForBinding:@"STRAFERIGHT"];
-		modifier = [self modifierForBinding:@"STRAFERIGHT"];
-		offset = BAR6_OFFSET;
-		
-		log(LOG_BINDINGS, @"Found binding for strafe right: %d 0x%X 0x%X", code, modifier, offset);
-	}
-	
-	if ( code != -1 ){
-		[_bindingsToCodes setObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									 [NSNumber numberWithInt:offset],		@"Offset",
-									 [NSNumber numberWithInt:code],			@"Code",
-									 [NSNumber numberWithInt:modifier],		@"Modifier",
-									 nil]
-							 forKey:BindingStrafeRight];
-	} else{
-		log(LOG_BINDINGS, @"No Strafe Right found! Bind a key to 'Strafe Right'!");
-	}
-
-	//
-	//	STRAFE LEFT
-	//
-	
-	// reset
-	offset = -1; code = -1; modifier = 0x0;
-	
-	if ( [self codeForBinding:@"STRAFELEFT"] >= 0 ){
-		code = [self codeForBinding:@"STRAFELEFT"];
-		modifier = [self modifierForBinding:@"STRAFELEFT"];
-		offset = BAR6_OFFSET;
-		
-		log(LOG_BINDINGS, @"Found binding for strafe left: %d 0x%X 0x%X", code, modifier, offset);
-	}
-	
-	if ( code != -1 ){
-		[_bindingsToCodes setObject:[NSDictionary dictionaryWithObjectsAndKeys:
-									 [NSNumber numberWithInt:offset],		@"Offset",
-									 [NSNumber numberWithInt:code],			@"Code",
-									 [NSNumber numberWithInt:modifier],		@"Modifier",
-									 nil]
-							 forKey:BindingStrafeLeft];
-	} else{
-		log(LOG_BINDINGS, @"No Strafe Left found! Bind a key to 'Strafe Left'!");
-	}
 	
 	
 }

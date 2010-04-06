@@ -48,8 +48,8 @@
     Route *copy = [[[self class] allocWithZone: zone] init];
     copy.waypoints = self.waypoints;
     
-    // PGLog(@"Old route: %@", self.waypoints);
-    // PGLog(@"New route: %@", copy.waypoints);
+    // log(LOG_GENERAL, @"Old route: %@", self.waypoints);
+    // log(LOG_GENERAL, @"New route: %@", copy.waypoints);
     
     return copy;
 }
@@ -92,7 +92,7 @@
     float minDist = INFINITY, tempDist = 0;
     for ( Waypoint *waypoint in [self waypoints] ) {
         tempDist = [position distanceToPosition: [waypoint position]];
-		//PGLog(@" %0.2f < %0.2f  %@", tempDist, minDist, waypoint);
+		//log(LOG_GENERAL, @" %0.2f < %0.2f  %@", tempDist, minDist, waypoint);
         if ( (tempDist < minDist) && (tempDist >= 0.0f) ) {
             minDist = tempDist;
             closestWP = waypoint;
@@ -108,14 +108,14 @@
     if(waypoint != nil)
         [_waypoints addObject: waypoint];
     else
-        PGLog(@"addWaypoint: failed; waypoint is nil");
+        log(LOG_GENERAL, @"addWaypoint: failed; waypoint is nil");
 }
 
 - (void)insertWaypoint: (Waypoint*)waypoint atIndex: (unsigned)index {
     if(waypoint != nil && index >= 0 && index <= [_waypoints count])
         [_waypoints insertObject: waypoint atIndex: index];
     else
-        PGLog(@"insertWaypoint:atIndex: failed; either waypoint is nil or index is out of bounds");
+        log(LOG_GENERAL, @"insertWaypoint:atIndex: failed; either waypoint is nil or index is out of bounds");
 }
 
 - (void)removeWaypoint: (Waypoint*)waypoint {

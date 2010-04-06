@@ -102,7 +102,7 @@
         //[newRule setResultType: [conditionResultTypeSegment selectedTag]];
         //[newRule setActionID: [[resultActionDropdown selectedItem] tag]];
         
-        // PGLog(@"Created Rule: %@", newRule);
+        // log(LOG_GENERAL, @"Created Rule: %@", newRule);
     }
     
     return [newRule autorelease];
@@ -165,7 +165,7 @@
 }
 
 - (IBAction)addCondition:(id)sender {
-    //PGLog(@"adding condition");
+    //log(LOG_GENERAL, @"adding condition");
     
     int type = [[spellRuleTypeDropdown selectedItem] tag];
     ConditionController *newRule = nil;

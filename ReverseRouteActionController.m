@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"ReverseRouteAction" owner: self]) {
-            PGLog(@"Error loading ReverseRouteAction.nib.");
+            log(LOG_GENERAL, @"Error loading ReverseRouteAction.nib.");
             
             [self release];
             self = nil;

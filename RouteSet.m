@@ -123,7 +123,7 @@
 
 - (void)setParent:(RouteCollection*)myParent{
 	
-	//PGLog(@"SETTING PARENT OF %@ TO %@", self, myParent);
+	//log(LOG_GENERAL, @"SETTING PARENT OF %@ TO %@", self, myParent);
 	[_parent release];
 	_parent = [myParent retain];
 	
@@ -138,7 +138,7 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
-	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	log(LOG_GENERAL, @"%@ changed! %@ %@", self, keyPath, change);
 	self.changed = YES;
 }
 

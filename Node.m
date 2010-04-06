@@ -1,5 +1,5 @@
 //
-//  Object.m
+//  Node.m
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 12/27/07.
@@ -188,7 +188,7 @@ enum eNodeNameStructFields {
 - (void)monitor{
 	
 	if ( !self || ![self isValid] ){
-		PGLog(@"[Node] Invalid %@", self);
+		log(LOG_GENERAL, @"[Node] Invalid %@", self);
 		return;
 	}
 	
@@ -200,7 +200,7 @@ enum eNodeNameStructFields {
 	[_memory loadDataForObject: self atAddress: ([self infoAddress] + GAMEOBJECT_BYTES_1) Buffer: (Byte *)&value4 BufLength: sizeof(value4)];
 	
 	
-	PGLog(@"[Node] %d %d %d %d %d 0x%X %@", value, value1, value2, value3, [self validToLoot], value4, self);
+	log(LOG_GENERAL, @"[Node] %d %d %d %d %d 0x%X %@", value, value1, value2, value3, [self validToLoot], value4, self);
 	
 	// before looted
 	//	[Node] 196 20400 11983 255 1 0x301 <Node: "Saronite Deposit" (189980)>
@@ -452,7 +452,7 @@ enum eNodeNameStructFields {
     [_downloadData release]; _downloadData = nil;
  
     // inform the user
-    PGLog(@"Connection failed! Error - %@ %@",
+    log(LOG_GENERAL, @"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey:NSErrorFailingURLStringKey]);
 }

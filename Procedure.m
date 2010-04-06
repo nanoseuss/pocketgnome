@@ -99,14 +99,14 @@
     if(rule != nil)
         [_rules addObject: rule];
     else
-        PGLog(@"addRule: failed; rule is nil");
+        log(LOG_GENERAL, @"addRule: failed; rule is nil");
 }
 
 - (void)insertRule: (Rule*)rule atIndex: (unsigned)index {
     if(rule != nil && index >= 0 && index <= [_rules count])
         [_rules insertObject: rule atIndex: index];
     else
-        PGLog(@"insertRule:atIndex: failed; rule %@ index %d is out of bounds", rule, index);
+        log(LOG_GENERAL, @"insertRule:atIndex: failed; rule %@ index %d is out of bounds", rule, index);
 }
 
 - (void)replaceRuleAtIndex: (int)index withRule: (Rule*)rule {
@@ -114,7 +114,7 @@
     if((rule != nil) && (index >= 0) && (index < [self ruleCount])) {
         [_rules replaceObjectAtIndex: index withObject: rule];
     }else
-        PGLog(@"replaceRule:atIndex: failed; either rule is nil or index is out of bounds");
+        log(LOG_GENERAL, @"replaceRule:atIndex: failed; either rule is nil or index is out of bounds");
 }
 
 - (void)removeRule: (Rule*)rule {

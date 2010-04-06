@@ -10,6 +10,7 @@
 #import "Controller.h"
 #import "BotController.h"
 #import "PlayerDataController.h"
+#import "OffsetController.h"
 
 #import "Player.h"
 #import "MemoryAccess.h"
@@ -25,8 +26,14 @@
     if (self != nil) {
 		
 		_uberQuickTimer = nil;
+		_oneSecondTimer = nil;
+		_fiveSecondTimer = nil;
+		_twentySecondTimer = nil;
+		
 		_lastPlayerZone = -1;
 		_lastBGStatus = -1;
+		_lastBattlefieldWinnerStatus = -1;
+		_memory = nil;
 	
 		// Notifications
 		[[NSNotificationCenter defaultCenter] addObserver: self
@@ -37,11 +44,21 @@
                                                  selector: @selector(playerIsInvalid:) 
                                                      name: PlayerIsInvalidNotification 
                                                    object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(memoryValid:) 
+                                                     name: MemoryAccessValidNotification 
+                                                   object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(memoryInvalid:) 
+                                                     name: MemoryAccessInvalidNotification 
+                                                   object: nil];
+		
     }
     return self;
 }
 
 - (void) dealloc{
+	[_memory release]; _memory = nil;
     [super dealloc];
 }
 
@@ -49,25 +66,34 @@
 
 - (void)playerIsValid: (NSNotification*)not {
 	_uberQuickTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1f target: self selector: @selector(uberQuickTimer:) userInfo: nil repeats: YES];
+	//_oneSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 1.0f target: self selector: @selector(oneSecondTimer:) userInfo: nil repeats: YES];
 	//_fiveSecondTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(fiveSecondTimer:) userInfo: nil repeats: YES];
-	_twentySecondTimer = [NSTimer scheduledTimerWithTimeInterval: 10.0f target: self selector: @selector(twentySecondTimer:) userInfo: nil repeats: YES];
+	//_twentySecondTimer = [NSTimer scheduledTimerWithTimeInterval: 10.0f target: self selector: @selector(twentySecondTimer:) userInfo: nil repeats: YES];
 }
 
 - (void)playerIsInvalid: (NSNotification*)not {
 	[_uberQuickTimer invalidate]; _uberQuickTimer = nil;
 	[_fiveSecondTimer invalidate]; _fiveSecondTimer = nil;
+	[_oneSecondTimer invalidate]; _oneSecondTimer = nil;
 	[_twentySecondTimer invalidate]; _twentySecondTimer = nil;
+}
+
+- (void)memoryValid: (NSNotification*)not {
+	_memory = [[controller wowMemoryAccess] retain];
+}
+
+- (void)memoryInvalid: (NSNotification*)not {
+	[_memory release]; _memory = nil;
 }
 
 #pragma mark Timers
 
 - (void)twentySecondTimer: (NSTimer*)timer {
-		
-	// we will use this to auto-loot for us :-)
-	if ( [botController isBotting] ){
-		
-	}
 	
+}
+
+- (void)oneSecondTimer: (NSTimer*)timer {
+
 }
 
 - (void)fiveSecondTimer: (NSTimer*)timer {
@@ -91,7 +117,7 @@
 		if ( _lastBGStatus != -1 ){
 			[[NSNotificationCenter defaultCenter] postNotificationName: EventBattlegroundStatusChange object: [NSNumber numberWithInt:bgStatus]];
 		}
-		PGLog(@"[Events] BGStatus change from %d to %d", _lastBGStatus, bgStatus);
+		log(LOG_GENERAL, @"[Events] BGStatus change from %d to %d", _lastBGStatus, bgStatus);
 	}
 	
 	_lastBGStatus = bgStatus;

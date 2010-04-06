@@ -1,5 +1,5 @@
 //
-//  PvPController.m
+//  PvPController.h
 //  Pocket Gnome
 //
 //  Created by Josh on 2/24/10.
@@ -35,7 +35,7 @@
 		
 		_nameBeforeRename = nil;
 		
-		PGLog(@"[PvP] Loaded %d objects", [self.behaviors count] );
+		log(LOG_GENERAL, @"[PvP] Loaded %d objects", [self.behaviors count] );
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
 		
@@ -51,7 +51,7 @@
 - (void)awakeFromNib {
     self.minSectionSize = [self.view frame].size;
     self.maxSectionSize = [self.view frame].size;
-
+	
 	// delay setting our current behavior (as the route objects might not have loaded yet)
 	[self performSelector:@selector(initCurrentRoute) withObject:nil afterDelay:0.5f];
 }
@@ -82,11 +82,11 @@
 - (void)saveBehaviors{
 	for ( PvPBehavior *behavior in self.behaviors ){
 		if ( behavior.changed ){
-			PGLog(@"SAVING %@", behavior);
+			log(LOG_GENERAL, @"SAVING %@", behavior);
 			[self saveObject:behavior];
 		}
 		else{
-			PGLog(@"NOT SAVING %@", behavior);
+			log(LOG_GENERAL, @"NOT SAVING %@", behavior);
 		}
 	}
 }
@@ -106,7 +106,7 @@
 	//[self willChangeValueForKey: @"currentBehavior"];
     //[self didChangeValueForKey: @"currentBehavior"];
 	
-	PGLog(@"validateBindings");
+	log(LOG_GENERAL, @"validateBindings");
 	
 	// assign default routes so it's not "No Value"
 	if ( self.currentBehavior.AlteracValley.routeCollection == nil )
@@ -143,11 +143,11 @@
 	
 	// found a new one
 	if ( newRC ){
-		//PGLog(@"[PvP] Found route collection for %@, 0x%X vs. 0x%X", bg, bg.routeCollection, newRC);
+		//log(LOG_GENERAL, @"[PvP] Found route collection for %@, 0x%X vs. 0x%X", bg, bg.routeCollection, newRC);
 		bg.routeCollection = newRC;
 	}
 	else{
-		PGLog(@"[PvP] Didn't find for %@? %@", bg, bg.routeCollection);
+		log(LOG_GENERAL, @"[PvP] Didn't find for %@? %@", bg, bg.routeCollection);
 		bg.routeCollection = nil;
 	}
 }
@@ -193,7 +193,7 @@
 	
     //[ruleTable reloadData];
     
-    PGLog(@"Added behavior: %@", [behavior name]);
+    log(LOG_GENERAL, @"Added behavior: %@", [behavior name]);
 }
 
 #pragma mark UI
@@ -278,7 +278,7 @@
 			[self addBehavior: importedBehavior];
 		}
 		else{
-			PGLog(@"[PvP] Error on importing behavior, object %@", importedBehavior);
+			log(LOG_GENERAL, @"[PvP] Error on importing behavior, object %@", importedBehavior);
 		}
     }
     
@@ -325,10 +325,10 @@
 	
 	for ( PvPBehavior *behavior in self.behaviors ){
 		
-		PGLog(@"%@ %d 0x%X", behavior, [behavior changed], behavior);
+		log(LOG_GENERAL, @"%@ %d 0x%X", behavior, [behavior changed], behavior);
 		
 		if ( behavior.changed ){
-			PGLog(@"[PvP] Saving %@ 0x%X", behavior, behavior);
+			log(LOG_GENERAL, @"[PvP] Saving %@ 0x%X", behavior, behavior);
 			
 			[behavior setChanged:NO];
 			

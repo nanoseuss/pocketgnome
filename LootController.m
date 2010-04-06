@@ -161,7 +161,7 @@
 		
 		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){
-			PGLog(@"[Loot] Sending escape to close open chat!");
+			log(LOG_GENERAL, @"[Loot] Sending escape to close open chat!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
@@ -177,7 +177,7 @@
 		
 		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){
-			PGLog(@"[Loot] Sending escape to close open chat!");
+			log(LOG_GENERAL, @"[Loot] Sending escape to close open chat!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}

@@ -15,7 +15,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"ProximityCount" owner: self]) {
-            PGLog(@"Error loading ProximityCount.nib.");
+            log(LOG_GENERAL, @"Error loading ProximityCount.nib.");
             
             [self release];
             self = nil;

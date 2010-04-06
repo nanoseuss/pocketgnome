@@ -563,7 +563,7 @@ enum NPCFlags
 // 2 reads
 - (BOOL)isDead {
 	int currentHealth = [self currentHealth];
-    if( currentHealth == 0 ) {
+    if ( currentHealth == 0 ) {
         if([self isFeignDeath]) {
             return NO;
         }

@@ -73,7 +73,7 @@ static InventoryController *sharedInventory = nil;
     
     NSString *name = [item name];
     if(name) {
-        // PGLog(@"Saving item: %@", item);
+        // log(LOG_GENERAL, @"Saving item: %@", item);
         [_itemNameList setObject: name forKey: [NSNumber numberWithInt: [item entryID]]];
     }
 }
@@ -129,7 +129,7 @@ static InventoryController *sharedInventory = nil;
             count += [item count];
         }
     }
-    //PGLog(@"Found count %d for item %@", count, refItem);
+    //log(LOG_GENERAL, @"Found count %d for item %@", count, refItem);
     return count;
 }
 
@@ -142,7 +142,7 @@ static InventoryController *sharedInventory = nil;
             count += [item count];
         }
     }
-    //PGLog(@"Found count %d for item %@", count, refItem);
+    //log(LOG_GENERAL, @"Found count %d for item %@", count, refItem);
     return count;
 }
 
@@ -347,6 +347,26 @@ static InventoryController *sharedInventory = nil;
     return menu;
 }
 
+- (int)pvpMarks{
+	
+	int stacks = 0;
+	for ( Item *item in _objectList ){
+		
+		switch ( [item entryID] ){
+			case 20560:		// Alterac Valley Mark of Honor
+			case 20559:		// Arathi Basin Mark of Honor
+			case 29024:		// Eye of Storm Mark of Honor
+			case 47395:		// Isle of Conquest Mark of Honor
+			case 42425:		// Strand of the Ancients Mark of Honor
+			case 20558:		// Warsong Gulch Mark of Honor
+				stacks += [item count];
+				break;
+		}
+	}
+	
+	return stacks;	
+}
+
 // return an array of items for an array of guids
 - (NSArray*)itemsForGUIDs: (NSArray*) guids{
 	NSMutableArray *items = [NSMutableArray array];
@@ -420,7 +440,7 @@ static InventoryController *sharedInventory = nil;
 }
 
 - (BOOL)arePlayerBagsFull{
-	//PGLog(@"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
+	//log(LOG_GENERAL, @"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
 	return [self bagSpacesAvailable] == 0;
 }
 
@@ -524,7 +544,7 @@ static InventoryController *sharedInventory = nil;
 	// reload table
 	[objectsController loadTabData];
 
-    //PGLog(@"enumerateInventory took %.2f seconds...", [date timeIntervalSinceNow]*-1.0);
+    //log(LOG_GENERAL, @"enumerateInventory took %.2f seconds...", [date timeIntervalSinceNow]*-1.0);
 }
 
 - (WoWObject*)objectForRowIndex:(int)rowIndex{

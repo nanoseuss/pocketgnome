@@ -2,7 +2,7 @@
 //  Item.m
 //  Pocket Gnome
 //
-//  Created by Jon Drummond on 12/27/07.
+//  Created by Jon Drummond on 12/20/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
 
@@ -35,10 +35,10 @@ enum eItemFields {
         // size: 0x90; 12 enchant slots, each size 0xC
 	ITEM_FIELD_PROPERTY_SEED =          0xE8,
 	ITEM_FIELD_RANDOM_PROPERTIES_ID =   0xEC,
-//	ITEM_FIELD_ITEM_TEXT_ID =           0xF0,  // Removed in 3.3.3
-	ITEM_FIELD_DURABILITY =             0xF0,
-	ITEM_FIELD_MAXDURABILITY =          0xF4,
-	ITEM_FIELD_PADDING =                0xF8,
+    // ITEM_FIELD_ITEM_TEXT_ID =           0xF0,  // Removed in 3.3.3
+    ITEM_FIELD_DURABILITY =             0xF0,
+    ITEM_FIELD_MAXDURABILITY =          0xF4,
+    ITEM_FIELD_PADDING =                0xF8,
 	TOTAL_ITEM_FIELDS =                 0x26
 };
 
@@ -399,7 +399,7 @@ enum ItemFlags
     [_connection release];      _connection = nil;
     [_downloadData release];    _downloadData = nil;
     // inform the user
-    PGLog(@"Connection failed! Error - %@ %@",
+    log(LOG_GENERAL, @"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey: NSErrorFailingURLStringKey]);
 }
@@ -419,7 +419,7 @@ enum ItemFlags
         
         // check to see if this is a valid item
         if([scanner scanUpToString: @"Error - Wowhead" intoString: nil] && ![scanner isAtEnd]) {
-            PGLog(@"Item %@ does not exist.", self);
+            log(LOG_GENERAL, @"Item %@ does not exist.", self);
             return;
         } else {
             [scanner setScanLocation: 0];
@@ -431,7 +431,7 @@ enum ItemFlags
             if([scanner scanUpToString: @"]]></name>" intoString: &newName]) {
                 if(newName && [newName length]) {
                     [self setName: newName];
-                    //PGLog(@"Loaded name: %@", newName);
+                    //log(LOG_GENERAL, @"Loaded name: %@", newName);
                     [[NSNotificationCenter defaultCenter] postNotificationName: ItemNameLoadedNotification object: self];
                 }
             }

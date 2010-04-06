@@ -17,7 +17,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"RuneCondition" owner: self]) {
-            PGLog(@"Error loading RuneCondition.nib.");
+            log(LOG_GENERAL, @"Error loading RuneCondition.nib.");
             
             [self release];
             self = nil;

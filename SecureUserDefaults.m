@@ -44,7 +44,7 @@ static SecureUserDefaults* secureDefaults = nil;
             [[UKKQueue sharedFileWatcher] setDelegate: self];
             [[UKKQueue sharedFileWatcher] addPathToQueue: prefPath];
         } else {
-            PGLog(@"Preferences cannot be secured because the file cannot be found.");
+            log(LOG_GENERAL, @"Preferences cannot be secured because the file cannot be found.");
         }
         
     }
@@ -92,7 +92,7 @@ static SecureUserDefaults* secureDefaults = nil;
                 return YES; // we're good already
             } else {
                 // current permissions are bad
-                // PGLog(@"Permissions %d:%d %O are incorrect.", ownerID, groupID, posixPm);
+                // log(LOG_GENERAL, @"Permissions %d:%d %O are incorrect.", ownerID, groupID, posixPm);
             }
             
             NSDictionary *newPermissions = [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -104,10 +104,10 @@ static SecureUserDefaults* secureDefaults = nil;
             // reset permissions
             NSError *error;
             if(![[NSFileManager defaultManager] setAttributes: newPermissions ofItemAtPath: self.prefPath error: &error]) {
-                PGLog(@"Error %@ setting permissions on preferences file.", error);
+                log(LOG_GENERAL, @"Error %@ setting permissions on preferences file.", error);
                 return NO;
             }
-            // PGLog(@"Secured preferences.");
+            // log(LOG_GENERAL, @"Secured preferences.");
         } else {
             // preferences file does not exist
             return NO;

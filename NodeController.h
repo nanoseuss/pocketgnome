@@ -1,5 +1,5 @@
 //
-//  WorldObjectController.h
+//  NodeController.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 12/29/07.

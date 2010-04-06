@@ -64,7 +64,7 @@
         if(self.name) {
             NSRange range = [self.name rangeOfString: @"html>"];
             if( ([self.name length] == 0) || (range.location != NSNotFound)) {
-                PGLog(@"Name for quest %@ is invalid.", self.questID);
+                log(LOG_GENERAL, @"Name for quest %@ is invalid.", self.questID);
                 self.name = nil;
             }
         }
@@ -170,7 +170,7 @@
     [_downloadData release]; _downloadData = nil;
 	
     // inform the user
-    PGLog(@"Connection failed! Error - %@ %@",
+    log(LOG_GENERAL, @"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey:NSErrorFailingURLStringKey]);
 }
@@ -197,12 +197,12 @@
                     break;
             }
             
-            PGLog(@"Quest %d does not exist on wowhead.", questID);
+            log(LOG_GENERAL, @"Quest %d does not exist on wowhead.", questID);
             return;
         } else {
             if( [scanner scanUpToString: @"Bad Request" intoString: nil] && ![scanner isAtEnd]) {
                 int questID = [[self questID] intValue];
-                PGLog(@"Error loading quest %d.", questID);
+                log(LOG_GENERAL, @"Error loading quest %d.", questID);
                 return;
             } else {
                 [scanner setScanLocation: 0];
@@ -311,7 +311,7 @@
 						
 						// Add it to our required items list
 						[items addObject:questItem];
-						//PGLog(@"%@ %@ %@", self.name, questItem.item, questItem.quantity );
+						//log(LOG_GENERAL, @"%@ %@ %@", self.name, questItem.item, questItem.quantity );
 					}
 				} else {
 					searching = false;
@@ -328,7 +328,7 @@
 	
 	
 	
-	//PGLog(@"%@ %@ %@ %@ %@", self.name, self.level, self.requiredlevel, self.startnpc, self.endnpc);
+	//log(LOG_GENERAL, @"%@ %@ %@ %@ %@", self.name, self.level, self.requiredlevel, self.startnpc, self.endnpc);
 }
 
 @end

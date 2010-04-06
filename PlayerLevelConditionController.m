@@ -15,7 +15,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"PlayerLevelCondition" owner: self]) {
-            PGLog(@"Error loading PlayerLevelCondition.nib.");
+            log(LOG_GENERAL, @"Error loading PlayerLevelCondition.nib.");
             
             [self release];
             self = nil;

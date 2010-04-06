@@ -1,5 +1,5 @@
 //
-//  BuffController.h
+//  AuraController.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 12/26/07.

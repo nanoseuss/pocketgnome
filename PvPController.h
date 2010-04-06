@@ -17,7 +17,7 @@
 @interface PvPController : SaveData {
 	
 	IBOutlet WaypointController *waypointController;
-
+	
 	IBOutlet NSPanel *renamePanel;
 	IBOutlet NSView *view;
 	

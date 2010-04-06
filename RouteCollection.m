@@ -67,7 +67,7 @@
 - (id)copyWithZone:(NSZone *)zone{
     RouteCollection *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
-	PGLog(@"copy is changed?");
+	log(LOG_GENERAL, @"copy is changed?");
 	copy.changed = YES;
 	copy.startUUID = self.startUUID;
 	copy.startRouteOnDeath = self.startRouteOnDeath;
@@ -199,7 +199,7 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
-	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	log(LOG_GENERAL, @"%@ changed! %@ %@", self, keyPath, change);
 	self.changed = YES;
 }
 

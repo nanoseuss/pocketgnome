@@ -42,11 +42,11 @@
 		
 		// found
 		if ( [corpse parentLowGUID] == GUID ){
-			//PGLog(@"Player corpse found: %qu", GUID);
+			//log(LOG_GENERAL, @"Player corpse found: %qu", GUID);
 			
 			return [corpse position];
 		}
-		//PGLog(@"Corpse: %@ Name: %@", corpse, [corpse name]);
+		//log(LOG_GENERAL, @"Corpse: %@ Name: %@", corpse, [corpse name]);
 	}
 	
 	return nil;

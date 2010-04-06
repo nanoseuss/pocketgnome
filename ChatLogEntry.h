@@ -1,10 +1,11 @@
 //
-//  ChatLogEntry.h
+//  ChatLogController.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 4/3/09.
 //  Copyright 2009 Savory Software, LLC. All rights reserved.
 //
+
 
 #import <Cocoa/Cocoa.h>
 
@@ -45,7 +46,6 @@
 @property (readonly) BOOL isWhisperSent;
 @property (readonly) BOOL isWhisperReceived;
 @property (readonly) BOOL isChannel;
-@property (readonly) BOOL isParty;
 
 @property (readonly) NSArray *whisperTypes;
 

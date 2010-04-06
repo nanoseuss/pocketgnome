@@ -15,7 +15,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"TempEnchantCondition" owner: self]) {
-            PGLog(@"Error loading TempEnchantCondition.nib.");
+            log(LOG_GENERAL, @"Error loading TempEnchantCondition.nib.");
             
             [self release];
             self = nil;

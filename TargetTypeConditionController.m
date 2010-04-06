@@ -15,7 +15,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"TargetType" owner: self]) {
-            PGLog(@"Error loading TargetType.nib.");
+            log(LOG_GENERAL, @"Error loading TargetType.nib.");
             
             [self release];
             self = nil;

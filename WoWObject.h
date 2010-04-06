@@ -1,5 +1,5 @@
 //
-//  Unit.h
+//  WoWObject.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 12/29/07.

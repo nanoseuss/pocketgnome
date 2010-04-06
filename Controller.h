@@ -5,6 +5,7 @@
 //  Created by Jon Drummond on 12/15/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
+//
 
 #import <Cocoa/Cocoa.h>
 #import "MemoryAccess.h"
@@ -29,18 +30,10 @@
 @class CombatProfileEditor;
 @class ObjectsController;
 @class PvPController;
-@class CombatController;
-@class MovementController;
-
 
 #define MemoryAccessValidNotification       @"MemoryAccessValidNotification"
 #define MemoryAccessInvalidNotification     @"MemoryAccessInvalidNotification"
 #define DidLoadViewInMainWindowNotification @"DidLoadViewInMainWindowNotification"
-
-#define GameState_Unknown               -1
-#define GameState_LoggingIn             0
-#define GameState_Valid                 1
-#define GameState_Loading               2
 
 BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 
@@ -63,7 +56,6 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet ObjectsController		*objectsController;
 	IBOutlet PvPController			*pvpController;
-	IBOutlet MovementController		*movementController;
 	
     IBOutlet id mainWindow;
     IBOutlet NSToolbar *mainToolbar;
@@ -179,6 +171,8 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (IBAction)testFront: (id)sender;
 
 - (void)traverseNameList;
+
+- (float)getPing;
 @end
 
 @interface NSObject (MemoryViewControllerExtras)

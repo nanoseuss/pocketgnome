@@ -1,5 +1,5 @@
 //
-//  StatisticsController.h
+//  StatisticsController.m
 //  Pocket Gnome
 //
 //  Created by Josh on 10/12/09.
@@ -10,12 +10,10 @@
 
 @class Controller;
 @class PlayerDataController;
-@class CombatController;
 
 @interface StatisticsController : NSObject {
 	IBOutlet Controller *controller;
 	IBOutlet PlayerDataController *playerController;
-	IBOutlet CombatController *combatController;
 	
 	// player statistics
 	IBOutlet NSTextField	*moneyText;

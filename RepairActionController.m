@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"RepairAction" owner: self]) {
-            PGLog(@"Error loading RepairAction.nib.");
+            log(LOG_GENERAL, @"Error loading RepairAction.nib.");
             
             [self release];
             self = nil;

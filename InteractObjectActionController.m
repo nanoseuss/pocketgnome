@@ -19,7 +19,7 @@
     if (self != nil) {
 		_objects = nil;
         if(![NSBundle loadNibNamed: @"InteractObjectAction" owner: self]) {
-            PGLog(@"Error loading InteractObjectAction.nib.");
+            log(LOG_GENERAL, @"Error loading InteractObjectAction.nib.");
             
             [self release];
             self = nil;

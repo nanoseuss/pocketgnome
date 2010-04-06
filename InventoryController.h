@@ -57,5 +57,8 @@
 - (int)bagSpacesTotal;
 - (BOOL)arePlayerBagsFull;
 
+// Total number of marks (from all BG)
+- (int)pvpMarks;
+
 //- (NSMutableArray*)itemsInBags;
 @end

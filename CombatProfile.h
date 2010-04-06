@@ -1,9 +1,9 @@
 //
-//  IgnoreProfile.h
+//  CombatProfileActionController.h
 //  Pocket Gnome
 //
-//  Created by Jon Drummond on 7/19/08.
-//  Copyright 2008 Savory Software, LLC. All rights reserved.
+//  Created by Josh on 1/19/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
 //
 
 #import <Cocoa/Cocoa.h>
@@ -48,7 +48,7 @@
 - (void)removeEntry: (IgnoreEntry*)entry;
 - (void)removeEntryAtIndex: (unsigned)index;
 
-@property (readwrite, retain) NSMutableArray *entries;
+@property (readwrite, retain) NSArray *entries;
 @property (readwrite, copy) NSString *name;
 @property (readwrite, assign) UInt64 tankUnitGUID;
 @property (readwrite, assign) UInt64 assistUnitGUID;

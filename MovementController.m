@@ -92,9 +92,9 @@
 @implementation MovementController
 
 typedef enum MovementState{
-	MovementState_Unit			= 0,
-	MovementState_Backtrack		= 1,
-	MovementState_Patrol		= 2,
+	MovementState_MovingToObject	= 0,
+	MovementState_Patrolling		= 1,
+	MovementState_Stuck				= 1,
 }MovementState;
 
 + (void)initialize {
@@ -113,7 +113,6 @@ typedef enum MovementState{
     self = [super init];
     if ( self != nil ) {
 		
-		_backtrack = [[NSMutableArray array] retain];
 		_stuckDictionary = [[NSMutableDictionary dictionary] retain];
 		
 		_currentRouteSet = nil;
@@ -153,7 +152,6 @@ typedef enum MovementState{
 }
 
 - (void) dealloc{
-	[_backtrack release];
 	[_stuckDictionary release];
 	
     [super dealloc];
@@ -261,6 +259,7 @@ typedef enum MovementState{
 // in case the object moves
 - (void)stayWithObject:(WoWObject*)obj{
 	
+	// to ensure we don't do this when we shouldn't!
 	if ( ![obj isValid] || obj != self.moveToObject ){
 		return;
 	}
@@ -312,26 +311,25 @@ typedef enum MovementState{
 
 - (void)stopMovement{
 	
-	log(LOG_MOVEMENT, @"Stop Movement...");
+	log(LOG_MOVEMENT, @"Stop Movement.");
 	
 	// check to make sure we are even moving!
 	UInt32 movementFlags = [playerData movementFlags];
 	
+	[self resetMovementTimer];
+	
 	// player is moving
 	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
 		log(LOG_MOVEMENT, @"Player is moving, stopping movement");
-		[self resetMovementTimer];
 		[self moveForwardStop];
 	}
 	
 	else if ( movementFlags & MovementFlag_FlyUp || movementFlags & MovementFlag_FlyDown ){
 		log(LOG_MOVEMENT, @"Player is flying, stopping movment");
-		[self resetMovementTimer];
 		[self moveUpStop];
 	}
 	else{
 		log(LOG_MOVEMENT, @"Player is not moving! No reason to stop!? Flags: 0x%X", movementFlags);
-		[self resetMovementTimer];
 	}
 }
 
@@ -352,19 +350,19 @@ typedef enum MovementState{
 	// moving to an object
 	if ( _moveToObject ) {
 		log(LOG_MOVEMENT, @"Moving to object.");
+		_movementState = MovementState_MovingToObject;
 		[self moveToPosition:[self.moveToObject position]];
 	}
 	else if ( _currentRouteSet ){
 		
-		// we need to backtrack (we probably chased down a unit or something)
-		if ( [_backtrack count] ){
-			log(LOG_MOVEMENT, @"Backtracking to our route!");
-		} else
+		_movementState = MovementState_Patrolling;
+		
 		// previous waypoint to move to
 		if ( self.destinationWaypoint ){
 			log(LOG_MOVEMENT, @"Moving to WP: %@", self.destinationWaypoint);
 			[self moveToPosition:[self.destinationWaypoint position]];
 		}
+		
 		// find the closest waypoint
 		else{
 			
@@ -432,12 +430,10 @@ typedef enum MovementState{
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 	
 	log(LOG_WAYPOINT, @"Moving to a waypoint: %@", waypoint);
+
+	self.destinationWaypoint = waypoint;
 	
-	[_destinationWaypoint release];
-	_destinationWaypoint = [waypoint retain];
-	
-	[self moveToPosition:[waypoint position]];
-	
+	[self moveToPosition:[waypoint position]];	
 }
 
 - (void)moveToNextWaypoint{
@@ -485,7 +481,9 @@ typedef enum MovementState{
 		// at the end of the route
 		if ( index == [waypoints count] - 1 ){
 			log(LOG_WAYPOINT, @"We've reached the end of the route!");
-
+			
+			// TO DO: keep a dictionary w/the route collection (or set) to remember how many times we've run a route
+			
 			[self routeEnded];
 			return;
 		}
@@ -508,9 +506,13 @@ typedef enum MovementState{
 
 - (void)routeEnded{
 	
-	//NSArray *currentWaypoints = [self.currentRoute waypoints];
-	//Waypoint *curWP = [currentWaypoints indexOfObject:self.destinationWaypoint];
-	
+	// player is currently on the primary route and is dead, if they've finished, then we ran the entire route and didn't find our body :(
+	if ( self.currentRouteKey == PrimaryRoute && [playerData isGhost] ){
+		[botController stopBot:nil];
+		[controller setCurrentStatus:@"Bot: Unable to find body, stopping bot"];
+		log(LOG_GHOST, @"Unable to find your body after running the full route, stopping bot");
+		return;
+	}	
 	// we've reached the end of our corpse route, lets switch to our main route
 	if ( self.currentRouteKey == CorpseRunRoute ){
 		
@@ -520,12 +522,13 @@ typedef enum MovementState{
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 		
 		// find the closest WP
+		self.destinationWaypoint = [self.currentRoute waypointClosestToPosition:[playerData position]];
 	}
-	
-	//[self.currentRoute waypointClosestToPosition:playerPosition]
 
-	// use the first WP	
-	self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
+	// Use the first waypoint
+	else{
+		self.destinationWaypoint = [[self.currentRoute waypoints] objectAtIndex:0];
+	}
 	
 	[self resumeMovement];
 }
@@ -903,6 +906,8 @@ typedef enum MovementState{
 
 - (void)unStickify{
 	
+	_movementState = MovementState_Stuck;
+	
 	// *************************************************
 	// Check for alarm/log out
 	// *************************************************
@@ -953,7 +958,7 @@ typedef enum MovementState{
 	if ( self.moveToObject ){
 		
 		// blacklist unit after 5 tries!
-		if ( _unstickifyTry > 5 ){
+		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ){
 			
 			log(LOG_MOVEMENT, @"Unable to reach %@, blacklisting", self.moveToObject);
 			
@@ -1014,6 +1019,11 @@ typedef enum MovementState{
 			else{
 				log(LOG_MOVEMENT, @"Trying to move to a previous WP, previously we would finish the route");
 			}
+		}
+		
+		else if ( _unstickifyTry > 10 ){
+			// Move to the closest waypoint
+			self.destinationWaypoint = [self.currentRoute waypointClosestToPosition:[playerData position]];
 			
 		}
 		
@@ -1081,9 +1091,6 @@ typedef enum MovementState{
 		[self setClickToMove:nil andType:ctmIdle andGUID:0x0];
 	}
 	
-	/*self.currentRoute				= nil;
-	self.currentRouteSet			= nil;
-	self.currentRouteKey			= nil;*/
 	self.moveToObject				= nil;
 	self.destinationWaypoint		= nil;
 	self.lastAttemptedPosition		= nil;

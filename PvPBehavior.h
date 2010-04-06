@@ -19,18 +19,20 @@
 @class Battleground;
 
 @interface PvPBehavior : SaveDataObject {
-
+	
 	NSString *_name;
 	
 	// battlegrounds
 	Battleground *_bgAlteracValley, *_bgArathiBasin, *_bgEyeOfTheStorm, *_bgIsleOfConquest, *_bgStrandOfTheAncients, *_bgWarsongGulch;
-
+	
 	// options
 	BOOL _random;
 	BOOL _stopHonor;
 	int _stopHonorTotal;
 	BOOL _leaveIfInactive;
 	BOOL _preparationDelay;
+	BOOL _waitToLeave;
+	float _waitTime;
 }
 
 @property (readwrite, retain) Battleground *AlteracValley;
@@ -46,6 +48,8 @@
 @property (readwrite, assign) int stopHonorTotal;
 @property (readwrite, assign) BOOL leaveIfInactive;
 @property (readwrite, assign) BOOL preparationDelay;
+@property (readwrite, assign) BOOL waitToLeave;
+@property (readwrite, assign) float waitTime;
 
 + (id)pvpBehaviorWithName: (NSString*)name;
 
@@ -53,5 +57,7 @@
 - (Battleground*)battlegroundForZone:(UInt32)zone;
 - (BOOL)isValid;
 - (BOOL)canDoRandom;
+
+- (NSString*)formattedForJoinMacro;
 
 @end

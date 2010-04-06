@@ -19,7 +19,7 @@
     if (self != nil) {
 		_routes = nil;
         if(![NSBundle loadNibNamed: @"SwitchRouteAction" owner: self]) {
-            PGLog(@"Error loading SwitchRouteAction.nib.");
+            log(LOG_GENERAL, @"Error loading SwitchRouteAction.nib.");
             
             [self release];
             self = nil;
@@ -67,10 +67,10 @@
 	
 	for ( NSMenuItem *item in [routePopUp itemArray] ){
 		
-		PGLog(@"not equal? %@ %@", [(RouteSet*)[item representedObject] UUID], action.value);
+		log(LOG_GENERAL, @"not equal? %@ %@", [(RouteSet*)[item representedObject] UUID], action.value);
 		
 		if ( [[(RouteSet*)[item representedObject] UUID] isEqualToString:action.value] ){
-			PGLog(@"ZOMG EQUAL!");
+			log(LOG_GENERAL, @"ZOMG EQUAL!");
 			[routePopUp selectItem:item];
 			break;
 		}
@@ -87,7 +87,7 @@
 	[action setEnabled: self.enabled];
 	[action setValue: [[[routePopUp selectedItem] representedObject] UUID]];
 	
-	PGLog(@" saving %d %@ for %@", self.enabled, [[[routePopUp selectedItem] representedObject] UUID], self);
+	log(LOG_GENERAL, @" saving %d %@ for %@", self.enabled, [[[routePopUp selectedItem] representedObject] UUID], self);
     
     return action;
 }

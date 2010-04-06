@@ -1,5 +1,5 @@
 //
-//  ChatLogEntry.m
+//  ChatLogController.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 4/3/09.
@@ -264,11 +264,6 @@
 - (BOOL)isChannel {
     NSInteger type = [self.type integerValue];
     return ((type >= 17) && (type <= 22) && [[self channel] length]);
-}
-
-- (BOOL)isParty {
-    NSInteger type = [self.type integerValue];
-    return (type == 2);
 }
 
 - (NSString*)wellFormattedText {

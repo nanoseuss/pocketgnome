@@ -2,7 +2,7 @@
 //  Position.m
 //  Pocket Gnome
 //
-//  Created by Jon Drummond on 12/17/07.
+//  Created by Jon Drummond on 12/16/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
 
@@ -116,7 +116,7 @@
     float yDiff = [position yPosition] - [self yPosition];
     float distance = [self distanceToPosition2D: position];
     NSPoint mobUnitVector = NSMakePoint(xDiff/distance, yDiff/distance);
-    // PGLog(@"Unit Vector to Mob: %@", NSStringFromPoint(mobUnitVector));
+    // log(LOG_GENERAL, @"Unit Vector to Mob: %@", NSStringFromPoint(mobUnitVector));
     
     // create unit vector of player facing angle
     //float angle = [playerDataController playerDirection];
@@ -126,8 +126,8 @@
     // determine the angle between the Mob and North
     float angleBetween = mobUnitVector.x*northUnitVector.x + mobUnitVector.y*northUnitVector.y;
     float angleOffset = acosf(angleBetween);
-    // PGLog(@"Cosine of angle between: %f", angleBetween);
-    // PGLog(@"Angle (rad) between: %f", angleOffset);
+    // log(LOG_GENERAL, @"Cosine of angle between: %f", angleBetween);
+    // log(LOG_GENERAL, @"Angle (rad) between: %f", angleOffset);
     
     if(mobUnitVector.y > 0) // mob is in N-->W-->S half of the compass
         return angleOffset;
@@ -165,7 +165,7 @@
         angleBetween = 0.0f - angleBetween;
     }
 
-    //PGLog(@"Got vertical angle between: %f; cosine: %f", angleBetween, cosine);
+    //log(LOG_GENERAL, @"Got vertical angle between: %f; cosine: %f", angleBetween, cosine);
     return angleBetween;
 }
 

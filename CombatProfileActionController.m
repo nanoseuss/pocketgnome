@@ -19,7 +19,7 @@
     if (self != nil) {
 		_profiles = nil;
         if(![NSBundle loadNibNamed: @"CombatProfileAction" owner: self]) {
-            PGLog(@"Error loading CombatProfileAction.nib.");
+            log(LOG_GENERAL, @"Error loading CombatProfileAction.nib.");
             
             [self release];
             self = nil;
@@ -72,7 +72,7 @@
 	[action setEnabled: self.enabled];
 	[action setValue: [[[profilePopUp selectedItem] representedObject] UUID]];
 	
-	PGLog(@"saving combat profile with %@", [[[profilePopUp selectedItem] representedObject] UUID]);
+	log(LOG_GENERAL, @"saving combat profile with %@", [[[profilePopUp selectedItem] representedObject] UUID]);
     
     return action;
 }

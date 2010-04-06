@@ -1,5 +1,5 @@
 //
-//  RuleController.h
+//  ProcedureController.h
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 1/4/08.

@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"QuestCondition" owner: self]) {
-            PGLog(@"Error loading QuestCondition.nib.");
+            log(LOG_GENERAL, @"Error loading QuestCondition.nib.");
             
             [self release];
             self = nil;

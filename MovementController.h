@@ -58,7 +58,6 @@ typedef enum MovementType {
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementTypePopUp;
 
-	NSMutableArray *_backtrack;			// this will contain a list of positions we must move through to get back to our route!
 	NSMutableDictionary *_stuckDictionary;
 	
 	NSString *_currentRouteKey;

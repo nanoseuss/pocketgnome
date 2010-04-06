@@ -176,12 +176,12 @@
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
     int _pvpAntiAFKCounter;
-    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
+//    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
 	BOOL _attackingInStrand;
 	BOOL _strandDelay;
-	int _pvpLastBattleground;
+	BOOL _waitingToLeaveBattleground;
 	
 	// auto join WG options
 	NSTimer *_wgTimer;
@@ -333,9 +333,6 @@
 - (BOOL)evaluateForFishing;
 - (BOOL)evaluateForPatrol;
 
-// PvP stuff
-- (void)pvpGetBattlegroundStatus;
-
 // Party stuff
 - (BOOL)mountNowParty;
 - (BOOL)isOnAssist;
@@ -364,7 +361,6 @@
 - (IBAction)test2: (id)sender;
 - (IBAction)maltby: (id)sender;
 - (IBAction)login: (id)sender;
-- (IBAction)doTheRelicEmanation: (id)sender;
 
 // Little more flexibility - casts spells! Uses items/macros!
 - (BOOL)performAction: (int32_t)actionID;

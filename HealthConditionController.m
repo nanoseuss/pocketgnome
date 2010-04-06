@@ -9,7 +9,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"HealthCondition" owner: self]) {
-            PGLog(@"Error loading HealthCondition.nib.");
+            log(LOG_GENERAL, @"Error loading HealthCondition.nib.");
             
             [self release];
             self = nil;

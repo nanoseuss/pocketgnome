@@ -1,5 +1,3 @@
-
-
 #import "MemoryAccess.h"
 #import <mach/vm_map.h>
 #import <mach/mach_traps.h>
@@ -12,6 +10,8 @@
 
 @implementation MemoryAccess
 
+static MemoryAccess *sharedMemoryAccess = nil;
+
 - (id)init {
     return [self initWithPID:0];
 }
@@ -19,7 +19,7 @@
 - (id)initWithPID:(pid_t)PID {
     [super init];
     AppPid = PID;
-    PGLog(@"Got WoW PID: %d; GodMode: %d", PID, MEMORY_GOD_MODE);
+    log(LOG_MEMORY, @"Got WoW PID: %d; GodMode: %d", PID, MEMORY_GOD_MODE);
     task_for_pid(current_task(), AppPid, &MySlaveTask);
     
     _loaderDict = [[NSMutableDictionary dictionary] retain];
@@ -32,7 +32,20 @@
     
     //if(!MEMORY_GOD_MODE) [self performToolVersionCheck];
     [NSTimer scheduledTimerWithTimeInterval: 5.0 target: self selector: @selector(refreshThroughput:) userInfo: nil repeats: YES];
+	
+	// for those using shared memory - lets hope not many!!
+	if ( sharedMemoryAccess ){
+		[sharedMemoryAccess release];
+	}
+	sharedMemoryAccess = [self retain];
+	
     return self;
+}
+
++ (MemoryAccess*)sharedMemoryAccess{
+	if (sharedMemoryAccess == nil)
+		sharedMemoryAccess = [[[self class] alloc] init];
+	return sharedMemoryAccess;
 }
 
 @synthesize throughput;
@@ -45,7 +58,7 @@
         usleep(50000);
         err = GetProcessForPID(AppPid, &psn);
         if( err != noErr) {
-            PGLog(@"appPID = %d; err = %d; pSN = { %d, %d }", AppPid, err, psn.lowLongOfPSN, psn.highLongOfPSN);
+            log(LOG_MEMORY, @"appPID = %d; err = %d; pSN = { %d, %d }", AppPid, err, psn.lowLongOfPSN, psn.highLongOfPSN);
             return NO;
         }
     }
@@ -57,7 +70,7 @@
 }
 
 - (void)printLoadCount {
-    PGLog(@"%@ has processed %d reads.", self, readsProcessed);
+    log(LOG_MEMORY, @"%@ has processed %d reads.", self, readsProcessed);
 }
 
 - (int)loadCount {
@@ -109,7 +122,7 @@
 	/*
     if(readsProcessed % 20000 == 0) {
         [self printLoadCount];
-        PGLog(@"Loader Dict: %@", loaderDict);
+        log(LOG_MEMORY, @"Loader Dict: %@", loaderDict);
     }*/
 
     if(MEMORY_GOD_MODE) {

@@ -19,7 +19,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"DurabilityCondition" owner: self]) {
-            PGLog(@"Error loading DurabilityCondition.nib.");
+            log(LOG_GENERAL, @"Error loading DurabilityCondition.nib.");
             
             [self release];
             self = nil;

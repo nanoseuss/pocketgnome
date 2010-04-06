@@ -102,7 +102,7 @@
 			UInt32 currentCopper = [playerController copper];
 			if ( _startCopper != currentCopper && _startCopper > 0 ){
 				int32_t difference = (currentCopper - _startCopper);
-				log(LOG_GENERAL, @"%d - %d = %d", currentCopper, _startCopper, difference);
+				log(LOG_STATISTICS, @"%d - %d = %d", currentCopper, _startCopper, difference);
 				
 				// no gold gained, we don't want to display the current amount!
 				if ( difference - currentCopper == 0 )
@@ -194,14 +194,14 @@
 	if ( [obj isKindOfClass:[Mob class]] ){
 		
 		NSNumber *entryID = [NSNumber numberWithInt:[(Mob*)obj entryID]];
-		if ( [_mobsKilledDictionary objectForKey:entryID] ) {
+		if ( [_mobsKilledDictionary objectForKey:entryID] ){
 			count = [[_mobsKilledDictionary objectForKey:entryID] intValue] + 1;
 		}
 		
 		[_mobsKilledDictionary setObject:[NSNumber numberWithInt:count] forKey:entryID];
 	}
 	
-	log(LOG_STATISTICS, @"%@ Unit killed: %@ %d times", [combatController unitHealthBar: obj], obj, count);
+	log(LOG_STATISTICS, @"[**********] Unit killed: %@ %d times", obj, count);
 }
 
 #pragma mark -

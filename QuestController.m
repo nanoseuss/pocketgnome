@@ -109,7 +109,7 @@ typedef struct QuestInfo {
 	 
 	 QuestInfo quest;
 	 if([wowMemory loadDataForObject: self atAddress: (questStart) + i*sizeof(quest) Buffer:(Byte*)&quest BufLength: sizeof(quest)]) {
-	 //PGLog(@"ID: %d, 1:%d, 2:%d, 3:%d", quest.questID, quest.bytes, quest.bytes1, quest.bytes2);
+	 //log(LOG_GENERAL, @"ID: %d, 1:%d, 2:%d, 3:%d", quest.questID, quest.bytes, quest.bytes1, quest.bytes2);
 	 
 	 if ( quest.questID == 0 ) continue;
 	 
@@ -122,7 +122,7 @@ typedef struct QuestInfo {
 	 // Found a valid quest ID... lets save the extra data
 	 if ( [[obj ID] intValue] == quest.questID )
 	 {
-	 PGLog(@"Found quest %d (%d, %d, %D)", quest.questID, quest.bytes, quest.bytes1, quest.bytes2);
+	 log(LOG_GENERAL, @"Found quest %d (%d, %d, %D)", quest.questID, quest.bytes, quest.bytes1, quest.bytes2);
 	 
 	 obj._bytes1 = [NSNumber numberWithInt:quest.bytes];
 	 obj._bytes2 = [NSNumber numberWithInt:quest.bytes1];
@@ -162,10 +162,10 @@ typedef struct QuestInfo {
 	NSLog(@"Total quests: %i", [_playerQuests count] );
 	for(Quest *quest in _playerQuests) {
 		
-		PGLog(@"Quest: %@ %@", [quest questID], [quest name]);
+		log(LOG_GENERAL, @"Quest: %@ %@", [quest questID], [quest name]);
 		
         for(QuestItem *questItem in quest.itemRequirements){
-            PGLog(@"  Required Item: %@ Quantity: %@", [questItem item], [questItem quantity]);
+            log(LOG_GENERAL, @"  Required Item: %@ Quantity: %@", [questItem item], [questItem quantity]);
         }
 	}
 }

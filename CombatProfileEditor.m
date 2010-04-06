@@ -318,7 +318,7 @@ static CombatProfileEditor *sharedEditor = nil;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject: self.currentCombatProfile];
         if(!data || ![data writeToFile: saveLocation atomically: YES]) {
             NSBeep();
-            PGLog(@"Error while exporting %@", self.currentCombatProfile);
+            log(LOG_GENERAL, @"Error while exporting %@", self.currentCombatProfile);
         }
     }
 }

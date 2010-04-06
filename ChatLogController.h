@@ -1,5 +1,5 @@
 //
-//  ChatLogController.h
+//  ChatLogController.m
 //  Pocket Gnome
 //
 //  Created by Jon Drummond on 4/3/09.

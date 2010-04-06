@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"StrandStatus" owner: self]) {
-            PGLog(@"Error loading StrandStatus.nib.");
+            log(LOG_GENERAL, @"Error loading StrandStatus.nib.");
             
             [self release];
             self = nil;

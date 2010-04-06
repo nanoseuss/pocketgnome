@@ -17,7 +17,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"StatusCondition" owner: self]) {
-            PGLog(@"Error loading StatusCondition.nib.");
+            log(LOG_GENERAL, @"Error loading StatusCondition.nib.");
             previousState = 1;
             [self release];
             self = nil;

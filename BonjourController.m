@@ -78,7 +78,7 @@
 
 - (void)appWillTerminate:(NSNotification *)notification
 {
-	PGLog(@"Terminating network connection.");
+	log(LOG_GENERAL, @"Terminating network connection.");
 	[[NSNotificationCenter defaultCenter] removeObserver: self];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver: self];
 	
@@ -86,7 +86,7 @@
 }
 
 - (void)connectionDied:(NSNotification*)aNotification {
-	PGLog(@"Server connection died: %@", [aNotification object]);
+	log(LOG_GENERAL, @"Server connection died: %@", [aNotification object]);
 	[[NSNotificationCenter defaultCenter] removeObserver: self 
 													name: NSConnectionDidDieNotification
 												  object: [aNotification object]];
@@ -95,7 +95,7 @@
 }
 
 - (void)openNetworkConnection {
-	// PGLog(@"Initiating network connection.");
+	// log(LOG_GENERAL, @"Initiating network connection.");
 	// reset any previous state
 	[self resetNetworkConnection];
 	
@@ -103,7 +103,7 @@
 	NSSocketPort *receivePort = [[[NSSocketPort alloc] initWithTCPPort: 0] autorelease];
     
     if(!receivePort) {
-        PGLog(@"Server: Unable to obtain a port from the kernel. Terminating publish.");
+        log(LOG_GENERAL, @"Server: Unable to obtain a port from the kernel. Terminating publish.");
         return;
     }
     
@@ -113,7 +113,7 @@
     self.connection = [NSConnection connectionWithReceivePort: receivePort 
 													  sendPort: nil];
 	if(!self.connection) {
-		PGLog(@"Server: Error creating the Connection.");
+		log(LOG_GENERAL, @"Server: Error creating the Connection.");
 		self.connection = nil;
     }
 	
@@ -135,11 +135,11 @@
 
 #pragma mark NetService Delegates
 - (void)netService:(NSNetService*)service didNotPublish:(NSDictionary *)errorDict {
-    PGLog(@"Error publishing service: %@", errorDict);
+    log(LOG_GENERAL, @"Error publishing service: %@", errorDict);
 }
 
 - (void)netServiceDidPublish:(NSNetService *)sender {
-    PGLog(@"Service published as \"%@\"", [self.netService name]);
+    log(LOG_GENERAL, @"Service published as \"%@\"", [self.netService name]);
 }
 
 #pragma mark - 

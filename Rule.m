@@ -39,7 +39,7 @@
         if([decoder decodeObjectForKey: @"ResultType"] && [decoder decodeObjectForKey: @"ActionID"]) {
             self.action = [Action actionWithType: [[decoder decodeObjectForKey: @"ResultType"] unsignedIntValue]
                                            value: [decoder decodeObjectForKey: @"ActionID"]];
-            // PGLog(@"Translating action %@ to %@", [decoder decodeObjectForKey: @"ActionID"], self.action);
+            // log(LOG_GENERAL, @"Translating action %@ to %@", [decoder decodeObjectForKey: @"ActionID"], self.action);
         } else {
             self.action = [decoder decodeObjectForKey: @"Action"] ? [decoder decodeObjectForKey: @"Action"] : [Action action];
         }

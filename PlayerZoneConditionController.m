@@ -16,7 +16,7 @@
     self = [super init];
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"PlayerZoneCondition" owner: self]) {
-            PGLog(@"Error loading PlayerZoneCondition.nib.");
+            log(LOG_GENERAL, @"Error loading PlayerZoneCondition.nib.");
             
             [self release];
             self = nil;

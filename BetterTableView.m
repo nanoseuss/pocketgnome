@@ -3,7 +3,7 @@
 @implementation BetterTableView
 
 //- (BOOL)canDragRowsWithIndexes:(NSIndexSet *)rowIndexes atPoint:(NSPoint)mouseDownPoint {
-//    PGLog(@"canDragRowsWithIndexes");
+//    log(LOG_GENERAL, @"canDragRowsWithIndexes");
 //    return YES;
 //}
 
@@ -37,7 +37,7 @@
 
 - (void)copy: (id)sender { 
     if( ([self selectedRow] != -1) && [self delegate] && [[self delegate] respondsToSelector: @selector(tableViewCopy:)] ) {
-        // PGLog(@"Table view copy!");
+        // log(LOG_GENERAL, @"Table view copy!");
         if([[self delegate] tableViewCopy: self])   return;
     }
     NSBeep();
@@ -45,7 +45,7 @@
 
 - (void)paste: (id)sender { 
     if( [self delegate] && [[self delegate] respondsToSelector: @selector(tableViewPaste:)] ) {
-        // PGLog(@"Table view paste!");
+        // log(LOG_GENERAL, @"Table view paste!");
         if([[self delegate] tableViewPaste: self])   return;
     }
     NSBeep();
@@ -53,7 +53,7 @@
 
 - (void)cut: (id)sender { 
     if( ([self selectedRow] != -1) && [self delegate] && [[self delegate] respondsToSelector: @selector(tableViewCut:)] ) {
-        // PGLog(@"Table view copy!");
+        // log(LOG_GENERAL, @"Table view copy!");
         if([[self delegate] tableViewCut: self])   return;
     }
     NSBeep();

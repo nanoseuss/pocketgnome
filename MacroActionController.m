@@ -19,7 +19,7 @@
     if (self != nil) {
 		_macros = nil;
         if(![NSBundle loadNibNamed: @"MacroAction" owner: self]) {
-            PGLog(@"Error loading MacroAction.nib.");
+            log(LOG_GENERAL, @"Error loading MacroAction.nib.");
             
             [self release];
             self = nil;

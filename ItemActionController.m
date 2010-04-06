@@ -20,7 +20,7 @@
     if (self != nil) {
 		_items = nil;
         if(![NSBundle loadNibNamed: @"ItemAction" owner: self]) {
-            PGLog(@"Error loading ItemAction.nib.");
+            log(LOG_GENERAL, @"Error loading ItemAction.nib.");
             
             [self release];
             self = nil;

@@ -16,8 +16,6 @@
 #define BindingPetAttack			@"BindingPetAttack"
 #define BindingInteractMouseover	@"BindingInteractMouseover"
 #define BindingTargetLast			@"BindingTargetLast"
-#define BindingStrafeRight			@"BindingStrafeRight"
-#define BindingStrafeLeft			@"BindingStrafeLeft"
 
 @interface BindingsController : NSObject {
 	
@@ -42,7 +40,7 @@
 	int _interactMouseoverActionModifier;
 	int _targetLastActionOffset;
 	int _targetLastActionCode;
-	int _targetLastActionModifier;	
+	int _targetLastActionModifier;
 	
 	NSMutableDictionary *_bindingsToCodes;		// used w/the defines above
 	

@@ -5,7 +5,7 @@
 //  Created by Jon Drummond on 12/15/07.
 //  Copyright 2007 Savory Software, LLC. All rights reserved.
 //
-// NEW
+//
 
 #import "Controller.h"
 #import "NoAccessApplication.h"
@@ -25,7 +25,6 @@
 #import "CombatProfileEditor.h"
 #import "ObjectsController.h"
 #import "PvPController.h"
-#import "MovementController.h"
 
 #import "CGSPrivate.h"
 
@@ -105,15 +104,6 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityPreferencesUnreadable",
                                    [NSNumber numberWithBool: NO],       @"SecurityShowRenameSettings",
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
-/*
-BUG to NOTE here.  Enabling the following option allowed the logging on my desktop hackintosh to work,
- but FAILed on my laptop hackintosh!  The failure was that it could not properly determine
-for this call... [[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] 
- I'm uncommenting the next item here, because the interface button works on both my desktop and laptop with out it!
-
-FIXED: This was due to improper settings in the Interface builder checkboxes.
- 
- */
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEnable",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingDev",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLogginEvaluate",
@@ -121,7 +111,6 @@ FIXED: This was due to improper settings in the Interface builder checkboxes.
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMacro",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMovement",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingWaypoint",
-								   [NSNumber numberWithBool: NO],       @"ExtendedLogging",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingCondition",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingRule",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingBlacklist",
@@ -131,11 +120,9 @@ FIXED: This was due to improper settings in the Interface builder checkboxes.
 								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];
-    // NSLog(@"%d, %d", getuid(), geteuid());
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey: @"SUFeedURL"];
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
-    
-    [[NSUserDefaults standardUserDefaults] setObject: @"http://pg.savorydeviate.com/appcast.xml" forKey: @"SUFeedURL"];
 }
 
 static Controller* sharedController = nil;
@@ -405,7 +392,7 @@ typedef struct NameObjectStruct{
 	// + 0x58 is another pointer to within the list, not sure what it means?  first or last?
 	MemoryAccess *memory = [self wowMemoryAccess];
 	[memory resetLoadCount];
-	if ( memory && [memory loadDataForObject: self atAddress: offset Buffer: (Byte*)&curObjAddress BufLength: sizeof(curObjAddress)] && curObjAddress ){
+	if ( memory && [memory loadDataForObject: self atAddress: offset + 0x24 Buffer: (Byte*)&curObjAddress BufLength: sizeof(curObjAddress)] && curObjAddress ){
 		
 		// check to make sure the first value is 0x4!
 		NameListStruct nameListStruct;
@@ -543,19 +530,7 @@ typedef struct NameObjectStruct{
 						log(LOG_CONTROLLER, @"[Player] Level %d %@ %@", [player level], [Unit stringForRace: [player race]], [Unit stringForClass: [player unitClass]]);
 						
 						[self setCurrentState: playerValidState];
-
-						botController.evaluationInProgress = nil;
-
-						// Restart us when we zone into instances in a party
-						if ( !botController.isPvPing && botController.theCombatProfile.partyEnabled && !botController.partyFollowSuspended && botController.theCombatProfile.followUnit) {
-							[movementController stopMovement];
-							[movementController resetMovementState];
-							[botController followStepsClear];
-							usleep(200000);
-							[botController evaluateSituation];
-							
-						}
-					}
+					}			
 				}
 				
 				//log(LOG_CONTROLLER, @"[Controller] Player GUID: 0x%X Yours: 0x%X 0x%qX", guid, GUID_LOW32(_globalGUID), _globalGUID);
@@ -605,7 +580,7 @@ typedef struct NameObjectStruct{
     MemoryAccess *memory = [self wowMemoryAccess];
 	
 	// grab our global GUID
-	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_STATIC"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
+	[memory loadDataForObject: self atAddress: [offsetController offset:@"PLAYER_GUID_NAME"] Buffer: (Byte*)&_globalGUID BufLength: sizeof(_globalGUID)];
 	//log(LOG_CONTROLLER, @"[Controller] Player GUID: 0x%qX 0x%qX Low32:0x%X High32:0x%X HiPart:0x%X", _globalGUID, CFSwapInt64HostToLittle(_globalGUID), GUID_LOW32(_globalGUID), GUID_HIGH32(_globalGUID), GUID_HIPART(_globalGUID));
 	
 	// object manager
@@ -867,11 +842,11 @@ typedef struct NameObjectStruct{
 }
 
 - (void)setCurrentStatus: (NSString*)statusMsg {
-		
+	
+	log(LOG_CONTROLLER, @"[Controller] Setting status to: %@", statusMsg);
+	
     NSString *currentText = [[currentStatusText stringValue] retain];
     [currentStatusText setStringValue: statusMsg];
-
-	/*if (currentText != statusMsg)*/ log(LOG_DEV, @" setting status to: %@", statusMsg);
 
     [_savedStatus release];
     _savedStatus = currentText;
@@ -1415,34 +1390,41 @@ typedef struct NameObjectStruct{
 }
 
 #pragma mark WorldState/LoginState
-		
+
+#define GameState_Unknown		-1
+#define GameState_LoggingIn		0
+#define GameState_Valid			1
+#define GameState_Loading		2
+
 - (int)gameState{
-
+	
 	// we want to check the object list pointer to make sure it's valid, if it is, we can assume we'll have a valid player (altho maybe we shouldn't?)
-
+	
 	MemoryAccess *memory = [self wowMemoryAccess];
-
+	
 	if ( memory && [memory isValid] ){
-
+		
 		// do we have a valid o
 		UInt32 offset = [offsetController offset:@"OBJECT_LIST_LL_PTR"];
-		UInt32 objectManager = 0x0;
+		UInt32 objectManager = 0x0;	
 		
 		if ( [memory loadDataForObject: self atAddress:offset  Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager ){
-	
-	
-	}
-	
-	
-	offset = [offsetController offset:@"LoginState"];
-	
-	char state[21];
-	state[20] = 0;
+			
+			
+		}
+		
+		
+		
+		
+		offset = [offsetController offset:@"LoginState"];
+		
+		char state[21];
+		state[20] = 0;
 		if ( [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&state BufLength: sizeof(state)-1] ){
-	
+			
 			NSString *stateAsString = [NSString stringWithUTF8String: state];
 			if ( [stateAsString length] ){
-	
+				
 				if ( [stateAsString isEqualToString:@"login"] ){
 					return GameState_LoggingIn;
 				}
@@ -1455,12 +1437,12 @@ typedef struct NameObjectStruct{
 				// we don't check for charselect, since it is always charselect even if we're logged in
 			}
 		}
-
+		
 		// if we get this far we now need to check WorldState
 		offset = [offsetController offset:@"WorldState"];
 		UInt32 worldState = 0;
 		if ( [memory loadDataForObject: self atAddress: offset Buffer: (Byte *)&worldState BufLength: sizeof(worldState)] ){
-
+			
 			if ( worldState == 10 ){
 				return GameState_Loading;
 			}
@@ -1481,9 +1463,9 @@ typedef struct NameObjectStruct{
 	// char rename in progress = 7
 	// game loading = 10?
 	// game loaded = 0
-
-	// LoginState - charselect, login, charcreate, patchdownload
-
+	
+	// LoginState - charselect, login, charcreate, patchdownload		
+	
 	return GameState_Unknown;
 }
 
@@ -1596,15 +1578,6 @@ typedef struct NameObjectStruct{
 }
 
 #pragma mark Sparkle - Auto Updater
-
-// Sent when a valid update is found by the update driver.
-/*- (void)updater:(SUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
-    log(LOG_CONTROLLER, @"[Update] didFindValidUpdate: %@", [update fileURL]);
-}
-
-- (void)updater:(SUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
-    log(LOG_CONTROLLER, @"[Update] willInstallUpdate: %@", [update fileURL]);
-}*/
 
 - (BOOL)updater: (SUUpdater *)updater shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update untilInvoking: (NSInvocation *)invocation {
 	
@@ -2039,6 +2012,42 @@ AECreateDesc:;
 	AEDisposeDesc(&eventReply); 
 	AEDisposeDesc(&theEvent);
 AEDisposeDesc(&targetProcess);
+}
+
+// 3.3.3a: 0xC9241C ClientServices_GetCurrent
+- (float)getPing{
+	
+	MemoryAccess *memory = [self wowMemoryAccess];
+	int totalPings = 0, v5 = 0, v6 = 0, samples = 0, ping = 0;
+	UInt32 gCurrentClientServices = 0;
+	[memory loadDataForObject: self atAddress: 0xC9241C Buffer: (Byte*)&gCurrentClientServices BufLength: sizeof(gCurrentClientServices)];
+	[memory loadDataForObject: self atAddress: gCurrentClientServices + 0x2E74 Buffer: (Byte*)&v6 BufLength: sizeof(v6)];
+	[memory loadDataForObject: self atAddress: gCurrentClientServices + 0x2E78 Buffer: (Byte*)&v5 BufLength: sizeof(v5)];
+	
+	if ( v6 == v5 ){
+		return 0.0f;
+	}
+	
+	do
+	{
+		if ( v6 >= 16 ){
+			v6 = 0;
+			if ( !v5 )
+				break;
+		}
+		
+		[memory loadDataForObject: self atAddress: gCurrentClientServices + 0x2E34 + (v6++ * 4) Buffer: (Byte*)&ping BufLength: sizeof(ping)];
+		totalPings += ping;
+		++samples;
+	}
+	while ( v6 != v5 );
+	
+	if ( samples > 0 ){
+		float averagePing = (float)totalPings / (float)samples;
+		return averagePing;
+	}
+
+	return 0.0f;
 }
 
 @end

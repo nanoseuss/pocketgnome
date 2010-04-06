@@ -21,19 +21,20 @@
     if ( self != nil ){
 		
 		// initiate our BGs
-		_bgAlteracValley			= [[Battleground battlegroundWithName:@"Alterac Valley" andZone:ZoneAlteracValley] retain];
-		_bgArathiBasin				= [[Battleground battlegroundWithName:@"Arathi Basin" andZone:ZoneArathiBasin] retain];
-		_bgEyeOfTheStorm			= [[Battleground battlegroundWithName:@"Eye of the Storm" andZone:ZoneEyeOfTheStorm] retain];
-		_bgIsleOfConquest			= [[Battleground battlegroundWithName:@"Isle of Conquest" andZone:ZoneIsleOfConquest] retain];
-		_bgStrandOfTheAncients		= [[Battleground battlegroundWithName:@"Strand of the Ancients" andZone:ZoneStrandOfTheAncients] retain];
-		_bgWarsongGulch				= [[Battleground battlegroundWithName:@"Warsong Gulch" andZone:ZoneWarsongGulch] retain];
+		_bgAlteracValley			= [[Battleground battlegroundWithName:@"Alterac Valley" andZone:ZoneAlteracValley andQueueID:1] retain];
+		_bgArathiBasin				= [[Battleground battlegroundWithName:@"Arathi Basin" andZone:ZoneArathiBasin andQueueID:3] retain];
+		_bgEyeOfTheStorm			= [[Battleground battlegroundWithName:@"Eye of the Storm" andZone:ZoneEyeOfTheStorm andQueueID:7] retain];
+		_bgIsleOfConquest			= [[Battleground battlegroundWithName:@"Isle of Conquest" andZone:ZoneIsleOfConquest andQueueID:30] retain];
+		_bgStrandOfTheAncients		= [[Battleground battlegroundWithName:@"Strand of the Ancients" andZone:ZoneStrandOfTheAncients andQueueID:9] retain];
+		_bgWarsongGulch				= [[Battleground battlegroundWithName:@"Warsong Gulch" andZone:ZoneWarsongGulch andQueueID:2] retain];
 		
 		_random = NO;
 		_stopHonor = 0;
 		_stopHonorTotal = 75000;
 		_preparationDelay = YES;
-		
 		_leaveIfInactive = YES;
+		_waitToLeave = YES;
+		_waitTime = 10.0f;
 		
 		_name = [[NSString stringWithFormat:@"Unknown"] retain];
     }
@@ -82,6 +83,8 @@
 		self.stopHonor = [[decoder decodeObjectForKey: @"StopHonor"] intValue];
 		self.stopHonorTotal = [[decoder decodeObjectForKey: @"StopHonorTotal"] intValue];
 		self.preparationDelay = [[decoder decodeObjectForKey: @"PreparationDelay"] boolValue];
+		self.waitToLeave = [[decoder decodeObjectForKey: @"WaitToLeave"] boolValue];
+		self.waitTime = [[decoder decodeObjectForKey: @"WaitTime"] floatValue];
 		
 		self.name = [decoder decodeObjectForKey:@"Name"];
 	}
@@ -101,6 +104,8 @@
 	[coder encodeObject: [NSNumber numberWithInt: self.stopHonor] forKey:@"StopHonor"];
 	[coder encodeObject: [NSNumber numberWithInt: self.stopHonorTotal] forKey:@"StopHonorTotal"];
 	[coder encodeObject: [NSNumber numberWithBool:self.preparationDelay] forKey:@"PreparationDelay"];
+	[coder encodeObject: [NSNumber numberWithBool:self.waitToLeave] forKey:@"WaitToLeave"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.waitTime] forKey:@"WaitTime"];
 	
 	[coder encodeObject: self.name forKey:@"Name"];
 }
@@ -119,6 +124,8 @@
 	copy.stopHonor = self.stopHonor;
 	copy.stopHonorTotal = self.stopHonorTotal;
 	copy.preparationDelay = self.preparationDelay;
+	copy.waitToLeave = self.waitToLeave;
+	copy.waitTime = self.waitTime;
 	
     return copy;
 }
@@ -137,6 +144,8 @@
 @synthesize stopHonorTotal = _stopHonorTotal;
 @synthesize leaveIfInactive = _leaveIfInactive;
 @synthesize preparationDelay = _preparationDelay;
+@synthesize waitToLeave = _waitToLeave;
+@synthesize waitTime = _waitTime;
 
 - (void)addObservers{
 	[self addObserver: self forKeyPath: @"AlteracValley" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
@@ -151,10 +160,12 @@
 	[self addObserver: self forKeyPath: @"stopHonorTotal" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
 	[self addObserver: self forKeyPath: @"leaveIfInactive" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
 	[self addObserver: self forKeyPath: @"preparationDelay" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"waitToLeave" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"waitTime" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
-	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	log(LOG_GENERAL, @"%@ changed! %@ %@", self, keyPath, change);
 	self.changed = YES;
 }
 
@@ -177,11 +188,11 @@
 		totalEnabled++;
 	
 	// don't have the total for random!
-	if ( self.random && totalEnabled != TotalBattlegrounds ){
+	/*if ( self.random && totalEnabled != TotalBattlegrounds ){
 		return NO;
-	}
+	}*/
 	// none enabled
-	else if ( totalEnabled == 0 ){
+	if ( totalEnabled == 0 ){
 		return NO;
 	}
 	
@@ -251,13 +262,10 @@
 	}
 }
 
-// TO DO: prob. need to do an accessor for random, since you need all 6 checked!
-
-
 #pragma mark -
 
 - (NSArray*)validBattlegrounds{
-
+	
 	NSMutableArray *validBGs = [NSMutableArray array];
 	
 	if ( [self.AlteracValley isValid] )
@@ -307,8 +315,30 @@
 	else if ( zone == [self.WarsongGulch zone] ){
 		return self.WarsongGulch;
 	}
-
+	
 	return nil;
+}
+
+- (NSString*)formattedForJoinMacro{
+	NSMutableString *bgs = [NSMutableString string];
+	
+	if ( self.AlteracValley.enabled && self.AlteracValley.routeCollection != nil )
+		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.AlteracValley queueID]]];
+	if ( self.ArathiBasin.enabled && self.ArathiBasin.routeCollection != nil )
+		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.ArathiBasin queueID]]];
+	if ( self.EyeOfTheStorm.enabled && self.EyeOfTheStorm.routeCollection != nil )
+		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.EyeOfTheStorm queueID]]];
+	if ( self.IsleOfConquest.enabled && self.IsleOfConquest.routeCollection != nil )
+		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.IsleOfConquest queueID]]];
+	if ( self.StrandOfTheAncients.enabled && self.StrandOfTheAncients.routeCollection != nil )
+		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.StrandOfTheAncients queueID]]];
+	if ( self.WarsongGulch.enabled && self.WarsongGulch.routeCollection != nil )
+		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.WarsongGulch queueID]]];
+
+	NSRange range = NSMakeRange(0, [bgs length] - 1);
+	NSString *str = [bgs substringWithRange:range];
+	
+	return [[str retain] autorelease];
 }
 
 @end

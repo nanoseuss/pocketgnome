@@ -124,7 +124,7 @@
 				[dataList addObject: obj];    
 			}
 			else{
-				PGLog(@"[ObjectController] I can has never be here? Calling class: %@", [self class]);
+				log(LOG_GENERAL, @"[ObjectController] I can has never be here? Calling class: %@", [self class]);
 			}
         }
 		// we do this here to ensure ONLY the objects in the actual WoW list are updated
@@ -148,7 +148,7 @@
     MemoryAccess *memory = [controller wowMemoryAccess];
     if ( !memory ) return;
 	
-    PGLog(@"Reloading memory access for %d objects.", [_objectList count]);
+    log(LOG_GENERAL, @"Reloading memory access for %d objects.", [_objectList count]);
     for ( WoWObject *obj in _objectList ) {
         [obj setMemoryAccess: memory];
     }
