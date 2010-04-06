@@ -1202,10 +1202,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int inCombatNoAttack = [[state objectForKey: @"InCombatNoAttack"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
 
-	// Get our current target so we can avoid retargeting
-	GUID targetID = [playerController targetID];
-	Unit *targetUnit = [[MobController sharedController] mobWithGUID: targetID];
-	
 	if ( rulesTried == nil ) {
 		//	log(LOG_PROCEDURE, @"Creating dictionary to track our tried rules!");
 		rulesTried = [[NSMutableDictionary dictionary] retain];
@@ -3272,6 +3268,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// We don't loot in combat
 	if ([[playerController player] isInCombat]) return NO;
 
+	// If we're moving to the mob let's wait till we get there to do anything
+    if ([movementController moveToObject]) return NO;
+	
 	log(LOG_EVALUATE, @"Evaluating for Loot");
 
     // get potential units and their distances
@@ -3373,11 +3372,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if we are already in evaluation
 	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"MiningAndHerbalism"]) return NO;
 
+	// If we're moving to the node let's wait till we get there to do anything
+    if ([movementController moveToObject]) return NO;
+
 	log(LOG_EVALUATE, @"Evaluating for Mining and Herbalism");
 	
 	Position *playerPosition = [playerController position];
-//    if ([movementController moveToObject]) return NO;
-	
+
 	// check for mining and herbalism
 	NSMutableArray *nodes = [NSMutableArray array];
 	if(_doMining)			[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: MiningNode maxLevel: _miningLevel]];
