@@ -755,7 +755,8 @@ typedef enum MovementState{
 	// For now I'll just increase the counter threshhold for CTM.
 
 	int checkThreshhold = 3;
-	if ( [self movementType] == MovementType_CTM ) checkThreshhold = 6;
+	// This patch broke things for miners.. we just need to fix the CTM isMoving detection
+//	if ( [self movementType] == MovementType_CTM ) checkThreshhold = 6;
 
 	// make sure we're still moving
 	if ( _positionCheck > checkThreshhold && _stuckCounter < 3 && ![self isMoving] ){
