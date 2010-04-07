@@ -109,6 +109,70 @@
 		283E08911166E13400DE13C5 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
 		283E089B1166E13900DE13C5 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
 		28BF8AD01162E3FE00166879 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 28BF8ACF1162E3FE00166879 /* LICENSE */; };
+		34083ADC10AFC3CA00401B07 /* MPSquareTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 34083ADB10AFC3CA00401B07 /* MPSquareTree.m */; };
+		340895D311625375002A16B7 /* MPMover.m in Sources */ = {isa = PBXBuildFile; fileRef = 340895D211625375002A16B7 /* MPMover.m */; };
+		342303B4109EF0E20046EC13 /* MPPointTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303B3109EF0E20046EC13 /* MPPointTree.m */; };
+		342303BB109F01FB0046EC13 /* MPRangedTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303BA109F01FB0046EC13 /* MPRangedTreeNode.m */; };
+		342303BE109F07720046EC13 /* MPAVLRangedTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303BD109F07720046EC13 /* MPAVLRangedTree.m */; };
+		3430E9C41069D88500F7B575 /* MPActivityApproach.m in Sources */ = {isa = PBXBuildFile; fileRef = 3430E9C31069D88500F7B575 /* MPActivityApproach.m */; };
+		3430EAC5106A309A00F7B575 /* MPCustomClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 3430EAC4106A309A00F7B575 /* MPCustomClass.m */; };
+		3430EAD8106A361E00F7B575 /* MPCustomClassPG.m in Sources */ = {isa = PBXBuildFile; fileRef = 3430EAD7106A361E00F7B575 /* MPCustomClassPG.m */; };
+		3432DA3510BBD5A400C55BEF /* MPTaskWait.m in Sources */ = {isa = PBXBuildFile; fileRef = 3432DA3410BBD5A400C55BEF /* MPTaskWait.m */; };
+		344CDBED10933852009FEEDD /* MPTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 344CDBEC10933852009FEEDD /* MPTreeNode.m */; };
+		3459593810B4A7CD0099A1AF /* MPPathNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459593710B4A7CD0099A1AF /* MPPathNode.m */; };
+		34595AF210B921710099A1AF /* MPLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 34595AF110B921710099A1AF /* MPLine.m */; };
+		345C41D4107EDE87008F9400 /* ParseKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8487443D106BC6FB00BF46A1 /* ParseKit.framework */; };
+		34608CB1106BD8D3003151CD /* pather.xib in Resources */ = {isa = PBXBuildFile; fileRef = 34608CB0106BD8D3003151CD /* pather.xib */; };
+		349707DD10835F7D005DDB30 /* MPNavMeshView.m in Sources */ = {isa = PBXBuildFile; fileRef = 349707DC10835F7D005DDB30 /* MPNavMeshView.m */; };
+		3497081B10845F24005DDB30 /* MPSquare.m in Sources */ = {isa = PBXBuildFile; fileRef = 3497081A10845F24005DDB30 /* MPSquare.m */; };
+		3497082C10847534005DDB30 /* MPNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3497082B10847534005DDB30 /* MPNavigationController.m */; };
+		34970870108480BD005DDB30 /* MPPoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 3497086F108480BD005DDB30 /* MPPoint.m */; };
+		34A3A056107239A600BC8A42 /* MPTaskLoot.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A3A055107239A600BC8A42 /* MPTaskLoot.m */; };
+		34A3A05910723C9400BC8A42 /* MPActivityLoot.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A3A05810723C9400BC8A42 /* MPActivityLoot.m */; };
+		34AE0B2A1068F6D2005F7C01 /* MPTaskPull.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AE0B291068F6D2005F7C01 /* MPTaskPull.m */; };
+		34AE0B311068FADC005F7C01 /* MPActivityAttack.m in Sources */ = {isa = PBXBuildFile; fileRef = 34AE0B301068FADC005F7C01 /* MPActivityAttack.m */; };
+		34B094C210670BC100EC8D5A /* MPActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947010670BC100EC8D5A /* MPActivity.m */; };
+		34B094C310670BC100EC8D5A /* MPActivityWait.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947210670BC100EC8D5A /* MPActivityWait.m */; };
+		34B094C410670BC100EC8D5A /* TestActivity.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947410670BC100EC8D5A /* TestActivity.m */; };
+		34B094C510670BC100EC8D5A /* MPOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947810670BC100EC8D5A /* MPOperation.m */; };
+		34B094C610670BC100EC8D5A /* MPOperationAdd.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947A10670BC100EC8D5A /* MPOperationAdd.m */; };
+		34B094C710670BC100EC8D5A /* MPOperationSubtract.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947C10670BC100EC8D5A /* MPOperationSubtract.m */; };
+		34B094C810670BC100EC8D5A /* MPOperationMultiply.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0947E10670BC100EC8D5A /* MPOperationMultiply.m */; };
+		34B094C910670BC100EC8D5A /* MPOperationEQ.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948010670BC100EC8D5A /* MPOperationEQ.m */; };
+		34B094CA10670BC100EC8D5A /* MPOperationGT.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948210670BC100EC8D5A /* MPOperationGT.m */; };
+		34B094CB10670BC100EC8D5A /* MPOperationLT.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948410670BC100EC8D5A /* MPOperationLT.m */; };
+		34B094CC10670BC100EC8D5A /* MPOperationGTEQ.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948610670BC100EC8D5A /* MPOperationGTEQ.m */; };
+		34B094CD10670BC100EC8D5A /* MPOperationLTEQ.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948810670BC100EC8D5A /* MPOperationLTEQ.m */; };
+		34B094CE10670BC100EC8D5A /* MPOperationNEQ.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948A10670BC100EC8D5A /* MPOperationNEQ.m */; };
+		34B094CF10670BC100EC8D5A /* MPCondition.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948C10670BC100EC8D5A /* MPCondition.m */; };
+		34B094D010670BC100EC8D5A /* MPConditionAND.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0948E10670BC100EC8D5A /* MPConditionAND.m */; };
+		34B094D110670BC100EC8D5A /* MPConditionOR.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949010670BC100EC8D5A /* MPConditionOR.m */; };
+		34B094D210670BC100EC8D5A /* MPMyLevelValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949310670BC100EC8D5A /* MPMyLevelValue.m */; };
+		34B094D310670BC100EC8D5A /* MPMyClassValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949510670BC100EC8D5A /* MPMyClassValue.m */; };
+		34B094D410670BC100EC8D5A /* MPValue.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949710670BC100EC8D5A /* MPValue.m */; };
+		34B094D510670BC100EC8D5A /* MPValueInt.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949910670BC100EC8D5A /* MPValueInt.m */; };
+		34B094D610670BC100EC8D5A /* MPValueFloat.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949B10670BC100EC8D5A /* MPValueFloat.m */; };
+		34B094D710670BC100EC8D5A /* MPValueBool.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949D10670BC100EC8D5A /* MPValueBool.m */; };
+		34B094D810670BC100EC8D5A /* MPLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B0949F10670BC100EC8D5A /* MPLocation.m */; };
+		34B094D910670BC100EC8D5A /* MPValueString.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094A110670BC100EC8D5A /* MPValueString.m */; };
+		34B094DA10670BC100EC8D5A /* MPTask.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094A410670BC100EC8D5A /* MPTask.m */; };
+		34B094DB10670BC100EC8D5A /* MPTaskPar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094A610670BC100EC8D5A /* MPTaskPar.m */; };
+		34B094DC10670BC100EC8D5A /* MPTaskSeq.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094A810670BC100EC8D5A /* MPTaskSeq.m */; };
+		34B094DD10670BC100EC8D5A /* MPTaskConditional.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094AA10670BC100EC8D5A /* MPTaskConditional.m */; };
+		34B094DE10670BC100EC8D5A /* MPTaskIf.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094AC10670BC100EC8D5A /* MPTaskIf.m */; };
+		34B094DF10670BC100EC8D5A /* MPTaskWhen.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094AE10670BC100EC8D5A /* MPTaskWhen.m */; };
+		34B094E010670BC100EC8D5A /* MPTaskUntil.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094B010670BC100EC8D5A /* MPTaskUntil.m */; };
+		34B094E110670BC100EC8D5A /* MPTestTask.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094B210670BC100EC8D5A /* MPTestTask.m */; };
+		34B094E210670BC100EC8D5A /* MPTaskController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094B410670BC100EC8D5A /* MPTaskController.m */; };
+		34B094E310670BC100EC8D5A /* MPTaskTreeDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094B610670BC100EC8D5A /* MPTaskTreeDataSource.m */; };
+		34B094E410670BC100EC8D5A /* MPStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094B910670BC100EC8D5A /* MPStack.m */; };
+		34B094E510670BC100EC8D5A /* MPTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094BB10670BC100EC8D5A /* MPTimer.m */; };
+		34B094E610670BC100EC8D5A /* MPPerformanceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094BD10670BC100EC8D5A /* MPPerformanceController.m */; };
+		34B094E710670BC100EC8D5A /* PatherController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094BF10670BC100EC8D5A /* PatherController.m */; };
+		34B094E810670BC100EC8D5A /* MPParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094C110670BC100EC8D5A /* MPParser.m */; };
+		34B0951210671AF100EC8D5A /* Icon_Pather.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B0951110671AF100EC8D5A /* Icon_Pather.png */; };
+		34D5FC9D10685C1100712FD0 /* MPTaskRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */; };
+		34D5FCFA10686F1900712FD0 /* MPActivityWalk.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FCF910686F1900712FD0 /* MPActivityWalk.m */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
@@ -357,6 +421,12 @@
 		7DE983820E2B2BA800F41293 /* NSString+Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE983810E2B2BA800F41293 /* NSString+Extras.m */; };
 		7DF445530E241ABA0075B96B /* TotemConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DF445520E241ABA0075B96B /* TotemConditionController.m */; };
 		7DF445550E241AE30075B96B /* TotemCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DF445540E241AE30075B96B /* TotemCondition.xib */; };
+		8462E43110798ECC00A5D217 /* MPTaskRest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8462E43010798ECC00A5D217 /* MPTaskRest.m */; };
+		8462E435107A36BF00A5D217 /* MPActivityRest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8462E434107A36BF00A5D217 /* MPActivityRest.m */; };
+		846AFF421091D49C00C92362 /* MPAVLTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 846AFF411091D49C00C92362 /* MPAVLTree.m */; };
+		8474F10B10777E5B0017C0B5 /* MPTaskGhostRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = 8474F10A10777E5B0017C0B5 /* MPTaskGhostRoute.m */; };
+		8487443E106BC6FB00BF46A1 /* ParseKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8487443D106BC6FB00BF46A1 /* ParseKit.framework */; };
+		84AC54FB1074F6CE006342D8 /* MPTaskDefend.m in Sources */ = {isa = PBXBuildFile; fileRef = 84AC54FA1074F6CE006342D8 /* MPTaskDefend.m */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -383,6 +453,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				345C41D4107EDE87008F9400 /* ParseKit.framework in CopyFiles */,
 				283E089B1166E13900DE13C5 /* Sparkle.framework in CopyFiles */,
 				03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */,
 				7DBF31CE0E94679900A592BD /* Growl.framework in CopyFiles */,
@@ -557,6 +628,130 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketGnome_Prefix.pch; sourceTree = "<group>"; };
+		34083ADA10AFC3CA00401B07 /* MPSquareTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSquareTree.h; sourceTree = "<group>"; };
+		34083ADB10AFC3CA00401B07 /* MPSquareTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSquareTree.m; sourceTree = "<group>"; };
+		340895D111625375002A16B7 /* MPMover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMover.h; sourceTree = "<group>"; };
+		340895D211625375002A16B7 /* MPMover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMover.m; sourceTree = "<group>"; };
+		342303B2109EF0E20046EC13 /* MPPointTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPointTree.h; sourceTree = "<group>"; };
+		342303B3109EF0E20046EC13 /* MPPointTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPointTree.m; sourceTree = "<group>"; };
+		342303B9109F01FB0046EC13 /* MPRangedTreeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPRangedTreeNode.h; sourceTree = "<group>"; };
+		342303BA109F01FB0046EC13 /* MPRangedTreeNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPRangedTreeNode.m; sourceTree = "<group>"; };
+		342303BC109F07720046EC13 /* MPAVLRangedTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAVLRangedTree.h; sourceTree = "<group>"; };
+		342303BD109F07720046EC13 /* MPAVLRangedTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAVLRangedTree.m; sourceTree = "<group>"; };
+		3430E9C21069D88500F7B575 /* MPActivityApproach.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityApproach.h; sourceTree = "<group>"; };
+		3430E9C31069D88500F7B575 /* MPActivityApproach.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityApproach.m; sourceTree = "<group>"; };
+		3430EAC3106A309A00F7B575 /* MPCustomClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomClass.h; sourceTree = "<group>"; };
+		3430EAC4106A309A00F7B575 /* MPCustomClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomClass.m; sourceTree = "<group>"; };
+		3430EAD6106A361E00F7B575 /* MPCustomClassPG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomClassPG.h; sourceTree = "<group>"; };
+		3430EAD7106A361E00F7B575 /* MPCustomClassPG.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomClassPG.m; sourceTree = "<group>"; };
+		3432DA3310BBD5A400C55BEF /* MPTaskWait.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskWait.h; sourceTree = "<group>"; };
+		3432DA3410BBD5A400C55BEF /* MPTaskWait.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskWait.m; sourceTree = "<group>"; };
+		344CDBEB10933852009FEEDD /* MPTreeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTreeNode.h; sourceTree = "<group>"; };
+		344CDBEC10933852009FEEDD /* MPTreeNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTreeNode.m; sourceTree = "<group>"; };
+		3459593610B4A7CD0099A1AF /* MPPathNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPathNode.h; sourceTree = "<group>"; };
+		3459593710B4A7CD0099A1AF /* MPPathNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPathNode.m; sourceTree = "<group>"; };
+		34595AF010B921710099A1AF /* MPLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLine.h; sourceTree = "<group>"; };
+		34595AF110B921710099A1AF /* MPLine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLine.m; sourceTree = "<group>"; };
+		34608CB0106BD8D3003151CD /* pather.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = pather.xib; sourceTree = "<group>"; };
+		349707DB10835F7D005DDB30 /* MPNavMeshView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNavMeshView.h; sourceTree = "<group>"; };
+		349707DC10835F7D005DDB30 /* MPNavMeshView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNavMeshView.m; sourceTree = "<group>"; };
+		3497081910845F24005DDB30 /* MPSquare.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSquare.h; sourceTree = "<group>"; };
+		3497081A10845F24005DDB30 /* MPSquare.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSquare.m; sourceTree = "<group>"; };
+		3497082A10847534005DDB30 /* MPNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNavigationController.h; sourceTree = "<group>"; };
+		3497082B10847534005DDB30 /* MPNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNavigationController.m; sourceTree = "<group>"; };
+		3497086E108480BD005DDB30 /* MPPoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPoint.h; sourceTree = "<group>"; };
+		3497086F108480BD005DDB30 /* MPPoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPoint.m; sourceTree = "<group>"; };
+		34A3A054107239A600BC8A42 /* MPTaskLoot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskLoot.h; sourceTree = "<group>"; };
+		34A3A055107239A600BC8A42 /* MPTaskLoot.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskLoot.m; sourceTree = "<group>"; };
+		34A3A05710723C9400BC8A42 /* MPActivityLoot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityLoot.h; sourceTree = "<group>"; };
+		34A3A05810723C9400BC8A42 /* MPActivityLoot.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityLoot.m; sourceTree = "<group>"; };
+		34AE0B281068F6D2005F7C01 /* MPTaskPull.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskPull.h; sourceTree = "<group>"; };
+		34AE0B291068F6D2005F7C01 /* MPTaskPull.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskPull.m; sourceTree = "<group>"; };
+		34AE0B2F1068FADC005F7C01 /* MPActivityAttack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityAttack.h; sourceTree = "<group>"; };
+		34AE0B301068FADC005F7C01 /* MPActivityAttack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityAttack.m; sourceTree = "<group>"; };
+		34B0946F10670BC100EC8D5A /* MPActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivity.h; sourceTree = SOURCE_ROOT; };
+		34B0947010670BC100EC8D5A /* MPActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivity.m; sourceTree = SOURCE_ROOT; };
+		34B0947110670BC100EC8D5A /* MPActivityWait.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityWait.h; sourceTree = "<group>"; };
+		34B0947210670BC100EC8D5A /* MPActivityWait.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityWait.m; sourceTree = "<group>"; };
+		34B0947310670BC100EC8D5A /* TestActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestActivity.h; sourceTree = SOURCE_ROOT; };
+		34B0947410670BC100EC8D5A /* TestActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestActivity.m; sourceTree = SOURCE_ROOT; };
+		34B0947710670BC100EC8D5A /* MPOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperation.h; sourceTree = SOURCE_ROOT; };
+		34B0947810670BC100EC8D5A /* MPOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperation.m; sourceTree = SOURCE_ROOT; };
+		34B0947910670BC100EC8D5A /* MPOperationAdd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationAdd.h; sourceTree = SOURCE_ROOT; };
+		34B0947A10670BC100EC8D5A /* MPOperationAdd.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationAdd.m; sourceTree = SOURCE_ROOT; };
+		34B0947B10670BC100EC8D5A /* MPOperationSubtract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationSubtract.h; sourceTree = SOURCE_ROOT; };
+		34B0947C10670BC100EC8D5A /* MPOperationSubtract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationSubtract.m; sourceTree = SOURCE_ROOT; };
+		34B0947D10670BC100EC8D5A /* MPOperationMultiply.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationMultiply.h; sourceTree = SOURCE_ROOT; };
+		34B0947E10670BC100EC8D5A /* MPOperationMultiply.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationMultiply.m; sourceTree = SOURCE_ROOT; };
+		34B0947F10670BC100EC8D5A /* MPOperationEQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationEQ.h; sourceTree = SOURCE_ROOT; };
+		34B0948010670BC100EC8D5A /* MPOperationEQ.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationEQ.m; sourceTree = SOURCE_ROOT; };
+		34B0948110670BC100EC8D5A /* MPOperationGT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationGT.h; sourceTree = SOURCE_ROOT; };
+		34B0948210670BC100EC8D5A /* MPOperationGT.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationGT.m; sourceTree = SOURCE_ROOT; };
+		34B0948310670BC100EC8D5A /* MPOperationLT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationLT.h; sourceTree = SOURCE_ROOT; };
+		34B0948410670BC100EC8D5A /* MPOperationLT.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationLT.m; sourceTree = SOURCE_ROOT; };
+		34B0948510670BC100EC8D5A /* MPOperationGTEQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationGTEQ.h; sourceTree = SOURCE_ROOT; };
+		34B0948610670BC100EC8D5A /* MPOperationGTEQ.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationGTEQ.m; sourceTree = SOURCE_ROOT; };
+		34B0948710670BC100EC8D5A /* MPOperationLTEQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationLTEQ.h; sourceTree = SOURCE_ROOT; };
+		34B0948810670BC100EC8D5A /* MPOperationLTEQ.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationLTEQ.m; sourceTree = SOURCE_ROOT; };
+		34B0948910670BC100EC8D5A /* MPOperationNEQ.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPOperationNEQ.h; sourceTree = SOURCE_ROOT; };
+		34B0948A10670BC100EC8D5A /* MPOperationNEQ.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPOperationNEQ.m; sourceTree = SOURCE_ROOT; };
+		34B0948B10670BC100EC8D5A /* MPCondition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCondition.h; sourceTree = SOURCE_ROOT; };
+		34B0948C10670BC100EC8D5A /* MPCondition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCondition.m; sourceTree = SOURCE_ROOT; };
+		34B0948D10670BC100EC8D5A /* MPConditionAND.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConditionAND.h; sourceTree = SOURCE_ROOT; };
+		34B0948E10670BC100EC8D5A /* MPConditionAND.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConditionAND.m; sourceTree = SOURCE_ROOT; };
+		34B0948F10670BC100EC8D5A /* MPConditionOR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConditionOR.h; sourceTree = SOURCE_ROOT; };
+		34B0949010670BC100EC8D5A /* MPConditionOR.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConditionOR.m; sourceTree = SOURCE_ROOT; };
+		34B0949210670BC100EC8D5A /* MPMyLevelValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMyLevelValue.h; sourceTree = SOURCE_ROOT; };
+		34B0949310670BC100EC8D5A /* MPMyLevelValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMyLevelValue.m; sourceTree = SOURCE_ROOT; };
+		34B0949410670BC100EC8D5A /* MPMyClassValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMyClassValue.h; sourceTree = SOURCE_ROOT; };
+		34B0949510670BC100EC8D5A /* MPMyClassValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMyClassValue.m; sourceTree = SOURCE_ROOT; };
+		34B0949610670BC100EC8D5A /* MPValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPValue.h; sourceTree = SOURCE_ROOT; };
+		34B0949710670BC100EC8D5A /* MPValue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPValue.m; sourceTree = SOURCE_ROOT; };
+		34B0949810670BC100EC8D5A /* MPValueInt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPValueInt.h; sourceTree = "<group>"; };
+		34B0949910670BC100EC8D5A /* MPValueInt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPValueInt.m; sourceTree = "<group>"; };
+		34B0949A10670BC100EC8D5A /* MPValueFloat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPValueFloat.h; sourceTree = "<group>"; };
+		34B0949B10670BC100EC8D5A /* MPValueFloat.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPValueFloat.m; sourceTree = "<group>"; };
+		34B0949C10670BC100EC8D5A /* MPValueBool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPValueBool.h; sourceTree = "<group>"; };
+		34B0949D10670BC100EC8D5A /* MPValueBool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPValueBool.m; sourceTree = "<group>"; };
+		34B0949E10670BC100EC8D5A /* MPLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLocation.h; sourceTree = SOURCE_ROOT; };
+		34B0949F10670BC100EC8D5A /* MPLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLocation.m; sourceTree = SOURCE_ROOT; };
+		34B094A010670BC100EC8D5A /* MPValueString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPValueString.h; sourceTree = "<group>"; };
+		34B094A110670BC100EC8D5A /* MPValueString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPValueString.m; sourceTree = "<group>"; };
+		34B094A310670BC100EC8D5A /* MPTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTask.h; sourceTree = SOURCE_ROOT; };
+		34B094A410670BC100EC8D5A /* MPTask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTask.m; sourceTree = SOURCE_ROOT; };
+		34B094A510670BC100EC8D5A /* MPTaskPar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskPar.h; sourceTree = "<group>"; };
+		34B094A610670BC100EC8D5A /* MPTaskPar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskPar.m; sourceTree = "<group>"; };
+		34B094A710670BC100EC8D5A /* MPTaskSeq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskSeq.h; sourceTree = "<group>"; };
+		34B094A810670BC100EC8D5A /* MPTaskSeq.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskSeq.m; sourceTree = "<group>"; };
+		34B094A910670BC100EC8D5A /* MPTaskConditional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskConditional.h; sourceTree = "<group>"; };
+		34B094AA10670BC100EC8D5A /* MPTaskConditional.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskConditional.m; sourceTree = "<group>"; };
+		34B094AB10670BC100EC8D5A /* MPTaskIf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskIf.h; sourceTree = "<group>"; };
+		34B094AC10670BC100EC8D5A /* MPTaskIf.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskIf.m; sourceTree = "<group>"; };
+		34B094AD10670BC100EC8D5A /* MPTaskWhen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskWhen.h; sourceTree = "<group>"; };
+		34B094AE10670BC100EC8D5A /* MPTaskWhen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskWhen.m; sourceTree = "<group>"; };
+		34B094AF10670BC100EC8D5A /* MPTaskUntil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskUntil.h; sourceTree = "<group>"; };
+		34B094B010670BC100EC8D5A /* MPTaskUntil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskUntil.m; sourceTree = "<group>"; };
+		34B094B110670BC100EC8D5A /* MPTestTask.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTestTask.h; sourceTree = SOURCE_ROOT; };
+		34B094B210670BC100EC8D5A /* MPTestTask.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTestTask.m; sourceTree = SOURCE_ROOT; };
+		34B094B310670BC100EC8D5A /* MPTaskController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskController.h; sourceTree = SOURCE_ROOT; };
+		34B094B410670BC100EC8D5A /* MPTaskController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskController.m; sourceTree = SOURCE_ROOT; };
+		34B094B510670BC100EC8D5A /* MPTaskTreeDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskTreeDataSource.h; sourceTree = SOURCE_ROOT; };
+		34B094B610670BC100EC8D5A /* MPTaskTreeDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskTreeDataSource.m; sourceTree = SOURCE_ROOT; };
+		34B094B810670BC100EC8D5A /* MPStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPStack.h; sourceTree = SOURCE_ROOT; };
+		34B094B910670BC100EC8D5A /* MPStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPStack.m; sourceTree = SOURCE_ROOT; };
+		34B094BA10670BC100EC8D5A /* MPTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTimer.h; sourceTree = SOURCE_ROOT; };
+		34B094BB10670BC100EC8D5A /* MPTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTimer.m; sourceTree = SOURCE_ROOT; };
+		34B094BC10670BC100EC8D5A /* MPPerformanceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPerformanceController.h; sourceTree = SOURCE_ROOT; };
+		34B094BD10670BC100EC8D5A /* MPPerformanceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPerformanceController.m; sourceTree = SOURCE_ROOT; };
+		34B094BE10670BC100EC8D5A /* PatherController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PatherController.h; sourceTree = SOURCE_ROOT; };
+		34B094BF10670BC100EC8D5A /* PatherController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PatherController.m; sourceTree = SOURCE_ROOT; };
+		34B094C010670BC100EC8D5A /* MPParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPParser.h; sourceTree = SOURCE_ROOT; };
+		34B094C110670BC100EC8D5A /* MPParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPParser.m; sourceTree = SOURCE_ROOT; };
+		34B0951110671AF100EC8D5A /* Icon_Pather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon_Pather.png; sourceTree = SOURCE_ROOT; };
+		34D5FC9B10685C1100712FD0 /* MPTaskRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskRoute.h; sourceTree = "<group>"; };
+		34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskRoute.m; sourceTree = "<group>"; };
+		34D5FCF810686F1900712FD0 /* MPActivityWalk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityWalk.h; sourceTree = "<group>"; };
+		34D5FCF910686F1900712FD0 /* MPActivityWalk.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityWalk.m; sourceTree = "<group>"; };
 		614CD7891106182100BA1B2F /* Bot.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Bot.xib; sourceTree = "<group>"; };
 		7D06F0400D23058B00DA4E99 /* AuraController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuraController.h; sourceTree = "<group>"; };
 		7D06F0410D23058B00DA4E99 /* AuraController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuraController.m; sourceTree = "<group>"; };
@@ -897,8 +1092,19 @@
 		7DF445510E241ABA0075B96B /* TotemConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TotemConditionController.h; sourceTree = "<group>"; };
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
+		8462E42F10798ECC00A5D217 /* MPTaskRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskRest.h; sourceTree = "<group>"; };
+		8462E43010798ECC00A5D217 /* MPTaskRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskRest.m; sourceTree = "<group>"; };
+		8462E433107A36BF00A5D217 /* MPActivityRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityRest.h; sourceTree = "<group>"; };
+		8462E434107A36BF00A5D217 /* MPActivityRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityRest.m; sourceTree = "<group>"; };
+		846AFF401091D49C00C92362 /* MPAVLTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAVLTree.h; sourceTree = "<group>"; };
+		846AFF411091D49C00C92362 /* MPAVLTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAVLTree.m; sourceTree = "<group>"; };
+		8474F10910777E5B0017C0B5 /* MPTaskGhostRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskGhostRoute.h; sourceTree = "<group>"; };
+		8474F10A10777E5B0017C0B5 /* MPTaskGhostRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskGhostRoute.m; sourceTree = "<group>"; };
+		8487443D106BC6FB00BF46A1 /* ParseKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ParseKit.framework; sourceTree = SOURCE_ROOT; };
+		84AC54F91074F6CE006342D8 /* MPTaskDefend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskDefend.h; sourceTree = "<group>"; };
+		84AC54FA1074F6CE006342D8 /* MPTaskDefend.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskDefend.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -906,6 +1112,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8487443E106BC6FB00BF46A1 /* ParseKit.framework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				7DAAE7630D148995003F1E3C /* Security.framework in Frameworks */,
 				7DB260D50DB30922007DB867 /* libz.1.2.3.dylib in Frameworks */,
@@ -1130,6 +1337,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				8487443D106BC6FB00BF46A1 /* ParseKit.framework */,
 				030604B61088140000C57D77 /* ShortcutRecorder.framework */,
 				7DBF31C50E94679500A592BD /* Growl.framework */,
 				7DB260D40DB30922007DB867 /* libz.1.2.3.dylib */,
@@ -1140,7 +1348,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1157,6 +1365,7 @@
 		29B97314FDCFA39411CA2CEA /* WoWWaypoint */ = {
 			isa = PBXGroup;
 			children = (
+				34B0946D10670BC100EC8D5A /* MPather */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */,
 				7D65C8F60D2EE0B100C50DF7 /* GUI Subclasses */,
@@ -1260,6 +1469,207 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		340895D011623B43002A16B7 /* Movement */ = {
+			isa = PBXGroup;
+			children = (
+				340895D111625375002A16B7 /* MPMover.h */,
+				340895D211625375002A16B7 /* MPMover.m */,
+			);
+			name = Movement;
+			sourceTree = "<group>";
+		};
+		3430EAC2106A307600F7B575 /* CustomClass */ = {
+			isa = PBXGroup;
+			children = (
+				3430EAC3106A309A00F7B575 /* MPCustomClass.h */,
+				3430EAC4106A309A00F7B575 /* MPCustomClass.m */,
+				3430EAD6106A361E00F7B575 /* MPCustomClassPG.h */,
+				3430EAD7106A361E00F7B575 /* MPCustomClassPG.m */,
+			);
+			name = CustomClass;
+			sourceTree = "<group>";
+		};
+		349707DA10835F5D005DDB30 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				3497086E108480BD005DDB30 /* MPPoint.h */,
+				3497086F108480BD005DDB30 /* MPPoint.m */,
+				3497081910845F24005DDB30 /* MPSquare.h */,
+				3497081A10845F24005DDB30 /* MPSquare.m */,
+				3497082A10847534005DDB30 /* MPNavigationController.h */,
+				3497082B10847534005DDB30 /* MPNavigationController.m */,
+				349707DB10835F7D005DDB30 /* MPNavMeshView.h */,
+				349707DC10835F7D005DDB30 /* MPNavMeshView.m */,
+				3459593610B4A7CD0099A1AF /* MPPathNode.h */,
+				3459593710B4A7CD0099A1AF /* MPPathNode.m */,
+				34595AF010B921710099A1AF /* MPLine.h */,
+				34595AF110B921710099A1AF /* MPLine.m */,
+			);
+			name = Navigation;
+			sourceTree = "<group>";
+		};
+		34B0946D10670BC100EC8D5A /* MPather */ = {
+			isa = PBXGroup;
+			children = (
+				340895D011623B43002A16B7 /* Movement */,
+				34B0946E10670BC100EC8D5A /* Activities */,
+				3430EAC2106A307600F7B575 /* CustomClass */,
+				349707DA10835F5D005DDB30 /* Navigation */,
+				34B094A210670BC100EC8D5A /* Tasks */,
+				34B094B710670BC100EC8D5A /* Utilities */,
+				34B0947510670BC100EC8D5A /* Values */,
+				34B094BE10670BC100EC8D5A /* PatherController.h */,
+				34B094BF10670BC100EC8D5A /* PatherController.m */,
+				34B094C010670BC100EC8D5A /* MPParser.h */,
+				34B094C110670BC100EC8D5A /* MPParser.m */,
+				34608CB0106BD8D3003151CD /* pather.xib */,
+			);
+			name = MPather;
+			sourceTree = SOURCE_ROOT;
+		};
+		34B0946E10670BC100EC8D5A /* Activities */ = {
+			isa = PBXGroup;
+			children = (
+				34B0946F10670BC100EC8D5A /* MPActivity.h */,
+				34B0947010670BC100EC8D5A /* MPActivity.m */,
+				34AE0B2F1068FADC005F7C01 /* MPActivityAttack.h */,
+				34AE0B301068FADC005F7C01 /* MPActivityAttack.m */,
+				3430E9C21069D88500F7B575 /* MPActivityApproach.h */,
+				3430E9C31069D88500F7B575 /* MPActivityApproach.m */,
+				34A3A05710723C9400BC8A42 /* MPActivityLoot.h */,
+				34A3A05810723C9400BC8A42 /* MPActivityLoot.m */,
+				8462E433107A36BF00A5D217 /* MPActivityRest.h */,
+				8462E434107A36BF00A5D217 /* MPActivityRest.m */,
+				34B0947110670BC100EC8D5A /* MPActivityWait.h */,
+				34B0947210670BC100EC8D5A /* MPActivityWait.m */,
+				34D5FCF810686F1900712FD0 /* MPActivityWalk.h */,
+				34D5FCF910686F1900712FD0 /* MPActivityWalk.m */,
+				34B0947310670BC100EC8D5A /* TestActivity.h */,
+				34B0947410670BC100EC8D5A /* TestActivity.m */,
+			);
+			name = Activities;
+			sourceTree = SOURCE_ROOT;
+		};
+		34B0947510670BC100EC8D5A /* Values */ = {
+			isa = PBXGroup;
+			children = (
+				34B0949610670BC100EC8D5A /* MPValue.h */,
+				34B0949710670BC100EC8D5A /* MPValue.m */,
+				34B0949C10670BC100EC8D5A /* MPValueBool.h */,
+				34B0949D10670BC100EC8D5A /* MPValueBool.m */,
+				34B0949A10670BC100EC8D5A /* MPValueFloat.h */,
+				34B0949B10670BC100EC8D5A /* MPValueFloat.m */,
+				34B0949810670BC100EC8D5A /* MPValueInt.h */,
+				34B0949910670BC100EC8D5A /* MPValueInt.m */,
+				34B0949E10670BC100EC8D5A /* MPLocation.h */,
+				34B0949F10670BC100EC8D5A /* MPLocation.m */,
+				34B094A010670BC100EC8D5A /* MPValueString.h */,
+				34B094A110670BC100EC8D5A /* MPValueString.m */,
+				34B0949110670BC100EC8D5A /* ValueFunctions */,
+				34B0947610670BC100EC8D5A /* Operations */,
+			);
+			name = Values;
+			sourceTree = SOURCE_ROOT;
+		};
+		34B0947610670BC100EC8D5A /* Operations */ = {
+			isa = PBXGroup;
+			children = (
+				34B0947710670BC100EC8D5A /* MPOperation.h */,
+				34B0947810670BC100EC8D5A /* MPOperation.m */,
+				34B0947910670BC100EC8D5A /* MPOperationAdd.h */,
+				34B0947A10670BC100EC8D5A /* MPOperationAdd.m */,
+				34B0947B10670BC100EC8D5A /* MPOperationSubtract.h */,
+				34B0947C10670BC100EC8D5A /* MPOperationSubtract.m */,
+				34B0947D10670BC100EC8D5A /* MPOperationMultiply.h */,
+				34B0947E10670BC100EC8D5A /* MPOperationMultiply.m */,
+				34B0947F10670BC100EC8D5A /* MPOperationEQ.h */,
+				34B0948010670BC100EC8D5A /* MPOperationEQ.m */,
+				34B0948110670BC100EC8D5A /* MPOperationGT.h */,
+				34B0948210670BC100EC8D5A /* MPOperationGT.m */,
+				34B0948310670BC100EC8D5A /* MPOperationLT.h */,
+				34B0948410670BC100EC8D5A /* MPOperationLT.m */,
+				34B0948510670BC100EC8D5A /* MPOperationGTEQ.h */,
+				34B0948610670BC100EC8D5A /* MPOperationGTEQ.m */,
+				34B0948710670BC100EC8D5A /* MPOperationLTEQ.h */,
+				34B0948810670BC100EC8D5A /* MPOperationLTEQ.m */,
+				34B0948910670BC100EC8D5A /* MPOperationNEQ.h */,
+				34B0948A10670BC100EC8D5A /* MPOperationNEQ.m */,
+				34B0948B10670BC100EC8D5A /* MPCondition.h */,
+				34B0948C10670BC100EC8D5A /* MPCondition.m */,
+				34B0948D10670BC100EC8D5A /* MPConditionAND.h */,
+				34B0948E10670BC100EC8D5A /* MPConditionAND.m */,
+				34B0948F10670BC100EC8D5A /* MPConditionOR.h */,
+				34B0949010670BC100EC8D5A /* MPConditionOR.m */,
+			);
+			name = Operations;
+			sourceTree = SOURCE_ROOT;
+		};
+		34B0949110670BC100EC8D5A /* ValueFunctions */ = {
+			isa = PBXGroup;
+			children = (
+				34B0949210670BC100EC8D5A /* MPMyLevelValue.h */,
+				34B0949310670BC100EC8D5A /* MPMyLevelValue.m */,
+				34B0949410670BC100EC8D5A /* MPMyClassValue.h */,
+				34B0949510670BC100EC8D5A /* MPMyClassValue.m */,
+			);
+			name = ValueFunctions;
+			sourceTree = SOURCE_ROOT;
+		};
+		34B094A210670BC100EC8D5A /* Tasks */ = {
+			isa = PBXGroup;
+			children = (
+				34B094A310670BC100EC8D5A /* MPTask.h */,
+				34B094A410670BC100EC8D5A /* MPTask.m */,
+				34B094A910670BC100EC8D5A /* MPTaskConditional.h */,
+				34B094AA10670BC100EC8D5A /* MPTaskConditional.m */,
+				84AC54F91074F6CE006342D8 /* MPTaskDefend.h */,
+				84AC54FA1074F6CE006342D8 /* MPTaskDefend.m */,
+				8474F10910777E5B0017C0B5 /* MPTaskGhostRoute.h */,
+				8474F10A10777E5B0017C0B5 /* MPTaskGhostRoute.m */,
+				34B094AB10670BC100EC8D5A /* MPTaskIf.h */,
+				34B094AC10670BC100EC8D5A /* MPTaskIf.m */,
+				34A3A054107239A600BC8A42 /* MPTaskLoot.h */,
+				34A3A055107239A600BC8A42 /* MPTaskLoot.m */,
+				34B094A510670BC100EC8D5A /* MPTaskPar.h */,
+				34B094A610670BC100EC8D5A /* MPTaskPar.m */,
+				34AE0B281068F6D2005F7C01 /* MPTaskPull.h */,
+				34AE0B291068F6D2005F7C01 /* MPTaskPull.m */,
+				8462E42F10798ECC00A5D217 /* MPTaskRest.h */,
+				8462E43010798ECC00A5D217 /* MPTaskRest.m */,
+				34D5FC9B10685C1100712FD0 /* MPTaskRoute.h */,
+				34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */,
+				34B094A710670BC100EC8D5A /* MPTaskSeq.h */,
+				34B094A810670BC100EC8D5A /* MPTaskSeq.m */,
+				34B094AF10670BC100EC8D5A /* MPTaskUntil.h */,
+				34B094B010670BC100EC8D5A /* MPTaskUntil.m */,
+				34B094AD10670BC100EC8D5A /* MPTaskWhen.h */,
+				34B094AE10670BC100EC8D5A /* MPTaskWhen.m */,
+				34B094B110670BC100EC8D5A /* MPTestTask.h */,
+				34B094B210670BC100EC8D5A /* MPTestTask.m */,
+				34B094B310670BC100EC8D5A /* MPTaskController.h */,
+				34B094B410670BC100EC8D5A /* MPTaskController.m */,
+				34B094B510670BC100EC8D5A /* MPTaskTreeDataSource.h */,
+				34B094B610670BC100EC8D5A /* MPTaskTreeDataSource.m */,
+				3432DA3310BBD5A400C55BEF /* MPTaskWait.h */,
+				3432DA3410BBD5A400C55BEF /* MPTaskWait.m */,
+			);
+			name = Tasks;
+			sourceTree = SOURCE_ROOT;
+		};
+		34B094B710670BC100EC8D5A /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				846AFF461091D4EE00C92362 /* Tree */,
+				34B094B810670BC100EC8D5A /* MPStack.h */,
+				34B094B910670BC100EC8D5A /* MPStack.m */,
+				34B094BA10670BC100EC8D5A /* MPTimer.h */,
+				34B094BB10670BC100EC8D5A /* MPTimer.m */,
+				34B094BC10670BC100EC8D5A /* MPPerformanceController.h */,
+				34B094BD10670BC100EC8D5A /* MPPerformanceController.m */,
+			);
+			name = Utilities;
+			sourceTree = SOURCE_ROOT;
+		};
 		7D2167440DC4566600D5A815 /* PTKeyCode */ = {
 			isa = PBXGroup;
 			children = (
@@ -1281,6 +1691,7 @@
 		7D41E8330DEA2DC900118EA0 /* Toolbar */ = {
 			isa = PBXGroup;
 			children = (
+				34B0951110671AF100EC8D5A /* Icon_Pather.png */,
 				03A4047B0FE148C60087BC0D /* mbobbleicon.png */,
 				7DBA60590D51D28600FD6A5F /* Spell_Holy_MindVision.png */,
 				7D5498900F0222DC00DD46F8 /* INV_Fishingpole_03.png */,
@@ -1765,6 +2176,25 @@
 			name = Images;
 			sourceTree = "<group>";
 		};
+		846AFF461091D4EE00C92362 /* Tree */ = {
+			isa = PBXGroup;
+			children = (
+				846AFF401091D49C00C92362 /* MPAVLTree.h */,
+				846AFF411091D49C00C92362 /* MPAVLTree.m */,
+				344CDBEB10933852009FEEDD /* MPTreeNode.h */,
+				344CDBEC10933852009FEEDD /* MPTreeNode.m */,
+				342303B2109EF0E20046EC13 /* MPPointTree.h */,
+				342303B3109EF0E20046EC13 /* MPPointTree.m */,
+				342303B9109F01FB0046EC13 /* MPRangedTreeNode.h */,
+				342303BA109F01FB0046EC13 /* MPRangedTreeNode.m */,
+				342303BC109F07720046EC13 /* MPAVLRangedTree.h */,
+				342303BD109F07720046EC13 /* MPAVLRangedTree.m */,
+				34083ADA10AFC3CA00401B07 /* MPSquareTree.h */,
+				34083ADB10AFC3CA00401B07 /* MPSquareTree.m */,
+			);
+			name = Tree;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1785,7 +2215,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1979,6 +2409,8 @@
 				7D1B3B8F0F89AD22005CA0CD /* iChat.png in Resources */,
 				7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */,
 				03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */,
+				34B0951210671AF100EC8D5A /* Icon_Pather.png in Resources */,
+				34608CB1106BD8D3003151CD /* pather.xib in Resources */,
 				03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */,
 				03C42CCA1096839E0085E888 /* Macros.plist in Resources */,
 				03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */,
@@ -2162,6 +2594,72 @@
 				038769151124532000B2C571 /* RouteCollection.m in Sources */,
 				03981E78112B898E0081835F /* MovementController.m in Sources */,
 				03981F38112C819E0081835F /* LogController.m in Sources */,
+				34B094C210670BC100EC8D5A /* MPActivity.m in Sources */,
+				34B094C310670BC100EC8D5A /* MPActivityWait.m in Sources */,
+				34B094C410670BC100EC8D5A /* TestActivity.m in Sources */,
+				34B094C510670BC100EC8D5A /* MPOperation.m in Sources */,
+				34B094C610670BC100EC8D5A /* MPOperationAdd.m in Sources */,
+				34B094C710670BC100EC8D5A /* MPOperationSubtract.m in Sources */,
+				34B094C810670BC100EC8D5A /* MPOperationMultiply.m in Sources */,
+				34B094C910670BC100EC8D5A /* MPOperationEQ.m in Sources */,
+				34B094CA10670BC100EC8D5A /* MPOperationGT.m in Sources */,
+				34B094CB10670BC100EC8D5A /* MPOperationLT.m in Sources */,
+				34B094CC10670BC100EC8D5A /* MPOperationGTEQ.m in Sources */,
+				34B094CD10670BC100EC8D5A /* MPOperationLTEQ.m in Sources */,
+				34B094CE10670BC100EC8D5A /* MPOperationNEQ.m in Sources */,
+				34B094CF10670BC100EC8D5A /* MPCondition.m in Sources */,
+				34B094D010670BC100EC8D5A /* MPConditionAND.m in Sources */,
+				34B094D110670BC100EC8D5A /* MPConditionOR.m in Sources */,
+				34B094D210670BC100EC8D5A /* MPMyLevelValue.m in Sources */,
+				34B094D310670BC100EC8D5A /* MPMyClassValue.m in Sources */,
+				34B094D410670BC100EC8D5A /* MPValue.m in Sources */,
+				34B094D510670BC100EC8D5A /* MPValueInt.m in Sources */,
+				34B094D610670BC100EC8D5A /* MPValueFloat.m in Sources */,
+				34B094D710670BC100EC8D5A /* MPValueBool.m in Sources */,
+				34B094D810670BC100EC8D5A /* MPLocation.m in Sources */,
+				34B094D910670BC100EC8D5A /* MPValueString.m in Sources */,
+				34B094DA10670BC100EC8D5A /* MPTask.m in Sources */,
+				34B094DB10670BC100EC8D5A /* MPTaskPar.m in Sources */,
+				34B094DC10670BC100EC8D5A /* MPTaskSeq.m in Sources */,
+				34B094DD10670BC100EC8D5A /* MPTaskConditional.m in Sources */,
+				34B094DE10670BC100EC8D5A /* MPTaskIf.m in Sources */,
+				34B094DF10670BC100EC8D5A /* MPTaskWhen.m in Sources */,
+				34B094E010670BC100EC8D5A /* MPTaskUntil.m in Sources */,
+				34B094E110670BC100EC8D5A /* MPTestTask.m in Sources */,
+				34B094E210670BC100EC8D5A /* MPTaskController.m in Sources */,
+				34B094E310670BC100EC8D5A /* MPTaskTreeDataSource.m in Sources */,
+				34B094E410670BC100EC8D5A /* MPStack.m in Sources */,
+				34B094E510670BC100EC8D5A /* MPTimer.m in Sources */,
+				34B094E610670BC100EC8D5A /* MPPerformanceController.m in Sources */,
+				34B094E710670BC100EC8D5A /* PatherController.m in Sources */,
+				34B094E810670BC100EC8D5A /* MPParser.m in Sources */,
+				34D5FC9D10685C1100712FD0 /* MPTaskRoute.m in Sources */,
+				34D5FCFA10686F1900712FD0 /* MPActivityWalk.m in Sources */,
+				34AE0B2A1068F6D2005F7C01 /* MPTaskPull.m in Sources */,
+				34AE0B311068FADC005F7C01 /* MPActivityAttack.m in Sources */,
+				3430E9C41069D88500F7B575 /* MPActivityApproach.m in Sources */,
+				3430EAC5106A309A00F7B575 /* MPCustomClass.m in Sources */,
+				3430EAD8106A361E00F7B575 /* MPCustomClassPG.m in Sources */,
+				34A3A056107239A600BC8A42 /* MPTaskLoot.m in Sources */,
+				34A3A05910723C9400BC8A42 /* MPActivityLoot.m in Sources */,
+				84AC54FB1074F6CE006342D8 /* MPTaskDefend.m in Sources */,
+				8474F10B10777E5B0017C0B5 /* MPTaskGhostRoute.m in Sources */,
+				8462E43110798ECC00A5D217 /* MPTaskRest.m in Sources */,
+				8462E435107A36BF00A5D217 /* MPActivityRest.m in Sources */,
+				349707DD10835F7D005DDB30 /* MPNavMeshView.m in Sources */,
+				3497081B10845F24005DDB30 /* MPSquare.m in Sources */,
+				3497082C10847534005DDB30 /* MPNavigationController.m in Sources */,
+				34970870108480BD005DDB30 /* MPPoint.m in Sources */,
+				846AFF421091D49C00C92362 /* MPAVLTree.m in Sources */,
+				344CDBED10933852009FEEDD /* MPTreeNode.m in Sources */,
+				342303B4109EF0E20046EC13 /* MPPointTree.m in Sources */,
+				342303BB109F01FB0046EC13 /* MPRangedTreeNode.m in Sources */,
+				342303BE109F07720046EC13 /* MPAVLRangedTree.m in Sources */,
+				34083ADC10AFC3CA00401B07 /* MPSquareTree.m in Sources */,
+				3459593810B4A7CD0099A1AF /* MPPathNode.m in Sources */,
+				34595AF210B921710099A1AF /* MPLine.m in Sources */,
+				3432DA3510BBD5A400C55BEF /* MPTaskWait.m in Sources */,
+				340895D311625375002A16B7 /* MPMover.m in Sources */,
 				034126C11135706E00BE6819 /* PvPController.m in Sources */,
 				034126E61135774100BE6819 /* Battleground.m in Sources */,
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
