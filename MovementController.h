@@ -94,7 +94,7 @@ typedef enum MovementType {
 	BOOL _movingUp;
 	BOOL _afkPressForward;
 	BOOL _lastCorrectionForward;
-	BOOL _isFollowing;
+	BOOL isFollowing;
 }
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
@@ -108,7 +108,6 @@ typedef enum MovementType {
 
 // move to a position (I'd prefer we don't do this often, but it is sometimes needed :()
 - (void)moveToPosition: (Position*)position;
-- (void)moveToFollowUnit: (Position*)position;
 
 // the object we're moving to
 - (WoWObject*)moveToObject;

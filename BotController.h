@@ -326,7 +326,8 @@
 - (BOOL)evaluateSituation;
 - (BOOL)evaluateForPVP;
 - (BOOL)evaluateForGhost;
-- (BOOL)evaluateForPartyFollow;
+- (BOOL)evaluateForParty;
+- (BOOL)evaluateForFollow;
 - (BOOL)evaluateForCombatContinuation;
 - (BOOL)evaluateForRegen;
 - (BOOL)evaluateForLoot;
