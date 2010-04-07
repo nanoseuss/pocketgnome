@@ -23,7 +23,7 @@
 #define BLACKLIST_TIME_NOT_IN_LOS		20.0f
 
 // We got a line of sight error
-#define BLACKLIST_TIME_OUT_OF_RANGE		2.0f
+#define BLACKLIST_TIME_OUT_OF_RANGE		0.5f
 
 // We got an Invalid Target error
 #define BLACKLIST_TIME_INVALID_TARGET		45.0f

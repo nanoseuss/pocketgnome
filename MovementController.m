@@ -18,6 +18,7 @@
 
 #import "Controller.h"
 #import "BotController.h"
+#import "CombatController.h"
 #import "OffsetController.h"
 #import "PlayerDataController.h"
 #import "AuraController.h"
@@ -997,9 +998,10 @@ typedef enum MovementState{
 	if ( distanceToTarget <= [botController.theCombatProfile attackRange]) return YES;
 
 	log(LOG_COMBAT, @"%@ has gone out of range: %0.2f", target, distanceToTarget);
-		
+
 	// If they're just a lil out of range lets inch up
 	if ( distanceToTarget < ([botController.theCombatProfile attackRange] + 5.0f) && ![self isMoving]) {
+		
 		log(LOG_COMBAT, @"Unit is still close, inching forward.");
 		// Face the target
 		[playerData faceToward: [target position]];

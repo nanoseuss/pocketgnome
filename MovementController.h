@@ -10,6 +10,7 @@
 
 @class Controller;
 @class BotController;
+@class CombatController;
 @class OffsetController;
 @class PlayerDataController;
 @class AuraController;
@@ -45,6 +46,7 @@ typedef enum MovementType {
 	
 	IBOutlet Controller				*controller;
 	IBOutlet BotController			*botController;
+	IBOutlet CombatController		*combatController;
 	IBOutlet OffsetController		*offsetController;
 	IBOutlet PlayerDataController	*playerData;
 	IBOutlet AuraController			*auraController;
