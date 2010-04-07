@@ -10,6 +10,7 @@
 #import "Offsets.h"
 
 #import "SpellController.h"
+#import "PlayerDataController.h"
 
 /*
 /// Non Player Character flags
@@ -165,6 +166,12 @@ enum NPCFlags
 	return NO;
 }
 
+-(BOOL)isTargetingMe{
+
+	if ( [self targetID]  == [playerController GUID] ) return YES;
+
+	return NO;
+}
 
 - (BOOL)isFlyingMounted{
 	UInt32 movementFlags = [self movementFlags];

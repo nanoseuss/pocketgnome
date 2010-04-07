@@ -205,6 +205,8 @@ typedef enum MovementState{
 		return YES;
 	}
 	
+	log(LOG_DEV, @"isMoving: Not moving!");
+	
 	return NO;
 }
 
@@ -747,12 +749,18 @@ typedef enum MovementState{
 	// if we we get here, we're not close enough :(
 	// *******************************************************
 	
+	
+	// For some reason isMoving is returning false on CTM after the 3rd check! (like it loses it's state)
+	// This causes the routine to resume and quirk the flying
+	// For now I'll just increase the counter threshhold for CTM.
+
+	int checkThreshhold = 3;
+	if ( [self movementType] == MovementType_CTM ) checkThreshhold = 6;
+
 	// make sure we're still moving
-	if ( _positionCheck > 3 && _stuckCounter < 3 && ![self isMoving] ){
+	if ( _positionCheck > checkThreshhold && _stuckCounter < 3 && ![self isMoving] ){
 		log(LOG_MOVEMENT, @"For some reason we're not moving! Let's start moving again!");
-		
 		[self resumeMovement];
-		
 		_stuckCounter++;
 		return;
 	}

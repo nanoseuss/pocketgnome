@@ -553,6 +553,26 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					goto loopEnd;
 					log(LOG_CONDITION, @"	Casting? %d", conditionEval);
 				}
+
+				// check swimming status
+				if( [condition state] == StateSwimming ) {
+					if ( [condition unit] == UnitPlayer) conditionEval = ( [condition comparator] == CompareIs ) ? [[playerController player]isSwimming] : ![[playerController player]isSwimming];
+					else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend ) conditionEval = ( [condition comparator] == CompareIs ) ? [target isSwimming] : ![target isSwimming];
+					else if( [condition unit] == UnitPlayerPet) conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isSwimming] : ![playerController.pet isSwimming];
+					goto loopEnd;
+					log(LOG_CONDITION, @"	Swimming? %d", conditionEval);
+				}
+
+				// check targeting me status
+				if( [condition state] == StateTargetingMe ) {
+					/*
+					if( [condition unit] == UnitPlayer) conditionEval = ( [condition comparator] == CompareIs ) ? ( [[playerController player] targetID] == [playerController player] GUID] ) : ( [[playerController player] targetID] != [playerController player] GUID]);
+					else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend ) conditionEval = ( [condition comparator] == CompareIs ) ? [target isSwimming] : ![target isSwimming];
+					else if( [condition unit] == UnitPlayerPet) conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isSwimming] : ![playerController.pet isSwimming];
+					goto loopEnd;
+					log(LOG_CONDITION, @"	Targeting me? %d", conditionEval);
+					 */
+				}
 				
 				// IS THE UNIT MOUNTED?
 				if( [condition state] == StateMounted ) {
@@ -1127,8 +1147,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// Pause a moment for a potential mount cast
 		usleep(800000);
 		
-		// If we're mounted let's dp what ever cool thing our jump action activates whether we're air mounted or not.
-		if ( [[playerController player] isMounted] ) {
+		// If we're mounted let's do what ever cool thing our jump action activates whether we're air mounted or not.
+		if ( [[playerController player] isMounted] && ![[playerController player] isSwimming] ) {
 			[movementController jump];
 			usleep(300000);
 		}

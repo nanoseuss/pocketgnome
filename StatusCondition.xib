@@ -3,16 +3,15 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">740</string>
+		<string key="IBDocument.InterfaceBuilderVersion">732</string>
 		<string key="IBDocument.AppKitVersion">1038.25</string>
 		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">740</string>
+			<string key="NS.object.0">732</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -46,8 +45,9 @@
 					<object class="NSSegmentedControl" id="1045589723">
 						<reference key="NSNextResponder" ref="134011685"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{122, 5}, {87, 24}}</string>
+						<string key="NSFrame">{{122, 22}, {87, 24}}</string>
 						<reference key="NSSuperview" ref="134011685"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSSegmentedCell" key="NSCell" id="458897528">
 							<int key="NSCellFlags">67239424</int>
@@ -80,50 +80,63 @@
 					<object class="NSSegmentedControl" id="897215786">
 						<reference key="NSNextResponder" ref="134011685"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{213, 5}, {290, 24}}</string>
+						<string key="NSFrame">{{212, 22}, {430, 24}}</string>
 						<reference key="NSSuperview" ref="134011685"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSSegmentedCell" key="NSCell" id="844721750">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<object class="NSFont" key="NSSupport">
-								<string key="NSName">LucidaGrande</string>
-								<double key="NSSize">13</double>
-								<int key="NSfFlags">16</int>
-							</object>
+							<reference key="NSSupport" ref="793117369"/>
 							<reference key="NSControlView" ref="897215786"/>
 							<object class="NSMutableArray" key="NSSegmentImages">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSSegmentItem">
+									<double key="NSSegmentItemWidth">43</double>
 									<string key="NSSegmentItemLabel">Alive</string>
 									<int key="NSSegmentItemTag">1</int>
-									<bool key="NSSegmentItemSelected">YES</bool>
 									<int key="NSSegmentItemImageScaling">0</int>
 								</object>
 								<object class="NSSegmentItem">
+									<double key="NSSegmentItemWidth">78</double>
 									<string key="NSSegmentItemLabel">In Combat</string>
 									<int key="NSSegmentItemTag">2</int>
 									<int key="NSSegmentItemImageScaling">0</int>
 								</object>
 								<object class="NSSegmentItem">
+									<double key="NSSegmentItemWidth">60</double>
 									<string key="NSSegmentItemLabel">Casting</string>
 									<int key="NSSegmentItemTag">3</int>
 									<int key="NSSegmentItemImageScaling">0</int>
 								</object>
 								<object class="NSSegmentItem">
+									<double key="NSSegmentItemWidth">67</double>
 									<string key="NSSegmentItemLabel">Mounted</string>
 									<int key="NSSegmentItemTag">8</int>
 									<int key="NSSegmentItemImageScaling">0</int>
 								</object>
+								<object class="NSSegmentItem">
+									<double key="NSSegmentItemWidth">76</double>
+									<string key="NSSegmentItemLabel">Swimming</string>
+									<int key="NSSegmentItemImageScaling">0</int>
+								</object>
+								<object class="NSSegmentItem">
+									<double key="NSSegmentItemWidth">95</double>
+									<string key="NSSegmentItemLabel">Targeting Me</string>
+									<bool key="NSSegmentItemSelected">YES</bool>
+									<int key="NSSegmentItemImageScaling">0</int>
+								</object>
 							</object>
+							<int key="NSSelectedSegment">5</int>
 							<int key="NSSegmentStyle">1</int>
 						</object>
 					</object>
 					<object class="NSButton" id="662227588">
 						<reference key="NSNextResponder" ref="134011685"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{7, 8}, {20, 19}}</string>
+						<string key="NSFrame">{{7, 25}, {20, 19}}</string>
 						<reference key="NSSuperview" ref="134011685"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="206615665">
 							<int key="NSCellFlags">67239424</int>
@@ -150,8 +163,9 @@
 					<object class="NSPopUpButton" id="278588563">
 						<reference key="NSNextResponder" ref="134011685"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{32, 4}, {87, 26}}</string>
+						<string key="NSFrame">{{32, 21}, {87, 26}}</string>
 						<reference key="NSSuperview" ref="134011685"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="242892112">
 							<int key="NSCellFlags">-2076049856</int>
@@ -233,8 +247,9 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{577, 36}</string>
+				<string key="NSFrameSize">{665, 53}</string>
 				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 		</object>
@@ -458,6 +473,8 @@
 					<string>13.IBPluginDependency</string>
 					<string>14.CustomClassName</string>
 					<string>14.IBPluginDependency</string>
+					<string>14.IBSegmentedControlTracker.RoundRobinState</string>
+					<string>14.IBSegmentedControlTracker.WasGrowing</string>
 					<string>15.IBPluginDependency</string>
 					<string>15.IBSegmentedControlInspectorSelectedSegmentMetadataKey</string>
 					<string>16.IBPluginDependency</string>
@@ -487,10 +504,12 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>BetterSegmentedControl</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="2"/>
+					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<integer value="4"/>
+					<integer value="0"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{474, 684}, {577, 36}}</string>
+					<string>{{-893, 691}, {665, 53}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{223, 420}, {577, 36}}</string>
@@ -1050,6 +1069,20 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">ShortcutRecorder.framework/Headers/SRValidator.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Sparkle.framework/Headers/SUAppcast.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Sparkle.framework/Headers/SUUpdater.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

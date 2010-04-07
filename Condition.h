@@ -122,6 +122,9 @@ typedef enum StateComponents {
 
     StateMounted = 8,
     StateIndoors = 9,
+    StateSwimming = 10,
+    StateTargetingMe = 11,
+	
     
 } ConditionState;
 

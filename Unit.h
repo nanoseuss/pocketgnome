@@ -488,7 +488,12 @@ typedef enum MovementFlag {
     MovementFlag_Max                = (1 << 31),
 } MovementFlag;
 
+@class PlayerDataController;
+
 @interface Unit : WoWObject <UnitPosition> {
+
+	IBOutlet PlayerDataController	*playerController;
+
 }
 
 + (id)unitWithAddress: (NSNumber*)address inMemory: (MemoryAccess*)memory;
@@ -548,6 +553,7 @@ typedef enum MovementFlag {
 - (BOOL)isMounted;
 - (BOOL)isOnGround;
 - (BOOL)isSwimming;
+- (BOOL)isTargetingMe;
 - (BOOL)isFlyingMounted;
 
 - (UInt32)stateFlags;
