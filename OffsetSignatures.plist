@@ -2,6 +2,27 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Lua_GetWorldStateUIInfo</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\xE8\x96\x1B\x21\x00\x8B\x4F\x1C\x85\xC9\x0F\x84\x78\x02\x00\x00\xA1\x44\xE6\xDB\x00\x83\xF8\xFF\x74\x22\x21\xC8\x8D\x14\x40\xA1\x3C\xE6\xDB\x00\x8D\x14\x90\x8B\x42\x08\xA8\x01\x0F\x84\x73\x02\x00\x00</string>
+			<key>Mask</key>
+			<string>x%%%%xxxxxxx%%%%x%%%%xxxxxxxxxxx????xxxxxxxxxx%%%%</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: lua_GetWorldStateUIInfo</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
 	<key>Lua_GetBattlefieldWinner</key>
 	<dict>
 		<key>Intel</key>

@@ -278,6 +278,8 @@ typedef enum MovementState{
 - (void)setPatrolRouteSet: (RouteSet*)route{
 	PGLog(@"[Move] Switching from route %@ to %@", _currentRouteSet, route);
 	
+	[self resetMovementState];
+	
 	self.currentRouteSet = route;
 	
 	// player is dead
@@ -290,8 +292,8 @@ typedef enum MovementState{
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 	}
-	
-	// set our jump time
+
+    // set our jump time
 	self.lastJumpTime = [NSDate date];
 }
 
@@ -333,6 +335,12 @@ typedef enum MovementState{
 		usleep( [controller refreshDelay] );
 	}
 	
+	// check for patrol procedure before we move (thanks slipknot)
+	if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
+		PGLog(@"[Move] Not resuming movement, performing patrol proc");
+		return;
+	}
+	
 	// moving to an object
 	if ( _moveToObject ){
 		_movementState = MovementState_MovingToObject;
@@ -344,13 +352,6 @@ typedef enum MovementState{
 		
 		// previous waypoint to move to
 		if ( self.destinationWaypoint ){
-			
-			// check for patrol procedure before we move (thanks slipknot)
-			if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
-				PGLog(@"[Move] Not resuming movement, performing patrol proc");
-				return;
-			}
-			
 			PGLog(@"[Move] Moving to WP: %@", self.destinationWaypoint);
 			[self moveToPosition:[self.destinationWaypoint position]];
 		}
@@ -400,12 +401,6 @@ typedef enum MovementState{
 			if ( newWP ){
 				PGLog(@"[Move] Found waypoint %@ to move to", newWP);
 				self.destinationWaypoint = newWP;
-				
-				// check for patrol procedure before we move (thanks slipknot)
-				if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
-					PGLog(@"[Move] Not resuming movement, performing patrol proc");
-					return;
-				}
 				
 				[self moveToPosition:[newWP position]];
 			}
@@ -927,6 +922,7 @@ typedef enum MovementState{
 	
 	_unstickifyTry = 0;
 	_stuckCounter = 0;
+	closeEnough = 5.0f;
 	
 	[self resetMovementTimer];
 	

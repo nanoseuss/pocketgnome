@@ -77,6 +77,8 @@
 #define ErrorOutOfRange				@"ErrorOutOfRange"
 #define ErrorTargetNotInFront		@"ErrorTargetNotInFront"
 
+#define BotStarted					@"BotStarted"
+
 // Hotkey set flags
 #define	HotKeyStartStop				0x1
 #define HotKeyInteractMouseover		0x2
@@ -182,10 +184,6 @@
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
     int _pvpAntiAFKCounter;
-    IBOutlet NSButton *pvpStartStopButton;
-    IBOutlet NSPanel *pvpBMSelectPanel;
-    IBOutlet NSImageView *pvpBannerImage;
-    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox, *pvpWaitForPreparationBuff;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
 	BOOL _attackingInStrand;
@@ -325,11 +323,6 @@
 - (IBAction)closeLootHotkeyHelp: (id)sender;
 - (IBAction)gatheringLootingOptions: (id)sender;
 - (IBAction)gatheringLootingSelectAction: (id)sender;
-
-// PvP shit
-- (IBAction)pvpStartStop: (id)sender;
-- (IBAction)pvpBMSelectAction: (id)sender;
-- (IBAction)pvpTestWarning: (id)sender;
 
 // test stuff
 - (IBAction)test: (id)sender;

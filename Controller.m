@@ -213,6 +213,30 @@ static Controller* sharedController = nil;
         PGLog(@"Growl not running.");
     }*/
 	
+	
+	// make sure all the toolbar items are added!
+	
+	BOOL foundChat = NO, foundPvP = NO, foundStats = NO, foundObjects = NO;
+	for ( NSToolbarItem *item in [mainToolbar items] ){
+		
+		if ( [[item itemIdentifier] isEqualToString: [chatLogToolbarItem itemIdentifier]] )
+			foundChat = YES;
+		else if ( [[item itemIdentifier] isEqualToString: [pvpToolbarItem itemIdentifier]] )
+			foundPvP = YES;
+		else if ( [[item itemIdentifier] isEqualToString: [statisticsToolbarItem itemIdentifier]] )
+			foundStats = YES;
+		else if ( [[item itemIdentifier] isEqualToString: [objectsToolbarItem itemIdentifier]] )
+			foundObjects = YES;
+	}
+	
+	if ( !foundChat )
+		[mainToolbar insertItemWithItemIdentifier: [chatLogToolbarItem itemIdentifier] atIndex: 1];
+	if ( !foundPvP )
+		[mainToolbar insertItemWithItemIdentifier: [pvpToolbarItem itemIdentifier] atIndex: 5];
+	if ( !foundStats )
+		[mainToolbar insertItemWithItemIdentifier: [statisticsToolbarItem itemIdentifier] atIndex: 8];
+	if ( !foundObjects )
+		[mainToolbar insertItemWithItemIdentifier: [objectsToolbarItem itemIdentifier] atIndex: 4];
 }
 
 - (void)finalizeUserDefaults {
@@ -229,6 +253,8 @@ static Controller* sharedController = nil;
     [settings removeObjectForKey: @"LicenseEmail"];
     [settings removeObjectForKey: @"LicenseHash"];
     [settings removeObjectForKey: @"LicenseID"];
+	[settings removeObjectForKey: @"DoMounting"];
+	[settings removeObjectForKey: @"MountType"];
     [settings synchronize];
     
     [self toggleGUIScripting: nil];
@@ -243,11 +269,6 @@ static Controller* sharedController = nil;
 	
 	// check for update?
 	//[[SUUpdater sharedUpdater] checkForUpdatesInBackground];
-    
-    // validate game version
-    //if(![self isWoWVersionValid]) {
-    //    NSRunCriticalAlertPanel(@"No valid version of WoW detected!", @"You have version %@ of WoW installed, and this program requires version %@.  There is no gaurantee that this program will work with your version of World of Warcraft.  Please check for an updated version.", @"Okay", nil, nil, [self wowVersionShort], VALID_WOW_VERSION);
-    //}
     
     [self performSelector: @selector(scanObjectGraph) withObject: nil afterDelay: 0.5];
 }
@@ -1402,11 +1423,6 @@ typedef struct NameObjectStruct{
 
 #pragma mark WorldState/LoginState
 
-#define GameState_Unknown		-1
-#define GameState_LoggingIn		0
-#define GameState_Valid			1
-#define GameState_Loading		2
-
 - (int)gameState{
 	
 	// we want to check the object list pointer to make sure it's valid, if it is, we can assume we'll have a valid player (altho maybe we shouldn't?)
@@ -1415,19 +1431,7 @@ typedef struct NameObjectStruct{
 	
 	if ( memory && [memory isValid] ){
 		
-		// do we have a valid o
-		UInt32 offset = [offsetController offset:@"OBJECT_LIST_LL_PTR"];
-		UInt32 objectManager = 0x0;	
-		
-		if ( [memory loadDataForObject: self atAddress:offset  Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] && objectManager ){
-			
-			
-		}
-		
-		
-		
-		
-		offset = [offsetController offset:@"LoginState"];
+		UInt32 offset = [offsetController offset:@"LoginState"];
 		
 		char state[21];
 		state[20] = 0;
@@ -1457,12 +1461,22 @@ typedef struct NameObjectStruct{
 			if ( worldState == 10 ){
 				return GameState_Loading;
 			}
-			else if ( worldState == 0 ){
+			/*else if ( worldState == 0 ){
 				return GameState_Valid;
-			}
+			}*/
 			else if ( (worldState >=0 && worldState <= 3) || worldState == 7 || worldState == 8 || worldState == 9 ){
 				return GameState_LoggingIn;
 			}
+		}
+		
+		// check object list pointer!
+		offset = [offsetController offset:@"OBJECT_LIST_LL_PTR"];
+		UInt32 objectManager = 0x0;	
+		
+		if ( [memory loadDataForObject: self atAddress:offset  Buffer: (Byte*)&objectManager BufLength: sizeof(objectManager)] ){
+			if ( objectManager > 0x0 ){
+				return GameState_Valid;
+			}			
 		}
 	}
 
@@ -1473,7 +1487,7 @@ typedef struct NameObjectStruct{
 	// char decline in progress = 8
 	// char rename in progress = 7
 	// game loading = 10?
-	// game loaded = 0
+	// game loaded = 0 (it can also be 0 when we're on the login screen :( )
 	
 	// LoginState - charselect, login, charcreate, patchdownload		
 	
