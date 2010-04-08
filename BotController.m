@@ -379,7 +379,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	else return NSOrderedSame;
 }
 
-
 #pragma mark -
 
 - (void)testRule: (Rule*)rule {
@@ -2225,6 +2224,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark [Input] CombatController
 
 - (void)unitEnteredCombat: (NSNotification*)notification {
+	
 	if (![self isBotting]) return;
 	
 	Unit *unit = [notification object];
@@ -2239,15 +2239,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// start a combat procedure if we're not in one!
 	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
-
-		// Do this so that your casting position isn't  bugged if you get ambushed.
-		// This is only a temp solution, but it also solves the bugged casting position for now
-//		if ( ![movementController isMoving] ) [movementController stepForward];
-
+		
 		self.evaluationInProgress = nil;
 		
-		// If it's a player attacking us and we're on a mob then lets attack the player!
-		
+		// If it's a player attacking us lets attack the player!		
 		if ( [unit isPlayer] ) {
 			
 			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
@@ -2255,30 +2250,26 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self actOnUnit:unit];
 			
 			return;
-			
-		}
-		
-		// Don't log this if it's being triggered because of a pet
-		if (playerController.pet == nil) log(LOG_COMBAT, @"Looks like an ambush, taking action!");
 
+		}
+
+		log(LOG_COMBAT, @"Looks like an ambush, taking action!");
 		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
-		
 		return;
 
 	} 
 	
 	// We are already in combat
-		
+	
 	// If it's a player attacking us and we're on a mob then lets attack the player!
 	if ( ( [[combatController castingUnit] isKindOfClass: [Mob class]] || [[combatController castingUnit] isPet] ) &&
 			[combatController combatEnabled] &&
 			!theCombatProfile.healingEnabled &&
 			[unit isPlayer]) {
-			
 		log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
-			
-		[self cancelCurrentProcedure];		
+
+		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
 		return;
 	}
@@ -2818,27 +2809,107 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)evaluateForGhost {
+	
 	if ( ![playerController isGhost]) return NO;
-
+	
+	if (![self isBotting]) return NO;
+	
 	log(LOG_EVALUATE, @"Evaluating for Ghost");
 
+	if ( ![self evaluationInProgress] ) {
+		log(LOG_GHOST, @"Player is dead.");
+		self.evaluationInProgress = @"Ghost";
+		[controller setCurrentStatus: @"Bot: Player is Dead"];
+	}
+
+	if( ![playerController corpsePosition] ) {
+		log(LOG_DEV, @"Still not near the corpse.");
+		if ( ![movementController isMoving] ) [movementController resumeMovement];
+		return NO;
+	}
+	
 	Position *playerPosition = [playerController position];
-	if( [playerController corpsePosition] && [playerPosition distanceToPosition: [playerController corpsePosition]] < 26.0 ) {
-		// we found our corpse
-		[controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
-		[movementController stopMovement];
-		
-		// set our next-revive wait timer
-		if (!_reviveAttempt) _reviveAttempt = 1;
-		else _reviveAttempt = _reviveAttempt*2;
-		[macroController useMacroOrSendCmd:@"Resurrect"];	 // get corpse
-		if ( _reviveAttempt > 15 ) _reviveAttempt = 15;
-		log(LOG_GHOST, @"Waiting %d seconds to resurrect.", _reviveAttempt);
-		[self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
+	Position *corpsePosition = [playerController corpsePosition];
+	float distanceToCorpse = [playerPosition distanceToPosition: corpsePosition];
+	
+	// If we see the corpse and it's close enough, let's move to it
+	if ( _ghostDance == 0 && distanceToCorpse > 6.0f && distanceToCorpse < 40.0f) {
+		[movementController moveToPosition: corpsePosition];
+		log(LOG_GHOST, @"Moving to the corpse now.");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+		return YES;
+	} else
+	// If we're not close to the corpse let's keep moving
+	if( _ghostDance == 0 && distanceToCorpse > 6.0 ) {
+		log(LOG_DEV, @"Still not near the corpse.");
+		if ( ![movementController isMoving] ) [movementController resumeMovement];
+		return NO;
+	}
+	
+
+	// we found our corpse
+	[controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
+	[movementController stopMovement];
+
+	if ( theCombatProfile.checkForCampers ) {
+		log(LOG_GHOST, @"Checking for campers.");
+		// Check for Campers
+		float campingRange = 100.0f;
+		BOOL nearbyCampers = [playersController playerWithinRangeOfUnit: campingRange Unit:[playerController player] includeFriendly:NO includeHostile:YES];
+		if ( theCombatProfile.checkForCampers && nearbyCampers ) {
+			log(LOG_GHOST, @"Looks like I'm being camped, going to hold of on resurrecting.");
+			[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
+			return YES;
+		}
+		log(LOG_GHOST, @"No campers.");
+	}
+
+
+	if (_ghostDance <= 3) {
+		NSMutableArray *mobs = [NSMutableArray array];
+		[mobs addObjectsFromArray: [mobController mobsWithinDistance: 20.0f MobIDs:nil position:[[playerController player]position] aliveOnly:YES]];
+		// Do a little dance to make sure we're clear of mobs
+		if ([mobs count]) {
+			log(LOG_GHOST, @"Mobs near the corpse, finding a safe spot.");
+			[mobs sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
+			Unit *mob = nil;
+			for ( mob in mobs ) {
+				// This is very basic, but it's a good place to start =]
+				log(LOG_DEV, @"Face and Reverse...");
+
+				// Face the target
+				[playerController faceToward: [mob position]];
+				usleep(500000);
+				[movementController moveBackwardStart];
+				usleep(1600000);
+				[movementController moveBackwardStop];
+				_ghostDance++;
+				[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
+				return YES;
+			}
+		}
+	}
+	
+	// Ghost was dancin a lil too much
+	if ( _ghostDance > 3 && distanceToCorpse > 26.0 ) {
+		log(LOG_GHOST, @"Ghost dance didnt help, moving back to the corpse.");
+		[movementController moveToPosition: corpsePosition];
+		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 		return YES;
 	}
-	if ( ![movementController isMoving] ) [movementController resumeMovement];		
-	return NO;
+	
+	log(LOG_DEV, @"Clicking the Resurrect button....");
+
+	// set our next-revive wait timer
+	if (!_reviveAttempt) _reviveAttempt = 1;
+		else _reviveAttempt = _reviveAttempt*2;
+
+	[macroController useMacroOrSendCmd:@"Resurrect"];	 // get corpse
+	if ( _reviveAttempt > 15 ) _reviveAttempt = 15;
+	
+	log(LOG_GHOST, @"Waiting %d seconds to resurrect.", _reviveAttempt);
+	[self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
+	return YES;
 }
 
 - (BOOL)evaluateForParty {
@@ -3191,9 +3262,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If we're mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
-
-	// no regen in combat!
-	if ([[playerController player] isInCombat]) return NO;
 	
 	log(LOG_EVALUATE, @"Evaluating for Regen");
 
@@ -4209,6 +4277,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[startStopButton setTitle: @"Stop Bot"];
 		_didPreCombatProcedure = NO;
 		_reviveAttempt = 0;
+		_ghostDance = 0;
 		
 		// Bot started, lets reset our whisper history!
 		[chatLogController clearWhisperHistory];
@@ -4556,8 +4625,11 @@ NSMutableDictionary *_diffDict = nil;
     log(LOG_GENERAL, @"---- Player has revived!");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
+	if ( [movementController isMoving] ) [movementController stopMovement];
 	[self followStepsClear];
-	[self evaluateSituation];
+	_ghostDance = 0;
+	self.evaluationInProgress = nil;
+	[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:0.5f];
 }
 
 - (void)playerHasDied: (NSNotification*)notification {    
@@ -4601,11 +4673,11 @@ NSMutableDictionary *_diffDict = nil;
 	if ( self.isPvPing || [playerController isInBG:[playerController zone]] ){
 		return;
 	}
-	
+
 	if ( [playerController isDead] && [playerController isGhost] ){
-		log(LOG_GENERAL, @"[Bot] We're a ghost, starting movement!");
+		log(LOG_GHOST, @"We're dead and starting movement!");
 		[movementController resumeMovement];
-	}	
+	}
 }
 
 - (void)rePop: (NSNumber *)count{

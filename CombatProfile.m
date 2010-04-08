@@ -46,6 +46,7 @@
 		self.yardsBehindTargetStop = 15.0f;
 		self.followDistanceToMove = 20.0f;
 		self.disableRelease = NO;
+		self.checkForCampers = YES;
 		
 		// Healing
 		self.healingEnabled = NO;
@@ -104,6 +105,7 @@
 	copy.yardsBehindTargetStart = self.yardsBehindTargetStart;
 	copy.yardsBehindTargetStop = self.yardsBehindTargetStop;
 	copy.disableRelease = self.disableRelease;
+	copy.checkForCampers = self.checkForCampers;
 	
 	copy.healingEnabled = self.healingEnabled;
     copy.autoFollowTarget = self.autoFollowTarget;
@@ -149,6 +151,7 @@
 		self.yardsBehindTargetStart = [[decoder decodeObjectForKey: @"YardsBehindTargetStart"] floatValue];
 		self.yardsBehindTargetStop = [[decoder decodeObjectForKey: @"YardsBehindTargetStop"] floatValue];
 		self.disableRelease = [[decoder decodeObjectForKey: @"DisableRelease"] boolValue];
+		self.checkForCampers = [[decoder decodeObjectForKey: @"CheckForCampers"] boolValue];
 
 		self.healingEnabled = [[decoder decodeObjectForKey: @"HealingEnabled"] boolValue];
         self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
@@ -190,6 +193,7 @@
 	[coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTargetStart] forKey: @"YardsBehindTargetStart"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTargetStop] forKey: @"YardsBehindTargetStop"];
 	[coder encodeObject: [NSNumber numberWithBool: self.disableRelease] forKey: @"DisableRelease"];
+	[coder encodeObject: [NSNumber numberWithBool: self.checkForCampers] forKey: @"CheckForCampers"];
 	
 	[coder encodeObject: [NSNumber numberWithBool: self.healingEnabled] forKey: @"HealingEnabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
@@ -240,6 +244,7 @@
 @synthesize healingRange;
 @synthesize mountEnabled;
 @synthesize disableRelease;
+@synthesize checkForCampers;
 
 @synthesize engageRange;
 @synthesize attackRange;

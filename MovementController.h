@@ -105,6 +105,9 @@ typedef enum MovementType {
 - (void)moveForwardStart;
 - (void)moveForwardStop;
 
+- (void)moveBackwardStart;
+- (void)moveBackwardStop;
+
 // move to an object (takes priority over a route)
 - (BOOL)moveToObject: (WoWObject*)object;
 

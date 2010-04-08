@@ -124,7 +124,7 @@
 	Unit *castingUnit;		// the unit we're casting on!
 
     NSMutableArray *_mobsToLoot;
-    int _reviveAttempt, _skinAttempt;
+    int _reviveAttempt, _ghostDance, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
 	NSDate *startDate;
 	int _lastActionErrorCode;

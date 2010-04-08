@@ -31,6 +31,7 @@
 	float followDistanceToMove, yardsBehindTargetStart, yardsBehindTargetStop;
 	BOOL assistUnit, tankUnit, followUnit, partyEnabled;
 	BOOL disableRelease;
+	BOOL checkForCampers;
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
@@ -76,6 +77,7 @@
 @property (readwrite, assign) float healingRange;
 @property (readwrite, assign) BOOL mountEnabled;
 @property (readwrite, assign) BOOL disableRelease;
+@property (readwrite, assign) BOOL checkForCampers;
 
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) float engageRange;

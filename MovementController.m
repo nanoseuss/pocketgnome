@@ -1344,11 +1344,11 @@ typedef enum MovementState{
 	self.currentRouteKey = PrimaryRoute;
 	self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
 	
-	log(LOG_MOVEMENT, @"[Move] Player revived, switching to %@", self.currentRoute);
-	
-	if ( self.currentRoute ){
-		[self resumeMovement];
-	}
+	log(LOG_MOVEMENT, @"Player revived, switching to %@", self.currentRoute);
+// We'll let evaluation handle this one.	
+//	if ( self.currentRoute ) {
+//		[self resumeMovement];
+//	}
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification{
