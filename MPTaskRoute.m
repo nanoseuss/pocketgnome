@@ -16,6 +16,21 @@
 #import "BotController.h"
 #import "MPTaskController.h"
 
+
+@interface MPTaskRoute (Internal)
+
+/*!
+ * @function clearWalkActivity
+ * @abstract Properly shuts down the Walk Activity.
+ * @discussion
+ */
+- (void) clearWalkActivity;
+
+
+@end
+
+
+
 @implementation MPTaskRoute
 @synthesize walkActivity;
 @synthesize taskController;
@@ -124,8 +139,7 @@
 PGLog(@"[Route activityDone]");
 	// that activity is done so release it 
 	if (activity == walkActivity) {
-		[walkActivity autorelease];
-		[self setWalkActivity:nil];
+		[self clearWalkActivity];
 		if (!repeat) {
 			done = YES;  // activity is done, then so are we.
 		}
@@ -134,6 +148,13 @@ PGLog(@"[Route activityDone]");
 	return YES; // ??
 }
 
+
+
+- (void) clearWalkActivity {
+	[walkActivity stop];
+	[walkActivity autorelease];
+	self.walkActivity = nil;
+}
 
 
 

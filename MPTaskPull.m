@@ -299,7 +299,7 @@ PGLog( @"         mob finished: ===> Wait for Loot ");
 			
 			// if distance to mob > combatDist
 			currentDistance = [self myDistanceToMob:currentMob];
-			if (currentDistance > attackDistance+ 1.0f ) { 
+			if (currentDistance > attackDistance+ 3.0f ) { 
 				state = PullStateApproaching;
 			} // end if
 			
@@ -376,7 +376,7 @@ PGLog( @"   state[Waiting]");
 			if (approachActivity == nil) {
 			
 				// create approachTask
-				float howClose = (attackDistance  > 5.0f) ? (attackDistance -3): 4.0f;
+				float howClose = (attackDistance  > 5.0f) ? (attackDistance -2.5): 4.0f;
 				self.approachActivity = [MPActivityApproach approachUnit:currentMob withinDistance:howClose forTask:self];
 				
 			}

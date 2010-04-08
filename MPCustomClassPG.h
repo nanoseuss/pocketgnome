@@ -22,15 +22,16 @@ typedef enum CCCombatState {
 
 
 @interface MPCustomClassPG : MPCustomClass {
-	BOOL sentPreCombat, sentRegen, isMobDead;
+	BOOL sentPreCombat, sentRegen, isMobDead, establishedPosition;
 	MPTimer *timerControllerStartup; // give things a few sec to register in combat
 	MPTimer *timerMobDied; // give a few sec for CombatController to register dead mob
+	MPTimer *timerEstablishPosition; // give a few sec after engaging to call an establish Position
 	CombatController *combatController;
 	BotController *botController;
 	MPCCCombatState state;
 }
 @property (retain) MPTimer *timerControllerStartup;
-@property (retain) MPTimer *timerMobDied;
+@property (retain) MPTimer *timerMobDied, *timerEstablishPosition;
 @property (retain) CombatController *combatController;
 @property (retain) BotController *botController;
 

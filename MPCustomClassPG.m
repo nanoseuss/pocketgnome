@@ -15,9 +15,10 @@
 #import "Mob.h"
 #import "MPTimer.h"
 #import "Behavior.h"
+#import "MovementController.h"
 
 @implementation MPCustomClassPG
-@synthesize  timerControllerStartup, timerMobDied, combatController, botController;
+@synthesize  timerControllerStartup, timerMobDied, timerEstablishPosition, combatController, botController;
 
 
 - (id) initWithController:(PatherController*)controller {
@@ -25,9 +26,11 @@
 		sentPreCombat = NO;
 		sentRegen = NO;
 		isMobDead = NO;
+		establishedPosition = NO;
 		
 		self.timerControllerStartup = [MPTimer timer:1000];
 		self.timerMobDied = [MPTimer timer:500];
+		self.timerEstablishPosition = [MPTimer timer:1750];
 		self.combatController = [controller combatController];
 		self.botController = [controller botController];
 		state = CCCombatPreCombat;
@@ -71,6 +74,8 @@ PGLog( @"       botController->preCombatWithMob");
 		
 	} // end if
 
+	establishedPosition = NO;
+	
 	// if calling PreCombat() then CombatState must be preCombat
 	state = CCCombatPreCombat;
 }
@@ -110,6 +115,7 @@ PGLog( @"       botController->preCombatWithMob");
 			
 			
 //			[timerControllerStartup start];
+			[timerEstablishPosition start];
 			
 			state = CCCombatCombat;
 			return CombatStateInCombat;
@@ -121,6 +127,16 @@ PGLog( @"       botController->preCombatWithMob");
 			// if timer ready
 //			if ([timerControllerStartup ready] ) {
 			
+			
+			if (!establishedPosition) {
+				if ([timerEstablishPosition ready]) {
+				
+					PGLog( @"  ---> establishing Player Position");
+					[[patherController movementController] establishPlayerPosition];
+				
+					establishedPosition = YES;
+				}
+			}
 			
 				// Synchronization: CombatController and our Mob
 				if (mob != [combatController castingUnit]) {
@@ -203,6 +219,12 @@ PGLog( @"       botController->preCombatWithMob");
 					return;
 				}
 */
+			
+				// if unit ended up blacklisted ... bail
+				if ([[patherController blacklistController] isBlacklisted:mob]) {
+					PGLog(@"   Mob ended up Blacklisted.  You can ask CombatController why ... ");
+					return CombatStateBugged;
+				}
 				
 				// if player isDead
 				if (([[patherController playerData] isDead] ) || ([[patherController playerData] isGhost])) {
@@ -224,6 +246,8 @@ PGLog( @"       botController->preCombatWithMob");
 
 - (BOOL) rest {
 
+	establishedPosition = NO;  // reset flag
+	
 	PlayerDataController *player = [patherController playerData];
 	
 	// if !inCombat

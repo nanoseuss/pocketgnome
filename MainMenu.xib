@@ -3,17 +3,17 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">740</string>
+		<string key="IBDocument.InterfaceBuilderVersion">732</string>
 		<string key="IBDocument.AppKitVersion">1038.25</string>
 		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">740</string>
+			<string key="NS.object.0">732</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="2378"/>
-			<integer value="1956"/>
+			<integer value="1957"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -615,7 +615,7 @@
 							<string>07725E07-8272-45B3-8E61-4F0DE5CB6FA3</string>
 							<string>1AB5F1BB-1F41-4416-ABA3-968123DB2AA9</string>
 							<string>1EC440B1-046C-46D8-8B82-5AFAE091B652</string>
-							<string>84DBF2A0-19B5-44A8-9E35-2EF7D42FCA53</string>
+							<string>39C00606-AE0E-44C8-AB23-64D5CB13EB26</string>
 							<string>9EE3016C-0962-4579-8A78-D9D7C0ADB621</string>
 							<string>A203409D-7D49-42C3-9426-D16B9D2DA37A</string>
 							<string>A3C977D0-AC84-4970-ADF4-9EE1E7EE4C52</string>
@@ -697,9 +697,9 @@
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
-							<object class="NSToolbarItem" id="860091825">
+							<object class="NSToolbarItem" id="1052533362">
 								<object class="NSMutableString" key="NSToolbarItemIdentifier">
-									<characters key="NS.bytes">84DBF2A0-19B5-44A8-9E35-2EF7D42FCA53</characters>
+									<characters key="NS.bytes">39C00606-AE0E-44C8-AB23-64D5CB13EB26</characters>
 								</object>
 								<string key="NSToolbarItemLabel">Pather</string>
 								<string key="NSToolbarItemPaletteLabel">Pather</string>
@@ -1015,7 +1015,7 @@
 						<reference ref="499189514"/>
 						<reference ref="109537716"/>
 						<reference ref="684506935"/>
-						<reference ref="860091825"/>
+						<reference ref="1052533362"/>
 					</object>
 					<object class="NSMutableArray" key="NSToolbarIBDefaultItems">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1035,7 +1035,7 @@
 						<reference ref="1064180091"/>
 						<reference ref="446309517"/>
 						<reference ref="577586604"/>
-						<reference ref="860091825"/>
+						<reference ref="1052533362"/>
 					</object>
 					<object class="NSMutableArray" key="NSToolbarIBSelectableItems">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -6470,7 +6470,7 @@
 			<object class="NSCustomObject" id="538288452">
 				<string key="NSClassName">PvPController</string>
 			</object>
-			<object class="NSCustomObject" id="509533394">
+			<object class="NSCustomObject" id="830298150">
 				<string key="NSClassName">PatherController</string>
 			</object>
 		</object>
@@ -10737,108 +10737,108 @@
 					<int key="connectionID">4280</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">controller</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="148782052"/>
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toolbarItemSelected:</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="1052533362"/>
 					</object>
 					<int key="connectionID">4282</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">botController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="94147614"/>
+						<string key="label">patherToolbarItem</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="1052533362"/>
 					</object>
 					<int key="connectionID">4283</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">playerData</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="1002180867"/>
-					</object>
-					<int key="connectionID">4284</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">movementController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="290834434"/>
-					</object>
-					<int key="connectionID">4285</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">mobController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="1065682814"/>
+						<string key="label">patherController</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="830298150"/>
 					</object>
 					<int key="connectionID">4286</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">combatController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="983345874"/>
+						<string key="label">controller</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="148782052"/>
 					</object>
 					<int key="connectionID">4287</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">lootController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="145982638"/>
+						<string key="label">botController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="94147614"/>
 					</object>
 					<int key="connectionID">4288</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">macroController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="305775892"/>
+						<string key="label">playerData</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="1002180867"/>
 					</object>
 					<int key="connectionID">4289</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">blacklistController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="112137998"/>
+						<string key="label">waypointController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="980198522"/>
 					</object>
 					<int key="connectionID">4290</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">waypointController</string>
-						<reference key="source" ref="509533394"/>
-						<reference key="destination" ref="980198522"/>
+						<string key="label">movementController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="290834434"/>
 					</object>
 					<int key="connectionID">4291</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">patherToolbarItem</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="860091825"/>
+						<string key="label">mobController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="1065682814"/>
+					</object>
+					<int key="connectionID">4292</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">combatController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="983345874"/>
 					</object>
 					<int key="connectionID">4293</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">toolbarItemSelected:</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="860091825"/>
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">lootController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="145982638"/>
 					</object>
 					<int key="connectionID">4294</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">patherController</string>
-						<reference key="source" ref="148782052"/>
-						<reference key="destination" ref="509533394"/>
+						<string key="label">macroController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="305775892"/>
 					</object>
 					<int key="connectionID">4295</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">blacklistController</string>
+						<reference key="source" ref="830298150"/>
+						<reference key="destination" ref="112137998"/>
+					</object>
+					<int key="connectionID">4296</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -11572,10 +11572,10 @@
 						<reference key="object" ref="307790377"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="226736140"/>
 							<reference ref="840130664"/>
 							<reference ref="712731541"/>
 							<reference ref="397222545"/>
+							<reference ref="226736140"/>
 						</object>
 						<reference key="parent" ref="836553576"/>
 					</object>
@@ -11599,7 +11599,7 @@
 							<reference ref="499189514"/>
 							<reference ref="271453216"/>
 							<reference ref="684506935"/>
-							<reference ref="860091825"/>
+							<reference ref="1052533362"/>
 						</object>
 						<reference key="parent" ref="836553576"/>
 					</object>
@@ -14561,13 +14561,13 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">4281</int>
-						<reference key="object" ref="509533394"/>
-						<reference key="parent" ref="0"/>
+						<reference key="object" ref="1052533362"/>
+						<reference key="parent" ref="591372859"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">4292</int>
-						<reference key="object" ref="860091825"/>
-						<reference key="parent" ref="591372859"/>
+						<int key="objectID">4285</int>
+						<reference key="object" ref="830298150"/>
+						<reference key="parent" ref="0"/>
 					</object>
 				</object>
 			</object>
@@ -15142,7 +15142,8 @@
 					<string>4248.IBPluginDependency</string>
 					<string>4248.ImportedFromIB2</string>
 					<string>4257.IBPluginDependency</string>
-					<string>4292.IBPluginDependency</string>
+					<string>4281.IBPluginDependency</string>
+					<string>4285.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -15236,15 +15237,15 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{347, 488}, {749, 200}}</string>
+					<string>{{48, 718}, {749, 200}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{347, 488}, {749, 200}}</string>
+					<string>{{48, 718}, {749, 200}}</string>
 					<integer value="1"/>
 					<string>{{49, 661}, {640, 200}}</string>
 					<integer value="1"/>
 					<string>{700, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{413, 688}, {617, 0}}</string>
+					<string>{{114, 918}, {617, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{57, 707}, {616, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15326,7 +15327,7 @@
 					<string>{{627, 403}, {607, 197}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{422, 211}, {607, 197}}</string>
-					<string>{{533, 177}, {740, 413}}</string>
+					<string>{{138, 177}, {740, 413}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{0, 92}, {588, 290}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -15746,6 +15747,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -15783,7 +15785,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4295</int>
+			<int key="maxID">4296</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15951,9 +15953,6 @@
 							<string>login:</string>
 							<string>lootHotkeyHelp:</string>
 							<string>maltby:</string>
-							<string>pvpBMSelectAction:</string>
-							<string>pvpStartStop:</string>
-							<string>pvpTestWarning:</string>
 							<string>startBot:</string>
 							<string>startStopBot:</string>
 							<string>stopBot:</string>
@@ -15964,9 +15963,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -16053,14 +16049,8 @@
 							<string>playerController</string>
 							<string>playersController</string>
 							<string>procedureController</string>
-							<string>pvpBMSelectPanel</string>
-							<string>pvpBannerImage</string>
 							<string>pvpBehaviorPopUp</string>
 							<string>pvpController</string>
-							<string>pvpLeaveInactiveCheckbox</string>
-							<string>pvpPlayWarningCheckbox</string>
-							<string>pvpStartStopButton</string>
-							<string>pvpWaitForPreparationBuff</string>
 							<string>questController</string>
 							<string>routePopup</string>
 							<string>runningTimer</string>
@@ -16141,14 +16131,8 @@
 							<string>PlayerDataController</string>
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
-							<string>NSPanel</string>
-							<string>NSImageView</string>
 							<string>NSPopUpButton</string>
 							<string>PvPController</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>QuestController</string>
 							<string>id</string>
 							<string>NSTextField</string>

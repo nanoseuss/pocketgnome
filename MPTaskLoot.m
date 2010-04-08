@@ -104,7 +104,7 @@
 	Mob *lootMob = [self mobToLoot];
 	float currentDistance;
 	
-	// if mob not found
+	// if mob found
 	if (lootMob != nil) {
 
 		currentDistance = [self myDistanceToMob:lootMob];

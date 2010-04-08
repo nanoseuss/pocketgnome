@@ -13,6 +13,7 @@
 #import "Route.h"
 #import "MovementController.h"
 #import "Waypoint.h"
+#import "Position.h"
 #import "PlayerDataController.h"
 #import "MPNavigationController.h"
 #import "RouteSet.h"
@@ -81,7 +82,7 @@
 			
 			// if current route != our route
 			Route *currentRoute = [[movementController currentRouteSet] routeForKey:PrimaryRoute];
-			if (currentRoute == route) {
+			if (currentRoute != route) {
 				
 				// (whoever interrupted us messed with our route)
 				
@@ -105,7 +106,10 @@
 		[movementController setPatrolRouteSet:routeSet];
 			
 		// kick start it!
-		[movementController moveToPosition:[[route waypoints] objectAtIndex:0]]; // 1st waypoint position
+		Waypoint *firstWaypoint = [[route waypoints] objectAtIndex:0];
+		[movementController setDestinationWaypoint:firstWaypoint];
+		[movementController moveToPosition:[firstWaypoint position]]; // 1st waypoint position
+		PGLog(@"      ----> movingToPosition  %@", [firstWaypoint position]);
 		
 		// make sure we don't send these commands too quickly
 		[timerMoveDelay start];
@@ -150,8 +154,8 @@
 	
 	
 	// mC should be moving here, so we make sure it is happening.
-	if (![movementController isMoving]) { 
-			
+	if (![movementController isPatrolling]) {  // if (![movementController isMoving]) {
+		PGLog( @"[MPActivityWalk work]  -- mC didn't seem to be moving.  calling [start] again!");
 		[self start];  // <-- he knows what to do to get us started
 	}
 	
@@ -159,11 +163,12 @@
 	// if we are done, then report so
 	if ([self isRouteDone]) {
 		
-		
+		PGLog( @"       Route Done! ");
 		return YES;
 		
 	} 
 	
+/*
 PGLog( @"[MPActivityWalk work]");
 	if ([movementController isMoving]) {
 		state = WalkStateStarted;
@@ -171,22 +176,30 @@ PGLog( @"[MPActivityWalk work]");
 	
 	switch (state) {
 		case WalkStateNotStarted:
+			PGLog( @"   state = NotStarted ");
 			// if isPaused
 			if (![movementController isMoving]) { 
 				
+				PGLog( @"       mC not moving -> resumeMovement ");
 				// resumeMovement
 				[movementController resumeMovement];
 				[timerMoveDelay start];
 			}
 			break;
-		case WalkStateStarted:
 			
+			
+		case WalkStateStarted:
+			PGLog( @"   state = Started ");
 			// if isPaused
 			if (![movementController isMoving]) { 
+				
+				PGLog( @"       mC not moving -> waitTimer ");
 				
 				// give some time for the movementcontroller to register moving 
 				// after our initial [start] and attempting to "resume"
 				if ([timerMoveDelay ready]) { 
+					
+					PGLog( @"       mC not moving -> timerReady -> resumeMovement ");
 					// resumeMovement
 					[movementController resumeMovement];
 				}
@@ -196,6 +209,7 @@ PGLog( @"[MPActivityWalk work]");
 			// if isDone
 			if ([self isRouteDone]) {
 				
+				PGLog( @"       Route Done! ");
 				// ok, tell the taskController we are done:
 				return YES;
 			}
@@ -204,7 +218,7 @@ PGLog( @"[MPActivityWalk work]");
 		default:
 			break;
 	}
-	
+*/	
 			
 	// otherwise, we exit (but we are not "done"). 
 	return NO;
@@ -232,7 +246,7 @@ PGLog( @"[MPActivityWalk work]");
 		currIndx = [[route waypoints] indexOfObject:currentDestination] + 1;
 	}
 	
-	NSMutableString *text = [NSMutableString stringWithFormat:@" ActivityWalk \n  %i of %i points in route ", currIndx,[[route waypoints] count]];
+	NSMutableString *text = [NSMutableString stringWithFormat:@" ActivityWalk \n  %i of %i points in route \n    p%i/c%i/l%i", currIndx,[[route waypoints] count], previousIndex, currIndx, indexLastWaypoint ];
 	return text;
 }
 
