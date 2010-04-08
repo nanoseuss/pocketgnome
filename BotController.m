@@ -1293,6 +1293,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		
 		// This will handle targeting for us
+		[playerController faceToward: [target position]];
 		[combatController stayWithUnit:target withType: TargetEnemy];
 	}
 	
@@ -2306,24 +2307,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( [playerController isDead] ) return;
 
-	if ( [self evaluationInProgress] ) {
-		log(LOG_DEV, @"Skipping post combat since we're already doing something.");
-		return;
-	}
-
-	// start post-combat after specified delay
-	
-	// This is an odd situation that can occur (still in CombatProcedure when we leave combat)
-	//	But basically it comes from killing something, then while we're casting on another we leave combat
-	//	To prevent weird shit, lets not move to PostCombat if we're in combat!
 	log(LOG_COMBAT, @"Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
-	
-	//if(self.theRouteSet) [movementController stopMovement];
-	
-//	[movementController resetMoveToObject];
-	
-	log(LOG_DEV, @"Evaluating after resetting the unit...");
-	[self evaluateSituation];
+	return;
 }
 
 #pragma mark Combat
@@ -2453,24 +2438,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Unit *unit = [notification object];
 	
 	log(LOG_DEV, @"Unit %@ killed %@", unit, [unit class]);
-
-	// Kill the current combat procedure
-	if ([[self procedureInProgress] isEqualToString: CombatProcedure]) 
-		[self finishCurrentProcedure: [NSDictionary dictionaryWithObjectsAndKeys: 
-									  CombatProcedure,                  @"Procedure",
-									  [NSNumber numberWithInt: 0],      @"CompletedRules",
-									  unit,                             @"Target", nil]];
-
+	
+	[combatController cancelAllCombat];
+	
 	// unit dead, reset!
 	if ( !self.evaluationInProgress ) [movementController resetMoveToObject];
 
 	if ( [unit isNPC] ) log(LOG_DEV, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 	
 	if ( self.doLooting && [unit isNPC] ) {
-		// make sure this mob is even lootable
-		// sometimes the mob isn't marked as 'lootable' yet because it hasn't fully died (death animation or whatever)
-//		usleep(300000);
-
 		// Reset the loot scan idle timer
 		[self resetLootScanIdleTimer];
 		

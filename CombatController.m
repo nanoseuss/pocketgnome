@@ -191,16 +191,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (void)targetOutOfRange: (NSNotification*)notification {
 
 	// If this is a combat target
-	if ([botController castingUnit] == [self castingUnit]) {
+//	if ([botController castingUnit] == [self castingUnit]) {
 
 		// if we can correct this error
-		if ([movementController checkUnitOutOfRange:[self castingUnit]]) {
-			[botController cancelCurrentProcedure];
-			[self cancelAllCombat];
-			[botController evaluateSituation];
+		if ( [movementController checkUnitOutOfRange:[self castingUnit]] ) {
+//			[botController cancelCurrentProcedure];
+//			[self cancelAllCombat];
+//			[botController evaluateSituation];
 			return;
 		}
-	}
+//	}
 
 	log(LOG_DEV, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
 
@@ -230,7 +230,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
-	[botController cancelCurrentProcedure];
+//	[botController cancelCurrentProcedure];
 
 	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
 	/*
@@ -244,7 +244,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	 */
 	[movementController establishPlayerPosition];
 
-	[botController actOnUnit: _castingUnit];
+//	[botController actOnUnit: _castingUnit];
 	
 }
 

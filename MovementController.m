@@ -1013,7 +1013,7 @@ typedef enum MovementState{
 		[self jump];
 		usleep(10000);
 		[self moveForwardStop];
-			
+
 		// Now check again to see if they're in range
         usleep(100000);
 		float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
@@ -1021,8 +1021,12 @@ typedef enum MovementState{
 		if ( distanceToTarget > [botController.theCombatProfile attackRange]) {
 			log(LOG_COMBAT, @"Still out of range: %@, giving up.", target);
 			return NO;
+		} else {
+			log(LOG_COMBAT, @"Back in range: %@.", target);
+			return YES;
 		}
 	}
+	
 	// They're running and they're nothing we can do about it
 	log(LOG_COMBAT, @"Target: %@ has gone out of range: %0.2f", target, distanceToTarget);
     return NO;
