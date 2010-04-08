@@ -1005,7 +1005,7 @@ typedef enum MovementState{
 		log(LOG_COMBAT, @"Unit is still close, inching forward.");
 		// Face the target
 		[playerData faceToward: [target position]];
-		usleep(100000);
+		usleep(300000);
 
 		// Move, Jump, Stop
 		[self moveForwardStart];

@@ -195,9 +195,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		// if we can correct this error
 		if ( [movementController checkUnitOutOfRange:[self castingUnit]] ) {
-//			[botController cancelCurrentProcedure];
-//			[self cancelAllCombat];
-//			[botController evaluateSituation];
+			[botController cancelCurrentProcedure];
+			[self cancelAllCombat];
+			[botController actOnUnit: _castingUnit];
 			return;
 		}
 //	}

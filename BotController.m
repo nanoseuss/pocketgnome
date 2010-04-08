@@ -1287,12 +1287,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Check the mob if we're in combat and it's our target
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-		if (![self performProcedureMobCheck:target]) {
+		if ( ![self performProcedureMobCheck:target] ) {
+			[combatController cancelAllCombat];
 			[self finishCurrentProcedure: state];
 			return;
 		}
 		
-		// This will handle targeting for us
 		[playerController faceToward: [target position]];
 		[combatController stayWithUnit:target withType: TargetEnemy];
 	}
@@ -1545,7 +1545,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					if ( [rule target] == TargetAdd ) {
 						log(LOG_DEV, @"Targeting Add.");
-						[combatController stayWithUnit:target withType:[rule target]];
+//						[combatController stayWithUnit:target withType:[rule target]];
 					} else
 
 					// target yourself
@@ -1699,13 +1699,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)performProcedureMobCheck: (Unit*)target {
 	// This is a pre cast check for targets.
 	// returns true if the mob is good to go
-	if (!target || target == nil) return YES;
+	if (!target || target == nil) return NO;
 
 	// Dismount if mounted, if we've gotten this far it should be safe to do so
 	if ( [[playerController player] isMounted] ) [movementController dismount];
 	
 	// only do this for hostiles
-	if (![playerController isHostileWithFaction: [target factionTemplate]]) return YES;
+	if ( ![playerController isHostileWithFaction: [target factionTemplate]] ) return YES;
 	
 	// Doube check so we don't wast casts
 	if ( [target isDead] ) return NO;
