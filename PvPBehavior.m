@@ -324,7 +324,7 @@
 		return self.EyeOfTheStorm;
 	}
 	else if ( zone ==  [self.IsleOfConquest zone] ){
-		return self.StrandOfTheAncients;
+		return self.IsleOfConquest;
 	}
 	else if ( zone == [self.StrandOfTheAncients zone] ){
 		return self.StrandOfTheAncients;
