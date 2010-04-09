@@ -203,6 +203,7 @@
 	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
 	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitEnteredCombat:) name: UnitEnteredCombat object: nil];
 	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachedObject:) name: ReachedObjectNotification object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachedFollowUnit:) name: ReachedFollowUnitNotification object: nil];
 	
 	_theRouteCollection = nil;
 	_pvpBehavior = nil;
@@ -238,18 +239,13 @@
 	assistUnit	= nil;
 	tankUnit	= nil;
 	_followRoute = nil;
+	self.partyFollowSuspended = NO;
 	
 	_lootScanIdleTimer = 0;
 
-	self.partyFollowSuspended = NO;
-	_stepAttempts = 0;
 	
 	_routesChecked = [[NSMutableArray array] retain];
 	_mobsToLoot = [[NSMutableArray array] retain];
-	_followSteps = [[NSMutableArray array] retain];
-	_badWaypoints = [[NSMutableArray array] retain];
-	_lastAttemptedStep = nil;
-	_stepAttempts = 0;
 	
 	// wipe pvp options
 	self.isPvPing = NO;
@@ -2457,7 +2453,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark Follow
 
-// Records the current step of your follow target
+// Records the route your follow target
 -(void)followRouteRecord {
 	
 	if ( !followUnit ) return;
@@ -2573,7 +2569,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Find someone to follow
 -(BOOL)findFollowUnit {
-	// If it's a new target then we need to clear the steps
+	// If it's a new target then we need to clear the route
 	[self followRouteClear];
 
 	Player *followTarget = nil;
@@ -2750,23 +2746,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark [Input] MovementController
 
-- (void)reachedObject: (NSNotification*)notification {
+- (void)reachedFollowUnit: (NSNotification*)notification {
+	
+	log(LOG_DEV, @"Reached Follow Unit called.");
+	[controller setCurrentStatus: @"Bot: Enabled"];
+	self.evaluationInProgress = nil;
+	[self followRouteClear];
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+	return;
+	
+}
 
-	// Returning from follow mode
-	if ( movementController.isFollowing ) {
-		log(LOG_DEV, @"Reached object called for Follow");
-//		[movementController stopMovement];
-		movementController.isFollowing = NO;
-		self.evaluationInProgress = nil;
-		[self followRouteClear];
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-		return;
-	}
+- (void)reachedObject: (NSNotification*)notification {
 	
 	WoWObject *object = [notification object];
-
+	
 	log(LOG_DEV, @"Reached object called for %@", object);
-
+	
 	// if it's a player, or a non-dead NPC, we must be doing melee combat
 	if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) )log(LOG_COMBAT, @"Reached melee range with %@", object);
 	
@@ -2944,12 +2940,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if we are already in evaluation
 	if ( [self evaluationInProgress] ) return NO;
 
-	// Skip this if we still have steps to follow
-	if ( [_followRoute waypointCount] ) return NO;
+	// Skip this if we still have a route to follow
+	if ( _followRoute.waypoints.count ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Party");
 
-	// Find someone to follow if we've lost our target and there are no more steps.
+	// Find someone to follow if we've lost our target.
 	if ( !self.followUnit ) if ( ![self findFollowUnit] ) return NO;
 
 	// Validate the current unit
@@ -2960,7 +2956,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 //		[movementController moveForwardStop];
 		self.evaluationInProgress = nil;
 		self.followUnit = nil;
-		_stepAttempts=0;
 		// Help restart after zone in?
 //		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 5.0f];
 		return NO;
@@ -2974,9 +2969,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If this has not been set, or it has been unset
 	if ( !self.followUnit ) return NO;
 	
-	// If we're doing something, lets record the steps of our follow target
+	// If we're doing something, lets record the route of our follow target
 	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Follow") {
-		// record their steps
 		[self followRouteRecord];
 		log(LOG_DEV, @"Skipping Follow because we're evaluating for something else.");
 		return NO;
@@ -3004,9 +2998,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 			// If we're close enough let's halt
 			if ( distanceToFollowUnit <=  theCombatProfile.yardsBehindTargetStart ) {
+				log(LOG_MOVEMENT, @"Stopping Follow from evaluateForFollow.");
 				[movementController stopMovement];
-				movementController.isFollowing = NO;
 				[self followRouteClear];
+				[controller setCurrentStatus: @"Bot: Enabled"];
 				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 				return YES;
 			}
@@ -4502,9 +4497,9 @@ NSMutableDictionary *_diffDict = nil;
     [self cancelCurrentProcedure];		// this wipes all bot state (except pvp)
     [combatController resetAllCombat];	       // this wipes all combat state
 	
-	[self followRouteClear]; 	// Wipe our follow footsteps so we don't try em when we res
+	[self followRouteClear]; 	// Wipe our follow route so we don't try it when we res
 	
-	_shouldFollow = YES;
+//	_shouldFollow = YES;
     
     // send notification to Growl
     if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {

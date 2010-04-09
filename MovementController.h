@@ -29,6 +29,7 @@
 @class Position;
 
 #define ReachedObjectNotification      @"ReachedObjectNotification"
+#define ReachedFollowUnitNotification      @"ReachedFollowUnitNotification"
 
 // How close do we need to be to a node before we dismount?
 #define DistanceUntilDismountByNode	4.1f

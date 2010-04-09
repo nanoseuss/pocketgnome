@@ -202,8 +202,6 @@
 	NSTimer *_logOutTimer;
     
 	// Party Follow
-	NSMutableArray *_followSteps;
-	NSMutableArray *_badWaypoints;
 	Route *_followRoute;
 
 
@@ -211,9 +209,6 @@
 	Unit *followUnit;
 	Unit *assistUnit;
 	Unit *tankUnit;
-	
-	Position *_lastAttemptedStep;
-	int _stepAttempts;
 	
 	int _lootScanIdleTimer;
 	BOOL _wasLootWindowOpen;
@@ -349,7 +344,7 @@
 - (BOOL)isTankUnit;
 - (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
-- (void) followRouteClear;
+- (void)followRouteClear;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

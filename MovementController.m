@@ -536,22 +536,20 @@ typedef enum MovementState{
 	
 	// Pop the notification if we're following
 	if (self.isFollowing) {
-
-		log(LOG_WAYPOINT, @"Ending follow.");
 		[self stopMovement];
-		[botController followRouteClear];
-		//		self.currentRoute = nil;
-		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: nil];
+		log(LOG_WAYPOINT, @"Ending follow with notification.");
+		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
 	}
-	
+
 	// player is currently on the primary route and is dead, if they've finished, then we ran the entire route and didn't find our body :(
 	if ( self.currentRouteKey == PrimaryRoute && [playerData isGhost] ){
 		[botController stopBot:nil];
 		[controller setCurrentStatus:@"Bot: Unable to find body, stopping bot"];
 		log(LOG_GHOST, @"Unable to find your body after running the full route, stopping bot");
 		return;
-	}	
+	}
+	
 	// we've reached the end of our corpse route, lets switch to our main route
 	if ( self.currentRouteKey == CorpseRunRoute ){
 		
