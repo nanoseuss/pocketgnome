@@ -1,10 +1,22 @@
-[b]Pocket Gnome 1.4.6 (Build XXX) Release Notes [/b]
+[b]Pocket Gnome 1.4.6 (Build 391) Release Notes [/b]
+
 [list]User Interface
 [*]New toolbar icons should now display correctly[/list]
 
 [list]Behaviors 
 [*]Increased weight for current target, hopefully it will switch less
 [*]You will now re-mount when moving to a new node (if it's in patrolling)[/list]
+
+[list]Combat
+[*]Fixed bug where the player would stand still after killing a mob trying to loot, when looting wasn't enabled[/list]
+
+[list]Inventory
+[*]Fix bug where it will consolidate crystallized items/motes even if you don't check the option under "Gathering"
+[*]Fixed bug where items (crystallized, motes) would be consolidated if the user started the bot with this option enabled, stopped the bot, and then continue to leave PG open[/list]
+
+[list]PVP
+[*]"Stop when you reach X honor" should now be working
+[*]Isle of Conquest is now detected correctly[/list]
 
 [list]Routes 
 [*]Fixed bug with the action "Switch route" where it would switch the route but stop moving after that[/list]
