@@ -2747,25 +2747,30 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark [Input] MovementController
 
 - (void)reachedFollowUnit: (NSNotification*)notification {
-	
-	log(LOG_DEV, @"Reached Follow Unit called.");
+
+	log(LOG_FUNCTION, @"Reached Follow Unit called.");
+
+	// Reset the movement controller.  Do we need to switch back to a normal route ?
+	[movementController stopMovement];
+	movementController.isFollowing = NO;
+
+	[self followRouteClear];
+
 	[controller setCurrentStatus: @"Bot: Enabled"];
 	self.evaluationInProgress = nil;
-	[self followRouteClear];
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	return;
-	
 }
 
 - (void)reachedObject: (NSNotification*)notification {
 	
 	WoWObject *object = [notification object];
 	
-	log(LOG_DEV, @"Reached object called for %@", object);
+	log(LOG_FUNCTION, @"Reached object called for %@", object);
 	
 	// if it's a player, or a non-dead NPC, we must be doing melee combat
 	if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) )log(LOG_COMBAT, @"Reached melee range with %@", object);
-	
+
 	// Back to evaluation
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	
@@ -2844,18 +2849,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( ![movementController isMoving] ) [movementController resumeMovement];
 		return NO;
 	}
-	
+
 	Position *playerPosition = [playerController position];
 	Position *corpsePosition = [playerController corpsePosition];
 	float distanceToCorpse = [playerPosition distanceToPosition: corpsePosition];
-	
+
 	// If we see the corpse and it's close enough, let's move to it
-	if ( _ghostDance == 0 && distanceToCorpse > 6.0f && distanceToCorpse < 40.0f) {
+	if ( _ghostDance == 0 && distanceToCorpse > 6.0f && distanceToCorpse <= theCombatProfile.moveToCorpseRange) {
 		[movementController moveToPosition: corpsePosition];
 		log(LOG_GHOST, @"Moving to the corpse now.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 		return YES;
 	} else
+		
 	// If we're not close to the corpse let's keep moving
 	if( _ghostDance == 0 && distanceToCorpse > 6.0 ) {
 		log(LOG_DEV, @"Still not near the corpse.");
@@ -2871,9 +2877,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( theCombatProfile.checkForCampers ) {
 		log(LOG_GHOST, @"Checking for campers.");
 		// Check for Campers
-		float campingRange = 100.0f;
-		BOOL nearbyCampers = [playersController playerWithinRangeOfUnit: campingRange Unit:[playerController player] includeFriendly:NO includeHostile:YES];
-		if ( theCombatProfile.checkForCampers && nearbyCampers ) {
+		BOOL nearbyCampers = [playersController playerWithinRangeOfUnit: theCombatProfile.checkForCampersRange Unit:[playerController player] includeFriendly:NO includeHostile:YES];
+		if ( nearbyCampers ) {
 			log(LOG_GHOST, @"Looks like I'm being camped, going to hold of on resurrecting.");
 			[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
 			return YES;
@@ -2881,40 +2886,40 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_GHOST, @"No campers.");
 	}
 
+	if (theCombatProfile.avoidMobsWhenResurrecting) {
+		if (_ghostDance <= 3) {
+			NSMutableArray *mobs = [NSMutableArray array];
+			[mobs addObjectsFromArray: [mobController mobsWithinDistance: 20.0f MobIDs:nil position:[[playerController player]position] aliveOnly:YES]];
+			// Do a little dance to make sure we're clear of mobs
+			if ([mobs count]) {
+				log(LOG_GHOST, @"Mobs near the corpse, finding a safe spot.");
+				[mobs sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
+				Unit *mob = nil;
+				for ( mob in mobs ) {
+					// This is very basic, but it's a good place to start =]
+					log(LOG_DEV, @"Face and Reverse...");
 
-	if (_ghostDance <= 3) {
-		NSMutableArray *mobs = [NSMutableArray array];
-		[mobs addObjectsFromArray: [mobController mobsWithinDistance: 20.0f MobIDs:nil position:[[playerController player]position] aliveOnly:YES]];
-		// Do a little dance to make sure we're clear of mobs
-		if ([mobs count]) {
-			log(LOG_GHOST, @"Mobs near the corpse, finding a safe spot.");
-			[mobs sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
-			Unit *mob = nil;
-			for ( mob in mobs ) {
-				// This is very basic, but it's a good place to start =]
-				log(LOG_DEV, @"Face and Reverse...");
-
-				// Face the target
-				[playerController faceToward: [mob position]];
-				usleep(500000);
-				[movementController moveBackwardStart];
-				usleep(1600000);
-				[movementController moveBackwardStop];
-				_ghostDance++;
-				[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
-				return YES;
+					// Face the target
+					[playerController faceToward: [mob position]];
+					usleep(500000);
+					[movementController moveBackwardStart];
+					usleep(1600000);
+					[movementController moveBackwardStop];
+					_ghostDance++;
+					[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
+					return YES;
+				}
 			}
 		}
-	}
 	
-	// Ghost was dancin a lil too much
-	if ( _ghostDance > 3 && distanceToCorpse > 26.0 ) {
-		log(LOG_GHOST, @"Ghost dance didnt help, moving back to the corpse.");
-		[movementController moveToPosition: corpsePosition];
-		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
-		return YES;
-	}
-	
+		// Ghost was dancin a lil too much
+		if ( _ghostDance > 3 && distanceToCorpse > 26.0 ) {
+			log(LOG_GHOST, @"Ghost dance didnt help, moving back to the corpse.");
+			[movementController moveToPosition: corpsePosition];
+			[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+			return YES;
+		}
+	}	
 	log(LOG_DEV, @"Clicking the Resurrect button....");
 
 	// set our next-revive wait timer
@@ -2991,6 +2996,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If we're already moving
 	if ( [movementController isMoving] || [movementController isFollowing] ) {
+// Need Random stopping distance inserted here		
 		// Check to see if we're close enough to stop.
 		if ( [followUnit isValid] ) {
 			Position *positionFollowUnit = [followUnit position];
@@ -2998,11 +3004,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 			// If we're close enough let's halt
 			if ( distanceToFollowUnit <=  theCombatProfile.yardsBehindTargetStart ) {
-				log(LOG_MOVEMENT, @"Stopping Follow from evaluateForFollow.");
-				[movementController stopMovement];
-				[self followRouteClear];
-				[controller setCurrentStatus: @"Bot: Enabled"];
-				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+				log(LOG_MOVEMENT, @"Stopping Follow from evaluateForFollow via notification.");
+				[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 				return YES;
 			}
 		}

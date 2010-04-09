@@ -46,7 +46,20 @@
 		self.yardsBehindTargetStop = 15.0f;
 		self.followDistanceToMove = 20.0f;
 		self.disableRelease = NO;
-		self.checkForCampers = YES;
+
+		// New additions
+		self.partyDoNotInitiate = YES;
+		self.partyIgnoreOtherFriendlies = YES;
+		self.partyEmotes = NO;
+		self.partyEmotesIdleTime = 30;
+		self.followEnabled = NO;
+		self.followStopFollowingOOR = NO;
+		self.followStopFollowingRange = 50.0f;
+		self.acceptResurrection = NO;
+		self.checkForCampers = NO;
+		self.checkForCampersRange = 50.0f;
+		self.avoidMobsWhenResurrecting = YES;
+		self.moveToCorpseRange = 35.0f;
 		
 		// Healing
 		self.healingEnabled = NO;
@@ -105,7 +118,6 @@
 	copy.yardsBehindTargetStart = self.yardsBehindTargetStart;
 	copy.yardsBehindTargetStop = self.yardsBehindTargetStop;
 	copy.disableRelease = self.disableRelease;
-	copy.checkForCampers = self.checkForCampers;
 	
 	copy.healingEnabled = self.healingEnabled;
     copy.autoFollowTarget = self.autoFollowTarget;
@@ -116,7 +128,21 @@
 	copy.engageRange = self.engageRange;
     copy.attackLevelMin = self.attackLevelMin;
     copy.attackLevelMax = self.attackLevelMax;
-	
+
+	// New additions
+	copy.partyDoNotInitiate = self.partyDoNotInitiate;
+	copy.partyIgnoreOtherFriendlies = self.partyIgnoreOtherFriendlies;
+	copy.partyEmotes = self.partyEmotes;
+	copy.partyEmotesIdleTime = self.partyEmotesIdleTime;
+	copy.followEnabled = self.followEnabled;
+	copy.followStopFollowingOOR = self.followStopFollowingOOR;
+	copy.followStopFollowingRange = self.followStopFollowingRange;
+	copy.acceptResurrection = self.acceptResurrection;
+	copy.checkForCampers = self.checkForCampers;
+	copy.checkForCampersRange = self.checkForCampersRange;
+	copy.avoidMobsWhenResurrecting = self.avoidMobsWhenResurrecting;
+	copy.moveToCorpseRange = self.moveToCorpseRange;
+
 	copy.changed = YES;
     
     return copy;
@@ -151,7 +177,6 @@
 		self.yardsBehindTargetStart = [[decoder decodeObjectForKey: @"YardsBehindTargetStart"] floatValue];
 		self.yardsBehindTargetStop = [[decoder decodeObjectForKey: @"YardsBehindTargetStop"] floatValue];
 		self.disableRelease = [[decoder decodeObjectForKey: @"DisableRelease"] boolValue];
-		self.checkForCampers = [[decoder decodeObjectForKey: @"CheckForCampers"] boolValue];
 
 		self.healingEnabled = [[decoder decodeObjectForKey: @"HealingEnabled"] boolValue];
         self.autoFollowTarget = [[decoder decodeObjectForKey: @"AutoFollowTarget"] boolValue];
@@ -162,6 +187,21 @@
         self.attackRange = [[decoder decodeObjectForKey: @"AttackRange"] floatValue];
         self.attackLevelMin = [[decoder decodeObjectForKey: @"AttackLevelMin"] intValue];
         self.attackLevelMax = [[decoder decodeObjectForKey: @"AttackLevelMax"] intValue];
+
+		// New additions
+		self.partyDoNotInitiate = [[decoder decodeObjectForKey: @"PartyDoNotInitiate"] boolValue];
+		self.partyIgnoreOtherFriendlies = [[decoder decodeObjectForKey: @"PartyIgnoreOtherFriendlies"] boolValue];
+		self.partyEmotes = [[decoder decodeObjectForKey: @"PartyEmotes"] boolValue];
+		self.partyEmotesIdleTime = [[decoder decodeObjectForKey: @"PartyEmotesIdleTime"] intValue];
+		self.followEnabled = [[decoder decodeObjectForKey: @"FollowEnabled"] boolValue];
+		self.followStopFollowingOOR = [[decoder decodeObjectForKey: @"FollowStopFollowingOOR"] boolValue];
+		self.followStopFollowingRange = [[decoder decodeObjectForKey: @"FollowStopFollowingRange"] floatValue];
+		self.acceptResurrection = [[decoder decodeObjectForKey: @"AcceptResurrection"] boolValue];
+		self.checkForCampers = [[decoder decodeObjectForKey: @"CheckForCampers"] boolValue];
+		self.checkForCampersRange = [[decoder decodeObjectForKey: @"CheckForCampersRange"] floatValue];
+		self.avoidMobsWhenResurrecting = [[decoder decodeObjectForKey: @"AvoidMobsWhenResurrecting"] boolValue];
+		self.moveToCorpseRange = [[decoder decodeObjectForKey: @"MoveToCorpseRange"] floatValue];
+		
 	}
 	return self;
 }
@@ -193,7 +233,6 @@
 	[coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTargetStart] forKey: @"YardsBehindTargetStart"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.yardsBehindTargetStop] forKey: @"YardsBehindTargetStop"];
 	[coder encodeObject: [NSNumber numberWithBool: self.disableRelease] forKey: @"DisableRelease"];
-	[coder encodeObject: [NSNumber numberWithBool: self.checkForCampers] forKey: @"CheckForCampers"];
 	
 	[coder encodeObject: [NSNumber numberWithBool: self.healingEnabled] forKey: @"HealingEnabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.autoFollowTarget] forKey: @"AutoFollowTarget"];
@@ -205,6 +244,20 @@
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMin] forKey: @"AttackLevelMin"];
     [coder encodeObject: [NSNumber numberWithInt: self.attackLevelMax] forKey: @"AttackLevelMax"];
 
+	// New additions
+	[coder encodeObject: [NSNumber numberWithBool: self.partyDoNotInitiate] forKey: @"PartyDoNotInitiate"];
+	[coder encodeObject: [NSNumber numberWithBool: self.partyIgnoreOtherFriendlies] forKey: @"PartyIgnoreOtherFriendlies"];
+	[coder encodeObject: [NSNumber numberWithBool: self.partyEmotes] forKey:@"PartyEmotes"];
+	[coder encodeObject: [NSNumber numberWithInt: self.partyEmotesIdleTime] forKey: @"PartyEmotesIdleTime"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followEnabled] forKey: @"FollowEnabled"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followStopFollowingOOR] forKey: @"FollowStopFollowingOOR"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.followStopFollowingRange] forKey: @"FollowStopFollowingRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.acceptResurrection] forKey: @"AcceptResurrection"];
+	[coder encodeObject: [NSNumber numberWithBool: self.checkForCampers] forKey: @"CheckForCampers"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.checkForCampersRange] forKey: @"CheckForCampersRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.avoidMobsWhenResurrecting] forKey: @"AvoidMobsWhenResurrecting"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.moveToCorpseRange] forKey: @"MoveToCorpseRange"];
+	
     [coder encodeObject: self.entries forKey: @"IgnoreList"];
 }
 
@@ -244,12 +297,25 @@
 @synthesize healingRange;
 @synthesize mountEnabled;
 @synthesize disableRelease;
-@synthesize checkForCampers;
 
 @synthesize engageRange;
 @synthesize attackRange;
 @synthesize attackLevelMin;
 @synthesize attackLevelMax;
+
+// New additions
+@synthesize partyDoNotInitiate;
+@synthesize partyIgnoreOtherFriendlies;
+@synthesize partyEmotes;
+@synthesize partyEmotesIdleTime;
+@synthesize followEnabled;
+@synthesize followStopFollowingOOR;
+@synthesize followStopFollowingRange;
+@synthesize acceptResurrection;
+@synthesize checkForCampers;
+@synthesize checkForCampersRange;
+@synthesize avoidMobsWhenResurrecting;
+@synthesize moveToCorpseRange;
 
 - (BOOL)unitShouldBeIgnored: (Unit*)unit{
 	

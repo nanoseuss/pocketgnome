@@ -31,10 +31,24 @@
 	float followDistanceToMove, yardsBehindTargetStart, yardsBehindTargetStop;
 	BOOL assistUnit, tankUnit, followUnit, partyEnabled;
 	BOOL disableRelease;
-	BOOL checkForCampers;
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
+	
+	// New additions
+	BOOL partyDoNotInitiate;
+	BOOL partyIgnoreOtherFriendlies;
+	BOOL partyEmotes;
+	int partyEmotesIdleTime;
+	BOOL followEnabled;
+	BOOL followStopFollowingOOR;
+	float followStopFollowingRange;
+	BOOL acceptResurrection;
+	BOOL checkForCampers;
+	float checkForCampersRange;
+	BOOL avoidMobsWhenResurrecting;	
+	float moveToCorpseRange;
+	
 }
 
 + (id)combatProfile;
@@ -77,11 +91,23 @@
 @property (readwrite, assign) float healingRange;
 @property (readwrite, assign) BOOL mountEnabled;
 @property (readwrite, assign) BOOL disableRelease;
-@property (readwrite, assign) BOOL checkForCampers;
-
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) float engageRange;
 @property (readwrite, assign) int attackLevelMin;
 @property (readwrite, assign) int attackLevelMax;
+
+// New additions
+@property (readwrite, assign) BOOL checkForCampers;
+@property (readwrite, assign) BOOL partyDoNotInitiate;
+@property (readwrite, assign) BOOL partyIgnoreOtherFriendlies;
+@property (readwrite, assign) BOOL partyEmotes;
+@property (readwrite, assign) int partyEmotesIdleTime;
+@property (readwrite, assign) BOOL followEnabled;
+@property (readwrite, assign) BOOL followStopFollowingOOR;
+@property (readwrite, assign) float followStopFollowingRange;
+@property (readwrite, assign) BOOL acceptResurrection;
+@property (readwrite, assign) float checkForCampersRange;
+@property (readwrite, assign) BOOL avoidMobsWhenResurrecting;
+@property (readwrite, assign) float moveToCorpseRange;
 
 @end

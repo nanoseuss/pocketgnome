@@ -536,7 +536,6 @@ typedef enum MovementState{
 	
 	// Pop the notification if we're following
 	if (self.isFollowing) {
-		[self stopMovement];
 		log(LOG_WAYPOINT, @"Ending follow with notification.");
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
