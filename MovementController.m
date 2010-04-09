@@ -584,7 +584,7 @@ typedef enum MovementState{
 		[self setClickToMove:position andType:ctmWalkTo andGUID:0];
 	}
 	
-	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1 target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
+	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1f target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
 }
 
 - (void)checkCurrentPosition: (NSTimer*)timer {

@@ -2,6 +2,27 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>Lua_GetNumGossipAvailableQuests</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x31\xC9\x89\xE5\xBA\xE0\x40\xD9\x00\x83\xEC\x28\xEB\x1B\x90\x8B\x42\x10\x83\xE8\x03\x83\xF8\x02\x83\xD9\xFF\x81\xC2\x14\x02\x00\x00\x81\xFA\x60\x83\xD9\x00\x74\x06</string>
+			<key>Mask</key>
+			<string>xxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxx%%%%xx</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: lua_GetNumGossipAvailableQuests</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
 	<key>Lua_GetWorldStateUIInfo</key>
 	<dict>
 		<key>Intel</key>

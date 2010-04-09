@@ -24,9 +24,15 @@
  */
 
 #import "QuestController.h"
+
 #import "Controller.h"
-#import "MemoryAccess.h"
 #import "PlayerDataController.h"
+#import "MobController.h"
+#import "OffsetController.h"
+#import "MacroController.h"
+#import "BotController.h"
+
+#import "MemoryAccess.h"
 #import "Player.h"
 #import "Quest.h"
 #import "QuestItem.h"
@@ -95,7 +101,7 @@ typedef struct QuestInfo {
 	
 	// Get access to memory
 	MemoryAccess *wowMemory = [controller wowMemoryAccess];
-	UInt32 playerAddress = [playerDataController baselineAddress];
+	UInt32 playerAddress = [playerController baselineAddress];
 	
 	// Add the player's current quests to the array pls
 	int i;
@@ -186,5 +192,183 @@ typedef struct QuestInfo {
         }
 	}
 }
+
+#pragma mark NPC
+
+#define Type_Available	0
+#define Type_Active		1
+
+
+typedef struct QuestStruct {
+    UInt32 questID;
+    UInt32 level;		// not level requirement, but rather the quest level
+    UInt32 unknown;
+    UInt32 unknown2;
+	UInt32 flag;		// if 3 or 4, player has the quest
+	char   name[128];	// not sure the limit, but this should be enough
+} QuestStruct;
+
+- (GUID)questGiverGUID{
+	GUID targetGUID = [playerController targetID];
+	Mob *mob = [mobController mobWithGUID:targetGUID];
+	if ( !mob || ![mob isQuestGiver] ){
+		return 0x0;
+	}
+	
+	return targetGUID;	
+}
+
+- (int)getNumQuestsForType:(int)type{
+	
+	GUID questGiver = [self questGiverGUID];
+	if ( questGiver == 0x0 ){
+		PGLog(@"[Quest] Selected mob is either invalid or not a questgiver!");
+		return 0;
+	}
+	
+	// we have to interact first, or the memory space won't be updated!
+	[botController interactWithMouseoverGUID:questGiver];
+	
+	UInt32 offset = [offsetController offset:@"Lua_GetNumGossipAvailableQuests"];
+	int total = 0;
+	
+	if ( offset ){
+		MemoryAccess *memory = [controller wowMemoryAccess];
+		if ( memory && [memory isValid] ){
+			
+			UInt32 address = offset;
+			UInt32 maxAddress = offset + 0x4280;
+			
+			do{
+				QuestStruct quest;
+				if ( [memory loadDataForObject: self atAddress: address Buffer:(Byte*)&quest BufLength: sizeof(quest)] && quest.questID ){
+					PGLog(@"[%d] %d %s", quest.questID, quest.flag, quest.name);	
+					
+					// current available quests
+					if ( type == Type_Available && quest.flag != 3 && quest.flag != 4 )
+						total++;
+					else if ( type == Type_Active && ( quest.flag == 3 || quest.flag == 4 ) )
+						total++;
+				}
+				address += 0x214;
+			} while ( address < maxAddress );
+		}		
+	}
+							 
+	return total;
+}
+
+- (int)GetNumAvailableQuests{
+	return [self getNumQuestsForType:Type_Available];
+}
+
+// quests you already have with the quest giver
+- (int)GetNumActiveQuests{
+	return [self getNumQuestsForType:Type_Active];
+}
+
+- (void)turnInAllQuests{
+	
+}
+
+- (BOOL)getAvailableQuests{
+	
+	GUID questGiver = [self questGiverGUID];
+	if ( questGiver == 0x0 ){
+		PGLog(@"[Quest] Selected NPC is not a quest giver, unable to retrieve quests");
+		return NO;
+	}
+	
+	int totalAvailable = [self GetNumAvailableQuests], i = 0;
+	GUID target = [playerController targetID];
+	
+	// loop through and get quests!
+	for ( ; i < totalAvailable; i++ ){
+		
+		if ( [botController interactWithMouseoverGUID:target] ){
+			usleep(300000);
+			
+			// select the available quest!
+			[macroController useMacroOrSendCmd:[NSString stringWithFormat:@"/script SelectGossipAvailableQuest(1);"]];
+			usleep(10000);
+			
+			// click "continue" (not all quests need this)
+			[macroController useMacro:@"QuestContinue"];
+			usleep(10000);
+			
+			// click "Accept" (this is ONLY needed if we're accepting a quest)
+			[macroController useMacro:@"QuestAccept"];
+			usleep(300000);
+		}
+		else{
+			PGLog(@"[Quest] Unable to interact with the quest giver! Aborting");
+			return NO;
+		}
+	}
+	
+	return YES;
+}
+
+- (BOOL)isQuestComplete: (int)index{
+	
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( memory && [memory isValid] ){
+
+		UInt32 itemsInQuestLog = 0x0;
+		if ( [memory loadDataForObject: self atAddress: 0xC8DB48 Buffer:(Byte*)&itemsInQuestLog BufLength: sizeof(itemsInQuestLog)] ){
+			PGLog(@"[Quest] Items in log: %d", itemsInQuestLog);
+
+				for ( ; index < itemsInQuestLog; index++ ){
+					Byte unknown1 = 0x0, unknown2 = 0x0;
+					UInt32 questID = 0x0;
+					
+					[memory loadDataForObject: self atAddress: 0xDB9BE8 + (16*index) Buffer:(Byte*)&unknown1 BufLength: sizeof(unknown1)];
+					[memory loadDataForObject: self atAddress: 0xDB9BEC + (16*index) Buffer:(Byte*)&unknown2 BufLength: sizeof(unknown2)];
+					[memory loadDataForObject: self atAddress: 0xDB9BF0 + (16*index) Buffer:(Byte*)&questID BufLength: sizeof(questID)];
+					
+					
+					// if unknown1 is 1, the quest is NOT complete!
+					
+					PGLog(@"[%d] %d:%d - %u", index, unknown1, unknown2, questID);
+					
+					// this means the quest is NOT complete!!
+					if ( !unknown1 && unknown2 ){
+						PGLog(@" complete!");
+					}
+					else{
+						
+					}
+					
+				}
+		}
+				
+	
+	}
+	return NO;
+	
+	//if ( v9 && !DB9BE8[4 * v1] && DB9BEC[4 * v1] )
+	
+	
+}
+
+/*
+ 
+ So much is changing here!!!
+ For Lua_GetNumGossipAvailableQuests
+	0x0:	Quest ID
+	0x4:	Quest Level (not required level)
+	0x10:	If this is 3 or 4, you already have the quest! (it's active)
+ 
+ // next quest is at 0x214
+ 
+ 
+ while < 0x4280
+ 
+ 
+ 
+ 
+ // number of quests including the titles within the quest log: C8DB48
+ */
 
 @end

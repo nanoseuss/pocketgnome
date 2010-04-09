@@ -1057,6 +1057,19 @@
 			name = Reversed;
 			sourceTree = "<group>";
 		};
+		03CFC4D6116BF6FF0030F11E /* Questing */ = {
+			isa = PBXGroup;
+			children = (
+				034429B60FAA3E1800E9DE03 /* Quest.h */,
+				034429B70FAA3E1800E9DE03 /* Quest.m */,
+				034429BB0FAA3E3800E9DE03 /* QuestItem.h */,
+				034429BC0FAA3E3800E9DE03 /* QuestItem.m */,
+				034429BE0FAA3E5600E9DE03 /* QuestController.h */,
+				034429BF0FAA3E5600E9DE03 /* QuestController.m */,
+			);
+			name = Questing;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -1099,8 +1112,6 @@
 				030604F21088162100C57D77 /* OffsetController.m */,
 				7DAAE7670D14917E003F1E3C /* PlayerDataController.h */,
 				7DAAE7680D14917E003F1E3C /* PlayerDataController.m */,
-				034429BE0FAA3E5600E9DE03 /* QuestController.h */,
-				034429BF0FAA3E5600E9DE03 /* QuestController.m */,
 				7DD3D4090D1B2FEB0023D097 /* SpellController.h */,
 				7DD3D40A0D1B2FEB0023D097 /* SpellController.m */,
 				03A01B0B109A2A9600E6098E /* StatisticsController.h */,
@@ -1162,6 +1173,7 @@
 				080E96DDFE201D6D7F000001 /* Classes */,
 				7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */,
 				7D65C8F60D2EE0B100C50DF7 /* GUI Subclasses */,
+				03CFC4D6116BF6FF0030F11E /* Questing */,
 				7D9770BA0D2D84C400E6D8F9 /* Rules & Procedures */,
 				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
 				034126E21135773900BE6819 /* PvP */,
@@ -1578,10 +1590,6 @@
 				7D1BEE520F8733A400DF5FBF /* ChatLogEntry.m */,
 				03CEF7840FCCD93100B47336 /* Corpse.h */,
 				03CEF7850FCCD93100B47336 /* Corpse.m */,
-				034429B60FAA3E1800E9DE03 /* Quest.h */,
-				034429B70FAA3E1800E9DE03 /* Quest.m */,
-				034429BB0FAA3E3800E9DE03 /* QuestItem.h */,
-				034429BC0FAA3E3800E9DE03 /* QuestItem.m */,
 			);
 			name = Units;
 			sourceTree = "<group>";

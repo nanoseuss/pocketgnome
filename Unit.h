@@ -143,9 +143,9 @@ enum eUnitFields {
     
     UnitField_DynamicFlags              = 0x13C,    // tracking, tapped
     UnitField_ChannelSpell              = 0x140,
-    UnitField_ModCastSpeed              = 0x144,
-    UnitField_UnitCreatedBySpell        = 0x148,
-    UnitField_NPCFlags                  = 0x14C,    // repairer, auctioneer, etc
+    UnitField_ModCastSpeed              = 0x144,	// not correct as of 3.3.3a?
+    UnitField_UnitCreatedBySpell        = 0x14C,	// not correct as of 3.3.3a? used to be 0x148
+    UnitField_NPCFlags                  = 0x148,    // repairer, auctioneer, etc
     UnitField_NPCEmoteState             = 0x150,
     
     // 5x stats

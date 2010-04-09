@@ -44,6 +44,8 @@ enum ePlayerFields {
 
 	PlayerField_Experience                      = 0x980,
 	PlayerField_NextLevel_Experience            = 0x984,
+	
+	PlayerField_QuestInfo						= 0xFF4,	// pointer to a quest struct
 
 	PlayerField_TrackResources					= 0xF94,	// 3.2.2b
 	

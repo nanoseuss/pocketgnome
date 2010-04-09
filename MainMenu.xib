@@ -9013,14 +9013,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">playerDataController</string>
-						<reference key="source" ref="869824653"/>
-						<reference key="destination" ref="1002180867"/>
-					</object>
-					<int key="connectionID">3175</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">controller</string>
 						<reference key="source" ref="695338593"/>
 						<reference key="destination" ref="148782052"/>
@@ -9619,14 +9611,6 @@
 						</object>
 					</object>
 					<int key="connectionID">3618</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">pvpPlayWarningCheckbox</string>
-						<reference key="source" ref="94147614"/>
-						<reference key="destination" ref="404180370"/>
-					</object>
-					<int key="connectionID">3625</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -10706,6 +10690,46 @@
 						<reference key="destination" ref="963237447"/>
 					</object>
 					<int key="connectionID">4280</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">playerController</string>
+						<reference key="source" ref="869824653"/>
+						<reference key="destination" ref="1002180867"/>
+					</object>
+					<int key="connectionID">4281</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="869824653"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">4282</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">mobController</string>
+						<reference key="source" ref="869824653"/>
+						<reference key="destination" ref="1065682814"/>
+					</object>
+					<int key="connectionID">4283</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">macroController</string>
+						<reference key="source" ref="869824653"/>
+						<reference key="destination" ref="305775892"/>
+					</object>
+					<int key="connectionID">4284</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">botController</string>
+						<reference key="source" ref="869824653"/>
+						<reference key="destination" ref="94147614"/>
+					</object>
+					<int key="connectionID">4285</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -12794,6 +12818,7 @@
 						<int key="objectID">3172</int>
 						<reference key="object" ref="869824653"/>
 						<reference key="parent" ref="0"/>
+						<string key="objectName">Quests</string>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">3176</int>
@@ -15637,7 +15662,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4280</int>
+			<int key="maxID">4285</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -15805,9 +15830,6 @@
 							<string>login:</string>
 							<string>lootHotkeyHelp:</string>
 							<string>maltby:</string>
-							<string>pvpBMSelectAction:</string>
-							<string>pvpStartStop:</string>
-							<string>pvpTestWarning:</string>
 							<string>startBot:</string>
 							<string>startStopBot:</string>
 							<string>stopBot:</string>
@@ -15818,9 +15840,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -15907,14 +15926,8 @@
 							<string>playerController</string>
 							<string>playersController</string>
 							<string>procedureController</string>
-							<string>pvpBMSelectPanel</string>
-							<string>pvpBannerImage</string>
 							<string>pvpBehaviorPopUp</string>
 							<string>pvpController</string>
-							<string>pvpLeaveInactiveCheckbox</string>
-							<string>pvpPlayWarningCheckbox</string>
-							<string>pvpStartStopButton</string>
-							<string>pvpWaitForPreparationBuff</string>
 							<string>questController</string>
 							<string>routePopup</string>
 							<string>runningTimer</string>
@@ -15995,14 +16008,8 @@
 							<string>PlayerDataController</string>
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
-							<string>NSPanel</string>
-							<string>NSImageView</string>
 							<string>NSPopUpButton</string>
 							<string>PvPController</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>QuestController</string>
 							<string>id</string>
 							<string>NSTextField</string>
@@ -17097,12 +17104,20 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
 							<string>controller</string>
-							<string>playerDataController</string>
+							<string>macroController</string>
+							<string>mobController</string>
+							<string>offsetController</string>
+							<string>playerController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>BotController</string>
 							<string>Controller</string>
+							<string>MacroController</string>
+							<string>MobController</string>
+							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 						</object>
 					</object>

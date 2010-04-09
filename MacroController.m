@@ -380,7 +380,7 @@
 			newMacroBody[strlen(oldBody)] = '\0';
 			[memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacroBody BufLength:sizeof(newMacroBody)];
 			
-			PGLog(@"[Macro] Completed execution of %@ using macro ID %d", macroCommand, macroID);
+			//PGLog(@"[Macro] Completed execution of %@ using macro ID %d", macroCommand, macroID);
 			
 			return YES;
 		}

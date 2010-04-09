@@ -27,10 +27,18 @@
 
 @class Controller;
 @class PlayerDataController;
+@class MobController;
+@class OffsetController;
+@class MacroController;
+@class BotController;
 
 @interface QuestController : NSObject {
     IBOutlet Controller             *controller;
-	IBOutlet PlayerDataController   *playerDataController;
+	IBOutlet BotController			*botController;
+	IBOutlet PlayerDataController   *playerController;
+	IBOutlet MobController			*mobController;
+	IBOutlet OffsetController		*offsetController;
+	IBOutlet MacroController		*macroController;
 	
 	NSMutableArray			*_playerQuests;
 }
@@ -43,5 +51,19 @@
 
 // This dumps the playerQuests array to PGLog
 - (void)dumpQuests;
+
+// ----- NPC Related -----
+
+// available quests from the selected NPC
+- (int)GetNumAvailableQuests;
+
+// quests you already have with the quest giver
+- (int)GetNumActiveQuests;
+
+- (void)turnInAllQuests;
+
+- (BOOL)getAvailableQuests;
+
+- (BOOL)isQuestComplete: (int)index;
 
 @end

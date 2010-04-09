@@ -153,8 +153,6 @@
 - (BOOL)unitValidToHeal: (Unit*)unit;
 - (void)lootNode: (WoWObject*) unit;
 
-- (BOOL)mountNow;
-
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck;
 
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit;
@@ -2051,7 +2049,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Mount?  Or just evaluate
 		PGLog(@"[Eval] After skinned");
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: (([self mountNow]) ? 2.0f : 0.1f)];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 	}
 }
 
@@ -2563,61 +2561,70 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	PGLog(@"[Bot] Evaluate Situation");
     
+	// cancel any previous calls
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 	
-	// Check for preparation buff
-	if ( self.isPvPing && [self.pvpBehavior preparationDelay] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
+	// pvp checks
+	if ( self.isPvPing ){
 		
-		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
-		[movementController stopMovement];
-		[movementController resetMovementState];
-		
-		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
-		
-		return YES;
-	}
-	
-	// wait for boat to settle!
-	if ( self.isPvPing && _strandDelay ){
-		[controller setCurrentStatus: @"PvP: Waiting for boat to arrive..."];
-		[movementController stopMovement];
-		[movementController resetMovementState];
-		
-		[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
-		
-		return YES;
-	}
-	
-	// walk off boat
-	if ( self.isPvPing && [playerController zone] == 4384 && [playerController isOnBoatInStrand] ){
-		[controller setCurrentStatus: @"PvP: Walking off the boat..."];
-		
-		BOOL onLeftBoat = [playerController isOnLeftBoatInStrand];
-		Position *pos = nil;
-		
-		if ( onLeftBoat ){
-			PGLog(@"[PvP] Moving off of left boat!");
-			//pos = [Position positionWithX:1609.5f Y:49.6f Z:7.6f];
-			pos = [Position positionWithX:6.23f Y:20.94f Z:4.97f];
+		// Check for preparation buff
+		if ( [self.pvpBehavior preparationDelay] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){
 			
-		}
-		else{
-			PGLog(@"[PvP] Moving off of right boat!");
-			//pos = [Position positionWithX:1597.2f Y:-101.4f Z:8.9f];
-			pos = [Position positionWithX:5.88f Y:-25.1f Z:5.3f];
+			[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
+			[movementController stopMovement];
+			[movementController resetMovementState];
+			
+			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+			
+			return YES;
 		}
 		
-		[movementController moveToPosition:pos];
-
-		[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+		// strand checks only
+		if ( [playerController zone] == ZoneStrandOfTheAncients ){
+			
+			// wait for boat to settle!
+			if ( _strandDelay ){
+				[controller setCurrentStatus: @"PvP: Waiting for boat to arrive..."];
+				[movementController stopMovement];
+				[movementController resetMovementState];
+				
+				[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+				
+				return YES;
+			}
+			
+			// walk off boat
+			if ( [playerController isOnBoatInStrand] ){
+				[controller setCurrentStatus: @"PvP: Walking off the boat..."];
+				
+				BOOL onLeftBoat = [playerController isOnLeftBoatInStrand];
+				Position *pos = nil;
+				
+				if ( onLeftBoat ){
+					PGLog(@"[PvP] Moving off of left boat!");
+					//pos = [Position positionWithX:1609.5f Y:49.6f Z:7.6f];
+					pos = [Position positionWithX:6.23f Y:20.94f Z:4.97f];
+					
+				}
+				else{
+					PGLog(@"[PvP] Moving off of right boat!");
+					//pos = [Position positionWithX:1597.2f Y:-101.4f Z:8.9f];
+					pos = [Position positionWithX:5.88f Y:-25.1f Z:5.3f];
+				}
+				
+				[movementController moveToPosition:pos];
+				
+				[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+				
+				return YES;
+			}
+		}
 		
-		return YES;
-	}
-	
-	// dead and PvPing?
-	if ( self.isPvPing && [playerController isDead] ){
-		[movementController stopMovement];
-		return NO;
+		// dead and PvPing?
+		if ( [playerController isDead] ){
+			[movementController stopMovement];
+			return NO;
+		}
 	}
     
     Position *playerPosition = [playerController position];
@@ -2640,6 +2647,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		Position *corpsePosition = [playerController corpsePosition];
 		
         if ( corpsePosition && [playerPosition distanceToPosition:corpsePosition] < 26.0 ) {
+			
             // we found our corpse
             [controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
             [movementController stopMovement];
@@ -2984,12 +2992,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							return YES;
 						}
 					}
-					// Should we be mounted before we move to the node?
-					else if ( [self mountNow] ){
-						PGLog(@"mounting...");
-						[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
-						return YES;
-					}
 					// Safe to move to the node!
 					else{
 						[movementController moveToObject: nodeToLoot];		//andNotify: YES
@@ -3064,18 +3066,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							
 							return YES;
 						}
-						/*
-						// Should we be mounted before we move to the node?
-						else if ( [self mountNow] ){
-							[self performSelector: _cmd withObject: nil afterDelay: 2.2f];	
-							return YES;
-						}
-						// Safe to move to the node!
-						else{
-							[controller setCurrentStatus: @"Bot: Moving to fishing pool"];
-							[movementController moveToObject: nodeToFish andNotify: YES];
-						}
-						return YES;*/
 					}
 				}
 				
@@ -3101,13 +3091,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
-	
-	// Should we be mounted?
-	if ( ![movementController moveToObject] && [self mountNow] ){
-		PGLog(@"mounting.....");
-		[self performSelector: _cmd withObject: nil afterDelay: 2.0f];	
-		return YES;
-	}
     
     // if there's nothing to do, make sure we keep moving if we aren't
     if ( self.theRouteSet ) {
@@ -3125,10 +3108,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     }
 
     return NO;
-}
-
--(BOOL)mountNow{
-	return NO;
 }
 
 #pragma mark IBActions
@@ -4244,7 +4223,7 @@ NSMutableDictionary *_diffDict = nil;
 		 return lastErrorMessage;
 	}
 	
-	PGLog(@"[Bot] Action taken successfully!");
+	//PGLog(@"[Bot] Action taken successfully!");
 
 	return ErrNone;
 }
@@ -5521,6 +5500,11 @@ end
 */
 
 - (IBAction)test: (id)sender{
+	
+	[questController isQuestComplete:0];
+	
+	//PGLog(@"Available quests: %d  Active quests: %d", [questController GetNumAvailableQuests], [questController GetNumActiveQuests]);
+	//[questController getAvailableQuests];
 	
 	PGLog(@"Time left until Wintergrasp: %0.2f", [self lua_GetWintergraspWaitTime]);
 	
