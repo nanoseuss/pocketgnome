@@ -43,6 +43,7 @@
 @property (readwrite, retain) Waypoint *destinationWaypoint;
 @property (readwrite, retain) NSString *currentRouteKey;
 @property (readwrite, retain) Route *currentRoute;
+@property (readwrite, retain) Route *currentRouteHoldForFollow;
 
 @property (readwrite, retain) Position *lastAttemptedPosition;
 @property (readwrite, retain) NSDate *lastAttemptedPositionTime;
@@ -148,6 +149,8 @@ typedef enum MovementState{
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasRevived:) name: PlayerHasRevivedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachedFollowUnit:) name: ReachedFollowUnitNotification object: nil];
+
     }
     return self;
 }
@@ -165,6 +168,7 @@ typedef enum MovementState{
 @synthesize currentRouteSet = _currentRouteSet;
 @synthesize currentRouteKey = _currentRouteKey;
 @synthesize currentRoute = _currentRoute;
+@synthesize currentRouteHoldForFollow = _currentRouteHoldForFollow;
 @synthesize moveToObject = _moveToObject;
 @synthesize moveToPosition = _moveToPosition;
 @synthesize destinationWaypoint = _destinationWaypoint;
@@ -318,9 +322,7 @@ typedef enum MovementState{
 - (void)stopMovement{
 	
 	log(LOG_MOVEMENT, @"Stop Movement.");
-	
-	self.isFollowing = NO;
-	
+
 	// check to make sure we are even moving!
 	UInt32 movementFlags = [playerData movementFlags];
 	
@@ -445,6 +447,7 @@ typedef enum MovementState{
 - (void)startFollow {
 	
 	self.isFollowing = YES;
+	self.currentRouteHoldForFollow = self.currentRoute;
 	self.currentRoute = botController.followRoute;
 	
 	log(LOG_WAYPOINT, @"Starting movement controller for follow");
@@ -668,7 +671,7 @@ typedef enum MovementState{
 	float distanceToDestination = [playerPosition distanceToPosition: destPosition];
 	
     // sanity check, incase something happens
-    if ( distanceToDestination == INFINITY ) {
+    if ( distanceToDestination == INFINITY && !self.isFollowing) {
         log(LOG_MOVEMENT, @"Player distance == infinity. Stopping.");
 		self.isFollowing = NO;
 		[self resetMovementTimer];
@@ -766,7 +769,7 @@ typedef enum MovementState{
 	} 
 
 	// If we're in follow mode let's stop here
-//	if ( [self isFollowing]) return;
+	if ( self.isFollowing ) return;
 	
 	// *******************************************************
 	// if we we get here, we're not close enough :(
@@ -1044,6 +1047,8 @@ typedef enum MovementState{
     return NO;
 }
 - (void)resetMovementState{
+
+	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 	
 	log(LOG_MOVEMENT, @"Resetting movement state");
 	
@@ -1063,10 +1068,17 @@ typedef enum MovementState{
 	
 	_unstickifyTry = 0;
 	_stuckCounter = 0;
-	
+
+	if (self.isFollowing && self.currentRouteHoldForFollow) {
+		// Switch back to what ever was the old route
+		self.currentRoute =	self.currentRouteHoldForFollow;
+		self.currentRouteHoldForFollow =  nil;
+	}
+
+	self.isFollowing = NO;
+
 	[self resetMovementTimer];
 	
-	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 }
 
 #pragma mark -
@@ -1228,6 +1240,16 @@ typedef enum MovementState{
 
 
 #pragma mark Notifications
+
+- (void)reachedFollowUnit: (NSNotification*)notification {
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
+
+	log(LOG_FUNCTION, @"Reached Follow Unit called in the movementController.");
+	
+	// Reset the movement controller.
+	[self resetMovementState];
+
+}
 
 - (void)playerHasDied:(NSNotification *)aNotification{
 	

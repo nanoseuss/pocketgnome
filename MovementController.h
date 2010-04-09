@@ -67,6 +67,7 @@ typedef enum MovementType {
 	RouteSet *_currentRouteSet;			// current route set
 	Waypoint *_destinationWaypoint;
 	Route *_currentRoute;				// current route we're running
+	Route *_currentRouteHoldForFollow;
 	
 	int _movementState;
 	

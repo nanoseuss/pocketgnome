@@ -205,12 +205,13 @@
 	Route *_followRoute;
 
 
-	BOOL _partyFollowSuspended;
+	BOOL _followSuspended;
 	Unit *followUnit;
 	Unit *assistUnit;
 	Unit *tankUnit;
 	
 	int _lootScanIdleTimer;
+	int _partyEmoteIdleTimer;
 	BOOL _wasLootWindowOpen;
 	
     // -----------------
@@ -304,7 +305,7 @@
 @property (readonly, retain) Unit *followUnit;
 @property (readonly, retain) Unit *assistUnit;
 @property (readonly, retain) Unit *tankUnit;
-@property (readwrite, assign) BOOL partyFollowSuspended;
+@property (readwrite, assign) BOOL followSuspended;
 @property (readwrite, assign) Route *followRoute;
 
 @property (readwrite, assign) BOOL wasLootWindowOpen;
@@ -339,12 +340,15 @@
 - (BOOL)evaluateForPatrol;
 
 // Party stuff
-- (BOOL)mountNowParty;
 - (BOOL)isOnAssist;
 - (BOOL)isTankUnit;
 - (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
+- (NSString*)randomEmote;
+
+// Follow stuff
 - (void)followRouteClear;
+- (BOOL)followMountNow;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

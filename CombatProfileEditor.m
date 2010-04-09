@@ -126,7 +126,7 @@ static CombatProfileEditor *sharedEditor = nil;
 - (void)showEditorOnWindow: (NSWindow*)window forProfileNamed: (NSString*)profileName {
 
 	[self populatePlayerLists];
-	
+
 	if([profileName length]) {
         for(CombatProfile *profile in [self combatProfiles]) {
             if( [profileName isEqualToString: [profile name]] ) {

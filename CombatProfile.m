@@ -51,7 +51,7 @@
 		self.partyDoNotInitiate = YES;
 		self.partyIgnoreOtherFriendlies = YES;
 		self.partyEmotes = NO;
-		self.partyEmotesIdleTime = 30;
+		self.partyEmotesIdleTime = 120;
 		self.followEnabled = NO;
 		self.followStopFollowingOOR = NO;
 		self.followStopFollowingRange = 50.0f;
