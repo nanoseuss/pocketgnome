@@ -349,7 +349,7 @@
 - (BOOL)isTankUnit;
 - (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
--(Waypoint*)followNextWaypoint;
+- (void) followRouteClear;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

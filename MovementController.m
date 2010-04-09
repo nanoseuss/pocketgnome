@@ -522,8 +522,13 @@ typedef enum MovementState{
 		log(LOG_WAYPOINT, @"Moving to next waypoint of %@ with index %d", self.destinationWaypoint, index);
 		[self moveToPosition:[self.destinationWaypoint position]];
 	}
-	else{
-		log(LOG_ERROR, @"There are no waypoints for the current route!");
+	else {
+		if (self.isFollowing) {
+			[self routeEnded];
+			return;
+		} else {
+			log(LOG_ERROR, @"There are no waypoints for the current route!");
+		}
 	}
 }
 
@@ -531,7 +536,11 @@ typedef enum MovementState{
 	
 	// Pop the notification if we're following
 	if (self.isFollowing) {
+
 		log(LOG_WAYPOINT, @"Ending follow.");
+		[self stopMovement];
+		[botController followRouteClear];
+		//		self.currentRoute = nil;
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: nil];
 		return;
 	}

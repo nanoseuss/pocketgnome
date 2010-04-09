@@ -237,6 +237,7 @@
 	followUnit	= nil;
 	assistUnit	= nil;
 	tankUnit	= nil;
+	_followRoute = nil;
 	
 	_lootScanIdleTimer = 0;
 
@@ -2481,16 +2482,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// If our follow unit hasn't moved far enough we return
 		if (distanceMoved < 5.0f) return;
 
-		log(LOG_DEV, @"[Follow] Adding waypoint: %@ count: %d", positionFollowUnit, _followRoute.waypoints.count);
+		Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionFollowUnit];
+
+		log(LOG_DEV, @"[Follow] Adding waypoint: %@ count: %d", newWaypoint, _followRoute.waypoints.count);
 		
 		// Add the waypoint to the route
-		[(Route*)_followRoute addWaypoint: [Waypoint waypointWithPosition: positionFollowUnit]];
+		[_followRoute addWaypoint: newWaypoint];
 	} else {
+		_followRoute = [Route route];
 		// No Route so start it
-
-		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", positionFollowUnit, _followRoute.waypoints.count);
+		Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionFollowUnit];
+		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, _followRoute.waypoints.count);
 		
-		[(Route*)_followRoute addWaypoint: [Waypoint waypointWithPosition: positionFollowUnit]];
+		[_followRoute addWaypoint: newWaypoint];
 	}
 
 }
@@ -2503,99 +2507,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(float)followWaypointSpacing {
 	float waypointSpacing = [playerController speedMax] / 2.0f;
 	return waypointSpacing;
-}
-
--(Waypoint*)followNextWaypoint {
-/*
-	float waypointSpacing = [self followWaypointSpacing];
-
-	Position *positionToMove = nil;
-	float distanceToWaypoint = 0.0;
-
-	NSEnumerator *enumerator = [_followSteps objectEnumerator];
-	id thisWaypoint;
-	Position *playerPosition = [playerController position];
-
-	// Use a loop in case we need to invalidate the 1st waypoint n go to the next
-	while ((thisWaypoint = [enumerator nextObject])) {
-	
-		distanceToWaypoint = [playerPosition distanceToPosition: thisWaypoint];
-	
-		// If this point is less than 1 step lets remove it
-		if (distanceToWaypoint <= waypointSpacing) {
-			[_badWaypoints addObject: thisWaypoint];
-			distanceToWaypoint = 0.0;
-			continue;
-		}
-	
-		// Record the current position so we can compare it against the next point in the loop
-		positionToMove = thisWaypoint;
-		break;
-	}
-
-	// Toss out the bad waypoints that we found
-	if ([_badWaypoints count]) {
-	
-		enumerator = [_badWaypoints objectEnumerator];
-	
-		// Loop through the bad ones and remove them from the steps
-		while ((thisWaypoint = [enumerator nextObject])) {
-			log(LOG_DEV, @"[Follow] Removing bad waypoint: %@", thisWaypoint);
-			[_followSteps removeObject: thisWaypoint];
-		}
-	
-		[_badWaypoints removeAllObjects];
-	}
-
-	// Check to see if we're getting close enough to do random stop distance
-	// With steps found
-	if ( [followUnit isValid] && positionToMove) {
-		float distanceToFollowUnit = [[followUnit position] distanceToPosition: playerPosition];
-
-		if ( distanceToFollowUnit < (waypointSpacing+theCombatProfile.yardsBehindTargetStop)) {
-			log(LOG_DEV, @"Close enough to set a random stopping position.");
-			float start = theCombatProfile.yardsBehindTargetStart;
-			float stop = theCombatProfile.yardsBehindTargetStop;
-			float randomDistance = SSRandomFloatBetween( start, stop );
-			positionToMove = [[followUnit position] positionAtDistance:randomDistance withDestination: playerPosition];
-			if ([_followSteps count]) [_followSteps removeAllObjects];
-		}
-		
-	}else 
-		
-	// No steps found
-	if ( [followUnit isValid] && !positionToMove) {
-		float distanceToFollowUnit = [[followUnit position] distanceToPosition: playerPosition];
-																			// Not far enough away to move
-		if ( distanceToFollowUnit < theCombatProfile.followDistanceToMove)	return nil;
-
-		log(LOG_DEV, @"Close enough to set a random stopping position.");
-		float start = theCombatProfile.yardsBehindTargetStart;
-		float stop = theCombatProfile.yardsBehindTargetStop;
-		float randomDistance = SSRandomFloatBetween( start, stop );
-		positionToMove = [[followUnit position] positionAtDistance:randomDistance withDestination: playerPosition];
-		if ([_followSteps count]) [_followSteps removeAllObjects];
-	}
-		
-	// No steps found
-	if ( !positionToMove) return nil;
-
-	distanceToWaypoint = [playerPosition distanceToPosition: positionToMove];
-
-	// If our next recorded step is larger than normal (perhaps we just started and the unit is far off).
-	// We create a virtual one that's closer
-	if (distanceToWaypoint > waypointSpacing ) {
-		// Let's pass a normal sized stop on to the movementController
-		positionToMove = [playerPosition positionAtDistance:waypointSpacing withDestination: positionToMove];
-		distanceToWaypoint = [[[playerController player] position] distanceToPosition: positionToMove];
-		log(LOG_MOVEMENT, @"Next waypoint is far off, fabricating a closer one.");
-	}
-
-	Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionToMove];
-
-	return newWaypoint;
- */
-	return nil;
 }
 
 #pragma mark -
@@ -2844,6 +2755,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Returning from follow mode
 	if ( movementController.isFollowing ) {
 		log(LOG_DEV, @"Reached object called for Follow");
+//		[movementController stopMovement];
 		movementController.isFollowing = NO;
 		self.evaluationInProgress = nil;
 		[self followRouteClear];
@@ -3084,7 +2996,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// If we're already moving
-	if ( [movementController isMoving] ) return NO;
+	if ( [movementController isMoving] || [movementController isFollowing] ) {
+		// Check to see if we're close enough to stop.
+		if ( [followUnit isValid] ) {
+			Position *positionFollowUnit = [followUnit position];
+			float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
+		
+			// If we're close enough let's halt
+			if ( distanceToFollowUnit <=  theCombatProfile.yardsBehindTargetStart ) {
+				[movementController stopMovement];
+				movementController.isFollowing = NO;
+				[self followRouteClear];
+				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+				return YES;
+			}
+		}
+		return NO;
+	}
 
 	// If we've recorded no route
 	if ( ![_followRoute waypointCount] ) return NO;
@@ -3797,50 +3725,39 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [self evaluateForCombatStart] ) return YES;
 
+	// If we're just performing a check while we're in route we can return here
+	if ( [movementController isMoving] ) return NO;
+
+	// If there is loot or we're evaluating lets cycle again
+	if ( [self evaluationInProgress] || [_mobsToLoot count] ) {
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+	}
+	
 	/*
 	 * Evaluation Checks Complete, lets see if we're supposed to do a route.
 	 */
 	
-	// If we're just performing a check while we're in route we can return here
-	if ( movementController.isFollowing ) {
-		log(LOG_EVALUATE, @"Nothing to do so we'll not interrupt our Follow.");
-		return NO;
-	} else if ( [movementController isMoving] ) {
-		log(LOG_EVALUATE, @"Nothing to do so we'll not interrupt our patrol.");
-		return NO;
-	} else {
-		log(LOG_EVALUATE, @"Nothing to do, checking for a route.");
-	}
-	
-	if ( ![self evaluationInProgress] && ![_mobsToLoot count] ) {
-		
-		// If we have a follow unit then skip your route
-		if ( self.theRouteSet && ( ![self followUnit] || [self partyFollowSuspended] ) ) {
+	// If we have a follow unit then skip your route
+	if ( self.theRouteSet && ( ![self followUnit] || [self partyFollowSuspended] ) ) {
 
-			// Update the status if we need to
-			if ( ![[controller currentStatus] isEqualToString: @"Bot: Patrolling"] ) {
-				[controller setCurrentStatus: @"Bot: Patrolling"];
-				log(LOG_GENERAL, @"Going on Patrol...");
-			}
-
-			// resume movement if we're not moving!
-			if ( ![movementController isPatrolling] || ![movementController isMoving] ) [movementController resumeMovement];
-
-		} else {
-
-			// Update the status if we need to
-			if ( ![[controller currentStatus] isEqualToString: @"Bot: Enabled"] ) [controller setCurrentStatus: @"Bot: Enabled"];
-	
-			[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		// Update the status if we need to
+		if ( ![[controller currentStatus] isEqualToString: @"Bot: Patrolling"] ) {
+			[controller setCurrentStatus: @"Bot: Patrolling"];
+			log(LOG_GENERAL, @"Going on Patrol...");
 		}
-		
+
+		// resume movement if we're not moving!
+		if ( ![movementController isPatrolling] || ![movementController isMoving] ) [movementController resumeMovement];
+
 	} else {
 		
+		// Update the status if we need to
+		if ( ![[controller currentStatus] isEqualToString: @"Bot: Enabled"] ) [controller setCurrentStatus: @"Bot: Enabled"];
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
-		
 	}
-	
-    return NO;
+
+	return NO;
 }
 
 #pragma mark IBActions
