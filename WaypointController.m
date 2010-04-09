@@ -477,6 +477,7 @@ enum AutomatorIntervalType {
 }
 
 - (IBAction)addWaypoint: (id)sender {
+    log(LOG_DEV, @"addWaypoint called");
     if(![self currentRoute])        return;
     if(![playerData playerIsValid:self]) return;
     if(![self.view window])         return;

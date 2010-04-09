@@ -95,9 +95,12 @@
 	IBOutlet BindingsController		*bindingsController;
 	IBOutlet PvPController			*pvpController;
 
+
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;
-	
+
+	IBOutlet Route					*Route;	// is this right?
+
     IBOutlet NSView *view;
     
 	RouteCollection *_theRouteCollection;
@@ -201,6 +204,8 @@
 	// Party Follow
 	NSMutableArray *_followSteps;
 	NSMutableArray *_badWaypoints;
+	Route *_followRoute;
+
 
 	BOOL _partyFollowSuspended;
 	Unit *followUnit;
@@ -305,6 +310,8 @@
 @property (readonly, retain) Unit *assistUnit;
 @property (readonly, retain) Unit *tankUnit;
 @property (readwrite, assign) BOOL partyFollowSuspended;
+@property (readwrite, assign) Route *followRoute;
+
 @property (readwrite, assign) BOOL wasLootWindowOpen;
 
 - (void)testRule: (Rule*)rule;
@@ -340,8 +347,9 @@
 - (BOOL)mountNowParty;
 - (BOOL)isOnAssist;
 - (BOOL)isTankUnit;
-- (void)followStepsClear;
+- (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
+-(Waypoint*)followNextWaypoint;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

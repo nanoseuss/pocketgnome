@@ -25,5 +25,6 @@
 - (void)insertWaypoint: (Waypoint*)waypoint atIndex: (unsigned)index;
 - (void)removeWaypoint: (Waypoint*)waypoint;
 - (void)removeWaypointAtIndex: (unsigned)index;
+- (void)removeAllWaypoints;
 
 @end

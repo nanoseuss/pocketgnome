@@ -41,6 +41,7 @@
 #import "Behavior.h"
 #import "RouteCollection.h"
 #import "RouteSet.h"
+#import "Route.h"
 #import "Condition.h"
 #import "Mob.h"
 #import "Unit.h"
@@ -104,7 +105,6 @@
 @property (readwrite, retain) Unit *followUnit;
 @property (readwrite, retain) Unit *assistUnit;
 @property (readwrite, retain) Unit *tankUnit;
-
 @property (readwrite, retain) RouteCollection *theRouteCollection;
 
 // pvp
@@ -114,10 +114,6 @@
 
 @property (readwrite, assign) BOOL doLooting;
 @property (readwrite, assign) float gatherDistance;
-
-
-
-
 
 @end
 
@@ -129,7 +125,7 @@
 - (void)evaluateRegen: (NSDictionary*)regenDict;
 
 - (void)performProcedureWithState: (NSDictionary*)state;
-- (void)playerHasDied: (NSNotification*)noti;
+- (void)playerHasDied: (NSNotification*)notification;
 
 // pvp
 - (void)pvpStop;
@@ -358,7 +354,7 @@
 @synthesize doLooting	    = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
 @synthesize partyFollowSuspended  = _partyFollowSuspended;
-
+@synthesize followRoute = _followRoute;
 
 - (NSString*)sectionTitle {
 	return @"Start/Stop Bot";
@@ -2458,6 +2454,151 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 #pragma mark -
+#pragma mark Follow
+
+// Records the current step of your follow target
+-(void)followRouteRecord {
+	
+	if ( !followUnit ) return;
+	
+	// If the unit is out of sight
+	if ( ![followUnit isValid]) return;
+	
+	Position *positionFollowUnit = [followUnit position];
+	float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
+
+	// If we're not out of range then let's reset the route
+	if ( distanceToFollowUnit <=  theCombatProfile.followDistanceToMove ) return;
+
+	if ( _followRoute.waypoints.count ) {
+		// If we already have waypoints on the route
+
+		NSArray *waypoints = [_followRoute waypoints];
+		Waypoint *lastWaypoint = [waypoints objectAtIndex: ([waypoints count]-1)];
+
+		float distanceMoved = [[lastWaypoint position] distanceToPosition: positionFollowUnit];
+		
+		// If our follow unit hasn't moved far enough we return
+		if (distanceMoved < 5.0f) return;
+
+		log(LOG_DEV, @"[Follow] Adding waypoint: %@ count: %d", positionFollowUnit, _followRoute.waypoints.count);
+		
+		// Add the waypoint to the route
+		[(Route*)_followRoute addWaypoint: [Waypoint waypointWithPosition: positionFollowUnit]];
+	} else {
+		// No Route so start it
+
+		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", positionFollowUnit, _followRoute.waypoints.count);
+		
+		[(Route*)_followRoute addWaypoint: [Waypoint waypointWithPosition: positionFollowUnit]];
+	}
+
+}
+
+-(void)followRouteClear {
+	log(LOG_DEV, @"Clearing the follow route.");
+	_followRoute.removeAllWaypoints;
+}
+
+-(float)followWaypointSpacing {
+	float waypointSpacing = [playerController speedMax] / 2.0f;
+	return waypointSpacing;
+}
+
+-(Waypoint*)followNextWaypoint {
+/*
+	float waypointSpacing = [self followWaypointSpacing];
+
+	Position *positionToMove = nil;
+	float distanceToWaypoint = 0.0;
+
+	NSEnumerator *enumerator = [_followSteps objectEnumerator];
+	id thisWaypoint;
+	Position *playerPosition = [playerController position];
+
+	// Use a loop in case we need to invalidate the 1st waypoint n go to the next
+	while ((thisWaypoint = [enumerator nextObject])) {
+	
+		distanceToWaypoint = [playerPosition distanceToPosition: thisWaypoint];
+	
+		// If this point is less than 1 step lets remove it
+		if (distanceToWaypoint <= waypointSpacing) {
+			[_badWaypoints addObject: thisWaypoint];
+			distanceToWaypoint = 0.0;
+			continue;
+		}
+	
+		// Record the current position so we can compare it against the next point in the loop
+		positionToMove = thisWaypoint;
+		break;
+	}
+
+	// Toss out the bad waypoints that we found
+	if ([_badWaypoints count]) {
+	
+		enumerator = [_badWaypoints objectEnumerator];
+	
+		// Loop through the bad ones and remove them from the steps
+		while ((thisWaypoint = [enumerator nextObject])) {
+			log(LOG_DEV, @"[Follow] Removing bad waypoint: %@", thisWaypoint);
+			[_followSteps removeObject: thisWaypoint];
+		}
+	
+		[_badWaypoints removeAllObjects];
+	}
+
+	// Check to see if we're getting close enough to do random stop distance
+	// With steps found
+	if ( [followUnit isValid] && positionToMove) {
+		float distanceToFollowUnit = [[followUnit position] distanceToPosition: playerPosition];
+
+		if ( distanceToFollowUnit < (waypointSpacing+theCombatProfile.yardsBehindTargetStop)) {
+			log(LOG_DEV, @"Close enough to set a random stopping position.");
+			float start = theCombatProfile.yardsBehindTargetStart;
+			float stop = theCombatProfile.yardsBehindTargetStop;
+			float randomDistance = SSRandomFloatBetween( start, stop );
+			positionToMove = [[followUnit position] positionAtDistance:randomDistance withDestination: playerPosition];
+			if ([_followSteps count]) [_followSteps removeAllObjects];
+		}
+		
+	}else 
+		
+	// No steps found
+	if ( [followUnit isValid] && !positionToMove) {
+		float distanceToFollowUnit = [[followUnit position] distanceToPosition: playerPosition];
+																			// Not far enough away to move
+		if ( distanceToFollowUnit < theCombatProfile.followDistanceToMove)	return nil;
+
+		log(LOG_DEV, @"Close enough to set a random stopping position.");
+		float start = theCombatProfile.yardsBehindTargetStart;
+		float stop = theCombatProfile.yardsBehindTargetStop;
+		float randomDistance = SSRandomFloatBetween( start, stop );
+		positionToMove = [[followUnit position] positionAtDistance:randomDistance withDestination: playerPosition];
+		if ([_followSteps count]) [_followSteps removeAllObjects];
+	}
+		
+	// No steps found
+	if ( !positionToMove) return nil;
+
+	distanceToWaypoint = [playerPosition distanceToPosition: positionToMove];
+
+	// If our next recorded step is larger than normal (perhaps we just started and the unit is far off).
+	// We create a virtual one that's closer
+	if (distanceToWaypoint > waypointSpacing ) {
+		// Let's pass a normal sized stop on to the movementController
+		positionToMove = [playerPosition positionAtDistance:waypointSpacing withDestination: positionToMove];
+		distanceToWaypoint = [[[playerController player] position] distanceToPosition: positionToMove];
+		log(LOG_MOVEMENT, @"Next waypoint is far off, fabricating a closer one.");
+	}
+
+	Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionToMove];
+
+	return newWaypoint;
+ */
+	return nil;
+}
+
+#pragma mark -
 #pragma mark Party
 
 -(BOOL)mountNowParty{
@@ -2519,44 +2660,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
-// Records the current step of your follow target
--(void)followStepsRecord {
-
-	if ( !followUnit ) return;
-
-	// If the unit is out of sight
-	if ( ![followUnit isValid]) return;
-	
-	Position *positionFollowUnit = [followUnit position];
-	float distance = [[[playerController player] position] distanceToPosition: positionFollowUnit];
-
-	if ( distance <=  theCombatProfile.yardsBehindTargetStop ) return;
-
-	log(LOG_DEV, @"[Follow] Adding waypoint: %@", positionFollowUnit);
-	// If we already have a list of steps
-	if ([_followSteps count]) {
-		Position *lastStepped = [_followSteps objectAtIndex: ([_followSteps count]-1)];
-		if (lastStepped == positionFollowUnit) return;
-		
-		float distanceMoved = [lastStepped distanceToPosition: positionFollowUnit];
-		
-		// Should add all the step points we can... they get removed based on distance
-		if (distanceMoved > 1.0f) [_followSteps addObject: positionFollowUnit];
-//		if (lastStepped != positionFollowUnit) [_followSteps addObject: positionFollowUnit];
-	} else {
-	// No list yet so just add it
-		[_followSteps addObject: positionFollowUnit];
-	}
-}
-
--(void)followStepsClear {
-	if ([_followSteps count]) [_followSteps removeAllObjects];
-}
-
 // Find someone to follow
 -(BOOL)findFollowUnit {
 	// If it's a new target then we need to clear the steps
-	[self followStepsClear];
+	[self followRouteClear];
 
 	Player *followTarget = nil;
 	float distance = 0.0;
@@ -2735,9 +2842,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)reachedObject: (NSNotification*)notification {
 
 	// Returning from follow mode
-	if ( [movementController isFollowing] ) {
+	if ( movementController.isFollowing ) {
 		log(LOG_DEV, @"Reached object called for Follow");
 		movementController.isFollowing = NO;
+		self.evaluationInProgress = nil;
+		[self followRouteClear];
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return;
 	}
@@ -2924,7 +3033,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [self evaluationInProgress] ) return NO;
 
 	// Skip this if we still have steps to follow
-	if ( [_followSteps count] ) return NO;
+	if ( [_followRoute waypointCount] ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Party");
 
@@ -2954,200 +3063,41 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.followUnit ) return NO;
 	
 	// If we're doing something, lets record the steps of our follow target
-	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Follow"] ) {
+	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Follow") {
 		// record their steps
-		[self followStepsRecord];
+		[self followRouteRecord];
 		log(LOG_DEV, @"Skipping Follow because we're evaluating for something else.");
 		return NO;
 	}
 
-	// If we're following, lets record the steps of our follow target
-	if ( [movementController isFollowing] ) {
-		// record their steps
-		[self followStepsRecord];
-		log(LOG_DEV, @"Skipping Follow because we're already moving.");
-		return NO;
-	}
+	// See if we need to record a route.
+	[self followRouteRecord];
 
 	log(LOG_EVALUATE, @"Evaluating for Follow");
 
 	// If we need to mount lets return
 	if ( [self followMountCheck] ) {
+		if ( [movementController isMoving] ) [movementController stopMovement];
 		self.evaluationInProgress = nil;
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return YES;
 	}
-	
-	Position *positionFollowUnit = nil;
-	float distance = 0.0;
-	
-	// If we can still see our follow unit
-	if ([followUnit isValid]) {
-		
-		positionFollowUnit = [followUnit position];
-		distance = [[[playerController player] position] distanceToPosition: positionFollowUnit];
-		
-		// We're not out of range and not returning from follow
-		if ( distance <=  theCombatProfile.followDistanceToMove && ![self evaluationInProgress] ) {
-			log(LOG_DEV, @"Follow target not out of range.");
-			self.evaluationInProgress = nil;			
-			return NO;
-		}
-		
-		// If we've been following and are close enough to stop
-		if ( [self evaluationInProgress] && distance <=  theCombatProfile.yardsBehindTargetStart ) {
-			log(LOG_DEV, @"Close enough to stop!");
-			[controller setCurrentStatus: @"Bot: Enabled"];
 
-			if ( [movementController isMoving] ) [movementController stopMovement];
-			
-			[playerController faceToward: [followUnit position]];
-			self.evaluationInProgress = nil;
+	// If we're already moving
+	if ( [movementController isMoving] ) return NO;
 
-			[self followStepsClear];
-			_stepAttempts=0;
-			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.3f];
-			return YES;
-		}
-	}
-	
-	/*
-	 * If we've made it this far then we need to follow
-	 */
-	
-	// Record targets current step
-	[self followStepsRecord];
-	
-	float waypointSpacing = [playerController speedMax] / 2.0f;
-	
-	Position *positionToMove = nil;
-	float distanceToWaypoint = 0.0;
-	
-	NSEnumerator *enumerator = [_followSteps objectEnumerator];
-	id thisWaypoint;
-	Position *playerPosition = [[playerController player] position];
-	
-	// Use a loop in case we need to invalidate the 1st waypoint n go to the next
-	while ((thisWaypoint = [enumerator nextObject])) {
-		
-		distanceToWaypoint = [playerPosition distanceToPosition: thisWaypoint];
-		
-		// If this point is less than 1 step lets remove it
-		if (distanceToWaypoint <= waypointSpacing) {
-			[_badWaypoints addObject: thisWaypoint];
-			continue;
-		}
-		
-		// Record the current position so we can compare it against the next point in the loop
-		positionToMove = thisWaypoint;
-		break;
-	}
-	
-	// Toss out the bad waypoints that we found
-	if ([_badWaypoints count]) {
-		
-		enumerator = [_badWaypoints objectEnumerator];
-		
-		// Loop through the bad ones and remove them from the steps
-		while ((thisWaypoint = [enumerator nextObject])) {
-			log(LOG_DEV, @"[Follow] Removing bad waypoint: %@", thisWaypoint);
-			[_followSteps removeObject: thisWaypoint];
-		}
-		
-		[_badWaypoints removeAllObjects];
-		
-	}
-	
-	// Increment the attempt counter
-	if (_lastAttemptedStep == positionToMove) _stepAttempts++; else _stepAttempts=0;
-	
-	// If we've already tried this position once and it's close by, let's remove it
-	if (_stepAttempts > 0 && distanceToWaypoint < (waypointSpacing*1.1f) ) {
-		log(LOG_DEV, @"Made too many step attempts, removing position");
-		[_followSteps removeObject: positionToMove];
-	}
-	
-	// Check to see if we're getting close enough to do random stop distance
-	if ( [followUnit isValid] && positionToMove) {
-		float distancePositionToFollowUnit = [positionFollowUnit distanceToPosition: positionToMove];
-		float distanceBotToFollowUnit = [positionFollowUnit distanceToPosition: [[playerController player] position]];
-		
-		if ( distancePositionToFollowUnit <= theCombatProfile.yardsBehindTargetStop && distanceBotToFollowUnit < (waypointSpacing+theCombatProfile.yardsBehindTargetStop)) {
-			log(LOG_DEV, @"Close enough to set a random stopping position.");
-			float start = theCombatProfile.yardsBehindTargetStart;
-			float stop = theCombatProfile.yardsBehindTargetStop;
-			float randomDistance = SSRandomFloatBetween( start, stop );
-			positionToMove = [positionFollowUnit positionAtDistance:randomDistance withDestination: [[playerController player] position]];
-			if ([_followSteps count]) [_followSteps removeAllObjects];
-		}
-	}
-	
-	if ( ![[self evaluationInProgress] isEqualToString: @"Follow"] ) {
-		distance = [[[playerController player] position] distanceToPosition: positionFollowUnit];
-		[controller setCurrentStatus: @"Bot: Following"];
-		self.evaluationInProgress = @"Follow";
-		log(LOG_PARTY, @"Follow Target is %0.2f away, following.", distance);
-	}	
-	
-	// If we're out of waypoints, but the unit is in range
-	if (!positionToMove) {
-		if ( [followUnit isValid] ) {
-			float distanceBotToFollowUnit = [positionFollowUnit distanceToPosition: [[playerController player] position]];
-			
-			if ( distanceBotToFollowUnit > theCombatProfile.yardsBehindTargetStart ) {
-				float start = theCombatProfile.yardsBehindTargetStart;
-				float stop = theCombatProfile.yardsBehindTargetStop;
-				float randomDistance = SSRandomFloatBetween( start, stop );
-				positionToMove = [positionFollowUnit positionAtDistance:randomDistance withDestination: [[playerController player] position]];
-				[self followStepsClear];
-				self.evaluationInProgress = @"Follow";
-				log(LOG_DEV, @"Out of footsteps, but close enough to set a random stopping position.");
-			} else {
-				if ([[self evaluationInProgress] isEqualToString: @"Follow"]) [controller setCurrentStatus: @"Bot: Enabled"];
-				log(LOG_DEV, @"Out of footsteps, but close to my follow unit.");
-				[movementController stopMovement];
-				[playerController faceToward: [followUnit position]];
-				self.evaluationInProgress = nil;
-				movementController.isFollowing = NO;
-				[self followStepsClear];
-				_stepAttempts=0;
-				[self evaluateSituation];
-				return YES;
-			}
-		} else {
-			log(LOG_PARTY, @"Out of footsteps and I can't see my follow unit.");
-			if ([[self evaluationInProgress] isEqualToString: @"Follow"]) [controller setCurrentStatus: @"Bot: Enabled"];
-			[movementController stopMovement];
-			[playerController faceToward: [followUnit position]];
-			self.evaluationInProgress = nil;
-			movementController.isFollowing = NO;
-			_stepAttempts=0;
-			[self followStepsClear];
-			[self evaluateSituation];
-			return NO;
-		}
-	}
+	// If we've recorded no route
+	if ( ![_followRoute waypointCount] ) return NO;
 
-	distanceToWaypoint = [[[playerController player] position] distanceToPosition: positionToMove];
-/*
-	// If our next recorded step is larger than normal (perhaps we just started and the unit is far off).
-	if (distanceToWaypoint > waypointSpacing ) {
-		// Let's pass a normal sized stop on to the movementController
-//		positionToMove = [positionToMove positionAtDistance:waypointSpacing withDestination: [[playerController player] position]];
-		positionToMove = [[[playerController player] position] positionAtDistance:waypointSpacing withDestination: positionToMove];
+	float distance = [[playerController position] distanceToPosition: [followUnit position]];
 
-		distanceToWaypoint = [[[playerController player] position] distanceToPosition: positionToMove];
-		log(LOG_EVALUATE, @"Next waypoint is far off, fabricating a closer one.");
-	}
-*/
-	int stepsLeft = [_followSteps count];
-	log(LOG_DEV, @"Target is %0.2f away, following. (%d steps left, %d attempts, wp distance: %0.2f, stride: %0.2f) ", distance, stepsLeft, _stepAttempts, distanceToWaypoint, waypointSpacing);
-
-	_lastAttemptedStep = positionToMove;
+	[controller setCurrentStatus: @"Bot: Following"];
 	self.evaluationInProgress = @"Follow";
-	movementController.isFollowing = YES;
-	[movementController  moveToPosition:positionToMove];
+	log(LOG_PARTY, @"Follow Target is %0.2f away, following.", distance);
 
+	self.evaluationInProgress = @"Follow";
+
+	[movementController startFollow];
 	return YES;
 }
 
@@ -3158,13 +3108,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
-
-	// Let's try just usin the player controller to match n see if this gives any better results
-//    if (![playerController isInCombat] && (!theCombatProfile.partyEnabled || [self partyFollowSuspended] ) ) {
-		// If we're actually not in combat and not in a party lets reset the combat table as there is no combat 'contination'
-//		[combatController resetAllCombat];
-//		return NO;
-//	}
 	
 	Unit *bestUnit = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 
@@ -3859,7 +3802,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 */
 	
 	// If we're just performing a check while we're in route we can return here
-	if ( [ movementController isFollowing] ) {
+	if ( movementController.isFollowing ) {
 		log(LOG_EVALUATE, @"Nothing to do so we'll not interrupt our Follow.");
 		return NO;
 	} else if ( [movementController isMoving] ) {
@@ -4254,7 +4197,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.unitToLoot = nil;	
 		
 		// Party resets
-		[self followStepsClear];
+		[self followRouteClear];
 		self.followUnit = nil;
 		self.tankUnit = nil;
 		
@@ -4382,11 +4325,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[blacklistController clearAll];
 
 	// Party resets
-	[self followStepsClear];
+	[self followRouteClear];
 	self.followUnit = nil;
 	self.tankUnit = nil;
 	_mountAttempt = 0;
-	
+
     [_mobsToLoot removeAllObjects];
     self.isBotting = NO;
     self.preCombatUnit = nil;
@@ -4626,7 +4569,7 @@ NSMutableDictionary *_diffDict = nil;
     [controller setCurrentStatus: @"Bot: Player has Revived"];
     [NSObject cancelPreviousPerformRequestsWithTarget: self];
 	if ( [movementController isMoving] ) [movementController stopMovement];
-	[self followStepsClear];
+	[self followRouteClear];
 	_ghostDance = 0;
 	self.evaluationInProgress = nil;
 	[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:0.5f];
@@ -4642,7 +4585,7 @@ NSMutableDictionary *_diffDict = nil;
     [self cancelCurrentProcedure];		// this wipes all bot state (except pvp)
     [combatController resetAllCombat];	       // this wipes all combat state
 	
-	if ([_followSteps count]) [_followSteps removeAllObjects];	// Wipe our follow footsteps so we don't try em when we res
+	[self followRouteClear]; 	// Wipe our follow footsteps so we don't try em when we res
 	
 	_shouldFollow = YES;
     

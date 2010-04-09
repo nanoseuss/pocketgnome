@@ -105,10 +105,12 @@
 }
 
 - (void)addWaypoint: (Waypoint*)waypoint {
-    if(waypoint != nil)
+    if(waypoint != nil) {
+        log(LOG_DEV, @"addWaypoint: adding waypoint");
         [_waypoints addObject: waypoint];
-    else
+   } else {
         log(LOG_GENERAL, @"addWaypoint: failed; waypoint is nil");
+   }
 }
 
 - (void)insertWaypoint: (Waypoint*)waypoint atIndex: (unsigned)index {
@@ -127,4 +129,9 @@
     if(index >= 0 && index < [_waypoints count])
         [_waypoints removeObjectAtIndex: index];
 }
+
+- (void)removeAllWaypoints {
+    [_waypoints removeAllObjects];
+}
+
 @end

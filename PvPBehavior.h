@@ -9,12 +9,12 @@
 #import <Cocoa/Cocoa.h>
 #import "SaveDataObject.h"
 
-#define ZoneAlteracValley			2597
-#define ZoneArathiBasin				3358
-#define ZoneEyeOfTheStorm			3820
-#define ZoneIsleOfConquest			4710
-#define ZoneStrandOfTheAncients		4384
-#define ZoneWarsongGulch			3277
+#define ZoneAlteracValley                       2597
+#define ZoneArathiBasin                         3358
+#define ZoneEyeOfTheStorm                       3820
+#define ZoneIsleOfConquest                      4710
+#define ZoneStrandOfTheAncients         4384
+#define ZoneWarsongGulch                        3277
 
 @class Battleground;
 
