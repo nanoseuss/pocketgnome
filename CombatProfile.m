@@ -52,6 +52,7 @@
 		self.partyIgnoreOtherFriendlies = YES;
 		self.partyEmotes = NO;
 		self.partyEmotesIdleTime = 120;
+		self.partyEmotesInterval = 100;
 		self.followEnabled = NO;
 		self.followStopFollowingOOR = NO;
 		self.followStopFollowingRange = 50.0f;
@@ -134,6 +135,7 @@
 	copy.partyIgnoreOtherFriendlies = self.partyIgnoreOtherFriendlies;
 	copy.partyEmotes = self.partyEmotes;
 	copy.partyEmotesIdleTime = self.partyEmotesIdleTime;
+	copy.partyEmotesInterval = self.partyEmotesInterval;
 	copy.followEnabled = self.followEnabled;
 	copy.followStopFollowingOOR = self.followStopFollowingOOR;
 	copy.followStopFollowingRange = self.followStopFollowingRange;
@@ -193,6 +195,7 @@
 		self.partyIgnoreOtherFriendlies = [[decoder decodeObjectForKey: @"PartyIgnoreOtherFriendlies"] boolValue];
 		self.partyEmotes = [[decoder decodeObjectForKey: @"PartyEmotes"] boolValue];
 		self.partyEmotesIdleTime = [[decoder decodeObjectForKey: @"PartyEmotesIdleTime"] intValue];
+		self.partyEmotesInterval = [[decoder decodeObjectForKey: @"PartyEmotesInterval"] intValue];
 		self.followEnabled = [[decoder decodeObjectForKey: @"FollowEnabled"] boolValue];
 		self.followStopFollowingOOR = [[decoder decodeObjectForKey: @"FollowStopFollowingOOR"] boolValue];
 		self.followStopFollowingRange = [[decoder decodeObjectForKey: @"FollowStopFollowingRange"] floatValue];
@@ -249,6 +252,7 @@
 	[coder encodeObject: [NSNumber numberWithBool: self.partyIgnoreOtherFriendlies] forKey: @"PartyIgnoreOtherFriendlies"];
 	[coder encodeObject: [NSNumber numberWithBool: self.partyEmotes] forKey:@"PartyEmotes"];
 	[coder encodeObject: [NSNumber numberWithInt: self.partyEmotesIdleTime] forKey: @"PartyEmotesIdleTime"];
+	[coder encodeObject: [NSNumber numberWithInt: self.partyEmotesInterval] forKey: @"PartyEmotesInterval"];
 	[coder encodeObject: [NSNumber numberWithBool: self.followEnabled] forKey: @"FollowEnabled"];
 	[coder encodeObject: [NSNumber numberWithBool: self.followStopFollowingOOR] forKey: @"FollowStopFollowingOOR"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.followStopFollowingRange] forKey: @"FollowStopFollowingRange"];
@@ -308,6 +312,7 @@
 @synthesize partyIgnoreOtherFriendlies;
 @synthesize partyEmotes;
 @synthesize partyEmotesIdleTime;
+@synthesize partyEmotesInterval;
 @synthesize followEnabled;
 @synthesize followStopFollowingOOR;
 @synthesize followStopFollowingRange;

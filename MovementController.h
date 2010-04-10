@@ -143,6 +143,7 @@ typedef enum MovementType {
 
 // Unbug a caster
 - (void)stepForward;
+- (void)stepBackward;
 
 // check unit for range adjustments
 - (BOOL)checkUnitOutOfRange: (Unit*)target;

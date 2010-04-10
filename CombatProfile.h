@@ -40,6 +40,7 @@
 	BOOL partyIgnoreOtherFriendlies;
 	BOOL partyEmotes;
 	int partyEmotesIdleTime;
+	int partyEmotesInterval;
 	BOOL followEnabled;
 	BOOL followStopFollowingOOR;
 	float followStopFollowingRange;
@@ -102,6 +103,7 @@
 @property (readwrite, assign) BOOL partyIgnoreOtherFriendlies;
 @property (readwrite, assign) BOOL partyEmotes;
 @property (readwrite, assign) int partyEmotesIdleTime;
+@property (readwrite, assign) int partyEmotesInterval;
 @property (readwrite, assign) BOOL followEnabled;
 @property (readwrite, assign) BOOL followStopFollowingOOR;
 @property (readwrite, assign) float followStopFollowingRange;

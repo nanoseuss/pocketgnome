@@ -243,7 +243,9 @@
 	
 	_lootScanIdleTimer = 0;
 	_partyEmoteIdleTimer = 0;
-
+	_partyEmoteTimeSince = 0;
+	_lastEmote = nil;
+	_lastEmoteShuffled = 0;
 	
 	_routesChecked = [[NSMutableArray array] retain];
 	_mobsToLoot = [[NSMutableArray array] retain];
@@ -2786,19 +2788,83 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (NSString*)randomEmote {
 
+	NSString *emote = _lastEmote;
+
+	// Targeting nothing or ourselves
+	if ( ![playerController targetID] || [playerController targetID] == [playerController GUID]) {
+		emote = [self emoteGeneral];
+		// Find something besides the last one
+		while ( emote == _lastEmote) emote = [self emoteGeneral];
+		_lastEmote=emote;
+		return emote;
+	}
+
+	UInt64 targetGUID = [playerController targetID];
+	Player *player = [playersController playerWithGUID: targetGUID];
+	if ( [player gender] != [[playerController player] gender]) {
+		// Targeting someone sexy
+		emote = [self emoteSexy];
+		while ( emote == _lastEmote) emote = [self emoteSexy];
+		_lastEmote=emote;
+		return emote;
+	}
+
+	// Targeting a friend
+	emote = [self emoteFriend];
+	while ( emote == _lastEmote) emote = [self emoteFriend];
+	_lastEmote=emote;
+	return emote;
+	
+}
+
+- (NSString*)emoteGeneral {
 	int r = SSRandomIntBetween(0,10);
-	if (r == 0) return @"/lol";
-	if (r == 1) return @"/bounce";
-	if (r == 3) return @"/glad";
+	if (r == 0) return @"/tired";
+	if (r == 1) return @"/burp";
+	if (r == 2) return @"/bored";
+	if (r == 3) return @"/cat";
+	if (r == 4) return @"/grin";
+	if (r == 5) return @"/chicken";
+	if (r == 6) return @"/confused";
+	if (r == 7) return @"/cough";
+	if (r == 8) return @"/drool";
+	if (r == 9) return @"/eye";
+	if (r == 10) return @"/fidget";
+	return @"/cry";
+}
+
+- (NSString*)emoteFriend {
+	int r = SSRandomIntBetween(0,10);
+	if (r == 0) return @"/tired";
+	if (r == 1) return @"/bite";
+	if (r == 2) return @"/lol";
+	if (r == 3) return @"/bored";
 	if (r == 4) return @"/grin";
 	if (r == 5) return @"/impatient";
 	if (r == 6) return @"/moon";
 	if (r == 7) return @"/party";
-	if (r == 8) return @"/peer";
-	if (r == 9) return @"/work";
-	if (r == 10) return @"/tired";
+	if (r == 8) return @"/bravo";
+	if (r == 9) return @"/cackle";
+	if (r == 10) return @"/blink";
 	return @"/cry";
 }
+
+- (NSString*)emoteSexy {
+	int r = SSRandomIntBetween(0,10);
+	if (r == 0) return @"/bashful";
+	if (r == 1) return @"/blow";
+	if (r == 2) return @"/blush";
+	if (r == 3) return @"/cuddle";
+	if (r == 4) return @"/grin";
+	if (r == 5) return @"/flirt";
+	if (r == 6) return @"/kiss";
+	if (r == 7) return @"/party";
+	if (r == 8) return @"/lick";
+	if (r == 9) return @"/massage";
+	if (r == 10) return @"/love";
+	return @"/cry";
+}
+
 
 #pragma mark -
 #pragma mark [Input] MovementController
@@ -3017,9 +3083,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForFollow {
 
 	if ( self.followSuspended && self.followUnit ) self.followUnit = nil;
-	
+
 	if ( !theCombatProfile.followEnabled || self.followSuspended ) return NO;
-	
+
 	log(LOG_EVALUATE, @"Evaluating for Follow");
 
 	// Find someone to follow if we've lost our target.
@@ -3102,6 +3168,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 	
+	// Reset the party emotes idle
+	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+	
 	[controller setCurrentStatus: @"Bot: Following"];
 	self.evaluationInProgress = @"Follow";
 	log(LOG_PARTY, @"Follow Target is %0.2f away, following.", distanceToLeader);
@@ -3129,6 +3198,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [self combatProcedureValidForUnit:bestUnit] ) {
 		log(LOG_DEV, @"[Combat Continuation] Found %@ to act on!", bestUnit);
+
+		// Reset the party emotes idle
+		if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+
 		[self actOnUnit:bestUnit];
 		[movementController stopMovement];
 		return YES;
@@ -3164,7 +3237,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			// hostile only
 			if ( [playerController isHostileWithFaction: [unitToActOn factionTemplate]] ) {	
 				// should we do pre-combat?
-				if ( ![combatController inCombat] && !_didPreCombatProcedure ) {				
+				if ( ![combatController inCombat] && !_didPreCombatProcedure ) {	
+
+					// Reset the party emotes idle
+					if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+					
 					_didPreCombatProcedure = YES;
 					self.preCombatUnit = unitToActOn;
 					log(LOG_COMBAT, @"%@ Pre-Combat procedure underway.", [combatController unitHealthBar:[playerController player]]);
@@ -3193,6 +3270,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if ([playerPosition distanceToPosition:[unit position]] > theCombatProfile.healingRange) continue;
 				if ( ![self combatProcedureValidForUnit:unit] ) continue;
 				log(LOG_PARTY, @"%@ helping %@", [combatController unitHealthBar: unitToActOn], unit);
+
+				// Reset the party emotes idle
+				if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+
 				[self actOnUnit: unit];
 				return YES;
 			}
@@ -3253,6 +3334,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		self.evaluationInProgress = @"Regen";
 	}
+
+	// Reset the party emotes idle
+	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
 
 	// check if all used abilities are instant
 	BOOL needToPause = NO;
@@ -3346,6 +3430,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 
+	// Reset the party emotes idle
+	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+	
 	// Close enough to loot it
 	if ( mobToLootDist <= 5.0 ) {
 		
@@ -3734,6 +3821,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if (!performPatrolProc) return NO;
 
+	// Reset the party emotes idle
+	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+	
 	// Perform the procedure.
 	[controller setCurrentStatus: @"Bot: Patrolling Phase"];
 
@@ -3772,14 +3862,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int secondsPassed = _partyEmoteIdleTimer/10;
 	if (secondsPassed < theCombatProfile.partyEmotesIdleTime) return NO;
 
-	// Reset the timer
-	_partyEmoteIdleTimer = 0;
+	if (_partyEmoteTimeSince > 0) {
+		// Not just yet
+		_partyEmoteTimeSince--;
+		return NO;
+	} else {
+		// We're good to go, let's set our countdown
+		int randomToAdd = SSRandomIntBetween(0,(theCombatProfile.partyEmotesInterval/4));
+		_partyEmoteTimeSince = ((theCombatProfile.partyEmotesInterval*10)+(randomToAdd*10));
+		log(LOG_DEV, @"Setting emote timer to %d seconds", (_partyEmoteTimeSince/10));
+	}
+	
 	
 	// Lame action for now
 	if ( [self followUnit] ) {
 		[playerController targetGuid:[[self followUnit] GUID]];
 		[playerController faceToward: [[self followUnit] position]];
 		usleep(300000);
+	}
+
+	// Actually move a tad
+	if ( ![movementController isMoving] ) {
+			if (_lastEmoteShuffled == 0) {
+				[movementController stepForward];
+				_lastEmoteShuffled = 1;
+			} else {
+				[movementController stepBackward];
+				_lastEmoteShuffled = 0;
+			}
 	}
 	
 	NSString *emote = [self randomEmote];

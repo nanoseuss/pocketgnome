@@ -212,6 +212,10 @@
 	
 	int _lootScanIdleTimer;
 	int _partyEmoteIdleTimer;
+	int _partyEmoteTimeSince;
+	NSString *_lastEmote;
+	int _lastEmoteShuffled;
+
 	BOOL _wasLootWindowOpen;
 	
     // -----------------
@@ -345,6 +349,9 @@
 - (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
 - (NSString*)randomEmote;
+- (NSString*)emoteGeneral;
+- (NSString*)emoteFriend;
+- (NSString*)emoteSexy;
 
 // Follow stuff
 - (void)followRouteClear;
