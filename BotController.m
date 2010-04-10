@@ -1111,6 +1111,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if([[state objectForKey: @"Procedure"] isEqualToString: PreCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PreCombat");
 		self.evaluationInProgress = nil;
+		
+		// Step forward to make sure we don't get bugged
+		[movementController stepForward];
+		
 		[self evaluateSituation];
 		return;
     }
@@ -1119,6 +1123,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PostCombat");
 		self.evaluationInProgress = nil;
+		
 		[self evaluateSituation];
 		return;
 	}
@@ -2210,16 +2215,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	float delay = 0.8;
 
 	// If this was the last item in the list
-	if ( ![_mobsToLoot count] && !wasNode) {
-		
+	if ( ![_mobsToLoot count] ) {
+
 		// This is only a temp solution, but it also solves the bugged casting position after you have looted
-//		[movementController stepForward];
-		
+		// This will also help miners avoid afk if they've had no encounters for some time
+		[movementController stepForward];
+
 		// reset the loot scanner!
 		[self resetLootScanIdleTimer];
-		
+
 		// Since we stepped forward we can ignore the delay
-//		delay = 0.1;
+		delay = 0.1;
 	}
 
 	// Allow the lute to fade
