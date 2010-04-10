@@ -1110,12 +1110,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // when we finish PreCombat, re-evaluate the situation
     if([[state objectForKey: @"Procedure"] isEqualToString: PreCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PreCombat");
-		self.evaluationInProgress = nil;
-		
-		// Step forward to make sure we don't get bugged
-		[movementController stepForward];
-		
-		[self evaluateSituation];
+
+		[self performSelector: @selector(performProcedureWithState:) 
+				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: CombatProcedure,		  @"Procedure", [NSNumber numberWithInt: 0],	  @"CompletedRules", nil]
+				   afterDelay: 0.1f ];
 		return;
     }
 
@@ -1123,7 +1121,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PostCombat");
 		self.evaluationInProgress = nil;
-		
 		[self evaluateSituation];
 		return;
 	}
@@ -1155,7 +1152,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.evaluationInProgress = nil;
 		[self evaluateSituation];
 	}
-	
+
 	if([[state objectForKey: @"Procedure"] isEqualToString: CombatProcedure]) {
 		log(LOG_DEV, @"Combat completed, moving to PostCombat (in combat? %d)", [playerController isInCombat]);
 		[self performSelector: @selector(performProcedureWithState:) 
@@ -2077,7 +2074,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[_mobsToLoot removeObject: mob];
 		self.mobToSkin = nil;
 		self.unitToLoot = nil;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.3f];
 		return;
 	}
 	
@@ -2096,7 +2093,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		self.mobToSkin = nil;
 		self.unitToLoot = nil;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.3f];
 		return;
     }
 	
@@ -2151,6 +2148,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// If this event fired, we don't need to verifyLootSuccess! We ONLY need verifyLootSuccess when a body has nothing to loot!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(evaluateSituation) object: nil];
 
 	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
 	if ( self.unitToLoot ) {
@@ -2212,22 +2210,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.lastAttemptedUnitToLoot = nil;
 	}
 
-	float delay = 0.8;
 
 	// If this was the last item in the list
-	if ( ![_mobsToLoot count] ) {
+	if ( ![_mobsToLoot count] ) [self resetLootScanIdleTimer];
 
-		// This is only a temp solution, but it also solves the bugged casting position after you have looted
-		// This will also help miners avoid afk if they've had no encounters for some time
-		[movementController stepForward];
-
-		// reset the loot scanner!
-		[self resetLootScanIdleTimer];
-
-		// Since we stepped forward we can ignore the delay
-		delay = 0.1;
-	}
-
+	float delay = 0.3;
 	// Allow the lute to fade
 	if (wasNode) delay = 0.6;
 
@@ -2334,7 +2321,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_COMBAT, @"Entering combat");
 	self.evaluationInProgress = nil;
 	[blacklistController clearAttempts];
-	[self evaluateSituation];
+//	[self evaluateSituation];
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
@@ -2351,7 +2338,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [playerController isDead] ) return;
 
 	log(LOG_COMBAT, @"Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
-	[self evaluateSituation];
+//	[self evaluateSituation];
 	return;
 }
 
@@ -2921,7 +2908,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	[controller setCurrentStatus: @"Bot: Enabled"];
 	self.evaluationInProgress = nil;
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.3f];
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 }
 
 - (void)reachedObject: (NSNotification*)notification {
@@ -3148,7 +3135,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// See if we need to record a route.
 	[self followRouteRecord];
-	
+
 	// If we need to mount lets return
 	if ( [self followMountCheck] ) {
 
