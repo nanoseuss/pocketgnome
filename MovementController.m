@@ -999,7 +999,8 @@ typedef enum MovementState{
 
 - (void)stepBackward{
 	[self moveBackwardStart];
-	usleep(80000);
+	// Backwards movement is much slower
+	usleep(300000);
 	[self moveBackwardStop];
 }
 

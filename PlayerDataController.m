@@ -784,6 +784,26 @@ static PlayerDataController* sharedController = nil;
 	return NO;	
 }
 
+- (UInt64)PartyMember: (int)whichMember{
+	GUID partyGUID = 0x0;
+	
+	whichMember--;	// We'll make it so you can use 1-6
+	
+	UInt64 memberOffset = 0x8 * whichMember;
+	
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"Lua_GetPartyMember"] + memberOffset Buffer: (Byte *)&partyGUID BufLength: sizeof(partyGUID)];
+	return partyGUID;
+}
+
+// We should make this one work, I'm pretty new to this offset stuff so I failed
+- (BOOL)UnitInParty: (UInt64)targetID {
+	GUID partyGUID = targetID;
+    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"Lua_UnitInParty"] Buffer: (Byte *)&partyGUID BufLength: sizeof(partyGUID)];
+
+	if ( partyGUID > 0x0 ) return YES;
+	return NO;	
+}
+
 - (BOOL)isInCombat {
     if( ([self stateFlags] & (1 << 19)) == (1 << 19))
         return YES;

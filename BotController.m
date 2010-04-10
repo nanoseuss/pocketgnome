@@ -560,13 +560,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 				// check targeting me status
 				if( [condition state] == StateTargetingMe ) {
-					/*
-					if( [condition unit] == UnitPlayer) conditionEval = ( [condition comparator] == CompareIs ) ? ( [[playerController player] targetID] == [playerController player] GUID] ) : ( [[playerController player] targetID] != [playerController player] GUID]);
-					else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend ) conditionEval = ( [condition comparator] == CompareIs ) ? [target isSwimming] : ![target isSwimming];
-					else if( [condition unit] == UnitPlayerPet) conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isSwimming] : ![playerController.pet isSwimming];
+					if ( [condition unit] == UnitPlayer) conditionEval = ( [condition comparator] == CompareIs ) ? [[playerController player] isTargetingMe] : ![[playerController player] isTargetingMe];
+					else if( [condition unit] == UnitTarget || [condition unit] == UnitFriend ) conditionEval = ( [condition comparator] == CompareIs ) ? [target isTargetingMe] : ![target isTargetingMe];
+					else if( [condition unit] == UnitPlayerPet) conditionEval = ( [condition comparator] == CompareIs ) ? [playerController.pet isTargetingMe] : ![playerController.pet isTargetingMe];
 					goto loopEnd;
+					
 					log(LOG_CONDITION, @"	Targeting me? %d", conditionEval);
-					 */
 				}
 				
 				// IS THE UNIT MOUNTED?
@@ -1303,6 +1302,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
     }
 
+	
+	/*
+	 * Now we start target/rule selection
+	 */
+	
 	Rule *rule = nil;
 	int i = 0;
 	BOOL matchFound = NO;
@@ -1366,7 +1370,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 				}
 			}
-				
+
 			// pet
 			else if ( [rule target] == TargetPet ){
 				target = [playerController pet];
@@ -1411,6 +1415,51 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			if ( matchFound ) break;
 		}
+	} else
+		
+	// Post Combat
+	if ( [[self procedureInProgress] isEqualToString: PostCombatProcedure] ) {
+		
+		for ( i = 0; i < ruleCount; i++ ) {
+			
+			rule = [procedure ruleAtIndex: i];
+
+			log(LOG_RULE, @"Evaluating rule %@", rule);
+
+			// make sure our rule hasn't continuously failed!
+			NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
+			NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
+			
+			if ( tries ) {
+				if ( [tries intValue] > 3 ){
+					log(LOG_RULE, @"Rule %d failed after %@ attempts!", i, tries);
+					continue;
+				}
+			}
+			
+			// then set the target to ourself
+			if ( [rule target] == TargetSelf ){
+				target = [playerController player];
+				if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
+					// do something
+					log(LOG_RULE, @"Match for %@ with target %@", rule, target);
+					matchFound = YES;
+					break;
+				}
+			}
+			
+			// no target
+			else if ( [rule target] == TargetNone ){
+				if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
+					// do something
+					log(LOG_RULE, @"Match for %@", rule);
+					matchFound = YES;
+					break;
+				}
+			}
+			if ( matchFound ) break;
+		}			
+		
 	} else {
 
 	// old-school for non-combat (just goes in order)
@@ -1459,9 +1508,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				// Raise the dead?
 				if ( !matchFound && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
 					NSMutableArray *units = [NSMutableArray array];
-					[units addObjectsFromArray: [playersController allPlayers]];
-					
-					for ( target in units ){
+					[units addObjectsFromArray: [combatController friendlyUnits]];
+
+					for ( target in units ) {
 						if ( ![target isPlayer] || ![target isDead] ) continue;
 
 						if ( [blacklistController isBlacklisted: target] ) continue;
@@ -1540,7 +1589,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					if ( [rule target] == TargetAdd ) {
 						log(LOG_DEV, @"Targeting Add.");
-//						[combatController stayWithUnit:target withType:[rule target]];
+						[combatController stayWithUnit:target withType:[rule target]];
 					} else
 
 					// target yourself
@@ -1557,7 +1606,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							log(LOG_DEV, @"Targeting friend.");
 							[playerController targetGuid:[target GUID]];
 						}
-					}
+					} else
 					
 					if ( [rule target] != TargetNone ) {
 						self.castingUnit = target;
@@ -1608,13 +1657,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		} else {
 			log(LOG_PROCEDURE, @"No result type");
 		}
-		
-		// Set a delay for patrol to help mounting
-		BOOL needToPause = NO;
 
-//		if ( [[self procedureInProgress] isEqualToString: PatrollingProcedure]) {
-//			needToPause = YES;
-//		}
 		// if we found a match, try again until we can't anymore!
 		[self performSelector: _cmd
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
@@ -1624,7 +1667,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
 								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
 								target,											@"Target", nil]
-				   afterDelay: (needToPause ? 0.5f : 0.1f)];
+				   afterDelay:	0.1f];
 		
 		log(LOG_DEV, @"Rule executed, trying for more rules!");
 
@@ -1636,11 +1679,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyResurrected];
 
 			// Let's retarget ourselves so it doesn't look like we're in love
-//			[playerController targetGuid:[[playerController player] GUID]];
+			[playerController targetGuid:[[playerController player] GUID]];
 
 		}
 		// The idea is that this will improve decision making for healers and keep the bot from looking stupid
 		if (wasFriend && [target isValid] && target != assistUnit && target != tankUnit &&
+			( !theCombatProfile.partyEnabled || !theCombatProfile.partyIgnoreOtherFriendlies ) &&
 			[playerController isFriendlyWithFaction: [target factionTemplate]]
 			) {
 
@@ -1649,7 +1693,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[blacklistController blacklistObject:target withReason:Reason_RecentlyHelpedFriend];
 
 			// Let's retarget ourselves so it doesn't look like we're in love
-//			[playerController targetGuid:[[playerController player] GUID]];
+			[playerController targetGuid:[[playerController player] GUID]];
 
 		}
 
@@ -2262,7 +2306,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ( [[combatController castingUnit] isKindOfClass: [Mob class]] || [[combatController castingUnit] isPet] ) &&
 			[combatController combatEnabled] &&
 			!theCombatProfile.healingEnabled &&
-			[unit isPlayer]) {
+			[unit isPlayer] &&
+			[playerController isHostileWithFaction: [unit factionTemplate]]
+		) {
 		log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
 
 		[self cancelCurrentProcedure];
@@ -2299,6 +2345,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [playerController isDead] ) return;
 
 	log(LOG_COMBAT, @"Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
+	[self evaluateSituation];
 	return;
 }
 
@@ -2348,25 +2395,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			break;
 		}
 	}
-	
-	// Check to see if we should loot or do more combat
-	BOOL doCombatProcedure = YES;
-	
-	if ( self.doLooting && [_mobsToLoot count] && ![playerController isInCombat]) {
-		NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
-		
-		// we can break out of this procedure early!
-		if ( [inCombatUnits count] == 0 && !theCombatProfile.partyEnabled){
-			doCombatProcedure = NO;
-			log(LOG_LOOT, @"Skipping combat to loot (%d mobs left to loot).", [_mobsToLoot count]);
-		} else 
-			if (theCombatProfile.partyEnabled) {
-				doCombatProcedure = NO;
-				if ( [self isOnAssist] && assistUnit && [assistUnit isValid] && [assistUnit isInCombat]) doCombatProcedure = YES;
-				if ( [self isTankUnit] && tankUnit && [tankUnit isValid] && [tankUnit isInCombat]) doCombatProcedure = YES;
-			}
-	}
-	return matchFound && doCombatProcedure;
+	return matchFound;
 }
 
 // this function will actually fire off our combat procedure if needed!
@@ -2437,7 +2466,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [unit isNPC] ) log(LOG_DEV, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 	
-	if ( self.doLooting && [unit isNPC] ) {
+	if ( self.doLooting && ![playerController isInParty] && [unit isNPC] ) {
 		// Reset the loot scan idle timer
 		[self resetLootScanIdleTimer];
 		
@@ -2818,6 +2847,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (NSString*)emoteGeneral {
+	// What would be the smartest thing here is to make an array, randomize it then go through it, rinse and repeat (perfect randomization).
 	int r = SSRandomIntBetween(0,10);
 	if (r == 0) return @"/tired";
 	if (r == 1) return @"/burp";
@@ -3183,10 +3213,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
 	
-    if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
+	// Skip this if we're doing something already
+	if ( self.evaluationInProgress ) return NO;
+
+//    if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
-	
+
 	Unit *bestUnit = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 
 	if ( !bestUnit ) {
@@ -3213,7 +3246,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForCombatStart {
 
 	// Skip this if we are already in evaluation
-	if ( [self evaluationInProgress] ) return NO;
+	if ( self.evaluationInProgress ) return NO;
 
 	// If combat isn't enabled
 	if ( !theCombatProfile.combatEnabled && !theCombatProfile.healingEnabled ) return NO;
@@ -3222,7 +3255,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
 	
 	// If we're set to only attack when attacked or set not to initiate combat in party.
-	if (  ( theCombatProfile.partyEnabled && theCombatProfile.partyDoNotInitiate )|| theCombatProfile.onlyRespond ) return NO;
+	if (  ( theCombatProfile.partyEnabled && theCombatProfile.partyDoNotInitiate ) || theCombatProfile.onlyRespond ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Start");
 
@@ -3254,7 +3287,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				if ( unitToActOn != self.preCombatUnit ) log(LOG_DEV, @"[Combat Start] Attacking unit other than pre-combat unit.");
 				self.preCombatUnit = nil;
 				log(LOG_DEV, @"%@ Found %@ trying to attack.", [combatController unitHealthBar: unitToActOn], unitToActOn);
-//				[movementController turnTowardObject: unitToActOn];
 			}
 			[self actOnUnit: unitToActOn];
 			return YES;
@@ -3290,7 +3322,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If we're mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
-	
+
+	if ( [playerController isInCombat] ) {
+		self.evaluationInProgress = nil;
+		return NO;
+	}
+		
 	log(LOG_EVALUATE, @"Evaluating for Regen");
 
 	// Check to continue regen if the bot was started during regen	
@@ -3746,10 +3783,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [playerController isCasting] )return NO;
 
-	if ( [self isOnAssist] && [[self assistUnit] isInCombat]) return NO;
-
-	if ( [self isTankUnit] && [[self tankUnit] isInCombat]) return NO;
-
 	log(LOG_EVALUATE, @"Evaluating for Patrol");
 
 	// see if we would be performing anything in the patrol procedure
@@ -3765,8 +3798,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
 	if ( !performPatrolProc && _includeFriendlyPatrol) {
-		NSArray *units = [combatController validUnitsWithFriendly:_includeFriendlyPatrol onlyHostilesInCombat:NO];
+		NSArray *units = [combatController friendlyUnits];
 		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
+
 			if ([rule target] != TargetFriend ) continue;
 			log(LOG_RULE, @"[Patrol] Evaluating rule %@", rule);
 
@@ -3788,8 +3822,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Look for corpses - resurrection
 	if ( !performPatrolProc && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
 		NSMutableArray *allPotentialUnits = [NSMutableArray array];
-		[allPotentialUnits addObjectsFromArray: [playersController allPlayers]];
-		
+		[allPotentialUnits addObjectsFromArray: [combatController friendlyUnits]];
+
 		if ( [allPotentialUnits count] ){
 			log(LOG_DEV, @"[CorpseScan] in evaluation...");
 			float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
@@ -3857,7 +3891,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.evaluationInProgress ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for PartyEmotes");
-	
+
 	// Enforce the emote idle threshhold
 	int secondsPassed = _partyEmoteIdleTimer/10;
 	if (secondsPassed < theCombatProfile.partyEmotesIdleTime) return NO;
@@ -3874,7 +3908,35 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	
-	// Lame action for now
+	/*
+	 * Doing Emote
+	 */
+	
+	// Find a random party member to target
+	int i;
+	for (i=1;i<=6;i++) {
+		if ( [playerController PartyMember: i] <= 0x0) {
+			i--;
+			break;
+		}
+	}
+
+	// We have party members
+	if (i > 0) {
+		int randomNumer = SSRandomIntBetween(1, i);
+		Player *randomPartyMember = [playersController playerWithGUID: [playerController PartyMember: randomNumer]];
+		if ( [randomPartyMember isValid]) {
+			[playerController targetGuid: [playerController PartyMember: randomNumer]];
+			[playerController faceToward: [randomPartyMember position]];
+			usleep(300000);
+		} else 
+		if ( [self followUnit] ) {
+			[playerController targetGuid:[[self followUnit] GUID]];
+			[playerController faceToward: [[self followUnit] position]];
+			usleep(300000);
+		}
+	} else
+	// Target our follow unit
 	if ( [self followUnit] ) {
 		[playerController targetGuid:[[self followUnit] GUID]];
 		[playerController faceToward: [[self followUnit] position]];
@@ -3893,7 +3955,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	NSString *emote = [self randomEmote];
-	log(LOG_PARTY, @"Emote: %@", emote);
+	if ( [playerController targetID] ) {
+		log(LOG_PARTY, @"Emote: %@ on %@", emote, [playersController playerNameWithGUID: [playerController targetID]]);
+	} else {
+		log(LOG_PARTY, @"Emote: %@", emote);
+	}
 	[chatController sendKeySequence: [NSString stringWithFormat: @"%c%@%c", '\n', emote, '\n']];
 
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];

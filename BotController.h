@@ -329,6 +329,7 @@
 // Input from MovementController;
 //- (void)reachedUnit: (WoWObject*)unit;
 - (void)cancelCurrentProcedure;
+- (BOOL)combatProcedureValidForUnit: (Unit*)unit;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
 - (BOOL)evaluateForPVP;

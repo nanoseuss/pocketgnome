@@ -262,7 +262,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 #pragma mark Public
 
-// list of units we're in combat with, NO friendlies
+// list of units we're in combat with, XXX NO friendlies XXX
+// This is now updated to include units attacking party members
 - (NSArray*)combatList{
 	
 	NSMutableArray *units = [NSMutableArray array];
@@ -272,7 +273,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	// add the other units if we need to
-	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ){
+	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] ) {
 		[units addObject:_attackUnit];
 		log(LOG_DEV, @"Adding attack unit: %@", _attackUnit);
 	}
@@ -283,6 +284,43 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_COMBAT, @"[Bot] Adding add unit: %@", _addUnit);
 	}
 	
+	// If we're in party mode we'll add the units our party members are in combat with
+	if ( botController.theCombatProfile.partyEnabled && ![botController isOnAssist] ) {
+		log(LOG_DEV, @"Checking to see if party members have agro.");
+		UInt64 playerID;
+		Player *player;
+		UInt64 targetID;
+		Mob *target;
+
+		// Check only party members
+		int i;
+		for (i=1;i<=6;i++) {
+
+			playerID = [playerData PartyMember: i];
+			if ( playerID <= 0x0) break;
+			
+			// We don't add ourselves
+			if ( playerID == [playerData GUID] ) continue;
+
+			player = [playersController playerWithGUID: playerID];
+
+			if ( ![player isValid] || ![player isInCombat] ) continue;
+
+			targetID = [player targetID];
+			target = [mobController mobWithGUID: targetID];
+
+			if ( ![target isValid] || [target isDead] || ![target isInCombat] || ![playerData isHostileWithFaction: [target factionTemplate]] ) {
+				log(LOG_DEV, @"%@ is invalid, dead, not in combat or not hostile", target);
+				continue;
+			}
+			
+			log(LOG_DEV, @"Adding party members unit: %@", target);
+			// If we've made it this far our friend is in combat with the unit
+			[units addObject: target];
+		}
+
+	}
+
 	// sort
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 	Position *playerPosition = [playerData position];
@@ -325,7 +363,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ( distanceToTarget > range ){
 			continue;
 		}
-		
+
+		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
+
 		[validUnits addObject:unit];		
 	}	
 	
@@ -335,7 +375,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
 	}
 	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];
-	
+
 	return [[validUnits retain] autorelease];
 }
 
@@ -343,35 +383,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (BOOL)combatEnabled{
 	return botController.theCombatProfile.combatEnabled;
 }
-
-
-// from: BOTCONTOLLER
-/*
-- (void)startOnUnit:(Unit*)unit{
-	
-	// if we get to this function, we can make the assumption that the appropriate checks have been made on this unit!
-	//  i.e. if friendly, we actually have friendly rules, etc...  or it's still alive
-	
-	
-	// in theory this is purely notification, we store this internally so we know who we are targeting, then we tell botController to start the CombatProcedure
-	
-	//BOOL isFriendly = [playerData isFriendlyWithFaction: [unit factionTemplate]];
-	
-	
-	// what should we do here?
-	
-	[_castingUnit release]; _castingUnit = nil;
-	_castingUnit = [unit retain];
-	
-	// lets monitor the unit here
-	BOOL isFriendly = [playerData isFriendlyWithFaction: [unit factionTemplate]];
-	if ( !isFriendly ){
-		
-	}
-	
-	[botController actOnUnit:unit];
-	
-}*/
 
 // from performProcedureWithState (CombatProcedure)
 // this will keep the unit targeted!
@@ -543,7 +554,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // units here will meet all conditions! Combat Profile WILL be checked
 - (NSArray*)validUnitsWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat {
-	
+
 	// *************************************************
 	//	Find all available units!
 	//		Add friendly units
@@ -554,21 +565,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	NSMutableArray *allPotentialUnits = [NSMutableArray array];
 	BOOL needToAssist = NO;
-	
+
 	// add friendly units w/in range
 	// only do this if we dont have the onlyHostilesInCombat flag
-	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) && !onlyHostilesInCombat) {
+//	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) && !onlyHostilesInCombat) {
+	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) ) {
 		log(LOG_DEV, @"Adding friendlies to the list of valid units");
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
 
 	// Get the assist players target
 	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat] ) {
-//		 Player *player = [playersController playerWithGUID: botController.theCombatProfile.assistUnitGUID];
-//		 UInt64 targetGUID = [player targetID];
+
 		UInt64 targetGUID = [[botController assistUnit] targetID];
 		log(LOG_DEV, @"On assist, checking to see if I need to assist.");
-		
+
 		if ( targetGUID > 0x0) {
 			log(LOG_DEV, @"Assist has a target.");
 			Mob *mob = [mobController mobWithGUID:targetGUID];
@@ -578,19 +589,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				needToAssist = YES;
 			} else {
 				log(LOG_DEV, @"My assist's target is dead!");
-			}
-		}
-	}
-	
-	// Get the tanks target
-	if ( [botController isTankUnit] && [[botController tankUnit] isInCombat]) {
-		UInt64 targetGUID = [[botController tankUnit] targetID];
-		if ( targetGUID > 0x0 ) {
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob && ![mob isDead]) {
-				[allPotentialUnits addObject:mob];
-				log(LOG_DEV, @"Adding my tanks target to list of valid units");
-				needToAssist = YES;
 			}
 		}
 	}
@@ -607,7 +605,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// remove units attacking us from the list
 	if ( [_unitsAttackingMe count] && !needToAssist) [allPotentialUnits removeObjectsInArray:_unitsAttackingMe];
-	
+
 	// add combat units that have been validated! (includes attack unit + add)
 	NSArray *inCombatUnits = [self combatListValidated];
 	if ( [inCombatUnits count] ) {
@@ -642,8 +640,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			}
 
 			if ( [unit isDead] || [unit isEvading] || ![unit isValid] ) continue;
+			
 			if ( [[unit position] verticalDistanceToPosition: playerPosition] > vertOffset ) continue;
+			
 			if ( !includeFriendly && [playerData isFriendlyWithFaction: [unit factionTemplate]] ) continue;
+
+			if ( !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) return NO;
 			
 			// range changes if the unit is friendly or not
 			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
@@ -675,18 +677,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // find a unit to attack, CC, or heal
 - (Unit*)findUnitWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat {
-	
+
+	log(LOG_FUNCTION, @"findUnitWithFriendly called");
+
 	// flying check?
-	if ( [botController.theCombatProfile ignoreFlying] ) if ( ![[playerData player] isOnGround] ) return nil;
-	
+	if ( botController.theCombatProfile.ignoreFlying ) if ( ![playerData isOnGround] ) return nil;
+
 	// no combat or healing?
 	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ) return nil;
 
-	log(LOG_DEV, @"Looking for a valid target");
 
 	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
 	Position *playerPosition = [playerData position];
-	
+
 	if ( ![validUnits count] ) return nil;
 
 	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
@@ -694,6 +697,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
+		
+		// Let's make sure we can even act on this unit before we consider it
+		if ( onlyHostilesInCombat && ![botController combatProcedureValidForUnit:unit] ) continue;
+
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];
 		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
@@ -755,7 +762,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	weight += healthLeft;
 	
 	// our add?
-	if ( unit == _addUnit ) weight -= 125;
+	if ( unit == _addUnit ) weight -= 50;
 	
 	// non-friendly checks only
 	if ( !isFriendly ) {
@@ -773,7 +780,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			UInt64 targetGUID = [[botController assistUnit] targetID];
 			if ( targetGUID > 0x0) {
 				Mob *assistMob = [mobController mobWithGUID:targetGUID];
-				if ( unit == assistMob ) weight += 150;
+				if ( unit == assistMob ) weight += 200;
 			}
 		}
 		
@@ -859,7 +866,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // find available hostile targets
 - (NSArray*)enemiesWithinRange:(float)range {
-	
+
     NSMutableArray *targetsWithinRange = [NSMutableArray array];
 	NSRange levelRange = [self levelRange];
 
@@ -897,7 +904,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//log(LOG_COMBAT, @"[Combat] Friendly is a ghost! And dead! We should consider them invalid");
 		return NO;
 	}
-	
+
 	// We need to check:
 	//	Not dead
 	//	Friendly
@@ -914,12 +921,40 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// get list of all targets
     NSMutableArray *friendliesWithinRange = [NSMutableArray array];
 	NSMutableArray *friendlyTargets = [NSMutableArray array];
-	[friendliesWithinRange addObjectsFromArray: [playersController allPlayers]];
 	
+	// If we're in party mode and only supposed to help party members
+	if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.partyIgnoreOtherFriendlies ) {
+
+		Player *player;
+		UInt64 playerID;
+
+		// Check only party members
+		int i;
+		for (i=1;i<=6;i++) {
+			playerID = [playerData PartyMember: i];
+			if ( playerID <= 0x0) break;
+			
+			// We don't add ourselves
+			if ( playerID == [playerData GUID] ) continue;
+
+			player = [playersController playerWithGUID: playerID];
+			
+			if ( ![player isValid] ) continue;
+
+			[friendliesWithinRange addObject: player];
+		}
+		
+	} else {
+
+		// Check all friendlies
+		[friendliesWithinRange addObjectsFromArray: [playersController allPlayers]];
+
+	}
+
 	// sort by range
     Position *playerPosition = [playerData position];
     [friendliesWithinRange sortUsingFunction: DistFromPositionCompare context: playerPosition];
-	
+
 	// if we have some targets
     if ( [friendliesWithinRange count] ) {
         for ( Unit *unit in friendliesWithinRange ) {
