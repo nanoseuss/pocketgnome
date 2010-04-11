@@ -11,6 +11,7 @@
 @class MPTimer;
 //@class MPActivityWait;
 @class TestActivity;
+@class MPActivityTest;
 
 
 typedef enum TestTaskState { 
@@ -29,13 +30,18 @@ typedef enum TestTaskState {
 	
 	NSArray *locations;
 	
+	NSString *action, *targetName;
+	
+	
 //	MPActivityWait *myActivity;
 	TestActivity *myActivity;
+	MPActivityTest *testActivity;
 }
-
+@property (retain) NSString *action, *targetName;
 @property (readonly, retain) MPTimer *timerUpTime, *timerDownTime;
 //@property (retain) MPActivityWait *myActivity;
 @property (retain) TestActivity *myActivity;
+@property (retain) MPActivityTest *testActivity;
 @property (retain) NSArray* locations;
 
 

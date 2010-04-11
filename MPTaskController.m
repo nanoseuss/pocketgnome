@@ -165,7 +165,7 @@ static MPTask *rootTask = nil;
 		
 		if (currentActivity != nil) {
 		
-			PGLog (@"wantedState != runningState --> shut down currentActivity");
+			PGLog (@"   - wantedState != runningState --> shut down currentActivity");
 			// currentActivity.stop()
 			[currentActivity stop];
 			
@@ -210,7 +210,7 @@ static MPTask *rootTask = nil;
 		if (done) {
 		
 			// log Finished Activity
-			PGLog(@"  --> Activity says it is done (%@) -> (%@)", [[currentActivity task] name], [currentActivity name] );
+			PGLog(@"   --> Activity says it is done (%@) -> (%@)", [[currentActivity task] name], [currentActivity name] );
 			
 			// get TaskOwner of currentActivity
 			currTask = [currentActivity task];
@@ -233,7 +233,7 @@ static MPTask *rootTask = nil;
 		// if currentActivity exists
 		if (currentActivity != nil ) {
 			
-			PGLog (@"running state: stopped.  So shutting down currentActivity");
+			PGLog (@"   - running state: stopped.  So shutting down currentActivity");
 			
 			// currentActivity.stop()
 			[currentActivity stop];

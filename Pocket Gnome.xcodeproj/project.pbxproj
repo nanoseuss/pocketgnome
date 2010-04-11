@@ -171,6 +171,7 @@
 		34B094E710670BC100EC8D5A /* PatherController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094BF10670BC100EC8D5A /* PatherController.m */; };
 		34B094E810670BC100EC8D5A /* MPParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094C110670BC100EC8D5A /* MPParser.m */; };
 		34B0951210671AF100EC8D5A /* Icon_Pather.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B0951110671AF100EC8D5A /* Icon_Pather.png */; };
+		34C3531C116F56E4002B11E5 /* MPActivityTestPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C3531B116F56E4002B11E5 /* MPActivityTestPosition.m */; };
 		34D5FC9D10685C1100712FD0 /* MPTaskRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */; };
 		34D5FCFA10686F1900712FD0 /* MPActivityWalk.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FCF910686F1900712FD0 /* MPActivityWalk.m */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
@@ -748,6 +749,9 @@
 		34B094C010670BC100EC8D5A /* MPParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPParser.h; sourceTree = SOURCE_ROOT; };
 		34B094C110670BC100EC8D5A /* MPParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPParser.m; sourceTree = SOURCE_ROOT; };
 		34B0951110671AF100EC8D5A /* Icon_Pather.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon_Pather.png; sourceTree = SOURCE_ROOT; };
+		34C3531A116F56E4002B11E5 /* MPActivityTestPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityTestPosition.h; sourceTree = "<group>"; };
+		34C3531B116F56E4002B11E5 /* MPActivityTestPosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityTestPosition.m; sourceTree = "<group>"; };
+		34C353F511702F64002B11E5 /* SynthesizeSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SynthesizeSingleton.h; sourceTree = "<group>"; };
 		34D5FC9B10685C1100712FD0 /* MPTaskRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskRoute.h; sourceTree = "<group>"; };
 		34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskRoute.m; sourceTree = "<group>"; };
 		34D5FCF810686F1900712FD0 /* MPActivityWalk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityWalk.h; sourceTree = "<group>"; };
@@ -1546,6 +1550,8 @@
 				34D5FCF910686F1900712FD0 /* MPActivityWalk.m */,
 				34B0947310670BC100EC8D5A /* TestActivity.h */,
 				34B0947410670BC100EC8D5A /* TestActivity.m */,
+				34C3531A116F56E4002B11E5 /* MPActivityTestPosition.h */,
+				34C3531B116F56E4002B11E5 /* MPActivityTestPosition.m */,
 			);
 			name = Activities;
 			sourceTree = SOURCE_ROOT;
@@ -1659,6 +1665,7 @@
 		34B094B710670BC100EC8D5A /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				34C353F511702F64002B11E5 /* SynthesizeSingleton.h */,
 				846AFF461091D4EE00C92362 /* Tree */,
 				34B094B810670BC100EC8D5A /* MPStack.h */,
 				34B094B910670BC100EC8D5A /* MPStack.m */,
@@ -2667,6 +2674,7 @@
 				039FAE1C1163B139007CF7C0 /* WoWDb.m in Sources */,
 				0394052F1163C67400D98403 /* WoWDbTable.m in Sources */,
 				039405321163C73700D98403 /* WoWDbRow.m in Sources */,
+				34C3531C116F56E4002B11E5 /* MPActivityTestPosition.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

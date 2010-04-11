@@ -11,12 +11,14 @@
 #import "MPTimer.h"
 #import "MPActivityWait.h"
 #import "TestActivity.h"
+#import "MPActivityTestPosition.h"
 
 
 @implementation MPTestTask
 
+@synthesize action, targetName;
 @synthesize timerUpTime, timerDownTime;
-@synthesize myActivity;
+@synthesize myActivity, testActivity;
 @synthesize locations;
 
 - (id) initWithPather:(PatherController*)controller {
@@ -24,20 +26,27 @@
 		state = TestTaskStateBegin;
 		name = @"TestTask";
 		myActivity = nil;
+		testActivity = nil;
 		self.locations = nil;
+		self.action = nil;
+		self.targetName = nil;
 	}
 	return self;
 }
 
 - (void) setup {
-	upTime = (NSInteger) [[self integerFromVariable:@"uptime" orReturnDefault:1000] value];
-	downTime = (NSInteger) [[self integerFromVariable:@"dtime" orReturnDefault:1000] value];
-	timerUpTime = [MPTimer timer:upTime];
-	timerDownTime = [MPTimer timer:downTime];
+//	upTime = (NSInteger) [[self integerFromVariable:@"uptime" orReturnDefault:1000] value];
+//	downTime = (NSInteger) [[self integerFromVariable:@"dtime" orReturnDefault:1000] value];
+//	timerUpTime = [MPTimer timer:upTime];
+//	timerDownTime = [MPTimer timer:downTime];
 	
-	self.locations = [self locationsFromVariable:@"locations"];
+//	self.locations = [self locationsFromVariable:@"locations"];
 	
-	name = [self stringFromVariable:@"name" orReturnDefault:@"defaultName"];
+//	name = [self stringFromVariable:@"name" orReturnDefault:@"defaultName"];
+	
+	self.action = [[self stringFromVariable:@"action" orReturnDefault:@"positioncheck"] lowercaseString];
+	self.targetName = [self stringFromVariable:@"targetname" orReturnDefault:@"-"];
+	
 }
 
 
@@ -46,6 +55,7 @@
     [timerUpTime release];
     [timerDownTime release];
 	[myActivity release];
+	[testActivity release];
 	
     [super dealloc];
 }
@@ -66,6 +76,17 @@
 
 - (BOOL) wantToDoSomething {
 	
+	
+	//// for checking our position relative to a given unit
+	if ([action isEqualToString:@"positioncheck"]) {
+		
+		return YES;
+	}
+	
+	
+	
+	
+	///////
 	BOOL doI = YES;
 	
 	switch (state) {
@@ -109,15 +130,29 @@
 
 
 - (MPActivity *) activity {
-
+/*
 	// create (or recreate) our activity based on the needs at the moment
 	if (myActivity == nil)	{
 //		[self setMyActivity:[MPActivityWait waitIndefinatelyForTask:self]];
 		[self setMyActivity:[TestActivity waitIndefinatelyForTask:self]];
 	}
+*/	
+	
+
+	if (testActivity == nil) {
+		
+		// time to perform actions!
+		NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+							  action,			@"actionKey",
+							  targetName,		@"targetName",
+							  nil];
+		
+		testActivity = [MPActivityTest activityForTask:self andDict:dict ];
+		
+	}
 	
 	// return the activity to work on
-	return myActivity;
+	return testActivity;
 }
 
 

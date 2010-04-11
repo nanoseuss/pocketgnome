@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "Position.h"
+@class Mob;
 
 @interface MPLocation : Position {
 
@@ -21,7 +22,7 @@
  * @discussion
  *	Attempts to give a location (distance) away from current location, in direction of heading.
  */
-- (MPLocation *) inFrontOfUsingHeading: (float) heading andDistance:(float) distance;
+- (MPLocation *) locationAtHeading: (float) heading andDistance:(float) distance;
 
 
 #pragma mark -
@@ -42,5 +43,14 @@
  */
 + (MPLocation*) locationFromVariableData: (NSArray *)locationData;
 
++ (id) locationFromPosition: (Position *) position;
 
+/*!
+ * @function locationInFrontOfTarget:atDistance
+ * @abstract Returns a location in front of the given target.
+ * @discussion
+ *	
+ */
++ (id) locationInFrontOfTarget:(Mob *)mob atDistance:(float) distance;
++ (id) locationBehindTarget:(Mob *)mob atDistance:(float) distance;
 @end

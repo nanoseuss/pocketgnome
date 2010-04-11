@@ -8,12 +8,13 @@
 
 #import "MPLocation.h"
 #import "Position.h"
+#import "Mob.h"
 
 @implementation MPLocation
 
 
 // return a location distance away from current position (in direction of heading)
-- (MPLocation *) inFrontOfUsingHeading: (float) heading andDistance:(float) distance {
+- (MPLocation *) locationAtHeading: (float) heading andDistance:(float) distance {
 
 	// hoping that heading is in radians
 	// if in degrees then cos( (heading*pi)/180 )
@@ -39,6 +40,22 @@
 	MPLocation *newLocation = [[[MPLocation alloc] initWithX:xLoc Y:yLoc Z:zLoc] autorelease];
 
 	return [newLocation retain];
+}
+
++ (id) locationFromPosition: (Position *) position {
+	return [MPLocation locationAtX:[position xPosition] Y:[position yPosition] Z:[position zPosition]];
+}
+
++ (id) locationInFrontOfTarget:(Mob *)mob atDistance:(float) distance {
+	MPLocation *location = [MPLocation locationFromPosition:[mob position]];
+	
+	return [location locationAtHeading:[mob directionFacing] andDistance:distance];
+}
+
++ (id) locationBehindTarget:(Mob *)mob atDistance:(float) distance {
+	MPLocation *location = [MPLocation locationFromPosition:[mob position]];
+	
+	return [location locationAtHeading:([mob directionFacing] + M_PI) andDistance:distance];
 }
 
 @end

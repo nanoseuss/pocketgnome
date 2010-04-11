@@ -17,7 +17,10 @@
 #import <Cocoa/Cocoa.h>
 @class MPLocation;
 @class PatherController;
+@class Position;
 
+
+#define MP_PI_8        0.392699081698724   /* pi/8 */
 
 @interface MPMover : NSObject {
 
@@ -30,12 +33,13 @@
 	BOOL strafeRight, oldStrafeRight;
 	BOOL swimUp, oldSwimUp;
 	
-	MPLocation *destinationLocation, *facingPosition;
+	float closeEnough, angleTolerance;
+	MPLocation *destinationLocation, *facingLocation;
 	
 	PatherController *patherController;
 }
 @property (retain) PatherController *patherController;
-@property (retain) MPLocation *destinationLocation, *facingPosition;
+@property (retain) MPLocation *destinationLocation, *facingLocation;
 
 // Reset all movement states.  (should stop)
 - (void) resetMovementState;
@@ -45,9 +49,32 @@
 - (void) stopMove;
 - (void) stopAllMovement;
 
+- (int) directionOfPosition: (Position *)position;
+
+- (float) angleTurnTowards: (Position *)position;
+
+- (bool) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing;
+- (bool) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle;
+
+
+// The actual movement work is done here
+- (void) action;
+
+#pragma mark -
+#pragma mark Basic Movements
+
+- (void) backwards: (BOOL) go;
+- (void) forwards: (BOOL) go;
+- (void) rotateLeft: (BOOL) go;
+- (void) rotateRight: (BOOL) go;
+- (void) strafeLeft: (BOOL) go;
+- (void) strafeRight: (BOOL) go;
+- (void) swimUp: (BOOL) go;
+
 // 
 - (id) init;
 - (id) initWithController: (PatherController*)controller;
-+ (id) moverWithController:(PatherController*)controller;
+//+ (id) moverWithController:(PatherController*)controller;
++ (MPMover *)sharedMPMover;
 
 @end
