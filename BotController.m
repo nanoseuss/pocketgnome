@@ -241,6 +241,7 @@
 	_followRoute = nil;
 	self.followSuspended = NO;
 	
+	_lastCombatProcedureTarget = 0x0;
 	_lootScanIdleTimer = 0;
 	_partyEmoteIdleTimer = 0;
 	_partyEmoteTimeSince = 0;
@@ -1162,7 +1163,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)performProcedureWithState: (NSDictionary*)state {
-	log(LOG_DEV, @"performProcedureWithState called");
+	log(LOG_FUNCTION, @"performProcedureWithState called");
 
 	// player dead?
 	if ( [playerController isDead] ) {
@@ -1288,8 +1289,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self finishCurrentProcedure: state];
 			return;
 		}
-		
-		[playerController faceToward: [target position]];
+
+		if ( _lastCombatProcedureTarget != [target GUID] ) {
+			[playerController faceToward: [target position]];
+			[movementController stepForward];
+		}
+		_lastCombatProcedureTarget = [target GUID];
 		[combatController stayWithUnit:target withType: TargetEnemy];
 	}
 	
@@ -2148,7 +2153,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// If this event fired, we don't need to verifyLootSuccess! We ONLY need verifyLootSuccess when a body has nothing to loot!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(evaluateSituation) object: nil];
 
 	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
 	if ( self.unitToLoot ) {
@@ -2213,11 +2217,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If this was the last item in the list
 	if ( ![_mobsToLoot count] ) [self resetLootScanIdleTimer];
-
-	float delay = 0.3;
+	
+	float delay = 0.4;
 	// Allow the lute to fade
-	if (wasNode) delay = 0.6;
+	if (wasNode) delay = 0.8;
 
+	if ( !wasNode && ![_mobsToLoot count] ) {
+		[movementController stepForward];
+		delay = 0.1;
+	}
+	
 	self.wasLootWindowOpen = NO;
 	self.evaluationInProgress = nil;
 	
@@ -2317,7 +2326,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if (![self isBotting]) return;
 	
-	[controller setCurrentStatus: @"Bot: Player in Combat"];
+//	[controller setCurrentStatus: @"Bot: Player in Combat"];
 	log(LOG_COMBAT, @"Entering combat");
 	self.evaluationInProgress = nil;
 	[blacklistController clearAttempts];
@@ -2330,16 +2339,25 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	_didPreCombatProcedure = NO;
 
-	[combatController cancelAllCombat];
+//	[combatController cancelAllCombat];
 	
-	// Reset the loot scan idle timer
-	[self resetLootScanIdleTimer];
-	
+	if (self.doLooting) {
+		// Reset the loot scan idle timer
+		[self resetLootScanIdleTimer];
+		[self lootScan];
+	}
 	if ( [playerController isDead] ) return;
 
 	log(LOG_COMBAT, @"Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
-//	[self evaluateSituation];
-	return;
+	
+	
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
+		// If we've left combat too quickly let's jump into post combat else we hang
+		[self cancelCurrentProcedure];
+		[self performSelector: @selector(performProcedureWithState:) 
+				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: PostCombatProcedure,		  @"Procedure", [NSNumber numberWithInt: 0],	  @"CompletedRules", nil]
+				   afterDelay: 0.1f ];
+	}
 }
 
 #pragma mark Combat
@@ -2403,7 +2421,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	log(LOG_DEV, @"Acting on unit %@", unit);
-	
+
+	log(LOG_COMBAT, @"%@ Engaging %@", [combatController unitHealthBar: unit], unit );
+
     if( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 		
 		// I notice that readyToAttack is set here, but not used?? hmmm (older revisions are the same)
@@ -2452,8 +2472,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	log(LOG_DEV, @"Unit %@ killed %@", unit, [unit class]);
 	
-	[combatController cancelAllCombat];
-	
 	// unit dead, reset!
 	if ( !self.evaluationInProgress ) [movementController resetMoveToObject];
 
@@ -2476,6 +2494,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		} else {
 			log(LOG_LOOT, @"Mob %@ isn't lootable, ignoring", unit);
 		}
+		[self performSelector: @selector(lootScan) withObject:nil afterDelay: 1.0f ];
 	}
 }
 
@@ -3209,7 +3228,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if we're doing something already
 	if ( self.evaluationInProgress ) return NO;
 
-//    if ( ![combatController inCombat] && ![playerController isInCombat]) return NO;
+	if ( !theCombatProfile.partyEnabled && ![playerController isInCombat] ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
 
@@ -3400,25 +3419,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Enforce the loot scan idle
 	int secondsPassed = _lootScanIdleTimer/10;
-	if (secondsPassed > 20) return NO;
+	if (secondsPassed > 30) return NO;
 
 	// Skip this if we are already in evaluation
 	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Loot") return NO;
-
-	// No looting if we're in procedure
-	if ( [self procedureInProgress] ) return NO;
 	
 	// If we're mounted and in the air lets just skip loot scans
 	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
 	
 	// If we're supposed to be following then follow!
 	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && [[playerController player] isMounted]) return NO;
-	
-	// We don't loot in combat
-	if ([[playerController player] isInCombat]) return NO;
 
 	// If we're moving to the mob let's wait till we get there to do anything
-    if ([movementController moveToObject]) return NO;
+    if ( [movementController moveToObject] ) return NO;
 	
 	log(LOG_EVALUATE, @"Evaluating for Loot");
 
@@ -3465,7 +3478,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Close enough to loot it
 	if ( mobToLootDist <= 5.0 ) {
-		
+		_movingTowardMobCount = 0;
 		// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
 		int attempts = [blacklistController attemptsForObject:mobToLoot];
 		
@@ -3489,14 +3502,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		_movingTowardMobCount++;
 	}
+	
 	self.evaluationInProgress = @"Loot";
 			
 	// have we exceeded the amount of attempts to move to the unit?
 	// attempts... no longer seconds
 	if ( _movingTowardMobCount > 4 ){
+		_movingTowardMobCount = 0;
 		log(LOG_LOOT, @"Unable to reach %@, removing from loot list", mobToLoot);
 		[movementController resetMoveToObject];
 		self.evaluationInProgress = nil;
+		[blacklistController blacklistObject:mobToLoot];
 		[_mobsToLoot removeObject:mobToLoot];
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return YES;
@@ -3992,7 +4008,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [self evaluateForPartyEmotes] ) return YES;
 
 	// Increment the loot scan idle timer if it's not already past it's cut off
-	if (self.doLooting) if (_lootScanIdleTimer <= (20*10)) _lootScanIdleTimer++;
+	if (self.doLooting) if (_lootScanIdleTimer <= (30*10)) _lootScanIdleTimer++;
 	
 	if ( [self evaluateForFishing] ) return YES;
 	
@@ -4006,7 +4022,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [movementController isMoving] ) return NO;
 
 	// If there is loot or we're evaluating lets cycle again
-	if ( [self evaluationInProgress] || [_mobsToLoot count] ) {
+	if ( [self evaluationInProgress] ) {
+		log(LOG_EVALUATE, @"Evaluation in progress so we're looping without movement.");
 		if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer =0;
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
 		return NO;
@@ -4392,7 +4409,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootScanIdleTimer	= 0;
 		
 		self.mobToSkin = nil;
-		self.unitToLoot = nil;	
+		self.unitToLoot = nil;
+		_movingTowardMobCount = 0;
 		
 		// Party resets
 		[self followRouteClear];

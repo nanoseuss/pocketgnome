@@ -133,6 +133,7 @@
 	int _lastActionErrorCode;
 	UInt32 _lastActionTime;
 	int _zoneBeforeHearth;
+	UInt64 _lastCombatProcedureTarget;
 	
 	// healing shit
 	BOOL _shouldFollow;
