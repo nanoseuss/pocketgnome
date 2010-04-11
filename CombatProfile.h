@@ -49,7 +49,10 @@
 	float checkForCampersRange;
 	BOOL avoidMobsWhenResurrecting;	
 	float moveToCorpseRange;
-	
+
+	BOOL partyLeaderWait;
+	float partyLeaderWaitRange;
+
 }
 
 + (id)combatProfile;
@@ -111,5 +114,7 @@
 @property (readwrite, assign) float checkForCampersRange;
 @property (readwrite, assign) BOOL avoidMobsWhenResurrecting;
 @property (readwrite, assign) float moveToCorpseRange;
+@property (readwrite, assign) BOOL partyLeaderWait;
+@property (readwrite, assign) float partyLeaderWaitRange;
 
 @end

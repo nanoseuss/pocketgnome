@@ -61,7 +61,9 @@
 		self.checkForCampersRange = 50.0f;
 		self.avoidMobsWhenResurrecting = YES;
 		self.moveToCorpseRange = 35.0f;
-		
+		self.partyLeaderWait = NO;
+		self.partyLeaderWaitRange = 35.0f;
+
 		// Healing
 		self.healingEnabled = NO;
 		self.autoFollowTarget = NO;
@@ -144,7 +146,9 @@
 	copy.checkForCampersRange = self.checkForCampersRange;
 	copy.avoidMobsWhenResurrecting = self.avoidMobsWhenResurrecting;
 	copy.moveToCorpseRange = self.moveToCorpseRange;
-
+	copy.partyLeaderWait = self.partyLeaderWait;
+	copy.partyLeaderWaitRange = self.partyLeaderWaitRange;
+	
 	copy.changed = YES;
     
     return copy;
@@ -204,6 +208,8 @@
 		self.checkForCampersRange = [[decoder decodeObjectForKey: @"CheckForCampersRange"] floatValue];
 		self.avoidMobsWhenResurrecting = [[decoder decodeObjectForKey: @"AvoidMobsWhenResurrecting"] boolValue];
 		self.moveToCorpseRange = [[decoder decodeObjectForKey: @"MoveToCorpseRange"] floatValue];
+		self.partyLeaderWait = [[decoder decodeObjectForKey: @"partyLeaderWait"] boolValue];
+		self.partyLeaderWaitRange = [[decoder decodeObjectForKey: @"partyLeaderWait"] floatValue];
 		
 	}
 	return self;
@@ -261,7 +267,10 @@
 	[coder encodeObject: [NSNumber numberWithFloat: self.checkForCampersRange] forKey: @"CheckForCampersRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.avoidMobsWhenResurrecting] forKey: @"AvoidMobsWhenResurrecting"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.moveToCorpseRange] forKey: @"MoveToCorpseRange"];
-	
+
+	[coder encodeObject: [NSNumber numberWithBool: self.partyLeaderWait] forKey: @"partyLeaderWait"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.partyLeaderWaitRange] forKey: @"partyLeaderWaitRange"];
+
     [coder encodeObject: self.entries forKey: @"IgnoreList"];
 }
 
@@ -321,6 +330,8 @@
 @synthesize checkForCampersRange;
 @synthesize avoidMobsWhenResurrecting;
 @synthesize moveToCorpseRange;
+@synthesize partyLeaderWait;
+@synthesize partyLeaderWaitRange;
 
 - (BOOL)unitShouldBeIgnored: (Unit*)unit{
 	

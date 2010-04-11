@@ -461,8 +461,14 @@ typedef enum MovementState{
 
 - (void)moveToNextWaypoint{
 
-	// Refresh our follow route
-	if (self.isFollowing) self.currentRoute = botController.followRoute;
+	if (self.isFollowing) {
+		// Refresh our follow route
+		self.currentRoute = botController.followRoute;
+		[self realMoveToNextWaypoint];
+		
+		// Return here since we're skipping waypoint actions in follow mode
+		return;
+	}
 	
 	// do we have an action for the destination we just reached?
 	NSArray *actions = [self.destinationWaypoint actions];
@@ -588,7 +594,6 @@ typedef enum MovementState{
     if ( !position || distance == INFINITY ) {
         log(LOG_MOVEMENT, @"Invalid waypoint (distance: %f). Ending patrol.", distance);
 		botController.evaluationInProgress=nil;
-		self.isFollowing = NO;
 		[botController evaluateSituation];
         return;
     }
@@ -650,12 +655,36 @@ typedef enum MovementState{
 }
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
-	
+
 	// stopped botting?  end!
 	if ( ![botController isBotting] ) {
 		log(LOG_MOVEMENT, @"We're not botting, stop the timer!");
 		[self resetMovementState];
 		return;
+	}
+	
+	if (self.isFollowing) {
+		// Check to see if we're close enough to stop.
+
+		if ( botController.followUnit && [botController.followUnit isValid] ) {
+			
+			Position *positionFollowUnit = [botController.followUnit position];
+			float distanceToFollowUnit = [[playerData position] distanceToPosition: positionFollowUnit];
+
+			// If we're close enough let's check to see if we need to stop
+			if ( distanceToFollowUnit <=  botController.theCombatProfile.yardsBehindTargetStop ) {
+
+				// Establish a random stopping distance
+				int randomStoppingValue = SSRandomIntBetween(botController.theCombatProfile.yardsBehindTargetStart, botController.theCombatProfile.yardsBehindTargetStop);
+				int randomStoppingDistance=randomStoppingValue+botController.theCombatProfile.yardsBehindTargetStart;
+
+				if ( distanceToFollowUnit <= randomStoppingDistance ) {
+					// We're close enough to stop!
+					[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
+					return;
+				}
+			}
+		}
 	}
 	
 	_positionCheck++;
@@ -769,7 +798,7 @@ typedef enum MovementState{
 	} 
 
 	// If we're in follow mode let's stop here
-	if ( self.isFollowing ) return;
+//	if ( self.isFollowing ) return;
 	
 	// *******************************************************
 	// if we we get here, we're not close enough :(
@@ -886,36 +915,17 @@ typedef enum MovementState{
 	log(LOG_MOVEMENT, @"Entering anti-stuck procedure! Try %d", _unstickifyTry);
 
 	// anti-stuck for follow!
-	if ( self.isFollowing ){
+	if ( self.isFollowing && _unstickifyTry > 5) {
 		
-		// blacklist unit after 5 tries!
-		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ){
-			
-			log(LOG_MOVEMENT, @"Got stuck while following, oh what to do...?");
-
-			return;			
-		}
-		
-		// player is flying and is stuck :(  makes me sad, lets move up a bit
-		if ( [[playerData player] isFlyingMounted] ){
-			
-			log(LOG_MOVEMENT, @"Moving up since we're flying mounted!");
-			
-			// move up for 1 second!
-			[self moveUpStop];
-			[self moveUpStart];
-			[self performSelector:@selector(moveUpStop) withObject:nil afterDelay:1.0f];
-			[self performSelector:@selector(resumeMovement) withObject:nil afterDelay:1.1f];
-			return;
-		}
-		
-		log(LOG_MOVEMENT, @"Following + stuck and not flying?  shux");
+		log(LOG_MOVEMENT, @"Got stuck while following, cancelling follow!");
+		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
+		
 	}
 	
 	
 	// anti-stuck for moving to an object!
-	else if ( self.moveToObject ){
+	if ( self.moveToObject ){
 		
 		// blacklist unit after 5 tries!
 		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ){

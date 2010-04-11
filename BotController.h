@@ -202,14 +202,16 @@
 	// log out options
 	NSTimer *_logOutTimer;
     
-	// Party Follow
+	// Party
+	BOOL _leaderBeenWaiting;
+	
+	// Follow
 	Route *_followRoute;
-
-
 	BOOL _followSuspended;
 	Unit *followUnit;
 	Unit *assistUnit;
 	Unit *tankUnit;
+	BOOL _followLastSeenPosition;
 	
 	int _lootScanIdleTimer;
 	int _partyEmoteIdleTimer;
@@ -329,6 +331,7 @@
 
 // Input from MovementController;
 //- (void)reachedUnit: (WoWObject*)unit;
+- (void)cancelCurrentEvaluation;
 - (void)cancelCurrentProcedure;
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit;
 - (void)finishedRoute: (Route*)route;

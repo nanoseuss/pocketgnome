@@ -266,6 +266,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // This is now updated to include units attacking party members
 - (NSArray*)combatList{
 	
+	// Looks like this is called from the PlayerConroller even the bot is off
+	if ( !botController.isBotting ) return nil;
+	
+	log(LOG_FUNCTION, @"combatList");
+
+//	[NSObject cancelPreviousPerformRequestsWithTarget: self];
+	
 	NSMutableArray *units = [NSMutableArray array];
 	
 	if ( [_unitsAttackingMe count] ) {
@@ -281,44 +288,48 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// add our add
 	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] ){
 		[units addObject:_addUnit];
-		log(LOG_COMBAT, @"[Bot] Adding add unit: %@", _addUnit);
+		log(LOG_COMBAT, @"Adding add unit: %@", _addUnit);
 	}
 	
 	// If we're in party mode we'll add the units our party members are in combat with
 	if ( botController.theCombatProfile.partyEnabled && ![botController isOnAssist] ) {
-		log(LOG_DEV, @"Checking to see if party members have agro.");
+
 		UInt64 playerID;
 		Player *player;
+
 		UInt64 targetID;
 		Mob *target;
+		Player *targetPlayer;
 
 		// Check only party members
 		int i;
 		for (i=1;i<=6;i++) {
 
+			// If there are no more party members
 			playerID = [playerData PartyMember: i];
 			if ( playerID <= 0x0) break;
-			
-			// We don't add ourselves
-			if ( playerID == [playerData GUID] ) continue;
 
 			player = [playersController playerWithGUID: playerID];
-
-			if ( ![player isValid] || ![player isInCombat] ) continue;
+			if ( !player || ![player isValid] || ![player isInCombat] ) continue;
 
 			targetID = [player targetID];
-			target = [mobController mobWithGUID: targetID];
 
-			if ( ![target isValid] || [target isDead] || ![target isInCombat] || ![playerData isHostileWithFaction: [target factionTemplate]] ) {
-				log(LOG_DEV, @"%@ is invalid, dead, not in combat or not hostile", target);
+			if (targetID <= 0x0) continue;
+			
+			target = [mobController mobWithGUID: targetID];
+			if ( target && ![units containsObject: target] && [target isValid] && ![target isDead] && [target isInCombat] && [playerData isHostileWithFaction: [target factionTemplate]] ) {
+				log(LOG_COMBAT, @"%@ Adding Party mob: %@", [self unitHealthBar: target], target);
+				[units addObject: target];
 				continue;
 			}
-			
-			log(LOG_DEV, @"Adding party members unit: %@", target);
-			// If we've made it this far our friend is in combat with the unit
-			[units addObject: target];
-		}
 
+			targetPlayer = [playersController playerWithGUID: targetID];
+			if ( targetPlayer && ![units containsObject:targetPlayer] && [targetPlayer isValid] && ![targetPlayer isDead] && [targetPlayer isInCombat] && [playerData isHostileWithFaction: [targetPlayer factionTemplate]] ) {
+				log(LOG_COMBAT, @"%@ Adding Party PvP target: %@", [self unitHealthBar: (Unit*)targetPlayer], targetPlayer);
+				[units addObject: targetPlayer];
+				continue;
+			}
+		}
 	}
 
 	// sort
@@ -526,9 +537,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)cancelAllCombat{
-	
-	log(LOG_DEV, @"All combat cancelled");
-	
+	log(LOG_FUNCTION, @"cancelAllCombat");
+
 	// cancel selecting the unit!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 	
@@ -546,10 +556,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)resetAllCombat{
+	log(LOG_FUNCTION, @"resetAllCombat");
+	
+	[NSObject cancelPreviousPerformRequestsWithTarget: self];
+	
 	[self cancelAllCombat];
 	[_unitLeftCombatCount removeAllObjects];
 	[_unitLeftCombatTargetCount removeAllObjects];
-	[NSObject cancelPreviousPerformRequestsWithTarget: self];
+
 }
 
 // units here will meet all conditions! Combat Profile WILL be checked
@@ -587,9 +601,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				[allPotentialUnits addObject:mob];
 				log(LOG_DEV, @"Adding my assist's target to list of valid units");
 				needToAssist = YES;
-			} else {
-				log(LOG_DEV, @"My assist's target is dead!");
 			}
+			
+			Player *player = [playersController playerWithGUID: targetGUID];
+			if ( player && ![player isDead] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
+				log(LOG_DEV, @"Adding my assists PvP target: %@", player);
+				[allPotentialUnits addObject: player];
+				needToAssist = YES;
+			}
+			
 		}
 	}
 
