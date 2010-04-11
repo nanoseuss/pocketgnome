@@ -1155,10 +1155,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	if([[state objectForKey: @"Procedure"] isEqualToString: CombatProcedure]) {
-		log(LOG_DEV, @"Combat completed, moving to PostCombat (in combat? %d)", [playerController isInCombat]);
-		[self performSelector: @selector(performProcedureWithState:) 
+		// If we're still in combat then return to evaluation
+		if ( [playerController isInCombat] ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+		} else {
+			// If we're not in combat run post combat
+			log(LOG_DEV, @"Combat completed, moving to PostCombat (in combat? %d)", [playerController isInCombat]);
+			[self performSelector: @selector(performProcedureWithState:) 
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: PostCombatProcedure,		  @"Procedure", [NSNumber numberWithInt: 0],	  @"CompletedRules", nil]
-				   afterDelay: 0.1f ];
+					   afterDelay: 0.1f ];
+		}
 	}
 }
 
@@ -1424,8 +1431,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	} else
 		
-	// Post Combat
-	if ( [[self procedureInProgress] isEqualToString: PostCombatProcedure] ) {
+	// Pre and Post Combat
+	if ( [[self procedureInProgress] isEqualToString: PostCombatProcedure] || [[self procedureInProgress] isEqualToString: PreCombatProcedure]) {
 		
 		for ( i = 0; i < ruleCount; i++ ) {
 			
@@ -1942,9 +1949,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)lootScan {
 
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
+	
 	if ( !self.doLooting ) return NO;
 	
-	if (self.unitToLoot || self.mobToSkin) return NO;
+//	if (self.unitToLoot || self.mobToSkin) return NO;
 	
 	log(LOG_DEV, @"Scanning for missed mobs to loot.");
 	
@@ -2334,30 +2343,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
-	
+
 	if(![self isBotting]) return;
 	
 	_didPreCombatProcedure = NO;
 
-//	[combatController cancelAllCombat];
-	
 	if (self.doLooting) {
 		// Reset the loot scan idle timer
 		[self resetLootScanIdleTimer];
-		[self lootScan];
 	}
+
 	if ( [playerController isDead] ) return;
 
 	log(LOG_COMBAT, @"Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
-	
-	
-	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-		// If we've left combat too quickly let's jump into post combat else we hang
-		[self cancelCurrentProcedure];
-		[self performSelector: @selector(performProcedureWithState:) 
-				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: PostCombatProcedure,		  @"Procedure", [NSNumber numberWithInt: 0],	  @"CompletedRules", nil]
-				   afterDelay: 0.1f ];
-	}
+
 }
 
 #pragma mark Combat
@@ -2494,7 +2493,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		} else {
 			log(LOG_LOOT, @"Mob %@ isn't lootable, ignoring", unit);
 		}
-		[self performSelector: @selector(lootScan) withObject:nil afterDelay: 1.0f ];
+		[self performSelector: @selector(lootScan) withObject:nil afterDelay: 1.5f ];
 	}
 }
 
@@ -2509,6 +2508,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If the unit is out of sight
 	if ( ![followUnit isValid]) return;
 	
+	float waypointSpacing = [playerController speedMax] / 2.0f;
+	
 	Position *positionFollowUnit = [followUnit position];
 	float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
 
@@ -2522,9 +2523,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		Waypoint *lastWaypoint = [waypoints objectAtIndex: ([waypoints count]-1)];
 
 		float distanceMoved = [[lastWaypoint position] distanceToPosition: positionFollowUnit];
-		
+
 		// If our follow unit hasn't moved far enough we return
-		if (distanceMoved < 5.0f) return;
+		if (distanceMoved < waypointSpacing) return;
 
 		Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionFollowUnit];
 
@@ -2551,11 +2552,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"Clearing the follow route.");
 	_followRoute = nil;
 
-}
-
--(float)followWaypointSpacing {
-	float waypointSpacing = [playerController speedMax] / 2.0f;
-	return waypointSpacing;
 }
 
 -(BOOL)followMountCheck {
@@ -3439,14 +3435,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     Mob *mobToLoot	= [self mobToLoot];
 	
     if ( !mobToLoot ) {
-
-		// If we're outta mobs to loot and the loot timer has been incremented at least once
-		if ( [self lootScan] ) {
-			mobToLoot	= [self mobToLoot];
-		} else {
-			self.evaluationInProgress = nil;
-			return NO;
-		}
+		// Set off a delayed scan so we don't double loot
+		[self performSelector: @selector(lootScan) withObject: nil afterDelay: 0.8f];
+		self.evaluationInProgress = nil;
+		return NO;
 	}
 
 	if ( ![mobToLoot isValid] ) {
