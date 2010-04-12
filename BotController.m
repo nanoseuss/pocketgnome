@@ -1153,6 +1153,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// when we finish PostCombat, go back to evaluation
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PostCombat");
+		// Make sure we're not unable to read ourselves...
+		[movementController stepForward];
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		self.evaluationInProgress = nil;
 		[self evaluateSituation];
@@ -3631,10 +3633,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if (!self.doLooting) return NO;
 
+	if ( [_mobsToLoot count] ) [self resetLootScanIdleTimer];
+	
 	// Enforce the loot scan idle
 	int secondsPassed = _lootScanIdleTimer/10;
-	if (secondsPassed > 30) return NO;
-
+	if (secondsPassed > 30) {
+		if ( _lootScanCycles != 0 ) _lootScanCycles = 0;		
+		return NO;
+	}
 	// Skip this if we are already in evaluation
 	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Loot") return NO;
 
@@ -3661,14 +3667,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _lootScanCycles == 1 ) [self lootScan];
 
 		// This sets how many evaluation cycles pass in between loot scans
-		if ( _lootScanCycles == 5 ) _lootScanCycles=0;
-			else _lootScanCycles++;
-		
+		if ( _lootScanCycles == 5 ) _lootScanCycles=0; else _lootScanCycles++;
+
 		return NO;
 	}
 
 	if ( ![mobToLoot isValid] ) {
-		if ([_mobsToLoot count]) [_mobsToLoot removeAllObjects];
+		if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
 		self.evaluationInProgress = nil;
 		return NO;
 	}
@@ -4009,6 +4014,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [playerController isCasting] )return NO;
 
+	// If we might have mobs to loot lets recycle evaluation
+	if ( _lootScanCycles == 2 ) {
+		[self evaluateSituation];
+		return YES;
+	}
+	
 	log(LOG_EVALUATE, @"Evaluating for Patrol");
 
 	// see if we would be performing anything in the patrol procedure
