@@ -1154,7 +1154,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PostCombat");
 		// Make sure we're not unable to read ourselves...
-		[movementController stepForward];
+		[movementController establishPlayerPosition];
+		
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		self.evaluationInProgress = nil;
 		[self evaluateSituation];
@@ -1324,6 +1325,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 
+	
+	// Stop movement in precombat if we're a caster
+	if ( [[self procedureInProgress] isEqualToString: PreCombatProcedure] && 
+		!self.theBehavior.meleeCombat && [movementController isMoving] ) 
+			[movementController stopMovement];
+	
 	// Check the mob if we're in combat and it's our target
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
 		if ( ![self performProcedureMobCheck:target] ) {
@@ -1334,7 +1341,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		if ( _lastCombatProcedureTarget != [target GUID] ) {
 			[playerController faceToward: [target position]];
-			[movementController stepForward];
+			[movementController establishPlayerPosition];
 		}
 		_lastCombatProcedureTarget = [target GUID];
 		[combatController stayWithUnit:target withType: TargetEnemy];
@@ -1938,7 +1945,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// we're done eating/drinking! continue
 	if ( eatClear && drinkClear ) {
 		log(LOG_REGEN, @"Finished after %0.2f seconds", timeSinceStart);
-		if ([[playerController player] isSitting]) [movementController stepForward];
+
+		if ([[playerController player] isSitting]) [movementController establishPlayerPosition];
+
 		self.evaluationInProgress = nil;
 		[self evaluateSituation];
 		return;
@@ -2267,11 +2276,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Allow the lute to fade
 	if (wasNode) delay = 0.8;
 
-	if ( !wasNode && ![_mobsToLoot count] ) {
-		[movementController stepForward];
-		delay = 0.1;
-	}
-	
 	self.wasLootWindowOpen = NO;
 	self.evaluationInProgress = nil;
 	
@@ -4183,15 +4187,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// Actually move a tad
-	if ( ![movementController isMoving] ) {
-			if (_lastEmoteShuffled == 0) {
-				[movementController stepForward];
-				_lastEmoteShuffled = 1;
-			} else {
-				[movementController stepBackward];
-				_lastEmoteShuffled = 0;
-			}
-	}
+	[movementController establishPlayerPosition];
 	
 	NSString *emote = [self randomEmote];
 	if ( [playerController targetID] ) {
