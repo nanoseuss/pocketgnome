@@ -70,10 +70,8 @@
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInLOS:) name: ErrorTargetNotInLOS object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInFront:) name: ErrorTargetNotInFront object: nil];
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(morePowerfullSpellActive:) name: ErrorMorePowerfullSpellActive object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(unitDied:) 
-                                                     name: UnitDiedNotification 
-                                                   object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitDied:) name: UnitDiedNotification object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitTapped:) name: UnitTappedNotification object: nil];
     }
     return self;
 }
@@ -259,7 +257,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( unit == _castingUnit ) [self cancelAllCombat];
 
 }
+
+- (void)unitTapped: (NSNotification*)notification{
+	Unit *unit = [notification object];
+
+	log(LOG_COMBAT, @"%@ %@ tapped by another player, disengaging!", [self unitHealthBar: unit] ,unit);
+
+	if ( unit == _castingUnit ) {
+		[botController cancelCurrentProcedure];
+		[self cancelAllCombat];
+		[botController evaluateSituation];
+	}
 	
+}
+
 #pragma mark Public
 
 // list of units we're in combat with, XXX NO friendlies XXX
@@ -328,6 +339,26 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				log(LOG_COMBAT, @"%@ Adding Party PvP target: %@", [self unitHealthBar: (Unit*)targetPlayer], targetPlayer);
 				[units addObject: targetPlayer];
 				continue;
+			}
+		}
+	} else
+
+	// Get the assist players target
+	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat] ) {
+		
+		UInt64 targetGUID = [[botController assistUnit] targetID];
+		if ( targetGUID > 0x0) {
+			log(LOG_DEV, @"Assist has a target.");
+			Mob *mob = [mobController mobWithGUID:targetGUID];
+			if ( mob && ![mob isDead] && [mob isInCombat] ) {
+				[units addObject:mob];
+				log(LOG_COMBAT, @"%@ Adding Assit's mob: %@", [self unitHealthBar: mob], mob);
+			}
+			
+			Player *player = [playersController playerWithGUID: targetGUID];
+			if ( player && ![player isDead] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
+				log(LOG_DEV, @"Adding Assist's PvP target: %@", player);
+				[units addObject: player];
 			}
 		}
 	}
@@ -581,8 +612,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	BOOL needToAssist = NO;
 
 	// add friendly units w/in range
-	// only do this if we dont have the onlyHostilesInCombat flag
-//	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) && !onlyHostilesInCombat) {
 	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) ) {
 		log(LOG_DEV, @"Adding friendlies to the list of valid units");
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
@@ -609,17 +638,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				[allPotentialUnits addObject: player];
 				needToAssist = YES;
 			}
-			
 		}
 	}
 
 	// add new units w/in range if we're not on assist
-	if ( botController.theCombatProfile.combatEnabled && ![botController.theCombatProfile onlyRespond] && !onlyHostilesInCombat && ![botController isOnAssist] && !needToAssist) {
+	if ( botController.theCombatProfile.combatEnabled && !botController.theCombatProfile.onlyRespond && !onlyHostilesInCombat && ![botController isOnAssist] ) {
 		log(LOG_DEV, @"Adding ALL available combat units");
+
 		// determine attack range
 		float attackRange = [botController.theCombatProfile engageRange];
 		if ( botController.isPvPing && [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] )
 			attackRange = [botController.theCombatProfile attackRange];
+		
 		[allPotentialUnits addObjectsFromArray:[self enemiesWithinRange:attackRange]];
 	}
 	
@@ -899,7 +929,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 																	 includeNeutral: botController.theCombatProfile.attackNeutralNPCs
 																	 includeHostile: botController.theCombatProfile.attackHostileNPCs]];
 	 }
-	
+
 	 // check for players?
 	 if ( botController.theCombatProfile.attackPlayers ) {
 		 [targetsWithinRange addObjectsFromArray: [playersController playersWithinDistance: range
@@ -908,7 +938,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 																			includeNeutral: NO
 																			includeHostile: YES]];
 	 }
-	
+
 	//log(LOG_COMBAT, @"[Combat] Found %d targets within range", [targetsWithinRange count]);
 	
 	return targetsWithinRange;
@@ -1017,6 +1047,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 	
+	// Tap check
+	if ( !botController.theCombatProfile.partyEnabled && !botController.isPvPing &&
+		[unit isTappedByOther] && [unit targetID] != [playerData GUID] ) {
+
+		// Only do this for mobs.
+		Mob *mob = [mobController mobWithGUID:[unit GUID]];
+		if (mob && [mob isValid]) {
+			// Mob has been tapped by another player
+			log(LOG_DEV, @"Firing tapped notification for unit %@", unit);
+			[[NSNotificationCenter defaultCenter] postNotificationName: UnitTappedNotification object: [[unit retain] autorelease]];
+			return;
+		}
+	}
+
 	// Tanaris4: I'd recommend using cachedGUID, as (in theory) an object's GUID shouldn't change + this saves memory reads
 	GUID guid = [unit cachedGUID];
 	

@@ -23,6 +23,7 @@
 @class Unit;
 
 #define UnitDiedNotification		@"UnitDiedNotification"
+#define UnitTappedNotification		@"UnitTappedNotification"
 #define UnitEnteredCombat			@"UnitEnteredCombat"
 
 @interface CombatController : NSObject {

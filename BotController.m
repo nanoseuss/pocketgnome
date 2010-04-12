@@ -106,6 +106,7 @@
 @property (readwrite, retain) Unit *assistUnit;
 @property (readwrite, retain) Unit *tankUnit;
 @property (readwrite, retain) RouteCollection *theRouteCollection;
+@property (readwrite, retain) Route *followRoute;
 
 // pvp
 @property (readwrite, assign) BOOL pvpPlayWarning;
@@ -238,13 +239,16 @@
 	followUnit	= nil;
 	assistUnit	= nil;
 	tankUnit	= nil;
-	_followRoute = nil;
+	followRoute = [[Route route]  retain];
+	
 	_followSuspended = NO;
 	_followLastSeenPosition = NO;
 	_leaderBeenWaiting = NO;
 	
 	_lastCombatProcedureTarget = 0x0;
 	_lootScanIdleTimer = 0;
+	_lootScanCycles = 0;
+
 	_partyEmoteIdleTimer = 0;
 	_partyEmoteTimeSince = 0;
 	_lastEmote = nil;
@@ -357,7 +361,7 @@
 @synthesize doLooting	    = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
 @synthesize followSuspended  = _followSuspended;
-@synthesize followRoute = _followRoute;
+@synthesize followRoute;
 
 - (NSString*)sectionTitle {
 	return @"Start/Stop Bot";
@@ -1953,6 +1957,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)resetLootScanIdleTimer {
 	if ( !self.doLooting ) return;
 	_lootScanIdleTimer = 0;
+	_lootScanCycles = 0;
+
 }
 
 - (Mob*)mobToLoot {
@@ -1979,15 +1985,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)lootScan {
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
-	
+
 	if ( !self.doLooting ) return NO;
-	
-//	if (self.unitToLoot || self.mobToSkin) return NO;
-	
-	log(LOG_DEV, @"Scanning for missed mobs to loot.");
-	
+
+	log(LOG_LOOT, @"[LootScan] Scanning for missed mobs to loot.");
+
 	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
-	
+
 	for (Mob *mob in mobs) {
 		
 		if (_doSkinning && _doNinjaSkin && [mob isSkinnable] && mob != self.mobToSkin && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
@@ -2097,6 +2101,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self skinMob:self.mobToSkin];
 		return;
 	} else {
+		[blacklistController blacklistObject: self.mobToSkin];
 		log(LOG_LOOT, @"The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
 	}
@@ -2297,6 +2302,37 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
+	
+}
+
+-(void)checkUnitForLootable: (Unit*)unit {
+
+	if ( !self.doLooting ) return;
+
+	log(LOG_DEV, @"Checking %@ for lootable.", unit);
+
+	if ( ![unit isNPC] ) return;
+
+	if ([_mobsToLoot containsObject: unit]) return;
+
+	if ( ![(Mob*)unit isTappedByMe] || ![(Mob*)unit isLootable]  || [unit isPet] ) return;
+	
+	// Reset the loot scan idle timer
+	[self resetLootScanIdleTimer];
+
+	log(LOG_LOOT, @"Adding %@ to loot list.", unit);
+	[_mobsToLoot addObject: (Mob*)unit];
+
+
+	// If we're in evaluation or a procedure other than Patrol let's continue what we're currently doing
+
+	if ( self.procedureInProgress && self.procedureInProgress != @"PatrollingProcedure" ) return;
+	if ( self.evaluationInProgress && self.evaluationInProgress != @"Patrol" ) return;
+
+	// Stop what we're doing so we can evaluate for loot
+	if ( self.procedureInProgress ) [self cancelCurrentProcedure];
+	if ( [movementController isMoving] ) [movementController stopMovement];
+	[self evaluateSituation];
 	
 }
 
@@ -2516,13 +2552,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				log(LOG_LOOT, @"%@ was already in the loot list, removing first", unit);
 				[_mobsToLoot removeObject: unit];
 			}
-			
+
 			log(LOG_LOOT, @"Adding %@ to loot list.", unit);
 			[_mobsToLoot addObject: (Mob*)unit];
+
+			// If we're in evaluation or a procedure other than Patrol let's continue what we're currently doing
+
+			if ( self.procedureInProgress && self.procedureInProgress != @"PatrollingProcedure" ) return;
+			if ( self.evaluationInProgress && self.evaluationInProgress != @"Patrol" ) return;
+
+			// Stop what we're doing so we can evaluate for loot
+			if ( self.procedureInProgress ) [self cancelCurrentProcedure];
+			if ( [movementController isMoving] ) [movementController stopMovement];
+			[self evaluateSituation];
+
 		} else {
-			log(LOG_LOOT, @"Mob %@ isn't lootable, ignoring", unit);
+			[self performSelector: @selector(checkUnitForLootable:) withObject:unit afterDelay: 1.0f ];
+			log(LOG_LOOT, @"Mob %@ isn't lootable yet, will check again in a second.", unit);
 		}
-		[self performSelector: @selector(lootScan) withObject:nil afterDelay: 1.5f ];
 	}
 }
 
@@ -2531,10 +2578,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Records the route your follow target
 -(void)followRouteRecord {
+	log(LOG_FUNCTION, @"followRouteRecord");
 	
-	if ( !followUnit ) return;
+	if ( !self.followUnit ) return;
+	
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 
-	float waypointSpacing = [playerController speedMax] / 2.0f;
+/*
 	
 	// Validate the current unit
 	if (_followRoute && ![followUnit isValid] && !_followLastSeenPosition ) {
@@ -2566,21 +2616,30 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		return;
 	}
-	
+*/
 	// If the unit is out of sight
-	if ( ![followUnit isValid]) return;
-	
-	
+	if ( ![followUnit isValid]) return;	
+
 	Position *positionFollowUnit = [followUnit position];
 	float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
 
+	
+	log(LOG_DEV, @"Checking to see if the follow unit is even out of range.");
+	
 	// If we're not out of range then let's reset the route
 	if ( distanceToFollowUnit <=  theCombatProfile.followDistanceToMove ) return;
 
-	if ( _followRoute ) {
+	if ( [followRoute waypointCount] > 0 ) {
 		// If we already have waypoints on the route
+		log(LOG_DEV, @"Looks like we have a route started already.");
 
-		NSArray *waypoints = [_followRoute waypoints];
+		float waypointSpacing = [playerController speedMax] / 2.0f;
+		
+		log(LOG_DEV, @"Getting the waypoints from the object");
+
+		NSArray *waypoints = [followRoute waypoints];
+
+		log(LOG_DEV, @"Getting the last waypoint");
 		Waypoint *lastWaypoint = [waypoints objectAtIndex: ([waypoints count]-1)];
 
 		float distanceMoved = [[lastWaypoint position] distanceToPosition: positionFollowUnit];
@@ -2590,64 +2649,61 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionFollowUnit];
 
-		log(LOG_DEV, @"[Follow] Adding waypoint: %@ count: %d", newWaypoint, _followRoute.waypoints.count);
+		log(LOG_DEV, @"[Follow] Adding waypoint: %@ count: %d", newWaypoint, [followRoute waypointCount]);
 		
 		// Add the waypoint to the route
-		[_followRoute addWaypoint: newWaypoint];
+		[followRoute addWaypoint: newWaypoint];
 	} else {
-		_followRoute = [Route route];
+		log(LOG_DEV, @"Need a new route!");
 		// No Route so start it
 		Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionFollowUnit];
-		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, _followRoute.waypoints.count);
 		
-		[_followRoute addWaypoint: newWaypoint];
+		[followRoute addWaypoint: newWaypoint];
+		
+		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, [followRoute waypointCount]);
+
 	}
 	
 }
 
 -(void)followRouteClear {
-
-	// If the route is already cleared
-	if ( !_followRoute ) return;
+	log(LOG_FUNCTION, @"followRouteClear");
 
 	// If we can't see the follow unit then reset that too
 	if ( self.followUnit && ![followUnit isValid] ) self.followUnit = nil;
-	
-	_followLastSeenPosition = NO;
+
 	log(LOG_DEV, @"Clearing the follow route.");
-	_followRoute = nil;
+
+	_followLastSeenPosition = NO;
+	[followRoute removeAllWaypoints];
+
+	log(LOG_DEV, @"[Follow] Route cleared with count: %d waypoints in array.", [followRoute waypointCount]);
 
 }
 
 -(BOOL)followMountCheck {
-	
+
+	log(LOG_FUNCTION, @"followMountCheck");
+
 	if ( !theCombatProfile.mountEnabled ) return NO;
 	
 	if ( !followUnit ) return NO;
 	
 	if ( ![followUnit isValid] ) return NO;
-	
-	
-	// Do we need to mount?
-	if ( [followUnit isMounted] && 
-		![[playerController player] isMounted] && 
-		![[playerController player] isSwimming] && 
-		![playerController isInCombat] 
-		) return YES;
-	
+
 	// Get off the ground if leader is in the air
 	if ( ![followUnit isOnGround] && [[playerController player] isFlyingMounted] ) {
 		[self jumpIfAirMountOnGround];
 		return NO;
 	}
-	
+
 	// Dismount if we're not on an air mount we're supposed to be!
 	if ( [followUnit isFlyingMounted] && ![[playerController player] isFlyingMounted] && [[playerController player] isMounted] ) {
 		log(LOG_PARTY, @"[Follow] Looks like I'm supposed to be on an air mount, dismounting.");
 		[movementController dismount];
 		return NO;
 	}
-	
+
 	Position *positionFollowUnit = [followUnit position];
 	float distance = [[[playerController player] position] distanceToPosition: positionFollowUnit];
 	
@@ -2660,11 +2716,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// If we're technically in the air, but still close to the dismoutned leader, dismount
-	if ( distance < 15.0f && ![followUnit isMounted] &&  [[playerController player] isMounted] && [followUnit isOnGround]) {
+	if ( distance < 15.0f && ![followUnit isMounted] &&  [[playerController player] isMounted] && [followUnit isOnGround] ) {
 		log(LOG_PARTY, @"[Follow] Leader dismounted, so am I.");
 		[movementController dismount];
 		return NO;
 	}
+	
+	
+	if ( [playerController isInCombat] ) return NO;
+	if ( [[playerController player] isSwimming] ) return NO;
+
+	// Do we need to mount?
+	if ( [followUnit isMounted] &&  ![[playerController player] isMounted] ) return YES;
+
 	return NO;
 }
 
@@ -2713,7 +2777,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			usleep(1800000);
 		} else {
 			log(LOG_MOUNT, @"Mounting failed! Error: %d", errID);
-		}				
+		}
+
+		log(LOG_MOUNT, @"Mounted!");
 		return YES;
 	} else {			
 		log(LOG_PARTY, @"No mounts found! PG will try to load them, you can do it manually on your spells tab 'Load All'");
@@ -2879,6 +2945,55 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
+-(BOOL)leaderWait {
+	
+	if ( !theCombatProfile.partyEnabled || !theCombatProfile.partyLeaderWait ) return NO;
+	
+	UInt64 playerID;
+	Player *player;
+	
+	BOOL needToWait = NO;
+	
+	int i;
+	for (i=1;i<6;i++) {
+		
+		// If there are no more party members
+		playerID = [playerController PartyMember: i];
+		if ( playerID <= 0x0) break;
+		
+		player = [playersController playerWithGUID: playerID];
+		
+		if ( !player || ![player isValid] ) {
+			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] Cannot see: %@", player);
+			needToWait = YES;
+			break;
+		}
+		
+		if ( [player isInCombat] ) {
+			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] still in combat: %@", player);
+			needToWait = YES;
+			break;
+		}
+		
+		if ( [auraController unit: player hasBuffNamed: @"Food"] || [auraController unit: player hasBuffNamed: @"Drink"] ) {
+			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] still eating or drinking: %@", player);
+			needToWait = YES;
+			break;
+		}
+		
+		float playerDistance = [[playerController position] distanceToPosition: [player position]];
+		
+		if ( playerDistance >  theCombatProfile.partyLeaderWaitRange ) {
+			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] not close enough yet: %@", player);
+			needToWait = YES;
+			break;
+		}
+		
+	}
+	
+	return needToWait;
+}
+
 - (void)jumpIfAirMountOnGround {
 	// Is the player air mounted, and on the ground?  Me no likey - lets jump!
 	UInt32 movementFlags = [playerController movementFlags];
@@ -2990,7 +3105,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
 
-	log(LOG_FOLLOW, @"Stopping Follow, reached our target.");
+	
+	if ( [followUnit isValid] ) {
+		log(LOG_FOLLOW, @"Stopping Follow, reached our target.");
+	} else {
+		
+		log(LOG_FOLLOW, @"Cannot see our target! Inching forward to try a zone in.");
+		[movementController moveForwardStart];
+		[movementController performSelector: @selector(moveForwardStop) withObject: nil afterDelay: 2.0f];
+
+		[controller setCurrentStatus: @"Bot: Enabled"];
+		self.evaluationInProgress = nil;
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 2.5f];
+		return;
+	}
 	
 	[controller setCurrentStatus: @"Bot: Enabled"];
 	self.evaluationInProgress = nil;
@@ -3175,22 +3303,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForParty {
+	
 	log(LOG_FUNCTION, @"evaluateForParty");
 
 	// Return no if this isn't turned on
 	if ( !theCombatProfile.partyEnabled ) return NO;
 
+	if ( [movementController isMoving] ) return NO;
+
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress ) return NO;
 
-	// Skip this if we still have a route to follow
-	if ( _followRoute ) return NO;
-
 	log(LOG_EVALUATE, @"Evaluating for Party");
 
-// OMG now that follow has been ripped out is there nothing to do for party!?  wtf!?
-	// I'm sure some thing goues here :)
-	
+	if ( [self leaderWait] ) {
+		// Looks like we need to wait!
+		
+		if ( [movementController isMoving] ) [movementController stopMovement];
+		
+		_leaderBeenWaiting = YES;
+		
+		// Loop again to wait
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+		return YES;
+	} else 
+	if ( _leaderBeenWaiting ) {
+		_leaderBeenWaiting = NO;
+	}
+
 	return NO;
 }
 
@@ -3200,18 +3340,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.followSuspended && self.followUnit ) self.followUnit = nil;
 
 	if ( !theCombatProfile.followEnabled || self.followSuspended ) return NO;
-	
-	// If we're moving, but not following yet
-	// Not sure if this should go here... trying it
-	if ( [movementController isMoving] && !movementController.isFollowing ) return NO;
-	
+
 	log(LOG_EVALUATE, @"Evaluating for Follow");
 
 	// Find someone to follow if we've lost our target.
-	if ( !self.followUnit ) if ( ![self findFollowUnit] ) return NO;
+	if ( !self.followUnit ) {
+		log(LOG_DEV, @"No follow unit, calling for findFollowUnit");
+		if ( ![self findFollowUnit] ) return NO;
+	}
 
 	// If we're doing something, lets record the route of our follow target
 	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Follow") {
+
+		log(LOG_DEV, @"Skipping Follow because we're evaluating for something else.");
 
 		if ( [followUnit isValid] ) {
 			// If the leader is close enough to see and out of range then record the route
@@ -3219,51 +3360,74 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ( distanceToLeader > theCombatProfile.followDistanceToMove ) [self followRouteRecord];
 		}
 
-		log(LOG_DEV, @"Skipping Follow because we're evaluating for something else.");
 		return NO;
 	}
 
-	// See if we need to record a route.
+	log(LOG_DEV, @"Calling to record the route");
 	[self followRouteRecord];
+
+	// If we're already following theres nothing else to do here
+	if ( movementController.isFollowing ) {
+		log(LOG_DEV, @"Already following...");
+		return NO;
+	}
 
 	// If we need to mount lets return
 	if ( [self followMountCheck] ) {
-
-		// This is being called from the movement controller
-		if ( movementController.isFollowing ) {
-
-			[movementController stopMovement];
-			if ( [self followMountNow] ) log(LOG_PARTY, @"Leader mounted so am I...");
-			[movementController resumeMovement];
-			
-			return YES;
-			
-		} else {
-			
-			if ( [self followMountNow] ) log(LOG_PARTY, @"Leader mounted so am I...");
+		log(LOG_DEV, @"Need to mount...");
+		self.evaluationInProgress = @"Follow";
+		if ( [self followMountNow] ) {
+			log(LOG_DEV, @"Mounting ok, calling evaluation");
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 			return NO;
-			
+		} else {
+			log(LOG_DEV, @"Mountingfailed!?");
+			return NO;
 		}
-
 	}
 
-	// If we're already following
-	if ( movementController.isFollowing ) return NO;
+	log(LOG_DEV, @"Checking to make sure we've got a route");
+	// If we've recorded no route yet
+	if ( [followRoute waypointCount] == 0 ) {
+		self.evaluationInProgress = nil;
+		return NO;
+	}
 
 	float distanceToLeader = [[playerController position] distanceToPosition: [followUnit position]];
 
 	if ( distanceToLeader <= theCombatProfile.followDistanceToMove ) {
 		// If we're in range don't worry about it, make sure the route had been cleared
 		[self followRouteClear];
+		self.evaluationInProgress = nil;
+		return NO;
+	}
+	
+	
+	// If we're mounted and so is the leader we're going to use our mount speed to adjust this value.
+	// Following right on top of each other screws up zone changes when flying, this is meant to solve that
+	BOOL increasedDueToMount = NO;
+	float distanceIncrease = [playerController speedMax];
+	
+	if ( distanceToLeader <= theCombatProfile.followDistanceToMove && [[playerController player] isMounted] && [followUnit isMounted] ) {
+		increasedDueToMount = YES;
+		distanceToLeader = distanceToLeader + distanceIncrease;
+	}
+	
+	if ( distanceToLeader <= theCombatProfile.followDistanceToMove ) {
+		// If we're in range don't worry about it, make sure the route had been cleared
+		[self followRouteClear];
+		self.evaluationInProgress = nil;
 		return NO;
 	}
 
-	// If we've recorded no route
-	if ( !_followRoute ) return NO;
-
+	if ( increasedDueToMount ) {
+		log(LOG_FOLLOW, @"Leader is %0.2f away, following. (increased because you are mounted)", distanceToLeader);
+	} else {
+		log(LOG_FOLLOW, @"Leader is %0.2f away, following.", distanceToLeader);
+	}
+	
 	[controller setCurrentStatus: @"Bot: Following"];
 	self.evaluationInProgress = @"Follow";
-	log(LOG_FOLLOW, @"Follow Target is %0.2f away, following.", distanceToLeader);
 
 	[movementController startFollow];
 	return YES;
@@ -3473,25 +3637,33 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Skip this if we are already in evaluation
 	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Loot") return NO;
-	
+
 	// If we're mounted and in the air lets just skip loot scans
 	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
-	
+
 	// If we're supposed to be following then follow!
 	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && [[playerController player] isMounted]) return NO;
 
 	// If we're moving to the mob let's wait till we get there to do anything
     if ( [movementController moveToObject] ) return NO;
-	
+
 	log(LOG_EVALUATE, @"Evaluating for Loot");
+
 
     // get potential units and their distances
     Mob *mobToLoot	= [self mobToLoot];
-	
+
     if ( !mobToLoot ) {
-		// Set off a delayed scan so we don't double loot
-		[self performSelector: @selector(lootScan) withObject: nil afterDelay: 0.8f];
-		self.evaluationInProgress = nil;
+
+		if ( self.evaluationInProgress == @"Loot" ) self.evaluationInProgress = nil;
+
+		// Only scan on the 2nd cyle
+		if ( _lootScanCycles == 1 ) [self lootScan];
+
+		// This sets how many evaluation cycles pass in between loot scans
+		if ( _lootScanCycles == 5 ) _lootScanCycles=0;
+			else _lootScanCycles++;
+		
 		return NO;
 	}
 
@@ -3504,14 +3676,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Unit *unitToCheck	= [self mobToLoot];
 	// If it's a node then we'll leave it to the mining evaluation
 	if ( [unitToCheck isKindOfClass: [Node class]] ) return NO;
-	
 
 	Position *playerPosition = [playerController position];
 	float mobToLootDist	    = mobToLoot ? [[mobToLoot position] distanceToPosition: playerPosition] : INFINITY;
 	
 	Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 	float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
-    
+
     // if theres a unit that needs our attention that's closer than the lute.
     if ( mobToLootDist > unitToActOnDist && [playerController isHostileWithFaction: [unitToActOn factionTemplate]]) {		
 		log(LOG_LOOT, @"Mob is too close to loot: %0.2f > %0.2f", mobToLootDist, unitToActOnDist);
@@ -3563,10 +3734,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return YES;
 	}
-	
-	if ( [movementController isMoving] ) [movementController stopMovement];
+
+//	if ( [movementController isMoving] ) [movementController stopMovement];
 	[controller setCurrentStatus: @"Bot: Moving to Loot"];
-	
+
 	if ( ![movementController moveToObject: mobToLoot] ) 
 		// In the off chance that we're unable to move to it
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
@@ -3942,6 +4113,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( !theCombatProfile.partyEmotes ) return NO;
 
+	if ( [movementController isMoving] ) return NO;
+	
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress ) return NO;
 
@@ -4021,74 +4194,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return YES;
 }
 
-- (BOOL)evaluateForLeaderWait {
-	log(LOG_FUNCTION, @"evaluateForLeaderWait");
-	
-	// Skip this if we're doing something already
-	if ( self.evaluationInProgress ) return NO;
-	
-	if ( !theCombatProfile.partyEnabled || !theCombatProfile.partyLeaderWait ) return NO;
-	
-	log(LOG_EVALUATE, @"Evaluating for LeaderWait");
-	
-	UInt64 playerID;
-	Player *player;
-	
-	BOOL needToWait = NO;
-	
-	int i;
-	for (i=1;i<6;i++) {
-
-		// If there are no more party members
-		playerID = [playerController PartyMember: i];
-		if ( playerID <= 0x0) break;
-
-		player = [playersController playerWithGUID: playerID];
-
-		if ( !player || ![player isValid] ) {
-			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] Cannot see: %@", player);
-			needToWait = YES;
-			break;
-		}
-
-		if ( [player isInCombat] ) {
-			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] still in combat: %@", player);
-			needToWait = YES;
-			break;
-		}
-
-		if ( [auraController unit: player hasBuffNamed: @"Food"] || [auraController unit: player hasBuffNamed: @"Drink"] ) {
-			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] still eating or drinking: %@", player);
-			needToWait = YES;
-			break;
-		}
-
-		float playerDistance = [[playerController position] distanceToPosition: [player position]];
-
-		if ( playerDistance >  theCombatProfile.partyLeaderWaitRange ) {
-			if ( !_leaderBeenWaiting ) log(LOG_PARTY, @"[LeaderWait] not close enough yet: %@", player);
-			needToWait = YES;
-			break;
-		}
-
-	}
-
-	if ( needToWait ) {
-		// Looks like we need to wait!
-
-		if ( [movementController isMoving] ) [movementController stopMovement];
-
-		_leaderBeenWaiting = YES;
-		// Loop again to wait
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-		return YES;
-	}
-
-	if ( _leaderBeenWaiting ) _leaderBeenWaiting = NO;
-	return NO;
-
-}
-
 - (BOOL)evaluateSituation {
     if (![self isBotting])						return NO;
     if (![playerController playerIsValid:self])	return NO;
@@ -4099,16 +4204,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_EVALUATE, @"Evaluating Situation");
 	}
 	
-    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];	
-
+    [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 
 	// Order of operations is established here
 	
 	if ( [playerController isGhost] ) return [self evaluateForGhost];
 	
 	if ( [self evaluateForPVP] ) return YES;
-
-	if ( [self evaluateForParty] ) return YES;
 
 	if ( [self evaluateForFollow] ) return YES;
 
@@ -4131,13 +4233,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
    	if ( [self evaluateForPatrol] ) return YES;
 
-	if ( [self evaluateForCombatStart] ) return YES;
-
-	if ( [self evaluateForLeaderWait] ) return YES;
-
-	// If we're just performing a check while we're in route we can return here
-	if ( [movementController isMoving] ) return NO;
+	if ( [self evaluateForParty] ) return YES;
 	
+	if ( [self evaluateForCombatStart] ) return YES;
+	
+	// If we're just performing a check while we're in route we can return here
+	if ( movementController.isFollowing ) {
+		log(LOG_EVALUATE, @"Evaluation was called from the movemetController... nothing to do.");
+		return NO;
+	}
+
 	// If there is loot or we're evaluating lets cycle again
 	if ( [self evaluationInProgress] ) {
 		log(LOG_EVALUATE, @"Evaluation in progress so we're looping without movement.");
@@ -4146,6 +4251,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 
+	if ( [movementController isMoving] ) {
+		log(LOG_EVALUATE, @"Player is moving so we're suspending evaluation.");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.3];
+		return NO;
+	}
+	
 	/*
 	 * Evaluation Checks Complete, lets see if we're supposed to do a route.
 	 */

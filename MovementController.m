@@ -446,11 +446,24 @@ typedef enum MovementState{
 
 - (void)startFollow {
 	
+	log(LOG_WAYPOINT, @"Starting movement controller for follow");
+	
+	if ( [playerData targetID] != [[botController followUnit] GUID]) {
+		log(LOG_DEV, @"Targeting follow unit.");
+		[playerData targetGuid:[[botController followUnit] GUID]];
+	}
+
+	// Check to see if we need to mount or dismount
+	if ( [botController followMountCheck] ) {
+		// Just kill the follow and mounts will be checked before follow begins again
+		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
+		return;
+	}
+	
 	self.isFollowing = YES;
 	self.currentRouteHoldForFollow = self.currentRoute;
 	self.currentRoute = botController.followRoute;
 	
-	log(LOG_WAYPOINT, @"Starting movement controller for follow");
 
 	// Set us to the 1st waypoint!
 	NSArray *waypoints = [self.currentRoute waypoints];
@@ -462,6 +475,14 @@ typedef enum MovementState{
 - (void)moveToNextWaypoint{
 
 	if (self.isFollowing) {
+		
+		// Check to see if we need to mount or dismount
+		if ( [botController followMountCheck] ) {
+			// Just kill the follow and mounts will be checked before follow begins again
+			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
+			return;
+		}
+		
 		// Refresh our follow route
 		self.currentRoute = botController.followRoute;
 		[self realMoveToNextWaypoint];
@@ -655,24 +676,29 @@ typedef enum MovementState{
 }
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
-
+	log(LOG_FUNCTION, @"checkCurrentPosition");
+	
 	// stopped botting?  end!
 	if ( ![botController isBotting] ) {
 		log(LOG_MOVEMENT, @"We're not botting, stop the timer!");
 		[self resetMovementState];
 		return;
 	}
-	
-	if (self.isFollowing) {
+
+	[botController jumpIfAirMountOnGround];
+
+	if ( self.isFollowing ) {
 		// Check to see if we're close enough to stop.
 
 		if ( botController.followUnit && [botController.followUnit isValid] ) {
+			log(LOG_DEV, @"Checking to see if we're close enough to stop.");
 			
 			Position *positionFollowUnit = [botController.followUnit position];
 			float distanceToFollowUnit = [[playerData position] distanceToPosition: positionFollowUnit];
 
 			// If we're close enough let's check to see if we need to stop
 			if ( distanceToFollowUnit <=  botController.theCombatProfile.yardsBehindTargetStop ) {
+				log(LOG_DEV, @"Setting a random stopping distance");
 
 				// Establish a random stopping distance
 				int randomStoppingValue = SSRandomIntBetween(botController.theCombatProfile.yardsBehindTargetStart, botController.theCombatProfile.yardsBehindTargetStop);
@@ -684,6 +710,13 @@ typedef enum MovementState{
 					return;
 				}
 			}
+		}
+		// Check to see if we need to mount or dismount
+		if ( [botController followMountCheck] ) {
+			log(LOG_DEV, @"Need to mount in follow mode from checkCurrentPosition.");
+			// Just kill the follow and mounts will be checked before follow begins again
+			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
+			return;
 		}
 	}
 	
