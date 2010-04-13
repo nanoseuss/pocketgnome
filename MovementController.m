@@ -221,6 +221,12 @@ typedef enum MovementState{
 
 - (BOOL)moveToObject: (WoWObject*)object{
 	
+	// check for patrol procedure before we move - we need this in the event that 2 nodes are near each other, we want to mount before going to the second!
+	if ( ![botController shouldProceedFromWaypoint: self.destinationWaypoint] ){
+		PGLog(@"[Move] Not resuming movement, performing patrol proc");
+		return NO;
+	}
+	
 	if ( !object || ![object isValid] ){
 		[_moveToObject release]; _moveToObject = nil;
 		return NO;
@@ -228,7 +234,24 @@ typedef enum MovementState{
 	
 	// save and move!
 	self.moveToObject = object;
-	[self moveToPosition:[object position]];
+	
+	Position *pos = nil;
+	
+	// shoot to go on top of the node a bit (could also check if they are flying mounted)
+	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
+		NSLog(@"increasing node z position!");
+		Position *position = [object position];
+		[position setZPosition:[position zPosition] + 4.0f];
+		
+		pos = position;
+	}
+	else{
+		pos = [object position];
+	}
+	
+	NSLog(@"Moving to %@ not %@", pos, [object position]);
+	
+	[self moveToPosition:pos];
 	
 	if ( [self.moveToObject isKindOfClass:[Mob class]] || [self.moveToObject isKindOfClass:[Player class]] ){
 		[self performSelector:@selector(stayWithObject:) withObject:self.moveToObject afterDelay:0.1f];
@@ -339,7 +362,7 @@ typedef enum MovementState{
 	// moving to an object
 	if ( _moveToObject ){
 		_movementState = MovementState_MovingToObject;
-		[self moveToPosition:[self.moveToObject position]];
+		[self moveToObject:_moveToObject];
 	}
 	else if ( _currentRouteSet ){
 		
@@ -632,15 +655,36 @@ typedef enum MovementState{
 											//	when on mount:	7.0
 											//  when on ground: 3.78
 	
-	BOOL isNode = [self.moveToObject isKindOfClass: [Node class]];
-	if ( isNode && !isPlayerOnGround ){
-		distanceToObject = DistanceUntilDismountByNode;
+	BOOL reachedDestination = NO;
+	
+	// generic - did we reach our destination?
+	if ( distanceToDestination <= distanceToObject ){
+		reachedDestination = YES;
+	}
+	
+	// are we sure we reached our destination? moving to a node and flying
+	if ( [self.moveToObject isKindOfClass: [Node class]] && !isPlayerOnGround ){
+		
+		float distanceToDestination2D = [playerPosition distanceToPosition2D: destPosition];
+		float distanceToObject2D = 1.25f;
+		
+		// we want to make the assumption that:
+		//	we are within 5 yards of the 3D coordinates (so we don't fall to far)
+		//	we are within 1.25 yards of the 2D coordinates (so we're damn close to falling on the top)
+		if ( reachedDestination && distanceToDestination2D < distanceToObject2D ){
+			
+		}
+		else{
+			reachedDestination = NO;
+		}
+
+		NSLog(@" is %0.2f < %0.2f?", distanceToDestination2D, distanceToObject2D);
 	}
 	
 	// we've reached our position!
-	if ( distanceToDestination <= distanceToObject ){
+	if ( reachedDestination ){
 		
-		PGLog(@"[Move] Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
+		NSLog(@"[Move] Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
 		
 		// moving to a unit
 		if ( self.moveToObject ){
@@ -919,6 +963,11 @@ typedef enum MovementState{
 	_stuckCounter = 0;
 	
 	[self resetMovementTimer];
+	
+	// do this otherwise we'll be stuck going forward if we were moving!
+	if ( [self movementType] != MovementType_CTM ){
+		[self moveForwardStop];
+	}
 	
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 }
