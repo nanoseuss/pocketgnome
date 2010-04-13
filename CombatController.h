@@ -94,6 +94,7 @@
 - (void)doCombatSearch;
 
 - (NSArray*)friendlyUnits;
+- (NSArray*)friendlyCorpses;
 
 // OUPUT: could also be using [playerController isInCombat]
 - (BOOL)combatEnabled;

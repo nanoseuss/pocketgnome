@@ -1571,7 +1571,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				// Raise the dead?
 				if ( !matchFound && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
 					NSMutableArray *units = [NSMutableArray array];
-					[units addObjectsFromArray: [combatController friendlyUnits]];
+					[units addObjectsFromArray: [combatController friendlyCorpses]];
 
 					for ( target in units ) {
 						if ( ![target isPlayer] || ![target isDead] ) continue;
@@ -2014,7 +2014,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( !self.doLooting ) return NO;
 
-	log(LOG_LOOT, @"[LootScan] Scanning for missed mobs to loot.");
+	log(LOG_DEV, @"[LootScan] Scanning for missed mobs to loot.");
 
 	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
 
@@ -2282,10 +2282,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 	}
-
-
-	// If this was the last item in the list
-	if ( ![_mobsToLoot count] ) [self resetLootScanIdleTimer];
 	
 	float delay = 0.4;
 	// Allow the lute to fade
@@ -2337,9 +2333,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ([_mobsToLoot containsObject: unit]) return;
 
 	if ( ![(Mob*)unit isTappedByMe] || ![(Mob*)unit isLootable]  || [unit isPet] ) return;
-	
-	// Reset the loot scan idle timer
-	[self resetLootScanIdleTimer];
 
 	log(LOG_LOOT, @"Adding %@ to loot list.", unit);
 	[_mobsToLoot addObject: (Mob*)unit];
@@ -2432,6 +2425,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	_didPreCombatProcedure = NO;
 
+	[self resetLootScanIdleTimer];
+	
 	if ( [playerController isDead] ) return;
 
 	log(LOG_COMBAT, @"Left combat! Current procedure: %@  Last executed: %@", self.procedureInProgress, _lastProcedureExecuted);
@@ -2441,8 +2436,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Combat
 
 - (BOOL)includeFriendlyInCombat {
-
-	if ( !self.isBotting ) return NO;
 
 	// should we include friendly units?
 	
@@ -2459,8 +2452,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)includeFriendlyInPatrol {	
-
-	if ( !self.isBotting ) return NO;
 	
 	// should we include friendly units?
 	
@@ -2475,8 +2466,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit {
-	
-	if ( !self.isBotting ) return NO;
 
 	Procedure *procedure = [self.theBehavior procedureForKey: CombatProcedure];
     int ruleCount = [procedure ruleCount];
@@ -3669,13 +3658,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForLoot {
 
 	if (!self.doLooting) return NO;
-
-	if ( [_mobsToLoot count] ) [self resetLootScanIdleTimer];
 	
 	// Enforce the loot scan idle
-	int secondsPassed = _lootScanIdleTimer/10;
-	if (secondsPassed > 30) {
-		if ( _lootScanCycles != 0 ) _lootScanCycles = 0;		
+	if (_lootScanIdleTimer >= 300) {
+		if ( _lootScanCycles != 0 ) _lootScanCycles = 0;
 		return NO;
 	}
 	
@@ -4079,8 +4065,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
+	log(LOG_GENERAL, @"[Patrol] perform is:%d friendly patrol is: %d", performPatrolProc, _includeFriendlyPatrol);
+	
 	// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
-	if ( !performPatrolProc && _includeFriendlyPatrol) {
+	if ( !performPatrolProc && _includeFriendlyPatrol ) {
+		
+		log(LOG_GENERAL, @"[Patrol] looking for friendlies");
+		
 		NSArray *units = [combatController friendlyUnits];
 		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
 
@@ -4105,10 +4096,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Look for corpses - resurrection
 	if ( !performPatrolProc && theCombatProfile.healingEnabled && _includeFriendlyPatrol) {
 		NSMutableArray *allPotentialUnits = [NSMutableArray array];
-		[allPotentialUnits addObjectsFromArray: [combatController friendlyUnits]];
+		[allPotentialUnits addObjectsFromArray: [combatController friendlyCorpses]];
 
 		if ( [allPotentialUnits count] ){
 			log(LOG_DEV, @"[CorpseScan] in evaluation...");
+			
 			float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 			for ( Unit *unit in allPotentialUnits ){
 				log(LOG_DEV, @"[CorpseScan] looking for corpses: %@", unit);
@@ -4271,10 +4263,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [self evaluateForLoot] ) return YES;
 
-	if ( [self evaluateForPartyEmotes] ) return YES;
-
 	// Increment the loot scan idle timer if it's not already past it's cut off
-	if (self.doLooting) if (_lootScanIdleTimer <= (30*10)) _lootScanIdleTimer++;
+	if ( self.doLooting ) if (_lootScanIdleTimer <= 300) _lootScanIdleTimer++;
+	
+	if ( [self evaluateForPartyEmotes] ) return YES;
 	
 	if ( [self evaluateForFishing] ) return YES;
 	

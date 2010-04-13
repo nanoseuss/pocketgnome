@@ -1018,6 +1018,58 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	return friendlyTargets;
 }
 
+- (NSArray*)friendlyCorpses{
+	
+	// get list of all targets
+    NSMutableArray *friendliesWithinRange = [NSMutableArray array];
+	NSMutableArray *friendlyTargets = [NSMutableArray array];
+	
+	// If we're in party mode and only supposed to help party members
+	if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.partyIgnoreOtherFriendlies ) {
+		
+		Player *player;
+		UInt64 playerID;
+		
+		// Check only party members
+		int i;
+		for (i=1;i<6;i++) {
+			
+			playerID = [playerData PartyMember: i];
+			if ( playerID <= 0x0) break;
+
+			player = [playersController playerWithGUID: playerID];
+			
+			if ( ![player isValid] ) continue;
+
+			[friendliesWithinRange addObject: player];
+		}
+		
+	} else {
+		// Check all friendlies
+		[friendliesWithinRange addObjectsFromArray: [playersController allPlayers]];
+	}
+	
+	// sort by range
+    Position *playerPosition = [playerData position];
+    [friendliesWithinRange sortUsingFunction: DistFromPositionCompare context: playerPosition];
+	
+	// if we have some targets
+    if ( [friendliesWithinRange count] ) {
+        for ( Unit *unit in friendliesWithinRange ) {
+			log(LOG_DEV, @"Friendly Corpse - Checking %@", unit);
+
+			if ( ![unit isDead] || ![playerData isFriendlyWithFaction: [unit factionTemplate]] ) continue;
+
+				log(LOG_DEV, @"Valid friendly corpse.");
+				[friendlyTargets addObject: unit];
+        }
+    }
+	
+	log(LOG_DEV, @"Total friendly corpses: %d", [friendlyTargets count]);
+	
+	return friendlyTargets;
+}
+
 #pragma mark Internal
 
 // monitor unit until it dies
