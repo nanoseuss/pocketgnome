@@ -369,7 +369,7 @@ typedef enum MovementState{
 		if (self.isFollowing) self.currentRoute = botController.followRoute;
 
 		_movementState = MovementState_Patrolling;
-		
+
 		// previous waypoint to move to
 		if ( self.destinationWaypoint ) {
 			log(LOG_MOVEMENT, @"Moving to WP: %@", self.destinationWaypoint);
@@ -419,13 +419,89 @@ typedef enum MovementState{
 			if ( newWP ) {
 				log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
 				self.destinationWaypoint = newWP;
+				
+				[playerData faceToward: [newWP position]];
+				usleep([controller refreshDelay]*2);
+				
 				[self moveToPosition:[newWP position]];
 			} else {
 				log(LOG_ERROR, @"Unable to find a position to resume movement to!");
 			}
-		}
+		}	
 	} else {
 		log(LOG_ERROR, @"We have no route or unit to move to!");
+	}
+}
+
+- (void)resumeMovementToClosestWaypoint{
+	
+	log(LOG_MOVEMENT, @"resumeMovementToClosestWaypoint:");
+
+	// we're moving!
+	if ( [self isMoving] ){
+		
+		log(LOG_MOVEMENT, @"We're already moving! Stopping before resume.");
+		
+		[self stopMovement];
+		
+		usleep( [controller refreshDelay] );
+	}
+	
+	if ( !_currentRouteSet ) {
+		log(LOG_ERROR, @"We have no route or unit to move to!");
+		return;
+	}
+
+	_movementState = MovementState_Patrolling;
+			
+	log(LOG_MOVEMENT, @"Finding the closest waypoint");
+			
+	Position *playerPosition = [playerData position];
+	Waypoint *newWP = nil;
+			
+	// if the player is dead, find the closest WP based on both routes
+	if ( [playerData isDead] ){
+				
+		// we switched to a corpse route on death
+		if ( [[self.currentRoute waypoints] count] == 0 ){
+			log(LOG_GHOST, @"Unable to resume, we're dead and there is no corpse route!");
+			return;
+		}
+				
+		Waypoint *closestWaypointCorpseRoute	= [[self.currentRouteSet routeForKey:CorpseRunRoute] waypointClosestToPosition:playerPosition];
+		Waypoint *closestWaypointPrimaryRoute	= [[self.currentRouteSet routeForKey:PrimaryRoute] waypointClosestToPosition:playerPosition];
+				
+		float corpseDistance = [playerPosition distanceToPosition:[closestWaypointCorpseRoute position]];
+		float primaryDistance = [playerPosition distanceToPosition:[closestWaypointPrimaryRoute position]];
+				
+		// use corpse route
+		if ( corpseDistance < primaryDistance ){
+			self.currentRouteKey = CorpseRunRoute;
+			self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
+			newWP = closestWaypointCorpseRoute;
+		}
+		// use primary route
+		else {
+			self.currentRouteKey = PrimaryRoute;
+			self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+			newWP = closestWaypointPrimaryRoute;
+		}
+	} else {
+		// find the closest waypoint in our primary route!
+		newWP = [self.currentRoute waypointClosestToPosition:playerPosition];
+	}
+			
+	// we have a waypoint to move to!
+	if ( newWP ) {
+		log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
+		self.destinationWaypoint = newWP;
+				
+		[playerData faceToward: [newWP position]];
+		usleep([controller refreshDelay]*2);
+				
+		[self moveToPosition:[newWP position]];
+	} else {
+		log(LOG_ERROR, @"Unable to find a position to resume movement to!");
 	}
 }
 

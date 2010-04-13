@@ -134,6 +134,7 @@ typedef enum MovementType {
 
 // resume movement if we stopped
 - (void)resumeMovement;
+- (void)resumeMovementToClosestWaypoint;
 
 // what type of movement are we operating in?  
 - (int)movementType;

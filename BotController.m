@@ -1153,8 +1153,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// when we finish PostCombat, go back to evaluation
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PostCombat");
+
+// We'll see how we do without this
 		// Make sure we're not unable to read ourselves...
-		[movementController establishPlayerPosition];
+//		[movementController establishPlayerPosition];
 		
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		self.evaluationInProgress = nil;
@@ -1167,11 +1169,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			self.evaluationInProgress = @"Regen";
 			log(LOG_REGEN, @"Starting regen!");
 			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 0.1f];
+			return;
 		} else {
 			// or if we didn't regen, go back to evaluate
 			log(LOG_PROCEDURE, @"No regen, back to evaluate");
-[controller setCurrentStatus: @"Bot: Enabled"];			self.evaluationInProgress = nil;
+			[controller setCurrentStatus: @"Bot: Enabled"];
+			self.evaluationInProgress = nil;
 			[self evaluateSituation];
+			return;
 		}
 	}
 
@@ -1326,25 +1331,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	
-	// Stop movement in precombat if we're a caster
-	if ( [[self procedureInProgress] isEqualToString: PreCombatProcedure] && 
-		!self.theBehavior.meleeCombat && [movementController isMoving] ) 
-			[movementController stopMovement];
-	
 	// Check the mob if we're in combat and it's our target
-	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-		if ( ![self performProcedureMobCheck:target] ) {
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] || [[self procedureInProgress] isEqualToString: PreCombatProcedure]) {
+		if ( ![self performProcedureMobCheck: target] ) {
 			[combatController cancelAllCombat];
 			[self finishCurrentProcedure: state];
 			return;
 		}
-
-		if ( _lastCombatProcedureTarget != [target GUID] ) {
-			[playerController faceToward: [target position]];
-			[movementController establishPlayerPosition];
-		}
-		_lastCombatProcedureTarget = [target GUID];
-		[combatController stayWithUnit:target withType: TargetEnemy];
 	}
 	
     // have we exceeded our maximum attempts on this rule?
@@ -1640,7 +1633,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 					// target if needed!
 					if ( [rule target] == TargetEnemy ) {
-						log(LOG_DEV, @"Enemy already targeted.");
+						log(LOG_DEV, @"Targeting Enemy.");
+						
+						// If this is a new combat target then let's face up
+						if ( _lastCombatProcedureTarget != [target GUID] ) {
+							[playerController faceToward: [target position]];
+							[movementController establishPlayerPosition];
+						}
+						_lastCombatProcedureTarget = [target GUID];
+						[combatController stayWithUnit:target withType: TargetEnemy];
 					} else
 					
 					if ( [rule target] == TargetAdd ) {
@@ -2406,11 +2407,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if (![self isBotting]) return;
 	
-//	[controller setCurrentStatus: @"Bot: Player in Combat"];
-	log(LOG_COMBAT, @"Entering combat");
-	self.evaluationInProgress = nil;
+	log(LOG_COMBAT, @"%@ Entering combat", [combatController unitHealthBar:[playerController player]]);
 	[blacklistController clearAttempts];
-//	[self evaluateSituation];
+
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
@@ -2418,11 +2417,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if(![self isBotting]) return;
 	
 	_didPreCombatProcedure = NO;
-
-	if (self.doLooting) {
-		// Reset the loot scan idle timer
-		[self resetLootScanIdleTimer];
-	}
 
 	if ( [playerController isDead] ) return;
 
@@ -3320,6 +3314,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress ) return NO;
 
+	// Skip this if there is a procedure going
+	if ( self.procedureInProgress ) return NO;
+
 	log(LOG_EVALUATE, @"Evaluating for Party");
 
 	if ( [self leaderWait] ) {
@@ -3447,6 +3444,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if we're doing something already
 	if ( self.evaluationInProgress ) return NO;
 
+	// Skip this if there is a procedure going
+	if ( self.procedureInProgress ) return NO;
+
 	if ( !theCombatProfile.partyEnabled && ![playerController isInCombat] ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
@@ -3475,10 +3475,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForCombatStart {
+	
 	log(LOG_FUNCTION, @"evaluateForCombatStart");
 
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress ) return NO;
+
+	// Skip this if there is a procedure going
+	if ( self.procedureInProgress ) return NO;
 
 	// If combat isn't enabled
 	if ( !theCombatProfile.combatEnabled && !theCombatProfile.healingEnabled ) return NO;
@@ -3550,7 +3554,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL) evaluateForRegen {
 
 	// Skip this if we are already in evaluation
-	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Regen"]) return NO;
+	if ( self.evaluationInProgress && self.evaluationInProgress != @"Regen" ) return NO;
+
+	// Skip this if there is a procedure going
+	if ( self.procedureInProgress ) return NO;
 
 	// If we're mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
@@ -3645,9 +3652,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _lootScanCycles != 0 ) _lootScanCycles = 0;		
 		return NO;
 	}
+	
 	// Skip this if we are already in evaluation
-	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Loot") return NO;
+	if ( self.evaluationInProgress && self.evaluationInProgress != @"Loot") return NO;
 
+	// Skip this if there is a procedure going
+	if ( self.procedureInProgress ) return NO;
+	
 	// If we're mounted and in the air lets just skip loot scans
 	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
 
@@ -3763,8 +3774,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
 	
 	// Skip this if we are already in evaluation
-	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"MiningAndHerbalism"]) return NO;
+	if ( self.evaluationInProgress && self.evaluationInProgress != @"MiningAndHerbalism" ) return NO;
 
+	if ( self.procedureInProgress ) return NO;
+	
 	// If we're moving to the node let's wait till we get there to do anything
     if ([movementController moveToObject]) return NO;
 
@@ -3922,8 +3935,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForFishing {
 	
 	// Skip this if we are already in evaluation
-	if ( [self evaluationInProgress] && ![[self evaluationInProgress] isEqualToString: @"Fishing"]) return NO;
+	if ( self.evaluationInProgress && self.evaluationInProgress != @"Fishing" ) return NO;
 
+	if ( self.procedureInProgress ) return NO;
+	
 	if ( [movementController moveToObject] ) return NO;
 	if ( !_doFishing ) return NO;
 
@@ -4007,8 +4022,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForPatrol {
 
-	// If we're already evaluating something then let's skip this.
-	if ( [self evaluationInProgress] ) return NO;
+	// If we're already evaluating or in procedure then let's skip this.
+	if ( self.evaluationInProgress || self.procedureInProgress ) return NO;
 
 	// If we're already mounted then let's not do anything that would cause us to dismount
 	if ( [[playerController player] isMounted] ) return NO;
@@ -4131,7 +4146,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [movementController isMoving] ) return NO;
 	
 	// Skip this if we are already in evaluation
-	if ( self.evaluationInProgress ) return NO;
+	if ( self.evaluationInProgress || self.procedureInProgress ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for PartyEmotes");
 
@@ -4251,9 +4266,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// If there is loot or we're evaluating lets cycle again
-	if ( [self evaluationInProgress] ) {
+	if ( self.evaluationInProgress ) {
 		log(LOG_EVALUATE, @"Evaluation in progress so we're looping without movement.");
 		if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer =0;
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+	}
+
+	// Skip this if there is a procedure going
+	if ( self.procedureInProgress ) {
+		// Not supposed to happen I don't think, but just in case!
+		log(LOG_EVALUATE, @"Procedure in progress so we're looping without movement.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
 		return NO;
 	}
@@ -4278,7 +4301,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 
 		// resume movement if we're not moving!
-		if ( ![movementController isPatrolling] || ![movementController isMoving] ) [movementController resumeMovement];
+		if ( ![movementController isPatrolling] || ![movementController isMoving] ) [movementController resumeMovementToClosestWaypoint];
 
 	} else {
 
@@ -4612,14 +4635,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_herbLevel			= [herbalismSkillText intValue];
 		_doSkinning			= [skinningCheckbox state];
 		_skinLevel			= [skinningSkillText intValue];
-		
-		
-// I can see where this needs things connected to work, but for the life of me I can't find where to edit it!?
-// Using this work around until then... it would be awesome if you could give me a pointer as to where to edit the connector
-//		_doNinjaSkin			= [ninjaSkinCheckbox state];
-		
-//		NSString* type = [NSString stringWithFormat:@"",];
-//		if ([[NSUserDefaults standardUserDefaults] objectForKey: type])
+
 		if (_doSkinning) _doNinjaSkin = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"DoNinjaSkin"] boolValue];
 		else _doNinjaSkin = NO;
 		
@@ -4668,6 +4684,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if (_doSkinning) log(LOG_STARTUP, @"Starting bot with Sknning skill %d, allowing mobs up to level %d", _skinLevel, canSkinUpToLevel);
 		if (_doNinjaSkin) log(LOG_STARTUP, @"Ninja Skin enabled.");		
 		
+		
 		[startStopButton setTitle: @"Stop Bot"];
 		_didPreCombatProcedure = NO;
 		_reviveAttempt = 0;
@@ -4684,6 +4701,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		log(LOG_STARTUP, @" StartBot");
 		self.isBotting = YES;
+		
+		if (self.doLooting) [self lootScan];
 		
 		// TO DO: allow botting before u join a BG!
 		
