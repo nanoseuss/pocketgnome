@@ -233,12 +233,12 @@ typedef enum MovementState{
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
 			float newX = 0.0;
 			// If it's north of me
-			if ( [[self.moveToObject position] xPosition] > [[playerData position] xPosition]) newX = [[self.moveToObject position] xPosition]+0.5f;
-				else newX = [[self.moveToObject position] xPosition]-0.5f;
+			if ( [[self.moveToObject position] xPosition] > [[playerData position] xPosition]) newX = [[self.moveToObject position] xPosition]+1.0f;
+				else newX = [[self.moveToObject position] xPosition]-1.0f;
 
 			float newY = 0.0;
 			// If it's west of me
-			if ( [[self.moveToObject position] yPosition] > [[playerData position] yPosition]) newY = [[self.moveToObject position] yPosition]+0.5f;
+			if ( [[self.moveToObject position] yPosition] > [[playerData position] yPosition]) newY = [[self.moveToObject position] yPosition]+1.0f;
 				else newY = [[self.moveToObject position] yPosition]-1.0f;
 
 			// Above it for a sweet drop in

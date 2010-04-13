@@ -4064,13 +4064,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			break;
 		}
 	}
-
-	log(LOG_GENERAL, @"[Patrol] perform is:%d friendly patrol is: %d", performPatrolProc, _includeFriendlyPatrol);
 	
 	// Look to see if there are friendlies to be checked in our patrol routine, buffing others?
 	if ( !performPatrolProc && _includeFriendlyPatrol ) {
 		
-		log(LOG_GENERAL, @"[Patrol] looking for friendlies");
+		log(LOG_DEV, @"[Patrol] looking for friendlies");
 		
 		NSArray *units = [combatController friendlyUnits];
 		for(Rule* rule in [[self.theBehavior procedureForKey: PatrollingProcedure] rules]) {
