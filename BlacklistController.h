@@ -31,13 +31,12 @@ enum{
 	Reason_NotInLoS				= 1,
 	Reason_NodeMadeMeFall		= 2,
 	Reason_CantReachObject		= 3,
-	Reason_NotInCombatTemp		= 4,
-	Reason_NotInCombatPerm		= 5,
-	Reason_RecentlyResurrected	= 6,
-	Reason_RecentlyHelpedFriend = 7,
-	Reason_InvalidTarget		= 8,
-	Reason_OutOfRange			= 9,
-	Reason_RecentlySkinned		= 10,
+	Reason_NotInCombat			= 4,
+	Reason_RecentlyResurrected	= 5,
+	Reason_RecentlyHelpedFriend = 6,
+	Reason_InvalidTarget		= 7,
+	Reason_OutOfRange			= 8,
+	Reason_RecentlySkinned		= 9,
 	
 };
 

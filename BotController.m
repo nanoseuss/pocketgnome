@@ -1250,13 +1250,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
     }
 	
-	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
-		log(LOG_DEV, @"Requested procedure is %@", self.procedureInProgress);
-		NSArray *combatList = [combatController combatList];
-		int count =		[combatList count];
-		if (count == 1)	[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
-		else		[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d units)", count]];
-	}
     
     Procedure *procedure = [self.theBehavior procedureForKey: [state objectForKey: @"Procedure"]];
     Unit *target = [state objectForKey: @"Target"];
@@ -1267,11 +1260,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int inCombatNoAttack = [[state objectForKey: @"InCombatNoAttack"] intValue];
 	NSMutableDictionary *rulesTried = [state objectForKey: @"RulesTried"];
 
+	if ( [[self procedureInProgress] isEqualToString: CombatProcedure]) {
+		log(LOG_DEV, @"Requested procedure is %@", self.procedureInProgress);
+		NSArray *combatList = [combatController combatList];
+		int count =		[combatList count];
+		if (count == 1)	[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d unit)", count]];
+		else		[controller setCurrentStatus: [NSString stringWithFormat: @"Bot: Player in Combat (%d units)", count]];
+		
+		log(LOG_PROCEDURE, @"%@ CombatProcedure called for: %@", [combatController unitHealthBar: target], target );
+	}
+
 	if ( rulesTried == nil ) {
 		//	log(LOG_PROCEDURE, @"Creating dictionary to track our tried rules!");
 		rulesTried = [[NSMutableDictionary dictionary] retain];
 	}
-    
+
 	if ( [blacklistController isBlacklisted: target] ) {
 		// Looks like they got blacklisted in the casting process
 		[self finishCurrentProcedure: state];
@@ -1445,11 +1448,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			// friends
 			else if ( [rule target] == TargetFriend ) {
-					 
-				if (!friends) friends = [combatController friendlyUnits];
+				
+				// If the target this procedure was called for is friendly
+				if ( [playerController isFriendlyWithFaction: [originalTarget factionTemplate]] ) {
+					target = originalTarget;
+					if ( [self evaluateRule: rule withTarget: target asTest: NO] ){
+						// do something
+						log(LOG_RULE, @"Targeted friend match for %@ with unit %@", rule, target);
+						matchFound = YES;
+						break;
+					}
+				}
 
+				// If the procedures target isn't friendly let's loop through friends to find a target
+				if (!friends) friends = [combatController friendlyUnits];
 				for ( target in friends ) {
-					
+
 					// If we're in a combat procedure and our friend isn't in combat then fuk em
 					if ( ![target isInCombat] ) continue;
 
@@ -1515,7 +1529,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		log(LOG_DEV, @"Non combat search");
 		
-		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 		float attackRange = ( theCombatProfile.attackRange > theCombatProfile.engageRange ) ? theCombatProfile.attackRange : theCombatProfile.engageRange;
 		
 		for ( i = completed; i < ruleCount; i++) {
@@ -2082,7 +2096,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return;
 		}
 	}
-	
+
 	// Lets do this instead of the loot hotkey!
 	[self interactWithMouseoverGUID: [unit GUID]];
 
@@ -2330,9 +2344,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_LOOT, @"Adding %@ to loot list.", unit);
 	[_mobsToLoot addObject: (Mob*)unit];
 
-
+	// If we're in a party we don't stop to loot right away
+	if ( theCombatProfile.partyEnabled && [playerController isInParty] ) return;
+	
 	// If we're in evaluation or a procedure other than Patrol let's continue what we're currently doing
-
 	if ( self.procedureInProgress && self.procedureInProgress != @"PatrollingProcedure" ) return;
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Patrol" ) return;
 
@@ -2347,11 +2362,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark [Input] CombatController
 
 - (void)unitEnteredCombat: (NSNotification*)notification {
-	
+
 	if (![self isBotting]) return;
-	
+
 	Unit *unit = [notification object];
-	
+
 	log(LOG_COMBAT, @"%@ %@ entered combat!", [combatController unitHealthBar:unit], unit);
 
 	// If we're supposed to ignore combat while flying
@@ -2361,7 +2376,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// start a combat procedure if we're not in one!
-	if ( ![self.procedureInProgress isEqualToString: CombatProcedure] ) {
+	if ( self.procedureInProgress != @"CombatProcedure" && self.procedureInProgress != @"PreCombatProcedure") {
 		
 		self.evaluationInProgress = nil;
 		
@@ -2398,23 +2413,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self actOnUnit:unit];
 		return;
 	}
-	
+
 	log(LOG_DEV, @"Already in combat procedure! Not acting on unit");
 	return;
 }
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
 	
-	if (![self isBotting]) return;
-	
-	log(LOG_COMBAT, @"%@ Entering combat", [combatController unitHealthBar:[playerController player]]);
+	if (![self isBotting]) return;	
+	log(LOG_DEV, @"Entering combat");
 	[blacklistController clearAttempts];
 
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
 
-	if(![self isBotting]) return;
+	if( !self.isBotting ) return;
 	
 	_didPreCombatProcedure = NO;
 
@@ -2426,7 +2440,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 #pragma mark Combat
 
-- (BOOL)includeFriendlyInCombat {	
+- (BOOL)includeFriendlyInCombat {
+
+	if ( !self.isBotting ) return NO;
+
 	// should we include friendly units?
 	
 	if ( self.theCombatProfile.healingEnabled ) return YES;
@@ -2442,6 +2459,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)includeFriendlyInPatrol {	
+
+	if ( !self.isBotting ) return NO;
+	
 	// should we include friendly units?
 	
 	// if we have friendly spells in our Patrol Behavior lets return true
@@ -2455,6 +2475,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit {
+	
+	if ( !self.isBotting ) return NO;
+
 	Procedure *procedure = [self.theBehavior procedureForKey: CombatProcedure];
     int ruleCount = [procedure ruleCount];
     if ( !procedure || ruleCount == 0 ) return NO;
@@ -2540,33 +2563,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.evaluationInProgress ) [movementController resetMoveToObject];
 
 	if ( [unit isNPC] ) log(LOG_DEV, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
-	
-	if ( self.doLooting && ![playerController isInParty] && [unit isNPC] ) {
-		// Reset the loot scan idle timer
-		[self resetLootScanIdleTimer];
-		
+
+	if ( self.doLooting && [unit isNPC] ) {
+
 		if ( ( [(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable] ) && ![unit isPet] ) {
-			
-			// mob already in our list? in theory this should never happen (how could we kill a unit twice? lul)
-			if ([_mobsToLoot containsObject: unit]) {
-				log(LOG_LOOT, @"%@ was already in the loot list, removing first", unit);
-				[_mobsToLoot removeObject: unit];
-			}
 
 			log(LOG_LOOT, @"Adding %@ to loot list.", unit);
-			[_mobsToLoot addObject: (Mob*)unit];
+			if ( ![_mobsToLoot containsObject: unit]) [_mobsToLoot addObject: (Mob*)unit];
 
+			// If we're in a party we don't stop to loot right away
+			if ( theCombatProfile.partyEnabled && [playerController isInParty] ) return;
+			
 			// If we're in evaluation or a procedure other than Patrol let's continue what we're currently doing
-
 			if ( self.procedureInProgress && self.procedureInProgress != @"PatrollingProcedure" ) return;
 			if ( self.evaluationInProgress && self.evaluationInProgress != @"Patrol" ) return;
 
 			// Stop what we're doing so we can evaluate for loot
 			if ( self.procedureInProgress ) [self cancelCurrentProcedure];
 			if ( [movementController isMoving] ) [movementController stopMovement];
+
+			// Reset the loot scan idle timer
+			[self resetLootScanIdleTimer];
+			
 			[self evaluateSituation];
 
 		} else {
+			// Reset the loot scan idle timer
+			[self resetLootScanIdleTimer];
+
 			[self performSelector: @selector(checkUnitForLootable:) withObject:unit afterDelay: 1.0f ];
 			log(LOG_LOOT, @"Mob %@ isn't lootable yet, will check again in a second.", unit);
 		}
@@ -2583,20 +2607,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.followUnit ) return;
 	
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
-
-/*
+	
+	float waypointSpacing = [playerController speedMax] / 2.0f;
 	
 	// Validate the current unit
-	if (_followRoute && ![followUnit isValid] && !_followLastSeenPosition ) {
+	if (followRoute && ![followUnit isValid] && !_followLastSeenPosition ) {
 
 		// Let's set one more way point to push us into a zone just in case
 		_followLastSeenPosition = YES;
 
-		NSArray *waypoints = [_followRoute waypoints];
+		NSArray *waypoints = [followRoute waypoints];
 
 		if ( [waypoints count] < 2) {
 			// We need at least 2 waypoints to actually do this
-			log(LOG_FOLLOW, @"Not enough waypoints to create one for zone in count: %d", _followRoute.waypoints.count);
+			log(LOG_FOLLOW, @"Not enough waypoints to create one for zone in count: %d", followRoute.waypoints.count);
 			return;
 		}
 
@@ -2606,17 +2630,34 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		Waypoint *nextToLastWaypoint = [waypoints objectAtIndex: ([waypoints count]-1)];
 		Position *nextToLastPosition = [nextToLastWaypoint position];
 
+ 
+		float newX = 0.0;
+		// If it's north of me
+		if ( [lastPosition xPosition] > [nextToLastPosition xPosition]) newX = [lastPosition xPosition]+waypointSpacing;
+		else newX = [lastPosition xPosition]-waypointSpacing;
+ 
+		float newY = 0.0;
+		// If it's west of me
+		if ( [lastPosition yPosition] > [nextToLastPosition yPosition]) newY = [lastPosition yPosition]+waypointSpacing;
+		else newY = [lastPosition yPosition]-waypointSpacing;
+
+		float newZ = [lastPosition zPosition];
+
 		// Create a new waypoint that's in line and ahead of the last 2 waypoints
-		Position *zoneInPosition = [nextToLastPosition positionAtDistance:-(waypointSpacing) withDestination: lastPosition];
+//		Position *zoneInPosition = [nextToLastPosition positionAtDistance:-(waypointSpacing) withDestination: lastPosition];
+//		Waypoint *zoneInWaypoint = [Waypoint waypointWithPosition: zoneInPosition];
+
+ 
+		Position *zoneInPosition = [[Position alloc] initWithX:newX Y:newY Z:newZ];
 		Waypoint *zoneInWaypoint = [Waypoint waypointWithPosition: zoneInPosition];
 
-		log(LOG_FOLLOW, @"Want to add zone in waypoint: %@ count: %d", zoneInWaypoint, waypoints.count);
-		
-//		[_followRoute addWaypoint: zoneInWaypoint];
+		log(LOG_FOLLOW, @"Cannot see leader, adding zone in waypoint: %@", zoneInWaypoint);
+ 
+		[followRoute addWaypoint: zoneInWaypoint];
 
 		return;
 	}
-*/
+
 	// If the unit is out of sight
 	if ( ![followUnit isValid]) return;	
 
@@ -2632,8 +2673,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [followRoute waypointCount] > 0 ) {
 		// If we already have waypoints on the route
 		log(LOG_DEV, @"Looks like we have a route started already.");
-
-		float waypointSpacing = [playerController speedMax] / 2.0f;
 		
 		log(LOG_DEV, @"Getting the waypoints from the object");
 
@@ -3095,7 +3134,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)reachedFollowUnit: (NSNotification*)notification {
 
 	if ( !self.isBotting ) return;
-	
+
 	log(LOG_FUNCTION, @"botController: reachedFollowUnit");
 
 	// Reset the movement controller.  Do we need to switch back to a normal route ?
@@ -3105,21 +3144,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
 
-	
-	if ( [followUnit isValid] ) {
-		log(LOG_FOLLOW, @"Stopping Follow, reached our target.");
-	} else {
-		
-		log(LOG_FOLLOW, @"Cannot see our target! Inching forward to try a zone in.");
-		[movementController moveForwardStart];
-		[movementController performSelector: @selector(moveForwardStop) withObject: nil afterDelay: 2.0f];
+	log(LOG_FOLLOW, @"Stopping Follow, reached our target.");
 
-		[controller setCurrentStatus: @"Bot: Enabled"];
-		self.evaluationInProgress = nil;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 2.5f];
-		return;
-	}
-	
 	[controller setCurrentStatus: @"Bot: Enabled"];
 	self.evaluationInProgress = nil;
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
@@ -3461,13 +3487,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"checking %@ for validity", bestUnit);
 
 	if ( [self combatProcedureValidForUnit:bestUnit] ) {
-		log(LOG_DEV, @"[Combat Continuation] Found %@ to act on!", bestUnit);
+		log(LOG_DEV, @"[CombatContinuation] Found %@ to act on!", bestUnit);
 
 		// Reset the party emotes idle
 		if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
 
 		[self actOnUnit:bestUnit];
-		[movementController stopMovement];
+		if ( [movementController isMoving] ) [movementController stopMovement];
 		return YES;
 	}
 
@@ -3531,7 +3557,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Check the party units (not sure if we'll even need this now)
 	if ( theCombatProfile.partyEnabled && theCombatProfile.healingEnabled ) {
-		NSArray *validUnits = [NSArray arrayWithArray:[combatController validUnitsWithFriendly:YES onlyHostilesInCombat:NO]];
+		NSArray *validUnits = [NSArray arrayWithArray:[combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:NO]];
 		if ( [validUnits count] ) {
 			for ( Unit *unit in validUnits ) {
 				if ([playerController isHostileWithFaction: [unit factionTemplate]]) continue;
@@ -3712,13 +3738,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
-	
+
 	// Close enough to loot it
 	if ( mobToLootDist <= 5.0 ) {
 		_movingTowardMobCount = 0;
 		// Looting failed :/ I doubt this will ever actually happen, probably more an issue with nodes, but just in case!
 		int attempts = [blacklistController attemptsForObject:mobToLoot];
-		
+
 		if ( self.lastAttemptedUnitToLoot == mobToLoot && attempts >= 3 ){
 			log(LOG_LOOT, @"Unable to loot %@ after %d attempts, removing from loot list", self.lastAttemptedUnitToLoot, attempts);
 			[_mobsToLoot removeObject: self.unitToLoot];
@@ -3726,6 +3752,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 			return YES;
 		}
+
 		[controller setCurrentStatus: @"Bot: Looting"];		
 		self.evaluationInProgress = @"Loot";
 		[self performSelector: @selector(lootUnit:) withObject: mobToLoot afterDelay: 0.1f];
@@ -4082,7 +4109,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		if ( [allPotentialUnits count] ){
 			log(LOG_DEV, @"[CorpseScan] in evaluation...");
-			float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+			float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 			for ( Unit *unit in allPotentialUnits ){
 				log(LOG_DEV, @"[CorpseScan] looking for corpses: %@", unit);
 

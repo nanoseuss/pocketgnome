@@ -380,7 +380,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableArray *validUnits = [NSMutableArray array];
 	
 	Position *playerPosition = [playerData position];
-	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 	
 	for ( Unit *unit in units ){
 		
@@ -509,7 +509,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 	
 	// no longer in combat procedure
-	if ( ![[botController procedureInProgress] isEqualToString:CombatProcedure] ){
+	if ( botController.procedureInProgress != @"CombatProcedure" ){
 		log(LOG_COMBAT, @"No longer in combat procedure, no longer staying with unit");
 		return;
 	}
@@ -678,7 +678,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableArray *validUnits = [NSMutableArray array];
 	
 	if ( [allPotentialUnits count] ){
-		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistVerticalOffset"] floatValue];
+		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 		float distanceToTarget = 0.0f, range = 0.0f;
 		BOOL isFriendly = NO;
 		
@@ -728,14 +728,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // find a unit to attack, CC, or heal
 - (Unit*)findUnitWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat {
 
-	log(LOG_FUNCTION, @"findUnitWithFriendly called");
+	log(LOG_FUNCTION, @"findCombatTarget called");
 
 	// flying check?
 	if ( botController.theCombatProfile.ignoreFlying ) if ( ![playerData isOnGround] ) return nil;
 
 	// no combat or healing?
 	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ) return nil;
-
 
 	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
 	Position *playerPosition = [playerData position];
@@ -747,9 +746,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
-		
+
 		// Let's make sure we can even act on this unit before we consider it
-		if ( onlyHostilesInCombat && ![botController combatProcedureValidForUnit:unit] ) continue;
+		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
 
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];
@@ -980,20 +979,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		// Check only party members
 		int i;
-		for (i=1;i<=6;i++) {
+		for (i=1;i<6;i++) {
+			
 			playerID = [playerData PartyMember: i];
 			if ( playerID <= 0x0) break;
-			
-			// We don't add ourselves
-			if ( playerID == [playerData GUID] ) continue;
 
 			player = [playersController playerWithGUID: playerID];
-			
+
 			if ( ![player isValid] ) continue;
 
 			[friendliesWithinRange addObject: player];
 		}
-		
+
 	} else {
 
 		// Check all friendlies
@@ -1087,17 +1084,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
 			if ( secondsInCombat >  combatBlacklistDelay ) {
 				_hasStepped = NO;
-				log(LOG_COMBAT, @"%@ Unit not in combat after %.2f seconds, temp blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatTemp];
-				[self cancelAllCombat];
-				return;
-			} else
-
-			// not in combat after 25 seconds we blacklist perm
-			if ( secondsInCombat > 25 ) {
-				_hasStepped = NO;
-				log(LOG_COMBAT, @"%@ Unit not in combat after 25 seconds, seriously blacklisting", [self unitHealthBar: unit]);
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombatPerm];
+				log(LOG_COMBAT, @"%@ Unit not in combat after %.2f seconds, blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombat];
 				[self cancelAllCombat];
 				return;
 			}

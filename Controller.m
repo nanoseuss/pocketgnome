@@ -92,8 +92,10 @@ typedef enum {
     [NSValueTransformer setValueTransformer: hexTransformer forName: @"NSNumberToHexString"];
     
     NSDictionary *defaultValues = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   [NSNumber numberWithFloat: 7.0],     @"CombatBlacklistDelay",
-                                   [NSNumber numberWithFloat: 10.0],    @"CombatBlacklistVerticalOffset",
+                                   [NSNumber numberWithFloat: 7.0],     @"BlacklistTriggerNotInCombat",
+                                   [NSNumber numberWithFloat: 45.0],    @"BlacklistDurationNotInCombat",
+                                   [NSNumber numberWithFloat: 20.0],    @"BlacklistDurationNotInLos",
+                                   [NSNumber numberWithFloat: 10.0],    @"BlacklistVerticalOffset",
                                    [NSNumber numberWithBool: YES],      @"MovementUseSmoothTurning",
                                    [NSNumber numberWithFloat: 2.0],     @"MovementMinJumpTime",
                                    [NSNumber numberWithFloat: 6.0],     @"MovementMaxJumpTime",

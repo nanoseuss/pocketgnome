@@ -18,6 +18,7 @@
 @class BlacklistController;
 @class AuraController;
 @class MacroController;
+@class BindingsController;
 
 @class Position;
 @class Unit;
@@ -37,6 +38,7 @@
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet AuraController			*auraController;
 	IBOutlet MacroController		*macroController;
+	IBOutlet BindingsController		*bindingsController;
 	
 	// three different types of units to be tracked at all times
 	Unit *_attackUnit;
