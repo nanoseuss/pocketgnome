@@ -75,17 +75,15 @@
 		0393F533110A55DB00296CF8 /* MailActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F532110A55DB00296CF8 /* MailActionController.m */; };
 		0393F536110A55E300296CF8 /* VendorActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F535110A55E300296CF8 /* VendorActionController.m */; };
 		0393F539110A55EF00296CF8 /* ReverseRouteActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */; };
-		0394052F1163C67400D98403 /* WoWDbTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 0394052E1163C67400D98403 /* WoWDbTable.m */; };
-		039405321163C73700D98403 /* WoWDbRow.m in Sources */ = {isa = PBXBuildFile; fileRef = 039405311163C73700D98403 /* WoWDbRow.m */; };
 		03981DE9112B22E90081835F /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 03981DE8112B22E90081835F /* dsa_pub.pem */; };
 		03981E78112B898E0081835F /* MovementController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981E77112B898E0081835F /* MovementController.m */; };
 		03981F38112C819E0081835F /* LogController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03981F37112C819E0081835F /* LogController.m */; };
-		039FAE1C1163B139007CF7C0 /* WoWDb.m in Sources */ = {isa = PBXBuildFile; fileRef = 039FAE1B1163B139007CF7C0 /* WoWDb.m */; };
 		03A01B0D109A2A9600E6098E /* StatisticsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A01B0C109A2A9600E6098E /* StatisticsController.m */; };
 		03A01B3A109A2CFF00E6098E /* Statistics.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A01B39109A2CFF00E6098E /* Statistics.xib */; };
 		03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */; };
 		03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
+		03A914E11173F0A400A32F6C /* DatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A914E01173F0A400A32F6C /* DatabaseManager.m */; };
 		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
 		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
 		03BB221A112258A00048DE7B /* GateConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BB2219112258A00048DE7B /* GateConditionController.m */; };
@@ -501,17 +499,11 @@
 		0393F535110A55E300296CF8 /* VendorActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VendorActionController.m; sourceTree = "<group>"; };
 		0393F537110A55EF00296CF8 /* ReverseRouteActionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReverseRouteActionController.h; sourceTree = "<group>"; };
 		0393F538110A55EF00296CF8 /* ReverseRouteActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReverseRouteActionController.m; sourceTree = "<group>"; };
-		0394052D1163C67400D98403 /* WoWDbTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDbTable.h; sourceTree = "<group>"; };
-		0394052E1163C67400D98403 /* WoWDbTable.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDbTable.m; sourceTree = "<group>"; };
-		039405301163C73700D98403 /* WoWDbRow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDbRow.h; sourceTree = "<group>"; };
-		039405311163C73700D98403 /* WoWDbRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDbRow.m; sourceTree = "<group>"; };
 		03981DE8112B22E90081835F /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		03981E76112B898E0081835F /* MovementController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MovementController.h; sourceTree = "<group>"; };
 		03981E77112B898E0081835F /* MovementController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MovementController.m; sourceTree = "<group>"; };
 		03981F36112C819E0081835F /* LogController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogController.h; sourceTree = "<group>"; };
 		03981F37112C819E0081835F /* LogController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogController.m; sourceTree = "<group>"; };
-		039FAE1A1163B139007CF7C0 /* WoWDb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WoWDb.h; sourceTree = "<group>"; };
-		039FAE1B1163B139007CF7C0 /* WoWDb.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WoWDb.m; sourceTree = "<group>"; };
 		03A01B0B109A2A9600E6098E /* StatisticsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatisticsController.h; sourceTree = "<group>"; };
 		03A01B0C109A2A9600E6098E /* StatisticsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatisticsController.m; sourceTree = "<group>"; };
 		03A01B39109A2CFF00E6098E /* Statistics.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Statistics.xib; sourceTree = "<group>"; };
@@ -519,6 +511,8 @@
 		03A320D4114E88A9000D23EE /* JumpToWaypointActionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JumpToWaypointActionController.m; sourceTree = "<group>"; };
 		03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JumpToWaypointAction.xib; sourceTree = "<group>"; };
 		03A4047B0FE148C60087BC0D /* mbobbleicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mbobbleicon.png; sourceTree = "<group>"; };
+		03A914DF1173F0A400A32F6C /* DatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseManager.h; sourceTree = "<group>"; };
+		03A914E01173F0A400A32F6C /* DatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseManager.m; sourceTree = "<group>"; };
 		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
 		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
 		03B6D26110F626EA00EC6EFF /* RuneConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RuneConditionController.m; sourceTree = "<group>"; };
@@ -1039,12 +1033,8 @@
 		039405141163C4FE00D98403 /* WoWDb */ = {
 			isa = PBXGroup;
 			children = (
-				039FAE1A1163B139007CF7C0 /* WoWDb.h */,
-				039FAE1B1163B139007CF7C0 /* WoWDb.m */,
-				0394052D1163C67400D98403 /* WoWDbTable.h */,
-				0394052E1163C67400D98403 /* WoWDbTable.m */,
-				039405301163C73700D98403 /* WoWDbRow.h */,
-				039405311163C73700D98403 /* WoWDbRow.m */,
+				03A914DF1173F0A400A32F6C /* DatabaseManager.h */,
+				03A914E01173F0A400A32F6C /* DatabaseManager.m */,
 			);
 			name = WoWDb;
 			sourceTree = "<group>";
@@ -2178,9 +2168,7 @@
 				034126E61135774100BE6819 /* Battleground.m in Sources */,
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
 				03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */,
-				039FAE1C1163B139007CF7C0 /* WoWDb.m in Sources */,
-				0394052F1163C67400D98403 /* WoWDbTable.m in Sources */,
-				039405321163C73700D98403 /* WoWDbRow.m in Sources */,
+				03A914E11173F0A400A32F6C /* DatabaseManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

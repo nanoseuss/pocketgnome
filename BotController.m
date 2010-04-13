@@ -76,10 +76,7 @@
 #import "ScanGridView.h"
 #import "TransparentWindow.h"
 
-// for testing
-#import "WoWDbTable.h"
-#import "WoWDbRow.h"
-
+#import "DatabaseManager.h"
 
 #import <Growl/GrowlApplicationBridge.h>
 #import <ShortcutRecorder/ShortcutRecorder.h>
@@ -2377,7 +2374,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	else{
 	
-		// if it's a player, or a non-dead NPC, we must be doing melee combat
+		// if it's a player, or a non-dead NPC, we must be doing melee combat or following
 		if ( [object isPlayer] || ([object isNPC] && ![(Unit*)object isDead]) ){
 			PGLog(@"[Bot] Reached melee range with %@", object);
 			return;
@@ -2734,7 +2731,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				PGLog(@"[Follow] Not within %0.2f yards of target, %0.2f away, moving closer", theCombatProfile.followDistanceToMove, range);
 				
 				if ( ![playerController isCasting] ){ //&& ![playerController isCTMActive] ){
-					//[movementController followObject: followTarget];
+					[movementController moveToObject: followTarget];
 				}
 				
 				// Check our position again shortly!
@@ -3983,6 +3980,7 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark Timers
 
 - (void)logOutTimer: (NSTimer*)timer {
+	
 	if ( !self.isBotting && !self.isPvPing )
 		PGLog(@"[Bot] We should never be here!!");
 	
@@ -4019,7 +4017,7 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	
 	// check honor?
-	if ( [self.pvpBehavior stopHonor] ){
+	if ( [self.pvpBehavior stopHonor] && [playerController playerIsValid] ){
 		UInt32 honor = [playerController honor];
 		PGLog(@"%d >= %d", honor, [self.pvpBehavior stopHonorTotal]);
 		
@@ -4507,113 +4505,6 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 #pragma mark Testing Shit
-
-- (IBAction)test2: (id)sender{
-	/*
-	Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
-	Position *playerPosition = [playerController position];
-	
-	PGLog(@"Distance: %0.2f", [pos distanceToPosition:playerPosition]);
-	
-	Position *newPos = [pos positionAtDistance:10.0f withDestination:playerPosition];
-	
-	PGLog(@"New pos: %@", newPos);
-	
-	[movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
-*/
-}
-
-- (int)CompareFactionHash: (int)hash1 withHash2:(int)hash2{	
-	if ( hash1 == 0 || hash2 == 0 )
-		return -1;
-	
-	UInt32 hashCheck1 = 0, hashCheck2 = 0;
-	UInt32 check1 = 0, check2 = 0;
-	int hashCompare = 0, hashIndex = 0, i = 0;
-	//Byte *bHash1[0x40];
-	//Byte *bHash2[0x40];
-	
-	MemoryAccess *memory = [controller wowMemoryAccess];
-	//[memory loadDataForObject: self atAddress: hash1 Buffer: (Byte*)&bHash1 BufLength: sizeof(bHash1)];
-	//[memory loadDataForObject: self atAddress: hash2 Buffer: (Byte*)&bHash2 BufLength: sizeof(bHash2)];
-	
-	// get the hash checks
-	[memory loadDataForObject: self atAddress: hash1 + 0x4 Buffer: (Byte*)&hashCheck1 BufLength: sizeof(hashCheck1)];
-	[memory loadDataForObject: self atAddress: hash2 + 0x4 Buffer: (Byte*)&hashCheck2 BufLength: sizeof(hashCheck2)];
-	
-	//bitwise compare of [bHash1+0x14] and [bHash2+0x0C]
-	[memory loadDataForObject: self atAddress: hash1 + 0x14 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
-	[memory loadDataForObject: self atAddress: hash2 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
-	if ( ( check1 & check2 ) != 0 )
-		return 1;	// hostile
-	
-	hashIndex = 0x18;
-	[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
-	if ( hashCompare != 0 ){
-		for ( i = 0; i < 4; i++ ){
-			if ( hashCompare == hashCheck2 )
-				return 1; // hostile
-			
-			hashIndex += 4;
-			[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
-			
-			if ( hashCompare == 0 )
-				break;
-		}
-	}
-	
-	//bitwise compare of [bHash1+0x10] and [bHash2+0x0C]
-	[memory loadDataForObject: self atAddress: hash1 + 0x10 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
-	[memory loadDataForObject: self atAddress: hash2 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
-	if ( ( check1 & check2 ) != 0 ){
-		PGLog(@"friendly");
-		return 4;	// friendly
-	}
-	
-	hashIndex = 0x28;
-	[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
-	if ( hashCompare != 0 ){
-		for ( i = 0; i < 4; i++ ){
-			if ( hashCompare == hashCheck2 ){
-				PGLog(@"friendly2");
-				return 4;	// friendly
-			}
-			
-			hashIndex += 4;
-			[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
-			
-			if ( hashCompare == 0 )
-				break;
-		}
-	}
-	
-	 //bitwise compare of [bHash2+0x10] and [bHash1+0x0C]
-	[memory loadDataForObject: self atAddress: hash2 + 0x10 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
-	[memory loadDataForObject: self atAddress: hash1 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
-	if ( ( check1 & check2 ) != 0 ){
-		PGLog(@"friendly3");
-		return 4;	// friendly
-	}
-	
-	hashIndex = 0x28;
-	[memory loadDataForObject: self atAddress: hash2 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
-	if ( hashCompare != 0 ){
-		for ( i = 0; i < 4; i++ ){
-			if ( hashCompare == hashCheck1 ){
-				PGLog(@"friendly4");
-				return 4;	// friendly
-			}
-				
-			hashIndex += 4;
-			[memory loadDataForObject: self atAddress: hash2 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
-			
-			if ( hashCompare == 0 )
-				break;
-		}
-	}
-	
-	return 3;	//neutral
-}
 
 - (void)startClick{
 	
@@ -5499,212 +5390,406 @@ control = "";
 end
 */
 
+/*
+typedef struct WoWClientDb {
+    UInt32    _vtable;		// 0x0
+    UInt32  isLoaded;		// 0x4
+    UInt32  numRows;		// 0x8				// 49379
+    UInt32  maxIndex;		// 0xC				// 74445
+    UInt32  minIndex;		// 0x10				// 1
+	UInt32  stringTablePtr;	// 0x14
+	UInt32 _vtable2;		// 0x18
+	// array of row pointers after this...
+	UInt32 firstRow;		// 0x1C				// this points to the first actual row in the database (in theory we could use this, then loop until we hit numRows and we have all the rows)
+	UInt32 row2;			// 0x20
+	UInt32 row3;			// 0x24
+	UInt32 row4;			// 0x28
+	
+} WoWClientDb;
+*/
+
+typedef struct Spelldbc{
+
+	//private const int MAX_EFFECT_INDEX = 3;
+	uint Id;						// 0
+	uint Category;						
+	uint Dispel;
+	uint Mechanic;
+	uint Attributes;				
+	uint AttributesEx;				// 5
+	uint AttributesEx2;
+	uint AttributesEx3;
+	uint AttributesEx4;
+	uint AttributesEx5;
+	uint AttributesEx6;				// 10
+	uint AttributesEx7;
+	uint Stances;
+	uint unk_320_2;
+	uint StancesNot;
+	uint unk_320_3;					// 15
+	uint Targets;
+	uint TargetCreatureType;
+	uint RequiresSpellFocus;
+	uint FacingCasterFlags;
+	uint CasterAuraState;			// 20
+	uint TargetAuraState;
+	uint CasterAuraStateNot;
+	uint TargetAuraStateNot;
+	uint casterAuraSpell;
+	uint targetAuraSpell;			// 25
+	uint excludeCasterAuraSpell;
+	uint excludeTargetAuraSpell;
+	uint CastingTimeIndex;
+	uint RecoveryTime;
+	uint CategoryRecoveryTime;		// 30
+	uint InterruptFlags;
+	uint AuraInterruptFlags;
+	uint ChannelInterruptFlags;
+	uint procFlags;
+	uint procChance;				// 35
+	uint procCharges;
+	uint maxLevel;
+	uint baseLevel;
+	uint spellLevel;
+	uint DurationIndex;				// 40
+	uint powerType;
+	uint manaCost;
+	uint manaCostPerlevel;
+	uint manaPerSecond;
+	uint manaPerSecondPerLevel;		// 45
+	uint rangeIndex;
+	float speed;
+	uint modalNextSpell;
+	uint StackAmount;
+	uint Totem[2];					// 50-51
+	int Reagent[8];					// 52-69
+	uint ReagentCount[8];			// 69-76
+	int EquippedItemClass;			// 77
+	int EquippedItemSubClassMask;	// 78
+	int EquippedItemInventoryTypeMask;	// 79
+	uint Effect[3];					// 80-82
+	int EffectDieSides[3];			// 83-85
+	//int EffectBaseDice[3];			// 86-88
+	//float EffectDicePerLevel[3];	// 89-91
+	float EffectRealPointsPerLevel[3];	// 92-94
+	int EffectBasePoints[3];		// 95-97
+	uint EffectMechanic[3];			// 98-100
+	uint EffectImplicitTargetA[3];	// 100-102
+	uint EffectImplicitTargetB[3];	// 103-105
+	uint EffectRadiusIndex[3];		// 106-108
+	uint EffectApplyAuraName[3];	// 109-111
+	uint EffectAmplitude[3];		// 112-114
+	float EffectMultipleValue[3];	// 115-117
+	uint EffectChainTarget[3];		// 118-120
+	uint EffectItemType[3];			// 121-123
+	int EffectMiscValue[3];
+	int EffectMiscValueB[3];
+	uint EffectTriggerSpell[3];		// 124-126
+	float EffectPointsPerComboPoint[3];	// 127-129
+	uint EffectSpellClassMask[3];	// 130-132  Flag96
+	uint SpellVisual[2];			// 133-134
+	uint SpellIconID;
+	uint activeIconID;
+	uint spellPriority;
+	uint SpellName;
+	uint Rank;						// 140
+	uint Description;
+	uint ToolTip;
+} Spelldbc;
+	/*
+        public uint ManaCostPercentage;
+        public uint StartRecoveryCategory;
+        public uint StartRecoveryTime;
+        public uint MaxTargetLevel;
+        public uint SpellFamilyName;
+        public Flag96 SpellFamilyFlags;
+        public uint MaxAffectedTargets;
+        public uint DmgClass;
+        public uint PreventionType;
+        public uint StanceBarOrder;
+        public float[3] DmgMultiplier;
+        public uint MinFactionId;
+        public uint MinReputation;
+        public uint RequiredAuraVision;
+        public uint[2] TotemCategory;
+        public int AreaGroupId;
+        public int SchoolMask;
+        public uint runeCostID;
+        public uint spellMissileID;
+        public uint PowerDisplayId;
+        public float[3] unk_320_4;
+        public uint spellDescriptionVariableID;
+        public uint SpellDifficultyId;
+    }
+*/
+	
+typedef struct SpelldbcFake{
+	
+	UInt32 addresses[0x2C0];
+	
+}SpelldbcFake;
+
+- (NSString*)getSpellName:(int)spellID{
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	UInt32 spellDbc = 0xD2E300;
+	//int spellID = 27905;//15616;
+	UInt32 minIndex = [memory readInt:spellDbc + 0x10 withSize:sizeof(UInt32)];
+	UInt32 maxIndex = [memory readInt:spellDbc + 0xC withSize:sizeof(UInt32)];
+	
+	if ( spellID >= minIndex && spellID <= maxIndex ){
+		
+		UInt32 spellRow = [memory readInt:spellDbc + 0x20 withSize:sizeof(UInt32)] + ( 4 * (spellID - minIndex) );
+		UInt32 spellStruct = [memory readInt:spellRow withSize:sizeof(UInt32)];
+
+		// we don't have a pointer to a struct, quite unfortunate
+		if ( spellStruct == 0 ){
+			return nil;
+		}
+		
+		NSLog(@"SPELL STRUCT: 0x%X", spellStruct);
+
+
+		// lets unpack! Can be it's own function! And in fact probably should be ;)
+		Byte byteBuffer[0x5000] = {0};
+		
+		byteBuffer[0] = [memory readInt:spellStruct withSize:sizeof(Byte)];
+		int currentAddress = 1;
+		int i = 0;
+		int size = 0x2C0;
+		
+		for ( i = spellStruct + 1; currentAddress < size; ++i ){
+			
+			byteBuffer[currentAddress++] = [memory readInt:i withSize:sizeof(Byte)];
+			
+			Byte atI = [memory readInt:i withSize:sizeof(Byte)];
+			Byte prevI = [memory readInt:i - 1 withSize:sizeof(Byte)];
+			
+			if ( atI == prevI ){
+				
+				Byte j = 0;
+				for ( j = [memory readInt:i + 1 withSize:sizeof(Byte)]; j != 0; byteBuffer[currentAddress++] = [memory readInt:i withSize:sizeof(Byte)] ){
+					j--;
+				}
+				i += 2;
+				if ( currentAddress < size ){
+					byteBuffer[currentAddress++] = [memory readInt:i withSize:sizeof(Byte)];
+				}
+			}
+		}
+
+		SpelldbcFake spell;
+		
+		memcpy( &spell, &byteBuffer, sizeof(spell));
+		
+		
+		
+		// the name pointer is at 0x88!
+		return [[[memory readString:spell.addresses[0x88]] retain] autorelease];
+		/*NSLog(@"Spell name: %@", spellName);
+		
+		
+		//free(byteBuffer);
+		NSLog(@"size of struct: 0x%X", sizeof(spell));
+		
+		/*for ( i = 0; i < 0x2C0; i++ ){
+		 NSLog(@"[0x%X] 0x%X", i, spell.addresses[i]);
+		 }*/
+		
+		//NSLog(@"complete!");
+		
+		//NSLog(@"unpacking complete! Spell ID: %d Category: %d  Dispel: %d Spell Name: 0x%X", spell.Id, spell.Category, spell.Dispel, spell.Rank);
+		
+		// now I have a pointer to the spell struct, how do I now get to the name/description etc..?
+	}
+	
+	return nil;	
+}
+
 - (IBAction)test: (id)sender{
 	
-	[questController isQuestComplete:0];
+
+	MemoryAccess *memory = [controller wowMemoryAccess];
 	
-	//PGLog(@"Available quests: %d  Active quests: %d", [questController GetNumAvailableQuests], [questController GetNumActiveQuests]);
-	//[questController getAvailableQuests];
+	UInt32 spellID = 58739;
 	
-	PGLog(@"Time left until Wintergrasp: %0.2f", [self lua_GetWintergraspWaitTime]);
+	SpelldbcFake spellStruct;
+	[databaseManager getObjectForRow:spellID withTable:@"Spell" withStruct:&spellStruct withStructSize:sizeof(spellStruct)];
+	
+	NSLog(@"Size: 0x%X", sizeof(spellStruct));
+	
+	int i;
+	for ( i = 0; i <= 0x8B; i++ ){
+		NSLog(@"[%d] %d 0x%X", i, spellStruct.addresses[i], spellStruct.addresses[i]);
+	}
 	
 	return;
 	
-	PGLog(@"Current Game State: %d", [controller gameState]);
+	//NSLog(@"Obj address: 0x%X 0x%X", spellStruct, &spellStruct);
+	for ( Spell *spell in [spellController playerSpells] ){
+		SpelldbcFake spellStruct;
+		[databaseManager getObjectForRow:[[spell ID] intValue] withTable:@"Spell" withStruct:&spellStruct withStructSize:sizeof(spellStruct)];
+		NSLog(@"[%d] %@",[[spell ID] intValue], [memory readString:spellStruct.addresses[0x88]]);
+
+	 }
 	
-	float ping = [controller getPing];
-	
-	PGLog(@"Ping: %f", ping);
+	//NSLog(@"[Db] 0x%X", spellStruct.addresses[0x88]);
 	
 	return;
 	
-	WoWDbTable *table = [WoWDbTable WoWDbTableWithTablePtr: 0xD2E300];
-	int i = 0;
-	for ( ; i < 10; i++ ){
-		
-		WoWDbRow *row = [table GetRow:i];
-		
-		PGLog(@"[%d] %@", i, row);		
+	for ( Spell *spell in [spellController playerSpells] ){
+		NSLog(@"[%@] %@", [spell ID], [self getSpellName:[[spell ID] intValue]]);
 	}
 	
 	return;
 	/*
-	 MemoryAccess *memory = [controller wowMemoryAccess];
-	 
-	 // hooked the spell function which was passed: 0xD87980 0xA8D268 0x194
-	 // 0xFEE71C
-	 UInt32 spellPtr = 0xD2E300;		//0xD87980;//;
-	 
-	 WoWClientDb db;
-	 [memory loadDataForObject: self atAddress: spellPtr Buffer:(Byte*)&db BufLength: sizeof(db)];
-	 
-	 PGLog(@"%d %d", sizeof(Byte), sizeof(UInt8));
-	 
-	 if ( db.stringTablePtr ){
-	 int index;
-	 for ( index = 0; index < db.numRows; index++ ){
-	 
-	 UInt32 rowPtr = db.row2 + ( 4 * ( index - db.minIndex ) );
-	 
-	 Byte buffer[0x5000] = {0};
-	 [memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&buffer[0] BufLength: sizeof(buffer[0])];
-	 
-	 
-	 int currentAddress = 1, i = 0;
-	 for ( i = rowPtr + 1; currentAddress < db.numRows; ++i)
-	 {
-	 //PGLog(@"row: %d", i);
-	 
-	 [memory loadDataForObject: self atAddress: i Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress])];
-	 currentAddress++;
-	 
-	 // snag previous I's
-	 UInt8 atI = 0, prevI = 0;
-	 [memory loadDataForObject: self atAddress: i Buffer:(Byte*)&atI BufLength: sizeof(atI)];
-	 [memory loadDataForObject: self atAddress: i - 1 Buffer:(Byte*)&prevI BufLength: sizeof(prevI)];
-	 
-	 if ( atI == prevI ){
-	 
-	 UInt8 j = 0;
-	 [memory loadDataForObject: self atAddress: (i + 1) Buffer:(Byte*)&j BufLength: sizeof(j)];
-	 [memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
-	 
-	 for (; j != 0; )
-	 {
-	 //PGLog(@"here: %d", j);
-	 j--;
-	 [memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
-	 PGLog(@"currentaddressasdf: %d", currentAddress);
-	 }
-	 i += 2;
-	 if (currentAddress < db.numRows)
-	 {
-	 PGLog(@"currentaddress: %d", currentAddress);
-	 [memory loadDataForObject: self atAddress: (i) Buffer:(Byte*)&buffer[currentAddress] BufLength: sizeof(buffer[currentAddress++])];
-	 }	
-	 }
-	 }
-	 
-	 Byte newBuffer[0x2C0];
-	 memcpy( newBuffer, buffer, 0x2C0);
-	 
-	 PGLog(@"done!");
-	 
-	 int k = 0;
-	 for ( k = 0; k < 0x2C0; k++ ){
-	 PGLog(@"%c", newBuffer[k]);
-	 }
-	 
-	 
-	 /*
-	 UInt32 addressOfSpellStruct = 0x0;
-	 [memory loadDataForObject: self atAddress: rowPtr Buffer:(Byte*)&addressOfSpellStruct BufLength: sizeof(addressOfSpellStruct)];
-	 
-	 if ( addressOfSpellStruct ){
-	 
-	 UInt32 spellID = 0x0;
-	 [memory loadDataForObject: self atAddress: addressOfSpellStruct Buffer:(Byte*)&spellID BufLength: sizeof(spellID)];
-	 
-	 // valid spell ID
-	 if ( spellID <= db.maxIndex ){
-	 PGLog(@"[%d:0x%X]  %d", index, addressOfSpellStruct, spellID);
-	 }
-	 }*/
-	//}
-	
+	private static void ClientDbUnpack(IntPtr source, uint size, out IntPtr buffer)
+	{
+		// This function is taken directly from WoW. It includes lots of Marshal usage, and some other stuff.
+		// So if you don't understand it, tough shit. :D
+		
+		// Way too much allocated; but oh well.
+		var byteBuffer = new byte[0x5000];
+		
+		byteBuffer[0] = Memory.Read<byte>(source);
+		int currentAddress = 1;
+		for (var i = (uint) (source.ToInt32() + 1); currentAddress < size; ++i)
+		{
+			byteBuffer[currentAddress++] = Memory.Read<byte>((IntPtr) i);
+			
+			var atI = Memory.Read<byte>((IntPtr) i);
+			var prevI = Memory.Read<byte>((IntPtr) (i - 1));
+			if (atI == prevI)
+			{
+				for (var j = Memory.Read<byte>((IntPtr) (i + 1)); j != 0; byteBuffer[currentAddress++] = Memory.Read<byte>((IntPtr) i))
+				{
+					j--;
+				}
+				i += 2;
+				if (currentAddress < size)
+				{
+					byteBuffer[currentAddress++] = Memory.Read<byte>((IntPtr) i);
+				}
+			}
+		}
+		
+		buffer = Marshal.AllocHGlobal(0x2C0);
+		Marshal.Copy(byteBuffer, 0, buffer, 0x2C0);
+	}*/
 	
 	
 	
 	
 	/*
 	 
-	 UInt32 addr = 0x18A060 + 0x9C;		// offset ptr
-	 // offset + 0x8  (0xA4)
-	 UInt32 lowest = 0x220D970C;
-	 int i = 0;
-	 for ( i = 0; i < 100; i++ ){
-	 
-	 UInt32 ptr = 0, offset = 0;
-	 [memory loadDataForObject: self atAddress: addr Buffer:(Byte*)&ptr BufLength: sizeof(ptr)];
-	 [memory loadDataForObject: self atAddress: addr + 0x8 Buffer:(Byte*)&offset BufLength: sizeof(offset)];
-	 
-	 PGLog(@"[%d:0x%X] 0x%X:0x%X", i, addr, offset, ptr);
-	 
-	 UInt32 tmp = 0;
-	 [memory loadDataForObject: self atAddress: ptr Buffer:(Byte*)&tmp BufLength: sizeof(tmp)];
-	 if ( tmp < lowest && tmp > 0x0 ){
-	 //PGLog(@" found 0x%X at %d", tmp, i);
-	 lowest = tmp;
-	 }
-	 
-	 addr += 0xA4;
-	 }
-	 
-	 PGLog(@"Lowest: 0x%X", lowest);*/
-	
-	
-	
-	
-	/*
-	 int index;
-	 for ( index = 0; index < 40; index++ ){
-	 UInt32 addressOfString = db.row2 + ( 4 * ( index - db.maxIndex ) );
-	 
-	 PGLog(@"[Read] 0x%X", addressOfString);
-	 
-	 if ( addressOfString ){
-	 UInt32 nextAddr = 0x0;
-	 [memory loadDataForObject: self atAddress: addressOfString Buffer:(Byte*)&nextAddr BufLength: sizeof(nextAddr)];
-	 
-	 if ( nextAddr ){
-	 
-	 PGLog(@" Finding string at base 0x%X", nextAddr);
-	 
-	 NSString *str = [memory stringForAddress:nextAddr + 0x70 withSize:50];
-	 
-	 PGLog(@"String %@ at 0x%X", str, nextAddr);
-	 }
-	 }
-	 }*/
-	/*
 	 
 	 
-	 int index;
-	 for ( index = 0; index < 10; index ++ ){
+	 v2 is th spell id
 	 
-	 if ( index >= db.minIndex && index <= db.maxIndex ){
-	 
-	 UInt32 address = db.rows + ((index - db.minIndex) * 4);
-	 
-	 PGLog(@"Reading 0x%X", address);
-	 }
-	 }*/
-	//}
-	
-	
-	/*public Row GetRow(int index)
-	 {
-	 if (index >= MinIndex && index <= MaxIndex)
-	 {
-	 //g_CreatureFamilyDB.Rows[result - g_CreatureFamilyDB.minIndex];
-	 return new Row(Memory.Read<IntPtr>((IntPtr) (_nativeDb.Rows.ToInt64() + ((index - MinIndex) * 4))));
-	 }
-	 return new Row(IntPtr.Zero);
-	 }*/
+	 minIndex = *(&dword_D2E300 + 4);
+	if ( spellID >= minIndex && spellID <= maxIndex && (v4 = *(const void **)(*(&dword_D2E300 + 8) + 4 * (spellID - minIndex))) != 0 )
+	{
+		if ( unk_C7E44C )
+		{
+			v6 = (int)&v11;
+			v5 = (int)((char *)v4 + 1);
+			for ( i = *(_BYTE *)v4; v6 < (unsigned int)&v14; ++v5 )
+			{
+				*(_BYTE *)v6 = *(_BYTE *)v5;
+				v9 = *(_BYTE *)v5;
+				++v6;
+				if ( *(_BYTE *)v5 == *(_BYTE *)(v5 - 1) )
+				{
+					v7 = v6;
+					v8 = v6 + *(_BYTE *)(v5 + 1) - 1;
+					if ( *(_BYTE *)(v5 + 1) )
+					{
+						while ( 1 )
+						{
+							*(_BYTE *)v7++ = v9;
+							if ( v7 == v8 + 1 )
+								break;
+							v9 = *(_BYTE *)v5;
+						}
+					}
+					v5 += 2;
+					v6 = v7;
+					if ( (unsigned int)&v14 > v7 )
+					{
+						v6 = v7 + 1;
+						*(_BYTE *)v7 = *(_BYTE *)v5;
+					}
+				}
+			}
+		}
+		*/
 	
 	
 	
 	
 	
 	
-	//[bindingsController executeBindingForKey:BindingPrimaryHotkey];
 	
-	//MULTIACTIONBAR1BUTTON1
-	//INTERACTMOUSEOVER
 	
-	//[bindingsController doIt];
+	
+	
+	
+	
+	
+	
+	
 	
 	return;
+	
+	UInt32 addr = 0x0;
+	
+	//MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 skillsPtr = [[playerController player] infoAddress] + (4*0x27C);
+	PGLog(@"skills start at 0x%X", skillsPtr);
+	
+	i = 0;
+	for ( i = 0; i < 128; i++ ){
+		
+		UInt32 data1, data2, data3;
+		[memory loadDataForObject: self atAddress: skillsPtr + (i*3) Buffer: (Byte *)&data1 BufLength: sizeof(data1)];
+		[memory loadDataForObject: self atAddress: skillsPtr + (i*3) + 1 Buffer: (Byte *)&data2 BufLength: sizeof(data2)];
+		[memory loadDataForObject: self atAddress: skillsPtr + (i*3) + 2 Buffer: (Byte *)&data3 BufLength: sizeof(data3)];
+		
+		UInt16 skillID = (data1&0x0000FFFF);
+		
+		PGLog(@"[0x%X] %i", skillsPtr + (i*3), skillID);
+		
+		//PGLog(@"[0x%X] %i %i %i", skillsPtr + (i*3), skillID, data1, data2);
+		
+	
+		if ( skillID == 0 )
+			continue;
+		
+		UInt16 skillFlag = data1 >> 16;
+		UInt16 maxSkill = data2 >> 16;
+		UInt16 skillPerm = data3 &0x0000FFFF;
+		UInt16 skillTemp = data3 >> 16;
+		
+		PGLog(@" %i/%i %i %i %i", skillID, maxSkill, skillPerm, skillTemp, skillFlag);
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	[memory loadDataForObject: self atAddress: [[playerController player] infoAddress] + 0x16 Buffer: (Byte *)&addr BufLength: sizeof(addr)];
+	PGLog(@"address: 0x%X", addr);
+	
+	[questController isQuestComplete:0];
+	return;
+	
+	
+	//FactionTemplate DBC: 0xD301C0
+
 	
 	// ugh why won't the below work!	
 	//MemoryAccess *memory = [controller wowMemoryAccess];
@@ -5740,219 +5825,8 @@ end
 	 
 	 PGLog(@"Result of compare: %d", [self CompareFactionHash:hash1 withHash2:hash2]);
 	 }
-	 
-	 */
-	/*
-	 //[playerController isOnRightBoatInStrand];
-	 
-	 MemoryAccess *memory = [controller wowMemoryAccess];
-	 int v0=0,i=0,tmp=0,ptr=0;
-	 [memory loadDataForObject: self atAddress: 0x10E760C Buffer: (Byte*)&ptr BufLength: sizeof(ptr)];
-	 [memory loadDataForObject: self atAddress: ptr + 180 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
-	 
-	 if ( v0 & 1 || !v0 )
-	 v0 = 0;
-	 
-	 int type = 0;
-	 for ( i = 0; !(v0 & 1); ){
-	 [memory loadDataForObject: self atAddress: ptr + 172 Buffer: (Byte*)&tmp BufLength: sizeof(tmp)];
-	 [memory loadDataForObject: self atAddress: tmp + v0 + 4 Buffer: (Byte*)&v0 BufLength: sizeof(v0)];
-	 [memory loadDataForObject: self atAddress: v0 + 0x10 Buffer: (Byte*)&type BufLength: sizeof(type)];
-	 PGLog(@"[Test] Address: 0x%X %d", v0, type);
-	 if ( !v0 )
-	 break;
-	 ++i;
-	 }
-	 
-	 PGLog(@"[Test] Total : %d", i);
-	 
-	 int v2=0, v3=0;
-	 [memory loadDataForObject: self atAddress: ptr + 12 Buffer: (Byte*)&v2 BufLength: sizeof(v2)];
-	 if ( v2 & 1 || !v2 )
-	 v2 = 0;
-	 v3 = 0;*/
-	
-	/*
-	 int v0; // eax@1
-	 int i; // edi@3
-	 int v2; // eax@6
-	 int v3; // esi@8
-	 int v4; // eax@12
-	 int v5; // eax@16
-	 int v6; // ebx@18
-	 
-	 v0 = *(_DWORD *)(dword_10E760C + 180);
-	 if ( v0 & 1 || !v0 )
-	 v0 = 0;
-	 for ( i = 0; !(v0 & 1); v0 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 172) + v0 + 4) )
-	 {
-	 if ( !v0 )
-	 break;
-	 ++i;
-	 }
-	 v2 = *(_DWORD *)(dword_10E760C + 12);
-	 if ( v2 & 1 || !v2 )
-	 v2 = 0;
-	 v3 = 0;
-	 LABEL_9:
-	 if ( !(v2 & 1) )
-	 {
-	 while ( v2 )
-	 {
-	 ++v3;
-	 if ( v2 )
-	 v4 = *(_DWORD *)(dword_10E760C + 4) + v2;
-	 else
-	 v4 = dword_10E760C + 8;
-	 v2 = *(_DWORD *)(v4 + 4);
-	 if ( v2 & 1 )
-	 {
-	 v2 = 0;
-	 }
-	 else
-	 {
-	 if ( v2 )
-	 goto LABEL_9;
-	 v2 = 0;
-	 }
-	 if ( v2 & 1 )
-	 break;
-	 }
-	 }
-	 v5 = *(_DWORD *)(dword_10E760C + 56);
-	 if ( v5 & 1 || !v5 )
-	 v5 = 0;
-	 v6 = 0;
-	 LABEL_19:
-	 if ( !(v5 & 1) )
-	 {
-	 while ( v5 )
-	 {
-	 ++v6;
-	 v5 = *(_DWORD *)(*(_DWORD *)(dword_10E760C + 48) + v5 + 4);
-	 if ( v5 & 1 )
-	 {
-	 v5 = 0;
-	 }
-	 else
-	 {
-	 if ( v5 )
-	 goto LABEL_19;
-	 v5 = 0;
-	 }
-	 if ( v5 & 1 )
-	 break;
-	 }
-	 }
-	 sub_1214D0("Object manager list status:", 7);
-	 sub_122110("    Active objects:              %u objects (%u visible)", 7, v3);
-	 sub_122110("    Objects waiting to be freed: %u objects", 7, v6, i);
-	 return 1;
-	 */	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/*
-	 Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
-	 Position *playerPosition = [playerController position];
-	 
-	 // this is where we want to face!
-	 float direction = [playerPosition angleTo:pos];
-	 
-	 PGLog(@"Angle to target: %0.2f", direction);
-	 [playerController setDirectionFacing:direction];
-	 */
-	//0-2pi. North is 0, west is pi/2, south is pi, east is 3pi/2.
-	/*
-	 int quadrant = 0;
-	 
-	 if ( 0.0f < direction && direction <= M_PI/2.0f ){
-	 quadrant = 1;
-	 }
-	 else if ( M_PI/2.0f < direction && direction <= M_PI ){
-	 quadrant = 2;
-	 }
-	 else if ( M_PI < direction && direction <= (3*M_PI)/2.0f ){
-	 quadrant = 3;
-	 }
-	 else if ( (3.0f*M_PI)/2.0f < direction && direction <= 2*M_PI ){
-	 quadrant = 4;
-	 }*/
-	
-	/*
-	 
-	 float x, y;
-	 float closeness = 10.0f;
-	 
-	 // negative x
-	 if ( [pos xPosition] < 0.0f ){
-	 x = -1.0f * (cosf(direction) * closeness);
-	 }
-	 // positive x
-	 else{
-	 x = (cosf(direction) * closeness);
-	 }
-	 
-	 // negative y
-	 if ( [pos yPosition] < 0.0f ){
-	 y = -1.0f * (sinf(direction) * closeness);
-	 }
-	 // positive y
-	 else{
-	 y = (sinf(direction) * closeness);
-	 }
-	 
-	 Position *newPos = [[Position alloc] initWithX:([pos xPosition] + x) Y:([pos yPosition] + y) Z:[pos zPosition]];
-	 PGLog(@"Change in position: {%0.2f, %0.2f}", x, y);
-	 
-	 [movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
-	 */
-	
-	//[controller traverseNameList];
-	/*
-	 
-	 PGLog(@"After  write:'%@'", [playerController lastErrorMessage]);
-	 NSString *lastErrorMessageAltered = [playerController lastErrorMessage];*/
-	//free(string);
-	
-	
-	//(BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
-	
-	/*
-	 
-	 Position *playerPosition = [playerController position];
-	 Position *destination = [Position positionWithX:5486.823f Y:297.879f Z:147.4111];
-	 Position *pos = [destination positionAtDistance:15.0f withDestination:playerPosition];
-	 
-	 PGLog(@"10 yards from %@ is %@", destination, pos);
-	 //[movementController turnToward:pos];
-	 
-	 [movementController moveNearPosition:pos andCloseness:0.0f];
-	 
-	 
-	 
-	 */
-	
-	
-	
-	/*if ( self.theCombatProfile == nil )
-	 self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
-	 
-	 
-	 PGLog(@"Attack range: %0.2f", self.theCombatProfile.attackRange);
-	 PGLog(@"[Bot] Current best target: %@", [combatController findBestUnitToAttack]);*/
-	
-	
-	
+*/
 }
-
 
 #pragma mark Login
 
@@ -5996,14 +5870,118 @@ end
 	else{
 		PGLog(@"[Login] Player is already logged in? Current state: %d", gameState);
 	}
-	
-
-	
-	
-
-	
-	
 }
+
+#pragma Faction Information
+
+
+- (IBAction)test2: (id)sender{
+	/*
+	 Position *pos = [[Position alloc] initWithX: -4968.875 Y:-1208.304 Z:501.715];
+	 Position *playerPosition = [playerController position];
+	 
+	 PGLog(@"Distance: %0.2f", [pos distanceToPosition:playerPosition]);
+	 
+	 Position *newPos = [pos positionAtDistance:10.0f withDestination:playerPosition];
+	 
+	 PGLog(@"New pos: %@", newPos);
+	 
+	 [movementController setClickToMove:newPos andType:ctmWalkTo andGUID:0x0];
+	 */
+}
+
+- (int)CompareFactionHash: (int)hash1 withHash2:(int)hash2{	
+	if ( hash1 == 0 || hash2 == 0 )
+		return -1;
+	
+	UInt32 hashCheck1 = 0, hashCheck2 = 0;
+	UInt32 check1 = 0, check2 = 0;
+	int hashCompare = 0, hashIndex = 0, i = 0;
+	//Byte *bHash1[0x40];
+	//Byte *bHash2[0x40];
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	//[memory loadDataForObject: self atAddress: hash1 Buffer: (Byte*)&bHash1 BufLength: sizeof(bHash1)];
+	//[memory loadDataForObject: self atAddress: hash2 Buffer: (Byte*)&bHash2 BufLength: sizeof(bHash2)];
+	
+	// get the hash checks
+	[memory loadDataForObject: self atAddress: hash1 + 0x4 Buffer: (Byte*)&hashCheck1 BufLength: sizeof(hashCheck1)];
+	[memory loadDataForObject: self atAddress: hash2 + 0x4 Buffer: (Byte*)&hashCheck2 BufLength: sizeof(hashCheck2)];
+	
+	//bitwise compare of [bHash1+0x14] and [bHash2+0x0C]
+	[memory loadDataForObject: self atAddress: hash1 + 0x14 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
+	[memory loadDataForObject: self atAddress: hash2 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
+	if ( ( check1 & check2 ) != 0 )
+		return 1;	// hostile
+	
+	hashIndex = 0x18;
+	[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+	if ( hashCompare != 0 ){
+		for ( i = 0; i < 4; i++ ){
+			if ( hashCompare == hashCheck2 )
+				return 1; // hostile
+			
+			hashIndex += 4;
+			[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+			
+			if ( hashCompare == 0 )
+				break;
+		}
+	}
+	
+	//bitwise compare of [bHash1+0x10] and [bHash2+0x0C]
+	[memory loadDataForObject: self atAddress: hash1 + 0x10 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
+	[memory loadDataForObject: self atAddress: hash2 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
+	if ( ( check1 & check2 ) != 0 ){
+		PGLog(@"friendly");
+		return 4;	// friendly
+	}
+	
+	hashIndex = 0x28;
+	[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+	if ( hashCompare != 0 ){
+		for ( i = 0; i < 4; i++ ){
+			if ( hashCompare == hashCheck2 ){
+				PGLog(@"friendly2");
+				return 4;	// friendly
+			}
+			
+			hashIndex += 4;
+			[memory loadDataForObject: self atAddress: hash1 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+			
+			if ( hashCompare == 0 )
+				break;
+		}
+	}
+	
+	//bitwise compare of [bHash2+0x10] and [bHash1+0x0C]
+	[memory loadDataForObject: self atAddress: hash2 + 0x10 Buffer: (Byte*)&check1 BufLength: sizeof(check1)];
+	[memory loadDataForObject: self atAddress: hash1 + 0xC Buffer: (Byte*)&check2 BufLength: sizeof(check2)];
+	if ( ( check1 & check2 ) != 0 ){
+		PGLog(@"friendly3");
+		return 4;	// friendly
+	}
+	
+	hashIndex = 0x28;
+	[memory loadDataForObject: self atAddress: hash2 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+	if ( hashCompare != 0 ){
+		for ( i = 0; i < 4; i++ ){
+			if ( hashCompare == hashCheck1 ){
+				PGLog(@"friendly4");
+				return 4;	// friendly
+			}
+			
+			hashIndex += 4;
+			[memory loadDataForObject: self atAddress: hash2 + hashIndex Buffer: (Byte*)&hashCompare BufLength: sizeof(hashCompare)];
+			
+			if ( hashCompare == 0 )
+				break;
+		}
+	}
+	
+	return 3;	//neutral
+}
+
 
 
 @end
