@@ -462,15 +462,21 @@ typedef enum MovementState{
 	// find the closest waypoint in our primary route!
 	newWaypoint = [self.currentRoute waypointClosestToPosition:playerPosition];
 	
+	// If we already have a waypoint we check it
 	if ( self.destinationWaypoint ) {
-	// If the closest waypoint is back from the current one then don't use it.
 
 		NSArray *waypoints = [self.currentRoute waypoints];
 
 		int indexNext = [waypoints indexOfObject:self.destinationWaypoint];
 		int indexClosest = [waypoints indexOfObject: newWaypoint];
 
-		if ( indexClosest < indexNext) newWaypoint = self.destinationWaypoint;
+		NSArray *actions = [self.destinationWaypoint actions];
+		
+		// If there are actions to be taken at the current waypoint we don't skip it.
+		if ( actions && [actions count] > 0 ) newWaypoint = self.destinationWaypoint;
+			// If the closest waypoint is further back than the current one then don't use it.
+			else if ( indexClosest < indexNext) newWaypoint = self.destinationWaypoint;
+	
 	}
 
 	// we have a waypoint to move to!
