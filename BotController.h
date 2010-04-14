@@ -123,6 +123,7 @@
 	
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
+	Mob *_mobJustSkinned;
     Unit *preCombatUnit;
 	Unit *castingUnit;		// the unit we're casting on!
 

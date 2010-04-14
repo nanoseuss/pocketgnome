@@ -29,6 +29,7 @@
 @property (readwrite, retain) Unit *attackUnit;
 @property (readwrite, retain) Unit *castingUnit;
 @property (readwrite, retain) Unit *addUnit;
+
 @end
 
 @interface CombatController (Internal)
@@ -89,6 +90,7 @@
 @synthesize castingUnit = _castingUnit;
 @synthesize addUnit = _addUnit;
 @synthesize inCombat = _inCombat;
+@synthesize unitsAttackingMe = _unitsAttackingMe;
 
 #pragma mark -
 

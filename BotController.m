@@ -98,6 +98,7 @@
 
 @property (readwrite, retain) NSDate *startDate;
 @property (readwrite, retain) Mob *mobToSkin;
+@property (readwrite, retain) Mob *mobJustSkinned;
 @property (readwrite, retain) WoWObject *unitToLoot;
 @property (readwrite, retain) WoWObject *lastAttemptedUnitToLoot;
 @property (readwrite, retain) Unit *preCombatUnit;
@@ -216,6 +217,7 @@
 	self.startDate = nil;
 	_unitToLoot = nil;
 	_mobToSkin = nil;
+	_mobJustSkinned = nil;
 	_wasLootWindowOpen = NO;
 	_shouldFollow = YES;
 	_lastUnitAttemptedToHealed = nil;
@@ -343,6 +345,7 @@
 @synthesize procedureInProgress = _procedureInProgress;
 @synthesize evaluationInProgress = _evaluationInProgress;
 @synthesize mobToSkin = _mobToSkin;
+@synthesize mobJustSkinned = _mobJustSkinned;
 @synthesize unitToLoot = _unitToLoot;
 @synthesize wasLootWindowOpen = _wasLootWindowOpen;
 @synthesize lastAttemptedUnitToLoot = _lastAttemptedUnitToLoot;
@@ -2153,6 +2156,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// Set to null so our loot notifier realizes we shouldn't try to skin again :P
+	self.mobJustSkinned = self.mobToSkin;
 	self.mobToSkin = nil;
 	self.skinStartTime = [NSDate date];
 	
@@ -2219,6 +2223,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.isBotting ) return;
 
 	BOOL wasNode = NO;
+	BOOL wasSkin = NO;
 	
 	// If this event fired, we don't need to verifyLootSuccess! We ONLY need verifyLootSuccess when a body has nothing to loot!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
@@ -2237,12 +2242,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		} else {
 			log(LOG_DEV, @"Mob looted in %0.2f seconds after %d attempt%@. %d mobs to loot remain", [currentTime timeIntervalSinceDate: self.lootStartTime], attempts, attempts == 1 ? @"" : @"s", [_mobsToLoot count]);
 		}
-		
-		// Loot success is firing even when we miss so I'll disable this here
-		
-		// clear the attempts since it was successful
-//		[blacklistController clearAttemptsForObject:self.unitToLoot];
-		
+
 	}
 	
 	// Here from looting, but need to skin!
@@ -2255,17 +2255,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// Here from skinning!
-	else if ( self.mobToSkin ) {
+	if ( self.mobJustSkinned ) {
 
 		NSDate *currentTime = [NSDate date];
 
 		log(LOG_LOOT, @"Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);
 		
 		// We'll give this a blacklist so we don't try to reskin due to ninja skin
-		if (_doNinjaSkin) [blacklistController blacklistObject: self.mobToSkin withReason:Reason_RecentlySkinned];
+		if (_doNinjaSkin) [blacklistController blacklistObject: self.mobJustSkinned withReason:Reason_RecentlySkinned];
 		
-		[_mobsToLoot removeObject: self.mobToSkin];
-		self.mobToSkin = nil;
+		[_mobsToLoot removeObject: self.mobJustSkinned];
+		self.mobJustSkinned = nil;
+		wasSkin = YES;
+		
 	}
 	
 	if ( self.unitToLoot ) {
@@ -2282,11 +2284,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootMacroAttempt = 0;
 		self.lastAttemptedUnitToLoot = nil;
 	}
-	
-	float delay = 0.4;
-	// Allow the lute to fade
-	if (wasNode) delay = 0.8;
 
+	float delay = 0.5;
+	// Allow the lute to fade
+	if ( wasNode || wasSkin ) delay = 1.1;
+	
 	self.wasLootWindowOpen = NO;
 	self.evaluationInProgress = nil;
 	
@@ -3462,7 +3464,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if there is a procedure going
 	if ( self.procedureInProgress ) return NO;
 
-	if ( !theCombatProfile.partyEnabled && ![playerController isInCombat] ) return NO;
+	if ( !theCombatProfile.partyEnabled && ![playerController isInCombat] && !combatController.unitsAttackingMe.count ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
 
@@ -3664,13 +3666,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _lootScanCycles != 0 ) _lootScanCycles = 0;
 		return NO;
 	}
-	
+
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Loot") return NO;
 
 	// Skip this if there is a procedure going
 	if ( self.procedureInProgress ) return NO;
-	
+
 	// If we're mounted and in the air lets just skip loot scans
 	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
 
@@ -3680,8 +3682,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're moving to the mob let's wait till we get there to do anything
     if ( [movementController moveToObject] ) return NO;
 
-	log(LOG_EVALUATE, @"Evaluating for Loot");
+	// No looting if we're being attacked
+	if ( combatController.unitsAttackingMe.count ) return NO;
 
+	log(LOG_EVALUATE, @"Evaluating for Loot");
 
     // get potential units and their distances
     Mob *mobToLoot	= [self mobToLoot];
@@ -3691,7 +3695,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( self.evaluationInProgress == @"Loot" ) self.evaluationInProgress = nil;
 
 		// Only scan on the 2nd cyle
-		if ( _lootScanCycles == 1 ) [self lootScan];
+		if ( _lootScanCycles == 0 ) [self lootScan];
 
 		// This sets how many evaluation cycles pass in between loot scans
 		if ( _lootScanCycles == 5 ) _lootScanCycles=0; else _lootScanCycles++;

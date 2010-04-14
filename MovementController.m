@@ -475,13 +475,15 @@ typedef enum MovementState{
 
 	// we have a waypoint to move to!
 	if ( newWaypoint ) {
+
 		log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWaypoint);
 		self.destinationWaypoint = newWaypoint;
 
 		[playerData faceToward: [newWaypoint position]];
 		usleep([controller refreshDelay]*2);
-				
+	
 		[self moveToPosition:[newWaypoint position]];
+		
 	} else {
 		log(LOG_ERROR, @"Unable to find a position to resume movement to!");
 	}

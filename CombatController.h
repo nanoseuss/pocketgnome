@@ -65,6 +65,7 @@
 @property (readonly, retain) Unit *attackUnit;
 @property (readonly, retain) Unit *castingUnit;
 @property (readonly, retain) Unit *addUnit;
+@property (readonly, retain) NSMutableArray *unitsAttackingMe;
 
 // @property (readonly) NSString *unitHealthBar:(Unit*)unit;
 
