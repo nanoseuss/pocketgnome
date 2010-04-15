@@ -2118,7 +2118,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)skinToFinish {
-	self.evaluationInProgress = @"Loot";
+//	self.evaluationInProgress = @"Loot";
 	
 	// Up to skinning 100, you can find out the highest level mob you can skin by: ((Skinning skill)/10)+10.
 	// From skinning level 100 and up the formula is simply: (Skinning skill)/5.
@@ -2189,7 +2189,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // Sometimes there isn't an item to loot!  So we'll use this to fire off the notification
 - (void)verifyLootSuccess {
-	self.evaluationInProgress = @"Loot";
+//	self.evaluationInProgress = @"Loot";
 
 	// Check if the player is casting still (herbalism/mining/skinning)
 	if ( [playerController isCasting] ) {
@@ -2290,7 +2290,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( wasNode || wasSkin ) delay = 1.1;
 	
 	self.wasLootWindowOpen = NO;
-	self.evaluationInProgress = nil;
+//	self.evaluationInProgress = nil;
 	
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
@@ -2300,7 +2300,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( !self.isBotting ) return;
 	
-	self.evaluationInProgress = @"Loot";
+//	self.evaluationInProgress = @"Loot";
 
 	log(LOG_LOOT, @"Looted %@", [notification object]);
 	
@@ -2325,6 +2325,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(void)checkUnitForLootable: (Unit*)unit {
+
+	if ( !self.isBotting ) return;
 
 	if ( !self.doLooting ) return;
 
@@ -2358,7 +2360,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)unitEnteredCombat: (NSNotification*)notification {
 
-	if (![self isBotting]) return;
+	if ( !self.isBotting ) return;
 
 	Unit *unit = [notification object];
 
@@ -2370,23 +2372,23 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 
+	// If we're in follow mode let's keep cruisin till we catch up to the leader.
+	if ( self.evaluationInProgress == @"Follow" ) {
+		log(LOG_DEV, @"Ignoring combat with %@ since we're trying to get to our leader.", unit);
+		return;		
+	}
+
 	// start a combat procedure if we're not in one!
-	if ( self.procedureInProgress != @"CombatProcedure" && self.procedureInProgress != @"PreCombatProcedure") {
-		
-		self.evaluationInProgress = nil;
-		
-		// If it's a player attacking us lets attack the player!		
+	if ( self.procedureInProgress != @"CombatProcedure" && self.procedureInProgress != @"PreCombatProcedure" ) {
+
+		// If it's a player attacking us lets attack the player!
 		if ( [unit isPlayer] ) {
-			
 			log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
-			[self cancelCurrentProcedure];
-			[self actOnUnit:unit];
-			
-			return;
-
+		} else {
+			log(LOG_COMBAT, @"Looks like an ambush, taking action!");
 		}
-
-		log(LOG_COMBAT, @"Looks like an ambush, taking action!");
+		
+		[self cancelCurrentEvaluation];
 		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
 		return;
@@ -2402,8 +2404,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[unit isPlayer] &&
 			[playerController isHostileWithFaction: [unit factionTemplate]]
 		) {
+		
 		log(LOG_COMBAT, @"%@ %@ has jumped me, Targeting Player!", [combatController unitHealthBar:unit], unit);
-
+		
+		[self cancelCurrentEvaluation];
 		[self cancelCurrentProcedure];
 		[self actOnUnit:unit];
 		return;
@@ -2571,11 +2575,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			// Stop what we're doing so we can evaluate for loot
 			if ( self.procedureInProgress ) [self cancelCurrentProcedure];
+			
 			if ( [movementController isMoving] ) [movementController stopMovement];
 
 			// Reset the loot scan idle timer
 			[self resetLootScanIdleTimer];
-			
+
 			[self evaluateSituation];
 
 		} else {
@@ -3037,13 +3042,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
 	}
 }
-
-- (NSString*)randomEmote {
+ 
+- (NSString*)randomEmote:(Unit*)emoteUnit {
 
 	NSString *emote = _lastEmote;
 
 	// Targeting nothing or ourselves
-	if ( ![playerController targetID] || [playerController targetID] == [playerController GUID]) {
+	if ( !emoteUnit || [playerController targetID] == [playerController GUID]) {
 		emote = [self emoteGeneral];
 		// Find something besides the last one
 		while ( emote == _lastEmote) emote = [self emoteGeneral];
@@ -3051,9 +3056,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return emote;
 	}
 
-	UInt64 targetGUID = [playerController targetID];
-	Player *player = [playersController playerWithGUID: targetGUID];
-	if ( [player gender] != [[playerController player] gender]) {
+	if ( [(Player*)emoteUnit gender] != [[playerController player] gender]) {
 		// Targeting someone sexy
 		emote = [self emoteSexy];
 		while ( emote == _lastEmote) emote = [self emoteSexy];
@@ -3076,22 +3079,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (r == 1) return @"/burp";
 	if (r == 2) return @"/bored";
 	if (r == 3) return @"/cat";
-	if (r == 4) return @"/grin";
+	if (r == 4) return @"/cry";
 	if (r == 5) return @"/chicken";
 	if (r == 6) return @"/confused";
-	if (r == 7) return @"/cough";
+	if (r == 7) return @"/sob";
 	if (r == 8) return @"/drool";
 	if (r == 9) return @"/eye";
 	if (r == 10) return @"/fidget";
-	return @"/cry";
+	return nil;
 }
 
 - (NSString*)emoteFriend {
 	int r = SSRandomIntBetween(0,10);
-	if (r == 0) return @"/tired";
-	if (r == 1) return @"/bite";
+	if (r == 0) return @"/yes";
+	if (r == 1) return @"/rasp";
 	if (r == 2) return @"/lol";
-	if (r == 3) return @"/bored";
+	if (r == 3) return @"/rofl";
 	if (r == 4) return @"/grin";
 	if (r == 5) return @"/impatient";
 	if (r == 6) return @"/moon";
@@ -3099,7 +3102,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (r == 8) return @"/bravo";
 	if (r == 9) return @"/cackle";
 	if (r == 10) return @"/blink";
-	return @"/cry";
+	return nil;
 }
 
 - (NSString*)emoteSexy {
@@ -3115,7 +3118,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (r == 8) return @"/lick";
 	if (r == 9) return @"/massage";
 	if (r == 10) return @"/love";
-	return @"/cry";
+	return nil;
 }
 
 
@@ -3223,7 +3226,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	log(LOG_EVALUATE, @"Evaluating for Ghost");
 
-	if ( ![self evaluationInProgress] ) {
+	if ( !self.evaluationInProgress ) {
 		log(LOG_GHOST, @"Player is dead.");
 		self.evaluationInProgress = @"Ghost";
 		[controller setCurrentStatus: @"Bot: Player is Dead"];
@@ -3370,7 +3373,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// If we're doing something, lets record the route of our follow target
-	if ( [self evaluationInProgress] && self.evaluationInProgress != @"Follow") {
+	if ( self.evaluationInProgress && self.evaluationInProgress != @"Follow") {
 
 		log(LOG_DEV, @"Skipping Follow because we're evaluating for something else.");
 
@@ -3708,7 +3711,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.evaluationInProgress = nil;
 		return NO;
 	}
-	
+
 	Unit *unitToCheck	= [self mobToLoot];
 	// If it's a node then we'll leave it to the mining evaluation
 	if ( [unitToCheck isKindOfClass: [Node class]] ) return NO;
@@ -3728,6 +3731,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
+
+	self.evaluationInProgress = @"Loot";
 
 	// Close enough to loot it
 	if ( mobToLootDist <= 5.0 ) {
@@ -3878,6 +3883,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 
+	self.evaluationInProgress = @"MiningAndHerbalism";
+	
 	// Close enough to loot it
 	if ( nodeDist <= DistanceUntilDismountByNode ) {
 		
@@ -4151,6 +4158,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (needToPause && [movementController isMoving]) [movementController stopMovement];
 	log(LOG_DEV, @"Patrol now calling for performProcedurewithState");
 
+	self.evaluationInProgress = @"Patrol";
+	
 	[self performSelector: @selector(performProcedureWithState:) 
 			   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 							PatrollingProcedure,		  @"Procedure",
@@ -4200,32 +4209,26 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
+	Unit *emoteUnit = nil;
+	
 	// We have party members
 	if (i > 0) {
 		int randomNumer = SSRandomIntBetween(1, i);
 		Player *randomPartyMember = [playersController playerWithGUID: [playerController PartyMember: randomNumer]];
-		if ( [randomPartyMember isValid]) {
-			[playerController targetGuid: [playerController PartyMember: randomNumer]];
-			[playerController faceToward: [randomPartyMember position]];
-			usleep(300000);
-		} else 
-		if ( [self followUnit] ) {
-			[playerController targetGuid:[[self followUnit] GUID]];
-			[playerController faceToward: [[self followUnit] position]];
-			usleep(300000);
-		}
-	} else
-	// Target our follow unit
-	if ( [self followUnit] ) {
-		[playerController targetGuid:[[self followUnit] GUID]];
-		[playerController faceToward: [[self followUnit] position]];
-		usleep(300000);
+		if ( [randomPartyMember isValid]) emoteUnit = (Unit*)randomPartyMember;
 	}
-
+	
+	// Target our follow unit
+	if ( !emoteUnit && self.followUnit && [followUnit isValid] ) emoteUnit = followUnit;
+	
+	[playerController targetGuid:[emoteUnit GUID]];
+	[playerController faceToward: [emoteUnit position]];
+	usleep(300000);
+	
 	// Actually move a tad
 	[movementController establishPlayerPosition];
 	
-	NSString *emote = [self randomEmote];
+	NSString *emote = [self randomEmote:emoteUnit];
 	if ( [playerController targetID] ) {
 		log(LOG_PARTY, @"Emote: %@ on %@", emote, [playersController playerNameWithGUID: [playerController targetID]]);
 	} else {
@@ -4246,7 +4249,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		log(LOG_EVALUATE, @"Evaluating Situation");
 	}
-	
+
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 
 	// Order of operations is established here
@@ -5035,6 +5038,18 @@ NSMutableDictionary *_diffDict = nil;
 	
 	//TO DO: Check to make sure you only respond to people around you that you are healing!
 	if ( theCombatProfile.followEnabled ) {
+
+		// Break your combat and move your ass to the follow unit!
+		if ( !self.followSuspended && ( [[entry text] isEqualToString: @"Move now!"] ) ) {
+			log(LOG_PARTY, @"Command recieved, breaking combat and moving now!");
+			[self cancelCurrentProcedure];
+			[combatController cancelAllCombat];
+			[self cancelCurrentEvaluation];
+			[self followRouteRecord];
+			self.evaluationInProgress = @"Follow";
+			[self evaluateSituation];
+			return;
+		} else 
 
 		// Deactive follow mode if we have a follow unit
 		if ( !self.followSuspended && ( [[entry text] isEqualToString: @"Stay there"] || [[entry text] isEqualToString: @"Stay here"] ) ) {

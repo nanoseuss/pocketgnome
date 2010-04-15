@@ -357,7 +357,7 @@
 - (BOOL)leaderWait;
 - (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
-- (NSString*)randomEmote;
+- (NSString*)randomEmote: (Unit*)emoteUnit;
 - (NSString*)emoteGeneral;
 - (NSString*)emoteFriend;
 - (NSString*)emoteSexy;
