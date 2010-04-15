@@ -3873,9 +3873,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( nearbyScaryUnits ) {
 			log(LOG_NODE, @"Skipping node due to proximity count");
 			self.evaluationInProgress=nil;
-			
+
 			if (self.evaluationInProgress) [movementController stopMovement];
-			
+
 			[blacklistController blacklistObject:nodeToLoot];
 			return NO;
 		}
@@ -3883,11 +3883,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 
-	self.evaluationInProgress = @"MiningAndHerbalism";
-	
 	// Close enough to loot it
 	if ( nodeDist <= DistanceUntilDismountByNode ) {
-		
+
 		int attempts = [blacklistController attemptsForObject:nodeToLoot];
 
 		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= 3 ) {
@@ -3896,7 +3894,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			self.evaluationInProgress=nil;
 			return NO;
 		}
-		
+
 		self.evaluationInProgress = @"MiningAndHerbalism";
 		[controller setCurrentStatus: @"Bot: Working node"];
 		[self lootUnit:nodeToLoot];
@@ -3906,7 +3904,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// if it's potentially unreachable or at a distance lets make sure we're mounted
 	// We're putting this here so we can run this check prior to the patrol evaluation
 	// This allows us to disregard the mounting if it's not in our behavior (low levels or what ever)
-	if (nodeDist > 12.0f && ![[playerController player] isMounted ]) {
+	if ( nodeDist > 12.0f && ![[playerController player] isMounted ] ) {
 		// see if we would be performing anything in the patrol procedure
 		BOOL performPatrolProc = NO;
 		Rule *ruleToCheck;
@@ -3925,16 +3923,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
-	
 	// Move to it	
 	if ( self.evaluationInProgress != @"MiningAndHerbalism") {
 		log(LOG_DEV, @"Moving to node...");
 		_movingTowardNodeCount = 0;
 	} else {
 		_movingTowardNodeCount++;
-		self.evaluationInProgress = @"MiningAndHerbalism";
 	}
-	
+
 	// have we exceeded the amount of attempts to move to the node?
 	if ( _movingTowardNodeCount > 4 ){
 		log(LOG_NODE, @"Unable to reach %@!, blacklisting.", nodeToLoot);
@@ -3944,8 +3940,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return YES;
 	}
-	
+
 //	if ( [movementController isMoving] ) [movementController stopMovement];
+
+	self.evaluationInProgress = @"MiningAndHerbalism";
 	[controller setCurrentStatus: @"Bot: Moving to node"];
 
 	// Safe to move to the node!
