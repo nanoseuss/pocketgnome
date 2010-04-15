@@ -36,6 +36,7 @@
 @class MobController;
 @class ChatController;
 @class ChatLogController;
+@class ChatLogEntry;
 @class Controller;
 @class WaypointController;
 @class ProcedureController;
@@ -366,6 +367,8 @@
 - (void)followRouteClear;
 - (BOOL)followMountNow;
 - (BOOL)followMountCheck;
+- (BOOL)whisperCommandAllowed: (ChatLogEntry*)entry;
+
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;

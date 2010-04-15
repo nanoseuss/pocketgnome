@@ -5039,8 +5039,23 @@ NSMutableDictionary *_diffDict = nil;
 	//TO DO: Check to make sure you only respond to people around you that you are healing!
 	if ( theCombatProfile.followEnabled ) {
 
+	log(LOG_PARTY, @"Follow mode whisper: %@ said %@", [entry playerName], [entry text]);
+
+		NSString *whisperLook = @"*look*";
+		NSString *whisperCome = @"*come*";
+		NSString *whisperStay = @"*stay*";
+		NSString *whisperMove = @"*move*";
+
+		NSPredicate *predicateLook = [NSPredicate predicateWithFormat:@"SELF like[cd] %@", whisperLook];
+		NSPredicate *predicateCome = [NSPredicate predicateWithFormat:@"SELF like[cd] %@", whisperCome];
+		NSPredicate *predicateStay = [NSPredicate predicateWithFormat:@"SELF like[cd] %@", whisperStay];
+		NSPredicate *predicateMove = [NSPredicate predicateWithFormat:@"SELF like[cd] %@", whisperMove];
+		
 		// Break your combat and move your ass to the follow unit!
-		if ( !self.followSuspended && ( [[entry text] isEqualToString: @"Move now!"] ) ) {
+		if ( !self.followSuspended &&  [predicateMove evaluateWithObject: [entry text]] ) {
+			// Check to ensure this command is from someone allowed to command us
+			if ( ![self whisperCommandAllowed: entry] ) return;
+
 			log(LOG_PARTY, @"Command recieved, breaking combat and moving now!");
 			[self cancelCurrentProcedure];
 			[combatController cancelAllCombat];
@@ -5048,33 +5063,72 @@ NSMutableDictionary *_diffDict = nil;
 			[self followRouteRecord];
 			self.evaluationInProgress = @"Follow";
 			[self evaluateSituation];
-			return;
+			
 		} else 
 
+		// Face up and look at your follow unit
+		if ( !self.followSuspended && [followUnit isValid] && [predicateLook evaluateWithObject: [entry text]]  ) {
+			
+			// Check to ensure this command is from someone allowed to command us
+			if ( ![self whisperCommandAllowed: entry] ) return;
+
+			log(LOG_PARTY, @"Command recieved, facing leader.");
+			[playerController targetGuid:[followUnit GUID]];
+			usleep(100000);
+			[playerController faceToward: [followUnit position]];
+			usleep(300000);
+			
+			[movementController establishPlayerPosition];
+			
+		} else 
+			
 		// Deactive follow mode if we have a follow unit
-		if ( !self.followSuspended && ( [[entry text] isEqualToString: @"Stay there"] || [[entry text] isEqualToString: @"Stay here"] ) ) {
+		if ( !self.followSuspended && [predicateStay evaluateWithObject: [entry text]] ) {
+			
+			// Check to ensure this command is from someone allowed to command us
+			if ( ![self whisperCommandAllowed: entry] ) return;
+
 			log(LOG_PARTY, @"Command recieved, stop following.");
-
 			self.followSuspended = YES;
-
-			if ( self.followUnit ) {
-				[playerController targetGuid:[[self followUnit] GUID]];
-				[chatController sendKeySequence: [NSString stringWithFormat: @"%c/salute%c", '\n', '\n']];
-			}
-
+			
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c/r kk%c", '\n', '\n']];
+			
 		} else 
 
 		// Reactive follow mode
-		if ( self.followSuspended && [[entry text] isEqualToString: @"Come on"] ) {
+		if ( self.followSuspended && [predicateCome evaluateWithObject: [entry text]] ) {
+			
+			// Check to ensure this command is from someone allowed to command us
+			if ( ![self whisperCommandAllowed: entry] ) return;
+
 			log(LOG_PARTY, @"Command recieved, following again.");
-
 			self.followSuspended = NO;
-
-			[chatController sendKeySequence: [NSString stringWithFormat: @"%c/train%c", '\n', '\n']];
+			[chatController sendKeySequence: [NSString stringWithFormat: @"%c/r kk%c", '\n', '\n']];
 
 		}
 	}
+}
+
+-(BOOL)whisperCommandAllowed:(ChatLogEntry*)entry {
+
+	if ( theCombatProfile.followUnit && theCombatProfile.followUnitGUID > 0x0 ) {
+		if ( [[playersController playerNameWithGUID: theCombatProfile.followUnitGUID] isEqualToString: [entry playerName]] ) return YES;
+		
+	}
 	
+	if ( !theCombatProfile.partyEnabled ) {
+		log(LOG_CHAT, @"%@ is sending me: %@, but they're not allowed to!", [entry playerName], [entry text] );
+		return NO;
+	}
+	
+	if ( theCombatProfile.tankUnit && theCombatProfile.tankUnitGUID > 0x0 ) 
+		if ( [[playersController playerNameWithGUID: theCombatProfile.tankUnitGUID] isEqualToString: [entry playerName]] ) return YES;
+
+	if ( theCombatProfile.assistUnit && theCombatProfile.assistUnit > 0x0 ) 
+		if ( [[playersController playerNameWithGUID: theCombatProfile.assistUnit] isEqualToString: [entry playerName] ] ) return YES;
+
+	log(LOG_PARTY, @"%@ is sending me: %@, but they're not allowed to!", [entry playerName], [entry text] );
+	return NO;
 }
 
 #pragma mark AKA [Input] PlayerData
