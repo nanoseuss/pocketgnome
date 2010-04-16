@@ -324,7 +324,7 @@
 
 
 #pragma mark -
-#pragma Value Functions
+#pragma mark Value Functions
 
 
 /*!
@@ -349,5 +349,11 @@
 - (IBAction) testStuff: sender;
 - (IBAction) testRoute: sender;
 - (IBAction) testDestLocation: sender;
+
+
+#pragma mark -
+#pragma mark Singleton
+
++ (PatherController *)sharedPatherController;
 
 @end

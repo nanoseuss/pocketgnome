@@ -191,6 +191,7 @@
 }
 
 
+
 - (MPLocation *) location {
 
 	Mob *currentMob = [self mobToPull];
@@ -202,10 +203,12 @@
 }
 
 
+
 - (void) restart {
 	state = PullStateSearching;
  }
 
+ 
 
 - (BOOL) wantToDoSomething {
 PGLog( @"[Pull wtds]: ");
@@ -342,6 +345,7 @@ PGLog( @"   state[Waiting]");
 }
 
 
+
 - (MPActivity *) activity {
 
 	Mob *currentMob = [self mobToPull];
@@ -458,12 +462,16 @@ PGLog( @"   state[Waiting]");
 #pragma mark -
 #pragma mark Helper Functions
 
+
+
 - (void) clearBestTask {
 	
 //	[self.selectedMob release];
 	self.selectedMob = nil;
 	
 }
+
+
 
 - (Mob *) mobToPull {
 
@@ -538,6 +546,7 @@ PGLog( @"   state[Waiting]");
 }
 
 
+
 - (BOOL) isValidTargetName: (Mob*)mob {
 	
 	if ([names count] == 0) {
@@ -589,6 +598,7 @@ PGLog( @"   state[Waiting]");
 }
 
 
+
 - (BOOL) tooManyAdds: (Mob*)mob {
 	
 	if (!skipMobsWithAdds) {
@@ -613,6 +623,7 @@ PGLog( @"   state[Waiting]");
 	}
 	return NO;
 }
+
 
 
 - (NSString *) description {
@@ -657,11 +668,15 @@ PGLog( @"   state[Waiting]");
 //	[taskController setInCombat:NO];  // moving to clearWaitActivity to pause for looting
 }
 
+
+
 - (void) clearApproachActivity {
 	[approachActivity stop];
 	[approachActivity autorelease];
 	self.approachActivity = nil;
 }
+
+
 
 - (void) clearWaitActivity {
 	[waitActivity stop];
@@ -669,6 +684,8 @@ PGLog( @"   state[Waiting]");
 	self.waitActivity = nil;
 	[taskController setInCombat:NO];
 }
+
+
 
 #pragma mark -
 

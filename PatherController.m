@@ -43,7 +43,7 @@
 #import "MovementController.h"
 #import "BlacklistController.h"
 #import "RouteSet.h"
-
+#import "SynthesizeSingleton.h"
 
 @interface PatherController (Internal)
 
@@ -69,6 +69,8 @@
 @synthesize customClass;
 @synthesize unitsLootBlacklisted;
 @synthesize deleteMeRouteDest;
+
+SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 
 // view display related
 @synthesize view, minSectionSize, maxSectionSize;

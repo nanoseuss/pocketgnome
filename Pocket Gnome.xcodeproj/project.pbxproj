@@ -172,6 +172,8 @@
 		34B094E810670BC100EC8D5A /* MPParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 34B094C110670BC100EC8D5A /* MPParser.m */; };
 		34B0951210671AF100EC8D5A /* Icon_Pather.png in Resources */ = {isa = PBXBuildFile; fileRef = 34B0951110671AF100EC8D5A /* Icon_Pather.png */; };
 		34C3531C116F56E4002B11E5 /* MPActivityTestPosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C3531B116F56E4002B11E5 /* MPActivityTestPosition.m */; };
+		34C3566A117738B3002B11E5 /* MPSpell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C35669117738B3002B11E5 /* MPSpell.m */; };
+		34C356E81178BF5D002B11E5 /* MPCustomClassScrubDruid.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */; };
 		34D5FC9D10685C1100712FD0 /* MPTaskRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */; };
 		34D5FCFA10686F1900712FD0 /* MPActivityWalk.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FCF910686F1900712FD0 /* MPActivityWalk.m */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
@@ -752,6 +754,10 @@
 		34C3531A116F56E4002B11E5 /* MPActivityTestPosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityTestPosition.h; sourceTree = "<group>"; };
 		34C3531B116F56E4002B11E5 /* MPActivityTestPosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityTestPosition.m; sourceTree = "<group>"; };
 		34C353F511702F64002B11E5 /* SynthesizeSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SynthesizeSingleton.h; sourceTree = "<group>"; };
+		34C35668117738B3002B11E5 /* MPSpell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSpell.h; sourceTree = "<group>"; };
+		34C35669117738B3002B11E5 /* MPSpell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSpell.m; sourceTree = "<group>"; };
+		34C356E61178BF5D002B11E5 /* MPCustomClassScrubDruid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomClassScrubDruid.h; sourceTree = "<group>"; };
+		34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomClassScrubDruid.m; sourceTree = "<group>"; };
 		34D5FC9B10685C1100712FD0 /* MPTaskRoute.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskRoute.h; sourceTree = "<group>"; };
 		34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskRoute.m; sourceTree = "<group>"; };
 		34D5FCF810686F1900712FD0 /* MPActivityWalk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityWalk.h; sourceTree = "<group>"; };
@@ -1489,6 +1495,10 @@
 				3430EAC4106A309A00F7B575 /* MPCustomClass.m */,
 				3430EAD6106A361E00F7B575 /* MPCustomClassPG.h */,
 				3430EAD7106A361E00F7B575 /* MPCustomClassPG.m */,
+				34C35668117738B3002B11E5 /* MPSpell.h */,
+				34C35669117738B3002B11E5 /* MPSpell.m */,
+				34C356E61178BF5D002B11E5 /* MPCustomClassScrubDruid.h */,
+				34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */,
 			);
 			name = CustomClass;
 			sourceTree = "<group>";
@@ -2675,6 +2685,8 @@
 				0394052F1163C67400D98403 /* WoWDbTable.m in Sources */,
 				039405321163C73700D98403 /* WoWDbRow.m in Sources */,
 				34C3531C116F56E4002B11E5 /* MPActivityTestPosition.m in Sources */,
+				34C3566A117738B3002B11E5 /* MPSpell.m in Sources */,
+				34C356E81178BF5D002B11E5 /* MPCustomClassScrubDruid.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,7 +11,7 @@
 #import "MPTask.h"
 #import "PatherController.h"
 #import "PlayerDataController.h"
-
+#import "BotController.h"
 #import "MobController.h"
 #import "Mob.h"
 #import "Waypoint.h"
@@ -19,6 +19,10 @@
 #import "Offsets.h"
 
 #import "MPMover.h"
+#import "MPSpell.h"
+
+#import "SpellController.h"
+#import "Spell.h"
 
 @implementation MPActivityTest
 @synthesize key, targetName;
@@ -120,6 +124,87 @@
 //			[mover moveTowards:(MPLocation *)[targetMob position] within:3.0f facing:(MPLocation *)[targetMob position]];
 			[mover moveTowards:testLoc within:1.0f facing:(MPLocation *)[targetMob position]];
 			[mover action];
+			
+			
+			/*
+			
+			//// let's try grabbing some Spell Info
+			SpellController *spellController = [SpellController sharedSpells];
+			Spell *spell = [spellController playerSpellForName:@"Thorns"];
+			if (spell) {
+				PGLog(@"   ===> spell [%@] [%d]", [spell name], [[spell ID] intValue]);
+			}else {
+				PGLog(@"   ===> spell [Thorns] not found ... ");
+			}
+			
+			PlayerDataController *me = [PlayerDataController sharedController];
+			if (![spellController isSpellOnCooldown:[[spell ID] intValue]]) {
+				
+				if ([me percentMana] > 50) {
+					
+					[[[task patherController] botController] performAction:[[spell ID] intValue]];
+				}
+
+			}
+			
+			Spell *innervate = [spellController playerSpellForName:@"Innervate"];
+			if (![spellController isSpellOnCooldown:[[innervate ID] intValue]]) {
+				[[[task patherController] botController] performAction:[[innervate ID] intValue]];
+			} else {
+				PGLog(@"    ====> spell Innervate is on Cooldown. ");
+			}
+			*/
+			
+			MPSpell *thorns = [MPSpell thorns];
+			PlayerDataController *me = [PlayerDataController sharedController];
+			if ([me percentMana] > 50) {
+				if (![thorns unitHasBuff:(Unit *)[me player]]) {
+					[thorns cast];
+				} else {
+					PGLog(@"   ---> Already have Thorns!");
+				}
+			}
+			
+			
+			/*
+			 
+			 Design:
+			 
+			 MPSpell
+			 MPBuff
+			 MPDebuff
+			 
+			 [DruidSpell rejuvination] 
+			 {
+				MPSpell *spell = [MPSpell spell];
+				[spell setName:@"Rejuvination"]
+				[spell addID: 100] // Rank 1
+				[spell addID: 200] // Rank 2
+				...
+				[spell setTimer: 12000]; // 12 sec duration  (like for rejuvination)
+				[spell scanActionBar]; // look to find actionbar location & grab current ID
+				return spell;
+			 }
+			 
+			 MPSpell *wrath = [DruidSpell wrath];
+			 if ([wrath canCast]) {
+			 
+				int error = [wrath cast];
+			 }
+			 
+			 MPSpell *rejuv = [DruidSpell rejuvination];
+			 if ((![rejuv unitHasBuff:[player guid]) || ([rejuv isReadyForUnit: [player guid]]) ) {
+				[rejuv castOnUnit:[player guid]];
+			 }
+			 
+			 MPSpell *thorns = [DruidSpell thorns];
+			 if (![thorns unitHasBuff:[player guid]]) {
+				[thorns castOnUnit:[player guid];
+			 }
+			 
+			 
+			 
+			 */
 			
 		} else {
 			PGLog(@" Position Check: mob[%@] not found", targetName);
