@@ -2278,7 +2278,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if (!self.unitToLoot && !self.mobToSkin) {
 		// We're done!	
 		NSDate *currentTime = [NSDate date];
-		log(LOG_LOOT, @"All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
+		if ( self.evaluationInProgress != @"Fishing") log(LOG_LOOT, @"All looting completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.lootStartTime]);
 		
 		// Reset our attempt variables!
 		_lootMacroAttempt = 0;
@@ -2288,40 +2288,36 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	float delay = 0.5;
 	// Allow the lute to fade
 	if ( wasNode || wasSkin ) delay = 1.1;
-	
+
 	self.wasLootWindowOpen = NO;
-//	self.evaluationInProgress = nil;
-	
+
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
 
 // called when ONE item is looted
 - (void)itemLooted: (NSNotification*)notification {
-	
-	if ( !self.isBotting ) return;
-	
-//	self.evaluationInProgress = @"Loot";
 
-	log(LOG_LOOT, @"Looted %@", [notification object]);
-	
+	if ( !self.isBotting ) return;
+
+	log(LOG_DEV, @"Looted %@", [notification object]);
+
 	// should we try to use the item?
-	if ( _lootUseItems ){		
+	if ( _lootUseItems ){
 		int itemID = [[notification object] intValue];
-		
+
 		// crystallized <air|earth|fire|shadow|life|water> or mote of <air|earth|fire|life|mana|shadow|water>
 		if ( ( itemID >= 37700 && itemID <= 37705 ) || ( itemID >= 22572 && itemID <= 22578 ) ) {
-			log(LOG_DEV, @"Useable item looted, checking to see if we have > 10 of %d", itemID);			
+			log(LOG_DEV, @"Useable item looted, checking to see if we have > 10 of %d", itemID);
 			Item *item = [itemController itemForID:[notification object]];
 			if ( item ) {
 				int collectiveCount = [itemController collectiveCountForItem:item];
-				if ( collectiveCount >= 10 ) {					
+				if ( collectiveCount >= 10 ) {
 					log(LOG_LOOT, @"We have more than 10 of %@, using!", item);
-					[self performAction:itemID + USE_ITEM_MASK];					
+					[self performAction:itemID + USE_ITEM_MASK];
 				}
 			}
 		}
 	}
-	
 }
 
 -(void)checkUnitForLootable: (Unit*)unit {
@@ -3176,6 +3172,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark Evaluation Tasks
 - (BOOL)evaluateForPVP {
+	
 	if ( !self.isPvPing ) return NO;
 	
 	log(LOG_EVALUATE, @"Evaluating for PvP");
@@ -3183,7 +3180,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Check for preparation buff
 	if ( self.isPvPing && [self.pvpBehavior preparationDelay] && [auraController unit: [playerController player] hasAura: PreparationSpellID] ){		
 		[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade..."];
-		[movementController stopMovement];	
+		[movementController stopMovement];
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
 		return YES;
 	}
@@ -3307,7 +3304,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 			return YES;
 		}
-	}	
+	}
+	
 	log(LOG_DEV, @"Clicking the Resurrect button....");
 
 	// set our next-revive wait timer
@@ -3316,7 +3314,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	[macroController useMacroOrSendCmd:@"Resurrect"];	 // get corpse
 	if ( _reviveAttempt > 15 ) _reviveAttempt = 15;
-	
+
 	log(LOG_GHOST, @"Waiting %d seconds to resurrect.", _reviveAttempt);
 	[self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
 	return YES;
@@ -3340,7 +3338,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for Party");
 
 	if ( [self leaderWait] ) {
+		
 		// Looks like we need to wait!
+		self.evaluationInProgress = @"Party";
 		
 		if ( [movementController isMoving] ) [movementController stopMovement];
 		
@@ -3354,7 +3354,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_leaderBeenWaiting = NO;
 	}
 
-	return NO;
+	if ( self.evaluationInProgress ) {
+		self.evaluationInProgress = nil;
+		[self evaluateSituation];
+		return YES;
+	} else {
+		return NO;
+	}
 }
 
 - (BOOL)evaluateForFollow {
@@ -3397,8 +3403,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// If we need to mount lets return
 	if ( [self followMountCheck] ) {
+
 		log(LOG_DEV, @"Need to mount...");
 		self.evaluationInProgress = @"Follow";
+
 		if ( [self followMountNow] ) {
 			log(LOG_DEV, @"Mounting ok, calling evaluation");
 			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
@@ -3407,13 +3415,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_DEV, @"Mountingfailed!?");
 			return NO;
 		}
+		
 	}
 
 	log(LOG_DEV, @"Checking to make sure we've got a route");
 	// If we've recorded no route yet
 	if ( [followRoute waypointCount] == 0 ) {
-		self.evaluationInProgress = nil;
-		return NO;
+
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+		
 	}
 
 	float distanceToLeader = [[playerController position] distanceToPosition: [followUnit position]];
@@ -3421,8 +3437,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( distanceToLeader <= theCombatProfile.followDistanceToMove ) {
 		// If we're in range don't worry about it, make sure the route had been cleared
 		[self followRouteClear];
-		self.evaluationInProgress = nil;
-		return NO;
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
 	}
 	
 	
@@ -3439,8 +3460,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( distanceToLeader <= theCombatProfile.followDistanceToMove ) {
 		// If we're in range don't worry about it, make sure the route had been cleared
 		[self followRouteClear];
-		self.evaluationInProgress = nil;
-		return NO;
+
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
 	}
 
 	if ( increasedDueToMount ) {
@@ -3583,8 +3610,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [[playerController player] isMounted] ) return NO;
 
 	if ( [playerController isInCombat] ) {
-		self.evaluationInProgress = nil;
-		return NO;
+		
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+
 	}
 		
 	log(LOG_EVALUATE, @"Evaluating for Regen");
@@ -3625,8 +3659,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	if (!performRegen) {
-		self.evaluationInProgress = nil;
-		return NO;
+		
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+
 	} else {
 		self.evaluationInProgress = @"Regen";
 	}
@@ -3657,7 +3698,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if (needToPause) return YES;
 
-	return NO;
+	if ( self.evaluationInProgress ) {
+		self.evaluationInProgress = nil;
+		[self evaluateSituation];
+		return YES;
+	} else {
+		return NO;
+	}
+	
 }
 
 - (BOOL)evaluateForLoot {
@@ -3695,21 +3743,33 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     if ( !mobToLoot ) {
 
-		if ( self.evaluationInProgress == @"Loot" ) self.evaluationInProgress = nil;
-
 		// Only scan on the 2nd cyle
 		if ( _lootScanCycles == 0 ) [self lootScan];
 
 		// This sets how many evaluation cycles pass in between loot scans
 		if ( _lootScanCycles == 5 ) _lootScanCycles=0; else _lootScanCycles++;
 
-		return NO;
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+		
 	}
 
 	if ( ![mobToLoot isValid] ) {
 		if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
-		self.evaluationInProgress = nil;
-		return NO;
+
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+
 	}
 
 	Unit *unitToCheck	= [self mobToLoot];
@@ -3725,8 +3785,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     // if theres a unit that needs our attention that's closer than the lute.
     if ( mobToLootDist > unitToActOnDist && [playerController isHostileWithFaction: [unitToActOn factionTemplate]]) {		
 		log(LOG_LOOT, @"Mob is too close to loot: %0.2f > %0.2f", mobToLootDist, unitToActOnDist);
-		self.evaluationInProgress = nil;
-		return NO;
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
 	}
 
 	// Reset the party emotes idle
@@ -3819,8 +3884,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![nodes count] ) {
 		[blacklistController clearAttempts];
 		self.wasLootWindowOpen = NO;
-		self.evaluationInProgress=nil;
-		return NO;
+
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
 	}
 				
 	// find a valid node to loot
@@ -3830,7 +3901,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 	for(thisNode in nodes) {
 
-		if ( ![thisNode validToLoot] ){
+		if ( ![thisNode validToLoot] ) {
 			log(LOG_NODE, @"%@ is not valid to loot, ignoring...", thisNode);
 			continue;
 		}
@@ -3842,12 +3913,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			
 			// took .5 seconds or longer to fall!
 			if ( [count intValue] > 4 ) {
-				log(LOG_NODE, @"Failed to acquire node %@ after dismounting, ignoring...", thisNode);
+				log(LOG_DEV, @"Failed to acquire node %@ after dismounting, ignoring...", thisNode);
 				[blacklistController blacklistObject:thisNode withReason:Reason_NodeMadeMeFall];
 				continue;
 			}
 		}
-			
+
+		if ( [theCombatProfile unitShouldBeIgnored: (Unit*)thisNode] ) {
+			log(LOG_DEV, @"%@ is on the ignore list, ignoring.", thisNode);
+			continue;
+		}
+		
 		if ( thisNode && [thisNode isValid] && ![blacklistController isBlacklisted:thisNode] ) {
 			nodeDist = [playerPosition distanceToPosition: [thisNode position]];
 			if ( nodeDist != INFINITY ) {
@@ -3860,10 +3936,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// No valid nodes found
 	if ( !nodeToLoot || ![nodeToLoot isValid] ) {
-		self.evaluationInProgress=nil;
-		return NO;
-	}	
-	
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+	}
 	
 	// Only check this if we're not on the node
 	if ( nodeDist > 20.0f ) {
@@ -3872,16 +3952,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		if ( nearbyScaryUnits ) {
 			log(LOG_NODE, @"Skipping node due to proximity count");
-			self.evaluationInProgress=nil;
 
 			if (self.evaluationInProgress) [movementController stopMovement];
 
 			[blacklistController blacklistObject:nodeToLoot];
-			return NO;
+
+			if ( self.evaluationInProgress ) {
+				self.evaluationInProgress = nil;
+				[self evaluateSituation];
+				return YES;
+			} else {
+				return NO;
+			}
 		}
 	}
 
-	log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
+	if ( !self.evaluationInProgress ) log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 
 	// Close enough to loot it
 	if ( nodeDist <= DistanceUntilDismountByNode ) {
@@ -3891,8 +3977,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= 3 ) {
 			log(LOG_NODE, @"Unable to loot %@, blacklisting.", self.lastAttemptedUnitToLoot);
 			[blacklistController blacklistObject:nodeToLoot];
-			self.evaluationInProgress=nil;
-			return NO;
+
+			if ( self.evaluationInProgress ) {
+				self.evaluationInProgress = nil;
+				[self evaluateSituation];
+				return YES;
+			} else {
+				return NO;
+			}
 		}
 
 		self.evaluationInProgress = @"MiningAndHerbalism";
@@ -3969,8 +4061,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_EVALUATE, @"Evaluating for Fishing.");
 
-	log(LOG_FISHING, @"Fishing scan!");
-	
+	if ( !self.evaluationInProgress ) log(LOG_FISHING, @"Fishing scan!");
+
 	Position *playerPosition = [playerController position];
 	
 	// fishing only in schools! (probably have a route we're following)
@@ -3978,7 +4070,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		NSMutableArray *nodes = [NSMutableArray array];
 		[nodes addObjectsFromArray:[nodeController nodesWithinDistance:_fishingGatherDistance ofType: FishingSchool maxLevel: 1]];
 		[nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
-		
+
 		// are we close enough to start fishing?
 		if ( [nodes count] ){			
 			// lets find a node
@@ -4027,7 +4119,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 	} else {
 		// fish where we are
-		log(LOG_FISHING, @"Just fishing from wherever we are!");
+		if ( !self.evaluationInProgress ) log(LOG_FISHING, @"Just fishing from here.");
+		self.evaluationInProgress = @"Fishing";
 		[fishController fish: _fishingApplyLure
 				  withRecast:NO
 					 withUse:_fishingUseContainers
@@ -4038,8 +4131,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// if we get here, we shouldn't be fishing, stop if we are
 	if ( [fishController isFishing] ) [fishController stopFishing];
-	self.evaluationInProgress = nil;
-	return NO;
+
+	if ( self.evaluationInProgress ) {
+		self.evaluationInProgress = nil;
+		[self evaluateSituation];
+		return YES;
+	} else {
+		return NO;
+	}
 }
 
 - (BOOL)evaluateForPatrol {
@@ -4135,7 +4234,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 	
-	if (!performPatrolProc) return NO;
+	if (!performPatrolProc) {
+		
+		if ( self.evaluationInProgress ) {
+			self.evaluationInProgress = nil;
+			[self evaluateSituation];
+			return YES;
+		} else {
+			return NO;
+		}
+	}
 
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;

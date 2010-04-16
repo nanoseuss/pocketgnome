@@ -121,7 +121,7 @@
   withSchool:(Node*)nearbySchool
 {
 	
-	log(LOG_FISHING, @"[Fishing] Fishing...");
+	log(LOG_DEV, @"[Fishing] Fishing...");
 	
 	if ( nearbySchool && [nearbySchool isValid] ){
 		[self facePool:nearbySchool];
@@ -159,12 +159,12 @@
 	
 	// are we on the ground? if not lets delay our cast a bit
 	if ( ![[playerController player] isOnGround] ){
-		log(LOG_FISHING, @"[Fishing] Falling, fishing soon...");
+		log(LOG_FISHING, @"Falling, fishing soon...");
 		[self performSelector:@selector(fishCast) withObject:nil afterDelay:2.0f];
 	}
 	// start fishing if we're on the ground
 	else{
-		log(LOG_FISHING, @"[Fishing] On ground, fishing!");
+		log(LOG_DEV, @"[Fishing] On ground, fishing!");
 		[self fishCast];
 	}
 }
@@ -183,7 +183,7 @@
 	
 	// loot window open?  check again shortly
 	if ( [lootController isLootWindowOpen] ){
-		log(LOG_FISHING, @"[Fishing] Loot window is open! Attempting to loot");
+		log(LOG_FISHING, @"Loot window is open! Attempting to loot");
 		
 		// cancel previous requests if any
 		[NSObject cancelPreviousPerformRequestsWithTarget: self];
@@ -232,7 +232,7 @@
 		[botController performAction: _fishingSpellID];
 		_castStartTime = [[NSDate date] retain];
 		[controller setCurrentStatus: @"Bot: Fishing"];
-		log(LOG_FISHING, @"[Fishing] Casting!");
+		log(LOG_FISHING, @"Casting!");
 		
 		// find out bobber so we can monitor it!
 		[self performSelector:@selector(findBobber) withObject:nil afterDelay:2.0f];
@@ -268,7 +268,7 @@
 		Item *item = [itemController itemForGUID: [[playerController player] itemGUIDinSlot: SLOT_MAIN_HAND]];
 		if ( ![item hasTempEnchantment] && _applyLureAttempts < 3 ){
 			
-			log(LOG_FISHING, @"Using lure: %d on item %d", _optLureItemID, [item entryID]);
+			log(LOG_DEV, @"[Fishing] Using lure: %d on item %d", _optLureItemID, [item entryID]);
 			
 			// Lets actually use the item we want to apply!
 			[botController performAction:(USE_ITEM_MASK + _optLureItemID)];
@@ -460,7 +460,7 @@
 			[lootController acceptLoot];
 		}
 		
-		log(LOG_FISHING, @"Verifying loot attempt %d", _lootAttempt);
+		log(LOG_DEV, @"Verifying loot attempt %d", _lootAttempt);
 		
 		[self performSelector:@selector(verifyLoot) withObject:nil afterDelay:0.1f];
 	}
@@ -484,7 +484,7 @@
 	_totalFishLooted++;
 	
 	NSDate *currentTime = [NSDate date];
-	log(LOG_FISHING, @"Fish looted after %0.2f seconds, fishing more!", [currentTime timeIntervalSinceDate: _castStartTime]);
+	log(LOG_FISHING, @"Fish looted after %0.2f seconds.", [currentTime timeIntervalSinceDate: _castStartTime]);
 	
 	[self performSelector:@selector(fishCast) withObject:nil afterDelay:0.1f];
 }

@@ -198,7 +198,7 @@ static SpellController *sharedSpells = nil;
 		int32_t totalMounts = 0;
 		[memory loadDataForObject: self atAddress: companionOffset + 0x10 Buffer: (Byte *)&totalMounts BufLength: sizeof(totalMounts)];
 		
-		log(LOG_GENERAL, @"[Mount] You have %d mounts, loading!", totalMounts);
+		log(LOG_DEV, @"[Mount] You have %d mounts, loading!", totalMounts);
 		
 		// grab the pointer to the list
 		if([memory loadDataForObject: self atAddress: companionOffset + 0x14 Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
@@ -425,7 +425,7 @@ static SpellController *sharedSpells = nil;
 		
 		// make sure we can cast the spell!
 		if ( [self isUsableAction:[[spell ID] intValue]] ){
-			log(LOG_GENERAL, @"[Mount] Found usable mount! %@", spell);
+			log(LOG_MOUNT, @"Found usable mount! %@", spell);
 			return spell;
 		}
 		

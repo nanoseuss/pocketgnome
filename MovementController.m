@@ -242,7 +242,7 @@ typedef enum MovementState{
 				else newY = [[self.moveToObject position] yPosition]-0.8f;
 
 			// Above it for a sweet drop in
-			float newZ = [[self.moveToObject position] zPosition]+4.0f;
+			float newZ = [[self.moveToObject position] zPosition]+4.9f;
 
 			self.moveToPosition = [[Position alloc] initWithX:newX Y:newY Z:newZ];
 		} else {
