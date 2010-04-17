@@ -115,6 +115,7 @@
 	PGLog(@"[Route wtds]");
 	// as long as we are not done, we do want To Do something
 	// also make sure we are not still "inCombat"
+PGLog(@"   done[%d] inCombat[%d]", done, [taskController inCombat]);
 	return ((!done) && (![taskController inCombat]));
 }
 

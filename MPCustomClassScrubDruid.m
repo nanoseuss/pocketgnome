@@ -38,6 +38,14 @@
 
 #pragma mark -
 
+
+
+- (NSString *) name {
+	return @"ScrUb Druid";
+}
+
+
+
 - (void) preCombatWithMob: (Mob *) aMob atDistance:(float) distanceToMob {
 	
 	// Normally preCombatWithMob: atDistance: ] is called numerous times for 
@@ -162,6 +170,9 @@
 			MPLocation *targetLocation = (MPLocation *)[currentMob position];
 			[mover moveTowards:targetLocation within:28.0f facing:targetLocation];
 //			[mover action];
+			
+			//// make sure we stop here!
+			
 			
 			
 			// make sure I'm targeting the target:

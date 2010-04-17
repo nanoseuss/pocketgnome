@@ -37,6 +37,16 @@ typedef enum CCCombatState {
 @protocol PatherClass
 
 /*!
+ * @function name
+ * @abstract Return a Name for your Custom Class.
+ * @discussion 
+ * Use this to display the name of your custom class in drop lists. 
+ */
+- (NSString *) name;
+
+
+
+/*!
  * @function preCombatWithMob:atDistance
  * @abstract perform your pre combat actions.
  * @discussion 

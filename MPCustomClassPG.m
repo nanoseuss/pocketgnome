@@ -49,6 +49,14 @@
 
 #pragma mark -
 
+
+
+- (NSString *) name {
+	return @"Pocket Gnome";
+}
+
+
+
 - (void) preCombatWithMob: (Mob *) aMob atDistance:(float) distanceToMob {
 
 	// Normally preCombatWithMob: atDistance: ] is called numerous times for 

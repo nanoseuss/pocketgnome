@@ -239,15 +239,17 @@ PGLog( @"   state[Searching]");
 			// if currentMob found
 			if (currentMob != nil) {
 			
+				BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[currentMob position] within:attackDistance facing:(MPLocation *)[currentMob position]];
 				
-				BOOL wantToApproach = [[MPMover sharedMPMover] moveTowards:(MPLocation *)[currentMob position] within:attackDistance facing:(MPLocation *)[currentMob position]];
-				
-				
-				if (!wantToApproach) {
+				if (wantToApproach) {
 					
+					state = PullStateApproaching;
+					
+				} else {
+				
 					state = PullStateAttacking;
 					[customClass preCombatWithMob:currentMob atDistance:currentDistance];
-					
+
 				}
 				/*
 				currentDistance = [self myDistanceToMob:currentMob];
@@ -275,8 +277,19 @@ PGLog( @"      mob [%@] found at distance %f : ==> ATTACK!!!", currentMob, curre
 			
 			
 		case PullStateApproaching:
-PGLog( @"   state[Approaching]");			
+PGLog( @"   state[Approaching]");	
+
+
+				BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[currentMob position] within:attackDistance facing:(MPLocation *)[currentMob position]];
+				if (!wantToApproach) {
+				
+					state = PullStateAttacking;
+				}
+
+
+		
 			currentDistance = [self myDistanceToMob:currentMob];
+/*
 PGLog( @"      mob [%@] at distance %f ", currentMob, currentDistance);
 			// if distance to mob < combatDist
 			if (currentDistance <= attackDistance ) {  // now use Engage Range in combat profile
@@ -284,6 +297,7 @@ PGLog( @"         close enough!!! ===> ATTACK!!! ");
 				// phase = attack
 				state = PullStateAttacking;
 			} // end if
+*/
 			
 			[customClass preCombatWithMob:currentMob atDistance:currentDistance];
 			break;

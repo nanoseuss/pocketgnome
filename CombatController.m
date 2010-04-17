@@ -73,6 +73,9 @@
 		
 		_inCombat = NO;
 		
+		// Pather Additions
+		patherEnabled = NO;
+		
 		_unitsAttackingMe = [[NSMutableArray array] retain];
 		_unitsAllCombat = [[NSMutableArray array] retain];
 		_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
@@ -104,6 +107,10 @@
 @synthesize castingUnit = _castingUnit;
 @synthesize addUnit = _addUnit;
 @synthesize inCombat = _inCombat;
+
+// Pather Additions
+@synthesize patherEnabled;
+
 
 #pragma mark -
 
@@ -181,6 +188,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // target is out of range
 - (void)outOfRange: (NSNotification*)notification {
+	if (patherEnabled) return;
 	
 	// blacklist?
 	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
@@ -200,6 +208,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
+	if (patherEnabled) return;
+	
 	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
 	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
 	PGLog(@"AKSJDHAKSDHAKSDHASDHASKDHASLKDHASKDAHSDAHSDLASDJHASKLDHASDLAHSDKLAJSHDAKLJSDH [Combat] Target not in front!");
@@ -382,6 +392,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)stayWithUnit{
+	if (patherEnabled) return;  // Don't take over control from Pather Custom Classes
 	
 	PGLog(@"[Combat] Staying with %@ in procedure %@", _castingUnit, [botController procedureInProgress]);
 	
@@ -913,6 +924,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // find all units we are in combat with
 - (void)doCombatSearch{
+	
+	if (patherEnabled) return;  // Let Pather Handle this if not using PG custom class
 	
 	if ( [[playerData player] isDead] ){
 		

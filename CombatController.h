@@ -71,12 +71,17 @@
 	NSMutableArray *_unitsAllCombat;		// meant for the display table ONLY!
 	
 	NSMutableDictionary *_unitLeftCombatCount;
+	
+	
+	//// Pather Additions:
+	BOOL patherEnabled;
 }
 
 @property BOOL inCombat;
 @property (readonly, retain) Unit *attackUnit;
 @property (readonly, retain) Unit *castingUnit;
 @property (readonly, retain) Unit *addUnit;
+@property BOOL patherEnabled;
 
 
 // weighted units we're in combat with

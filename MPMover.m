@@ -176,17 +176,14 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 }
 
 
-
-//// Now decide if we should move and lock in movement data
-- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing {
-
-	return [self moveTowards:locDestination within:howClose facing:locFacing withinTolerance:MP_PI_8];
+- (BOOL) shouldMoveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing {
+	return [self shouldMoveTowards:locDestination within:howClose facing:locFacing withinTolerance:MP_PI_8];
 }
 
-- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle {
 
-	PGLog( @" moveTowards %@  within[%0.2f] while facing %@", locDestination, howClose, locFacing);
-	
+- (BOOL) shouldMoveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle {
+
+
 	BOOL shouldMove = NO;
 	PlayerDataController *me = [PlayerDataController sharedController];
 	float distanceTo = [[me position] distanceToPosition:locDestination ];
@@ -200,6 +197,23 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 		shouldMove = YES;
 	}
 	
+	return shouldMove;
+
+}
+
+
+//// Now decide if we should move and lock in movement data
+- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing {
+
+	return [self moveTowards:locDestination within:howClose facing:locFacing withinTolerance:MP_PI_8];
+}
+
+- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle {
+
+	PGLog( @" moveTowards %@  within[%0.2f] while facing %@", locDestination, howClose, locFacing);
+	
+	
+	BOOL shouldMove = [self shouldMoveTowards:locDestination within:howClose facing:locFacing withinTolerance:toleranceAngle];
 	
 	if (shouldMove ) {
 		

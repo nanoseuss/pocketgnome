@@ -104,6 +104,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 		isThreadStartedNavMeshAdjustments = NO;
 		
 		self.deleteMeRouteDest = nil;
+		
+		PGLog(@" ######## PatherController #########" );
 	}
 	return self;
 }
@@ -254,6 +256,13 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 		if ( customClass == nil) {
 //			self.customClass = [MPCustomClassPG classWithController:self];
 			self.customClass = [MPCustomClassScrubDruid classWithController:self];
+			
+			if ([[customClass name] isEqualToString:@"Pocket Gnome"])
+			{
+				[combatController setPatherEnabled:NO];
+			} else {
+				[combatController setPatherEnabled:YES];
+			}
 		}
 		
 	}
