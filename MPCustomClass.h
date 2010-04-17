@@ -10,6 +10,9 @@
 @class Mob;
 @class PatherController;
 
+//// These are the states passed from your Custom Class back to the MPActivityAttack 
+//// activity.  The activity will then respond to these return states
+
 typedef enum CombatState { 
     CombatStateInCombat			= 1,	// target still alive
 	CombatStateSuccess			= 2,	// you killed your target
@@ -19,6 +22,15 @@ typedef enum CombatState {
 	CombatStateDied				= 6,	// you died ... dang!
 	CombatStateMistake			= 7		// Given an invalid mob (dead) to attack
 } MPCombatState; 
+
+
+
+//// These are for use inside your custom class to help determine initial actions and 
+//// regular actions.
+typedef enum CCCombatState { 
+    CCCombatPreCombat	= 1,	// performing initial prep
+	CCCombatCombat	= 2		// get em!
+} MPCCCombatState; 
 
 
 
@@ -95,5 +107,7 @@ typedef enum CombatState {
 -(id) init;
 -(id) initWithController: (PatherController *) controller;
 
+
+- (NSArray *) mobsAttackingMe;
 
 @end

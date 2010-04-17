@@ -14,7 +14,7 @@
 #import "PatherController.h"
 #import "Position.h"
 #import "MPTimer.h"
-
+#import "MPMover.h"
 
 
 @implementation MPActivityApproach
@@ -55,6 +55,8 @@
 
 - (void) start {
 
+	
+	/*
 	// face Unit
 	[playerDataController faceToward:[unit position]];
 	
@@ -70,6 +72,14 @@
 	
 	
 	[moveTimer start];
+	 */
+	
+	// make sure mC is stopped
+	[movementController resetMovementState];
+	
+	//MPMover *mover = [MPMover sharedMPMover];
+	[[MPMover sharedMPMover] moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]];
+	
 	
 	self.lastPosition = [unit position];
 }
@@ -79,7 +89,13 @@
 // Make sure we are making progress towards the target.  Stop when in range.
 - (BOOL) work {
 	
+
 	
+	return (![[MPMover sharedMPMover] moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]]);
+	
+	
+///// old movement Controller code:
+/*
 	// ok, current mC will walk us to 5.0yds of our unit.
 
 	// if distance to unit < distance 
@@ -106,6 +122,14 @@
 		//[movementController resumeMovement];
 		[self start];
 	}
+	
+*/	
+	
+	
+	
+	
+	
+	
 	
 	
 	// if movement controller has different unit selected:
@@ -140,10 +164,15 @@
 
 // we are interrupted before we arrived.  Make sure we stop moving.
 - (void) stop{
+	
+	[[MPMover sharedMPMover] stopAllMovement];
+	
+/*
 //	[movementController pauseMovement];
 	[movementController setCloseEnough:5.0f];
 	[movementController stopMovement];
 	[movementController resetMovementState];
+*/
 }
 
 #pragma mark -

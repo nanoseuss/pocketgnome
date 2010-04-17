@@ -53,8 +53,8 @@
 
 - (float) angleTurnTowards: (Position *)position;
 
-- (bool) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing;
-- (bool) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle;
+- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing;
+- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle;
 
 
 // The actual movement work is done here

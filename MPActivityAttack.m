@@ -11,6 +11,7 @@
 #import "MPTaskController.h"
 #import "MPCustomClass.h"
 #import "MPTimer.h"
+#import "MPMover.h"
 
 
 @implementation MPActivityAttack
@@ -170,6 +171,10 @@ PGLog(@"   AttackStateAttacking");
 
 -(void) stop {
 	PGLog(@"[attack stop]");
+	
+	// attack should be over: make sure any combat movements are cleared.
+	MPMover *mover = [MPMover sharedMPMover];
+	[mover stopAllMovement];
 }
 
 

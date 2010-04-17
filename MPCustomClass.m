@@ -10,6 +10,8 @@
 #import "Unit.h"
 #import "PatherController.h"
 #import "Mob.h"
+#import "MobController.h"
+#import "PlayerDataController.h"
 
 
 @implementation MPCustomClass
@@ -62,6 +64,23 @@
 
 }
 
+#pragma mark -
+#pragma mark Helper methods
+
+- (NSArray *) mobsAttackingMe {
+	
+	NSMutableArray *list = [NSMutableArray array];
+	UInt32 myGUID = [[PlayerDataController sharedController] lowGUID];
+	NSArray *allMobs = [[MobController sharedController] allMobs];
+	for (Mob *mob in allMobs) {
+		
+		if ([mob targetID] == myGUID) {
+			[list addObject:mob];
+		}
+	}
+	return list;
+	
+}
 
 
 #pragma mark -

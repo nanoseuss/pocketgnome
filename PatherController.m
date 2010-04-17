@@ -19,6 +19,7 @@
 #import "MPActivity.h"
 #import "MPCustomClass.h"
 #import "MPCustomClassPG.h"
+#import "MPCustomClassScrubDruid.h"
 #import "BotController.h"
 #import "Controller.h"
 #import "WaypointController.h"
@@ -44,6 +45,7 @@
 #import "BlacklistController.h"
 #import "RouteSet.h"
 #import "SynthesizeSingleton.h"
+#import "MPMover.h"
 
 @interface PatherController (Internal)
 
@@ -64,9 +66,10 @@
 @implementation PatherController
 @synthesize taskController;
 @synthesize botController, controller, macroController, movementController, mobController, playerData, combatController, lootController, waypointController, blacklistController, navigationController;
-@synthesize timerCheckPatherStopConditions, timerEvaluateTasks, timerProcessCurrentActivity, timerUpdateUI, timerPerformanceCycle;
+@synthesize timerCheckPatherStopConditions, timerEvaluateTasks, timerProcessCurrentActivity, timerUpdateUI, timerPerformanceCycle, timerMPMover;
 @synthesize timerWorkTime;
 @synthesize customClass;
+@synthesize combatMover;
 @synthesize unitsLootBlacklisted;
 @synthesize deleteMeRouteDest;
 
@@ -86,9 +89,11 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 		self.timerProcessCurrentActivity = nil;
 		self.timerUpdateUI = nil;
 		self.timerPerformanceCycle = nil;
+		self.timerMPMover = nil;
 		
 		self.timerWorkTime = [MPTimer timer:1000];
 		self.customClass = nil;
+		self.combatMover = [MPMover sharedMPMover];
 		
 		self.unitsLootBlacklisted = [NSMutableArray array];
 		
@@ -246,8 +251,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 		
 		//// Load up CustomClass 
 		// do logic to figure out which customClass object to load here
-		if ( customClass == nil)
-			self.customClass = [MPCustomClassPG classWithController:self];
+		if ( customClass == nil) {
+//			self.customClass = [MPCustomClassPG classWithController:self];
+			self.customClass = [MPCustomClassScrubDruid classWithController:self];
+		}
 		
 	}
 	
@@ -799,6 +806,9 @@ PGLog( @"        ---> RunningStateStopped");
 			[timerPerformanceCycle invalidate];
 			self.timerPerformanceCycle = nil;
 			
+			[timerMPMover invalidate];
+			self.timerMPMover = nil;
+			
 			
 			//// release any UI resources: cursor hooks?  keyboard hooks?
 			
@@ -821,12 +831,17 @@ PGLog( @"        ---> RunningStatePaused");
 			//// close off Task timers
 			// call processCurrentActivity
 			[taskController processCurrentActivity];  // causes currentActivity to .stop() 
+			
 			// stop processCurrentActivityTimer
 			[timerProcessCurrentActivity invalidate];
-			timerProcessCurrentActivity = nil;
+			self.timerProcessCurrentActivity = nil;
+			
 			// stop evaluateTasksTimer
 			[timerEvaluateTasks invalidate];
-			timerEvaluateTasks = nil;
+			self.timerEvaluateTasks = nil;
+			
+			[timerMPMover invalidate];
+			self.timerMPMover = nil;
 
 			//// release any UI resources: cursor hooks?  keyboard hooks?
 			
@@ -862,12 +877,15 @@ PGLog( @"        ---> RunningStateRunning");
 			
 			// setup timer:   PatherController->updateUI()  every 1.5s
 			if (timerUpdateUI == nil)
-				self.timerUpdateUI = [NSTimer scheduledTimerWithTimeInterval:1.5 target:self selector:@selector(updateUI) userInfo:nil repeats:YES];
+				self.timerUpdateUI = [NSTimer scheduledTimerWithTimeInterval:1.25 target:self selector:@selector(updateUI) userInfo:nil repeats:YES];
 			
 			if (timerPerformanceCycle == nil)
 				self.timerPerformanceCycle = [NSTimer scheduledTimerWithTimeInterval:0.1 target:performanceController selector:@selector(reset) userInfo:nil repeats:YES];
 		
-				// make sure the Paused timers are disabled:
+			if (timerMPMover == nil)
+				self.timerMPMover = [NSTimer scheduledTimerWithTimeInterval:0.05 target:combatMover selector:@selector(action) userInfo:nil repeats:YES];
+				
+			    // make sure the Paused timers are disabled:
 				// disable processGraphBuildingTimer
 			
 			// grab any UI resources: cursor hooks? keyboard hooks?

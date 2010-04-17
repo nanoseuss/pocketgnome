@@ -15,11 +15,6 @@
 @class BotController;
 
 
-typedef enum CCCombatState { 
-    CCCombatPreCombat	= 1,	// performing initial prep
-	CCCombatCombat	= 2		// get em!
-} MPCCCombatState; 
-
 
 @interface MPCustomClassPG : MPCustomClass {
 	BOOL sentPreCombat, sentRegen, isMobDead, establishedPosition;

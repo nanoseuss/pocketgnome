@@ -10,14 +10,21 @@
 #import "MPCustomClass.h"
 #import "PatherController.h"
 #import "PlayerDataController.h"
+#import "Mob.h"
+#import "BlacklistController.h"
+#import "MPSpell.h"
+#import "MPMover.h"
+#import "Unit.h"
 
 
 @implementation MPCustomClassScrubDruid
-
+@synthesize wrath;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
+		self.wrath = [MPSpell wrath];
+		state = CCCombatPreCombat;
 	}
 	return self;
 }
@@ -40,7 +47,7 @@
 	
 	
 	
-	
+	state = CCCombatPreCombat;
 }
 
 - (MPCombatState) killTarget: (Mob*) mob {
@@ -53,38 +60,9 @@
 		return CombatStateDied;
 	} // end if
 	
-/*	
-	
-	if ([mob isDead]) {
-		
 
-			
-			PGLog(@"  ccKillTarget: mob is Dead && timer ready ... let's hope CC is updated");
-			
-			// if attackQueue is empty then all done.
-			if ( ![[combatController combatList] count] ) {
-				
-				// return CombatSuccess
-				return CombatStateSuccess;
-				
-			} else {
-				// there are more to deal with:
-				
-				// if combatController has current attack target then mark that one
-				if ( [combatController attackUnit] != nil) {
-					
-					// currentMob = currentTarget
-					self.currentMob = (Mob *) [combatController attackUnit];
-					
-				} // end if
-				
-				// return CombatSuccessWithAdd
-				return CombatStateSuccessWithAdd;
-				
-			} // end if
-			
-		
-	} // end if
+	
+
 	
 	
 	
@@ -94,14 +72,11 @@
 	// switch state
 	switch (state) {
 			
-			
-			// ideally, [MPCustomClassPG preCombatWithMob: atDistance:] should have been called numerous times before
-			// we have [killTarget:mob] called.  Therefore, the 1st time through [killTarget] we initiate combat and switch us to 
-			// the CCCombatCombat state.
-			//
+		////
+		//// This is our first action in combat.  Use this for any opening moves
+		////
 		case CCCombatPreCombat:
 			currentMob = mob;
-			isMobDead = NO; //[mob isDead];
 			
 			if ([currentMob isDead] ) {
 				
@@ -109,117 +84,62 @@
 				return CombatStateMistake;
 			}
 			
-			//tell combatController to start attacking!
-			//[combatController disposeOfUnit:currentMob];  // <-- before rev 1.4.4
-			[combatController stayWithUnit:mob withType:TargetEnemy];  // make sure mob is _attackUnit
-			[botController actOnUnit:mob];
 			
 			
-			//			[timerControllerStartup start];
-			[timerEstablishPosition start];
+			//// Perform initial opening move here:
+			
+			
 			
 			state = CCCombatCombat;
 			return CombatStateInCombat;
 			break;
 			
 			
-			// During combat we want to make sure that PG's combatController has control.  
+			
+			
+			
+		////
+		//// We are now in combat performing "normal" combat operations  
+		////
 		case CCCombatCombat:
-			// if timer ready
-			//			if ([timerControllerStartup ready] ) {
+
+			//// 
+			//// Check for Combat/Mob Status
+			////
 			
-			
-			if (!establishedPosition) {
-				if ([timerEstablishPosition ready]) {
-					
-					PGLog( @"  ---> establishing Player Position");
-					[[patherController movementController] establishPlayerPosition];
-					
-					establishedPosition = YES;
-				}
-			}
-			
-			// Synchronization: CombatController and our Mob
-			if (mob != [combatController castingUnit]) {
-				
-				// how did this happen?  
-				// let's fix it:
-				[combatController resetAllCombat];
-				//					[botController cancelCurrentProcedure];
-				[combatController stayWithUnit:mob withType:TargetEnemy];
-				[botController actOnUnit:mob];
-				return CCCombatCombat;  
-				
-			}
-			
-			// if ![mob isDead] && ![inCombat]
-			if (![mob isDead] && ![combatController inCombat]) {
-				
-				// if I'm not attacking then tell combatController to attack!
-				PGLog( @"CustomClassPG: i'm not in combat ... [botController actOnUnit:mob]");
-				[combatController stayWithUnit:mob withType:TargetEnemy];
-				[botController actOnUnit:mob];
-				
-				// timer reset
-				[timerControllerStartup reset];
-			} // end if
-			
-			
-			// if [mob isDead]
-			// NOTE: I've seen mobs with 1 health being reported as dead!
-			//				if (([mob isDead])  && ([mob currentHealth] < 1) ) {
+			//// if [mob isDead]
 			if ([mob isDead]) {
 				
-				if (!isMobDead) {
-					PGLog(@"  ccKillTarget: mob is Dead ... starting timer");
-					// ok, sometimes our cc detects a dead mob before the [CombatController] does.
-					// so in order to determine proper exit state (Success vs SuccessWithAdd) we
-					// need to wait until [CombatController] registers a dead mob.
-					// timerMobDied attempts to give the [CombatController] time to register.
-					[timerMobDied start];
-					isMobDead = YES;
-				}
+				PGLog(@"  ccKillTarget: mob is Dead ");
+				state = CCCombatPreCombat;  // reset my combat to do initial attack.
 				
-				if ([timerMobDied ready] ) {
+				NSArray *mobList = [self mobsAttackingMe];
+				
+				// if attackQueue is empty then all done.
+				if ( [mobList count] < 1 ) {
 					
-					PGLog(@"  ccKillTarget: mob is Dead && timer ready ... let's hope CC is updated");
-					state = CCCombatPreCombat;  // reset my combat to do initial attack.
+					// return CombatSuccess
+					return CombatStateSuccess;
 					
-					// if attackQueue is empty then all done.
-					if ( ![[combatController combatList] count] ) {
-						
-						// return CombatSuccess
-						return CombatStateSuccess;
-						
-					} else {
-						// there are more to deal with:
-						
-						// if combatController has current attack target then mark that one
-						if ( [combatController attackUnit] != nil) {
-							
-							// currentMob = currentTarget
-							self.currentMob = (Mob *) [combatController attackUnit];
-							
-						} // end if
-						
-						// return CombatSuccessWithAdd
-						return CombatStateSuccessWithAdd;
-						
-					} // end if
+				} else {
+					// there are more to deal with:
 					
-				} // end timerMobDied  ready
+					// currentMob = currentTarget
+					self.currentMob = [mobList objectAtIndex:0]; // <-- choose by some criteria
+
+					// return CombatSuccessWithAdd
+					return CombatStateSuccessWithAdd;
+					
+				} // end if
 				
 			} // end if
 			
 			//// check for Evading => Bugged
-			/ *
-			 // if the unit is either not in combat, or is evading
-			 if( ![unit isInCombat] || [unit isEvading] || ![unit isAttackable] ) { 
-			 if(botController.isBotting) PGLog(@"[Combat] -XX- Unit %@ not in combat.", unit);
-			 [self blacklistUnit: unit];
-			 return;
-			 }
-			 * /
+			// if( ![unit isInCombat] || [unit isEvading] || ![unit isAttackable] ) {
+			if( [mob isEvading] || ![mob isAttackable] ) { 
+				return CombatStateBugged;
+			}
+
 			
 	
 			// if unit ended up blacklisted ... bail
@@ -230,13 +150,40 @@
 			
 			
 			
-			//			} // end if timer ready
+			
+			
+			////
+			//// all the status checks are passed, so attack!
+			////
+			
+			// face target
+			PGLog(@"     --> Facing Target");
+			MPMover *mover = [MPMover sharedMPMover];
+			MPLocation *targetLocation = (MPLocation *)[currentMob position];
+			[mover moveTowards:targetLocation within:28.0f facing:targetLocation];
+//			[mover action];
+			
+			
+			// make sure I'm targeting the target:
+			PlayerDataController *me = [PlayerDataController sharedController];
+			if ([me targetID] != [currentMob GUID]) {
+				PGLog(@"     --> Setting Target : myTarget[%ld]  mob[%ld]",[me targetID], [currentMob GUID]);
+				[me setPrimaryTarget:currentMob];
+			}
+			
+			
+			// cast
+			int error = [wrath cast];
+			PGLog(@"    ---> wrath cast error[%d]", error);
+			
+			
+
 			return CombatStateInCombat;
 			break;
 		default:
 			break;
 	}
-*/
+
 	
 	// shouldn't get to here!  One of the above should proc.
 	return CombatStateDied;

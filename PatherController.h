@@ -25,6 +25,7 @@
 @class BlacklistController;
 @class MPLocation;
 @class Controller;
+@class MPMover;
 
 
 @interface PatherController : NSObject {
@@ -94,6 +95,7 @@
 	NSTimer *timerProcessCurrentActivity;
 	NSTimer *timerUpdateUI;
 	NSTimer *timerPerformanceCycle;
+	NSTimer *timerMPMover;
 	
 	MPTimer *timerWorkTime;
 	
@@ -101,6 +103,8 @@
 	
 	// CustomClass 
 	MPCustomClass *customClass;
+	
+	MPMover *combatMover;
 	
 	BOOL isThreadStartedNavMeshView, isThreadStartedNavMeshAdjustments;
 	
@@ -120,7 +124,7 @@
 @property (readonly) Controller *controller;
 @property (readonly) MPNavigationController *navigationController;
 
-@property (retain) NSTimer *timerCheckPatherStopConditions, *timerEvaluateTasks, *timerProcessCurrentActivity, *timerUpdateUI, *timerPerformanceCycle;
+@property (retain) NSTimer *timerCheckPatherStopConditions, *timerEvaluateTasks, *timerProcessCurrentActivity, *timerUpdateUI, *timerPerformanceCycle, *timerMPMover;
 @property (retain) MPTimer *timerWorkTime;
 
 @property (retain) NSMutableArray *unitsLootBlacklisted;
@@ -132,6 +136,7 @@
 
 
 @property (retain) MPCustomClass *customClass;
+@property (retain) MPMover *combatMover;
 
 
 @property (retain) MPLocation *deleteMeRouteDest;

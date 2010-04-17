@@ -13,13 +13,14 @@
 @class Mob;
 @class CombatController;
 @class BotController;
-
+@class MPSpell;
 
 
 @interface MPCustomClassScrubDruid : MPCustomClass {
 
-	
+	MPSpell *wrath;
+	MPCCCombatState state;
 }
-
+@property (retain) MPSpell *wrath;
 
 @end

@@ -178,12 +178,12 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 
 
 //// Now decide if we should move and lock in movement data
-- (bool) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing {
+- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing {
 
 	return [self moveTowards:locDestination within:howClose facing:locFacing withinTolerance:MP_PI_8];
 }
 
-- (bool) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle {
+- (BOOL) moveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle {
 
 	PGLog( @" moveTowards %@  within[%0.2f] while facing %@", locDestination, howClose, locFacing);
 	
@@ -209,6 +209,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 		angleTolerance = toleranceAngle;
 		
 	} else {
+		PGLog(@"  Don't think I should move, so [stopMove]");
 		[self stopMove];
 /*		self.destinationLocation = nil;
 		self.facingLocation = nil;
@@ -334,30 +335,44 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	////
 	
 	if ((!tempRunForwards) && (tempRunForwards != oldRunForwards)) {
+		[self pressKey:kVK_ANSI_W];
+		[self releaseKey:kVK_ANSI_W]; // Forwards
 		[self releaseKey:kVK_ANSI_W]; // Forwards
 	}
 	
 	if ((!tempRunBackwards) && (tempRunBackwards != oldRunBackwards)) {
+		[self pressKey:kVK_ANSI_S];
+		[self releaseKey:kVK_ANSI_S]; // Backwards
 		[self releaseKey:kVK_ANSI_S]; // Backwards
 	}
 	
 	if ((!tempStrafeLeft) && (tempStrafeLeft != oldStrafeLeft)) {
+		[self pressKey:kVK_ANSI_Q];
+		[self releaseKey:kVK_ANSI_Q];
 		[self releaseKey:kVK_ANSI_Q];
 	}
 	
 	if ((!tempStrafeRight) && (tempStrafeRight != oldStrafeRight)) {
+		[self pressKey:kVK_ANSI_E];
+		[self releaseKey:kVK_ANSI_E];
 		[self releaseKey:kVK_ANSI_E];
 	}
 	
 	if ((!tempRotateLeft) && (tempRotateLeft != oldRotateLeft)) {
+		[self pressKey:kVK_ANSI_A];
+		[self releaseKey:kVK_ANSI_A];
 		[self releaseKey:kVK_ANSI_A];
 	}
 	
 	if ((!tempRotateRight) && (tempRotateRight != oldRotateRight)) {
+		[self pressKey:kVK_ANSI_D];
+		[self releaseKey:kVK_ANSI_D];
 		[self releaseKey:kVK_ANSI_D];
 	}
 	
 	if ((!tempSwimUp) && (tempSwimUp != oldSwimUp)) {
+		[self pressKey:kVK_Space];
+		[self releaseKey:kVK_Space];
 		[self releaseKey:kVK_Space];
 	}
 	
@@ -412,7 +427,7 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 - (void) action {
 	
 	// To Do:  make sure Pather is running, if not, return
-	
+	PGLog(@" -- Action -- " );
 	[self calculateMovementTowards:destinationLocation];
 	[self calculateFacingTowards:facingLocation];
 	[self pressAndReleaseKeys];

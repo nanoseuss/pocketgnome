@@ -23,6 +23,7 @@
 #import "CombatController.h"
 #import "BlacklistController.h"
 #import "MPTimer.h"
+#import "MPMover.h"
 
 
 
@@ -238,6 +239,17 @@ PGLog( @"   state[Searching]");
 			// if currentMob found
 			if (currentMob != nil) {
 			
+				
+				BOOL wantToApproach = [[MPMover sharedMPMover] moveTowards:(MPLocation *)[currentMob position] within:attackDistance facing:(MPLocation *)[currentMob position]];
+				
+				
+				if (!wantToApproach) {
+					
+					state = PullStateAttacking;
+					[customClass preCombatWithMob:currentMob atDistance:currentDistance];
+					
+				}
+				/*
 				currentDistance = [self myDistanceToMob:currentMob];
 				
 				// if distance to mob > combatDist
@@ -255,6 +267,8 @@ PGLog( @"      mob [%@] found at distance %f : ==> ATTACK!!!", currentMob, curre
 					[customClass preCombatWithMob:currentMob atDistance:currentDistance];
 					
 				} // end if
+				 
+				 */
 				
 			} // end if
 			break;
