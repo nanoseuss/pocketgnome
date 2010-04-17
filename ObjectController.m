@@ -165,7 +165,7 @@
     MemoryAccess *memory = [controller wowMemoryAccess];
     if ( !memory ) return;
 	
-    PGLog(@"Reloading memory access for %d objects.", [_objectList count]);
+    //PGLog(@"Reloading memory access for %d objects.", [_objectList count]);
     for ( WoWObject *obj in _objectList ) {
         [obj setMemoryAccess: memory];
     }

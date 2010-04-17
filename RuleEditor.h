@@ -51,6 +51,8 @@
     IBOutlet id ruleNameText;
     IBOutlet id ruleEditorWindow;
 	
+	IBOutlet NSButton	*useMaxRanks;
+	
 	IBOutlet NSTextField *labelNoTarget;
     
     NSMutableArray *_conditionList;

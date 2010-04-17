@@ -337,7 +337,7 @@
     BOOL foundService = NO;
     for (iChatService *service in [iChat services]) {
         // Use the first connected AIM service we find
-        if (service.status == iChatConnectionStatusConnected) { // (service.serviceType == iChatServiceTypeAIM) && (
+        if (service.connectionStatus == iChatConnectionStatusConnected) { // (service.serviceType == iChatServiceTypeAIM) && (
             foundService = YES;
             
             // we have a service, find a buddy

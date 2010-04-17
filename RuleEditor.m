@@ -109,17 +109,17 @@
 		NSNumber *value = [NSNumber numberWithUnsignedInt: [[resultActionDropdown selectedItem] tag]];
 		
         newRule = [[Rule alloc] init];
+		
+		Action *action = [Action actionWithType: [conditionResultTypeSegment selectedTag] value: value];
+		[action setUseMaxRank:[useMaxRanks state]];
+		
+		PGLog(@"Action %@ with rank %d", action, [useMaxRanks state]);
         
         [newRule setName: [ruleNameText stringValue]];
         [newRule setConditions: conditions];
         [newRule setIsMatchAll: [conditionMatchingSegment isSelectedForSegment: 0]];
-        [newRule setAction: [Action actionWithType: [conditionResultTypeSegment selectedTag] 
-                                             value: value]];
+        [newRule setAction: action];
 		[newRule setTarget: [conditionTargetType selectedTag]];
-        //[newRule setResultType: [conditionResultTypeSegment selectedTag]];
-        //[newRule setActionID: [[resultActionDropdown selectedItem] tag]];
-        
-        // PGLog(@"Created Rule: %@", newRule);
     }
     
     return [newRule autorelease];
@@ -170,12 +170,16 @@
             [resultActionDropdown setMenu: noActionMenu];
             [resultActionDropdown selectItemWithTag: [rule actionID]];
         }
-    }
+		
+		PGLog(@"action state: %d", [[rule action] useMaxRank]);
+		[useMaxRanks setState:[[rule action] useMaxRank]];
+	}
     
     if( [rule name] )
         [ruleNameText setStringValue: [rule name]];
     else 
         [ruleNameText setStringValue: [NSString string]];
+
     
     [spellRuleTableView reloadData];
     [self validateBindings];

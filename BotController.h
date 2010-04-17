@@ -67,6 +67,7 @@
 @class StatisticsController;
 @class BindingsController;
 @class PvPController;
+@class DatabaseManager;
 
 @class ScanGridView;
 
@@ -109,6 +110,7 @@
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet BindingsController		*bindingsController;
 	IBOutlet PvPController			*pvpController;
+	IBOutlet DatabaseManager		*databaseManager;
 
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;

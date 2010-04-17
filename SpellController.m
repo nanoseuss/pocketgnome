@@ -360,20 +360,42 @@ static SpellController *sharedSpells = nil;
     return [_spellBook objectForKey: spellID];
 }
 
-- (Spell*)highestRankOfSpell: (Spell*)incSpell {
-    if(!incSpell) return nil;
-    
+- (Spell*)highestRankOfSpell: (Spell*)incSpell withBook:(id)spellBook{
+	if( !incSpell || !spellBook || [spellBook count] == 0 )
+		return nil;
+	
     Spell *highestRankSpell = incSpell;
-    for(Spell *spell in [_spellBook allValues]) {
+	
+	NSArray *spellList = [NSArray array];
+	if ( [spellBook isKindOfClass:[NSArray array]] ){
+		spellList = spellBook;
+	}
+	else if ( [spellBook isKindOfClass:[NSDictionary dictionary]] ){
+		spellList = [(NSDictionary*)spellBook allValues];
+	}
+
+    for ( Spell *spell in spellList ){
+		
         // if the spell names match
-        if([spell name] && [spell rank] && [[spell name] isEqualToString: [incSpell name]]) {
+        if ( [spell name] && [spell rank] && [[spell name] isEqualToString: [incSpell name]] ){
+			
             // see which one has the higher rank
-            if( [[spell rank] intValue] > [[highestRankSpell rank] intValue])
+            if ( [[spell rank] intValue] > [[highestRankSpell rank] intValue] ){
                 highestRankSpell = spell;
+			}
         }
     }
     
     return highestRankSpell;
+}
+
+- (Spell*)highestRankOfSpellForPlayer: (Spell*)incSpell {
+	return [self highestRankOfSpell:incSpell withBook:_playerSpells]; 
+}
+
+
+- (Spell*)highestRankOfSpell: (Spell*)incSpell {
+	return [self highestRankOfSpell:incSpell withBook:_spellBook]; 
 }
 
 - (Spell*)playerSpellForName: (NSString*)spellName{

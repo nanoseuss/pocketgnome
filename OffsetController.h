@@ -25,6 +25,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#define	OffsetsLoaded	@"OffsetsLoaded"
+
 @class Controller;
 
 @interface OffsetController : NSObject {
@@ -39,8 +41,7 @@
 
 - (unsigned long) offset: (NSString*)key;
 
-- (NSArray*) offsetWithByteSignature: (NSString*)signature 
-							withMask:(NSString*)mask 
-					   withEmulation:(BOOL)emulatePPC;
+- (NSDictionary*) offsetWithByteSignature: (NSString*)signature 
+								 withMask:(NSString*)mask;
 
 @end

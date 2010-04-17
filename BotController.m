@@ -3869,7 +3869,7 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)playerIsInvalid: (NSNotification*)not {
-	PGLog(@"[Bot] No longer stopping bot if player is invalid! Good or bad? hmm");
+	//PGLog(@"[Bot] No longer stopping bot if player is invalid! Good or bad? hmm");
 	
 	
 	//LoginState
@@ -4072,7 +4072,7 @@ NSMutableDictionary *_diffDict = nil;
 		// then we are w/in the first hour after we've done a WG!  Let's leave party!
 		if ( _dateWGEnded && [currentTime timeIntervalSinceDate: _dateWGEnded] < 3600 ){
 			// check to see if they are in a party - and leave!
-			UInt32 offset = [offsetController offset:@"PARTY_LEADER_PTR"];
+			UInt32 offset = [offsetController offset:@"Lua_GetPartyMember"];
 			UInt64 guid = 0;
 			if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&guid BufLength: sizeof(guid)] && guid ){
 				
@@ -5030,7 +5030,7 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 		return;
 	}
 	
-	PGLog( @" still not queued, trying again!");
+	PGLog( @"[PvP] Still not queued, trying again!");
 	
 	// cancel previous requests
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(pvpQueueBattleground) object: nil];
@@ -5390,237 +5390,46 @@ control = "";
 end
 */
 
-/*
-typedef struct WoWClientDb {
-    UInt32    _vtable;		// 0x0
-    UInt32  isLoaded;		// 0x4
-    UInt32  numRows;		// 0x8				// 49379
-    UInt32  maxIndex;		// 0xC				// 74445
-    UInt32  minIndex;		// 0x10				// 1
-	UInt32  stringTablePtr;	// 0x14
-	UInt32 _vtable2;		// 0x18
-	// array of row pointers after this...
-	UInt32 firstRow;		// 0x1C				// this points to the first actual row in the database (in theory we could use this, then loop until we hit numRows and we have all the rows)
-	UInt32 row2;			// 0x20
-	UInt32 row3;			// 0x24
-	UInt32 row4;			// 0x28
-	
-} WoWClientDb;
-*/
-
-typedef struct Spelldbc{
-
-	//private const int MAX_EFFECT_INDEX = 3;
-	uint Id;						// 0
-	uint Category;						
-	uint Dispel;
-	uint Mechanic;
-	uint Attributes;				
-	uint AttributesEx;				// 5
-	uint AttributesEx2;
-	uint AttributesEx3;
-	uint AttributesEx4;
-	uint AttributesEx5;
-	uint AttributesEx6;				// 10
-	uint AttributesEx7;
-	uint Stances;
-	uint unk_320_2;
-	uint StancesNot;
-	uint unk_320_3;					// 15
-	uint Targets;
-	uint TargetCreatureType;
-	uint RequiresSpellFocus;
-	uint FacingCasterFlags;
-	uint CasterAuraState;			// 20
-	uint TargetAuraState;
-	uint CasterAuraStateNot;
-	uint TargetAuraStateNot;
-	uint casterAuraSpell;
-	uint targetAuraSpell;			// 25
-	uint excludeCasterAuraSpell;
-	uint excludeTargetAuraSpell;
-	uint CastingTimeIndex;
-	uint RecoveryTime;
-	uint CategoryRecoveryTime;		// 30
-	uint InterruptFlags;
-	uint AuraInterruptFlags;
-	uint ChannelInterruptFlags;
-	uint procFlags;
-	uint procChance;				// 35
-	uint procCharges;
-	uint maxLevel;
-	uint baseLevel;
-	uint spellLevel;
-	uint DurationIndex;				// 40
-	uint powerType;
-	uint manaCost;
-	uint manaCostPerlevel;
-	uint manaPerSecond;
-	uint manaPerSecondPerLevel;		// 45
-	uint rangeIndex;
-	float speed;
-	uint modalNextSpell;
-	uint StackAmount;
-	uint Totem[2];					// 50-51
-	int Reagent[8];					// 52-69
-	uint ReagentCount[8];			// 69-76
-	int EquippedItemClass;			// 77
-	int EquippedItemSubClassMask;	// 78
-	int EquippedItemInventoryTypeMask;	// 79
-	uint Effect[3];					// 80-82
-	int EffectDieSides[3];			// 83-85
-	//int EffectBaseDice[3];			// 86-88
-	//float EffectDicePerLevel[3];	// 89-91
-	float EffectRealPointsPerLevel[3];	// 92-94
-	int EffectBasePoints[3];		// 95-97
-	uint EffectMechanic[3];			// 98-100
-	uint EffectImplicitTargetA[3];	// 100-102
-	uint EffectImplicitTargetB[3];	// 103-105
-	uint EffectRadiusIndex[3];		// 106-108
-	uint EffectApplyAuraName[3];	// 109-111
-	uint EffectAmplitude[3];		// 112-114
-	float EffectMultipleValue[3];	// 115-117
-	uint EffectChainTarget[3];		// 118-120
-	uint EffectItemType[3];			// 121-123
-	int EffectMiscValue[3];
-	int EffectMiscValueB[3];
-	uint EffectTriggerSpell[3];		// 124-126
-	float EffectPointsPerComboPoint[3];	// 127-129
-	uint EffectSpellClassMask[3];	// 130-132  Flag96
-	uint SpellVisual[2];			// 133-134
-	uint SpellIconID;
-	uint activeIconID;
-	uint spellPriority;
-	uint SpellName;
-	uint Rank;						// 140
-	uint Description;
-	uint ToolTip;
-} Spelldbc;
-	/*
-        public uint ManaCostPercentage;
-        public uint StartRecoveryCategory;
-        public uint StartRecoveryTime;
-        public uint MaxTargetLevel;
-        public uint SpellFamilyName;
-        public Flag96 SpellFamilyFlags;
-        public uint MaxAffectedTargets;
-        public uint DmgClass;
-        public uint PreventionType;
-        public uint StanceBarOrder;
-        public float[3] DmgMultiplier;
-        public uint MinFactionId;
-        public uint MinReputation;
-        public uint RequiredAuraVision;
-        public uint[2] TotemCategory;
-        public int AreaGroupId;
-        public int SchoolMask;
-        public uint runeCostID;
-        public uint spellMissileID;
-        public uint PowerDisplayId;
-        public float[3] unk_320_4;
-        public uint spellDescriptionVariableID;
-        public uint SpellDifficultyId;
-    }
-*/
+typedef struct ItemDbc{
+	UInt32 Id;
+	UInt32 ItemClass;
+	UInt32 ItemSubClass;		// 5
+	UInt32 Unknown;
+	UInt32 MaterialID;			// 7
+	UInt32 ItemDisplayInfo;		// 18085
+	UInt32 InventorySlotID;
+	UInt32 SheathID;
+}ItemDbc;
 	
 typedef struct SpelldbcFake{
-	
-	UInt32 addresses[0x2C0];
-	
+	UInt32 addresses[0xAA];
 }SpelldbcFake;
 
-- (NSString*)getSpellName:(int)spellID{
-	
-	MemoryAccess *memory = [controller wowMemoryAccess];
-	
-	UInt32 spellDbc = 0xD2E300;
-	//int spellID = 27905;//15616;
-	UInt32 minIndex = [memory readInt:spellDbc + 0x10 withSize:sizeof(UInt32)];
-	UInt32 maxIndex = [memory readInt:spellDbc + 0xC withSize:sizeof(UInt32)];
-	
-	if ( spellID >= minIndex && spellID <= maxIndex ){
-		
-		UInt32 spellRow = [memory readInt:spellDbc + 0x20 withSize:sizeof(UInt32)] + ( 4 * (spellID - minIndex) );
-		UInt32 spellStruct = [memory readInt:spellRow withSize:sizeof(UInt32)];
-
-		// we don't have a pointer to a struct, quite unfortunate
-		if ( spellStruct == 0 ){
-			return nil;
-		}
-		
-		NSLog(@"SPELL STRUCT: 0x%X", spellStruct);
-
-
-		// lets unpack! Can be it's own function! And in fact probably should be ;)
-		Byte byteBuffer[0x5000] = {0};
-		
-		byteBuffer[0] = [memory readInt:spellStruct withSize:sizeof(Byte)];
-		int currentAddress = 1;
-		int i = 0;
-		int size = 0x2C0;
-		
-		for ( i = spellStruct + 1; currentAddress < size; ++i ){
-			
-			byteBuffer[currentAddress++] = [memory readInt:i withSize:sizeof(Byte)];
-			
-			Byte atI = [memory readInt:i withSize:sizeof(Byte)];
-			Byte prevI = [memory readInt:i - 1 withSize:sizeof(Byte)];
-			
-			if ( atI == prevI ){
-				
-				Byte j = 0;
-				for ( j = [memory readInt:i + 1 withSize:sizeof(Byte)]; j != 0; byteBuffer[currentAddress++] = [memory readInt:i withSize:sizeof(Byte)] ){
-					j--;
-				}
-				i += 2;
-				if ( currentAddress < size ){
-					byteBuffer[currentAddress++] = [memory readInt:i withSize:sizeof(Byte)];
-				}
-			}
-		}
-
-		SpelldbcFake spell;
-		
-		memcpy( &spell, &byteBuffer, sizeof(spell));
-		
-		
-		
-		// the name pointer is at 0x88!
-		return [[[memory readString:spell.addresses[0x88]] retain] autorelease];
-		/*NSLog(@"Spell name: %@", spellName);
-		
-		
-		//free(byteBuffer);
-		NSLog(@"size of struct: 0x%X", sizeof(spell));
-		
-		/*for ( i = 0; i < 0x2C0; i++ ){
-		 NSLog(@"[0x%X] 0x%X", i, spell.addresses[i]);
-		 }*/
-		
-		//NSLog(@"complete!");
-		
-		//NSLog(@"unpacking complete! Spell ID: %d Category: %d  Dispel: %d Spell Name: 0x%X", spell.Id, spell.Category, spell.Dispel, spell.Rank);
-		
-		// now I have a pointer to the spell struct, how do I now get to the name/description etc..?
-	}
-	
-	return nil;	
-}
 
 - (IBAction)test: (id)sender{
 	
-
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
-	UInt32 spellID = 58739;
-	
-	SpelldbcFake spellStruct;
-	[databaseManager getObjectForRow:spellID withTable:@"Spell" withStruct:&spellStruct withStructSize:sizeof(spellStruct)];
-	
-	NSLog(@"Size: 0x%X", sizeof(spellStruct));
+	UInt32 itemID = 2136;		// item was 2136
+	SpelldbcFake t;
+	[databaseManager getObjectForRow:itemID withTable:ItemRandomSuffix withStruct:&t withStructSize:sizeof(t)];
 	
 	int i;
-	for ( i = 0; i <= 0x8B; i++ ){
+	for ( i = 0; i < 30; i++ ){
+		NSLog(@"[%d] %d 0x%X", i, t.addresses[i], t.addresses[i]);
+	}
+	
+	
+	return;
+	
+	UInt32 spellID = 53007;
+	
+	SpelldbcFake spellStruct;
+	SpellDbc tmp;
+	[databaseManager getObjectForRow:spellID withTable:Spell_ withStruct:&spellStruct withStructSize:sizeof(spellStruct)];
+	[databaseManager getObjectForRow:spellID withTable:Spell_ withStruct:&tmp withStructSize:sizeof(tmp)];
+	
+	for ( i = 0; i < 0xAA; i++ ){
 		NSLog(@"[%d] %d 0x%X", i, spellStruct.addresses[i], spellStruct.addresses[i]);
 	}
 	
@@ -5629,20 +5438,12 @@ typedef struct SpelldbcFake{
 	//NSLog(@"Obj address: 0x%X 0x%X", spellStruct, &spellStruct);
 	for ( Spell *spell in [spellController playerSpells] ){
 		SpelldbcFake spellStruct;
-		[databaseManager getObjectForRow:[[spell ID] intValue] withTable:@"Spell" withStruct:&spellStruct withStructSize:sizeof(spellStruct)];
+		[databaseManager getObjectForRow:[[spell ID] intValue] withTable:Spell_ withStruct:&spellStruct withStructSize:sizeof(spellStruct)];
 		NSLog(@"[%d] %@",[[spell ID] intValue], [memory readString:spellStruct.addresses[0x88]]);
 
 	 }
 	
-	//NSLog(@"[Db] 0x%X", spellStruct.addresses[0x88]);
-	
-	return;
-	
-	for ( Spell *spell in [spellController playerSpells] ){
-		NSLog(@"[%@] %@", [spell ID], [self getSpellName:[[spell ID] intValue]]);
-	}
-	
-	return;
+
 	/*
 	private static void ClientDbUnpack(IntPtr source, uint size, out IntPtr buffer)
 	{
@@ -5858,8 +5659,8 @@ typedef struct SpelldbcFake{
 						PGLog(@"[Login] We're at the login screen! Yay!");
 						
 						// here we want to check to see if we have already been logged in w/this account (if so, the username will still be there!)
-						NSString *user = @"test";
-						NSString *pass = @"pass";
+						//NSString *user = @"test";
+						//NSString *pass = @"pass";
 						
 						
 					}	

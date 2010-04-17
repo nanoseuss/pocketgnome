@@ -52,8 +52,6 @@
 		
 		_nameBeforeRename = nil;
 		
-		PGLog(@"[PvP] Loaded %d objects", [self.behaviors count] );
-		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
 		
         [NSBundle loadNibNamed: @"PvP" owner: self];
@@ -99,11 +97,11 @@
 - (void)saveBehaviors{
 	for ( PvPBehavior *behavior in self.behaviors ){
 		if ( behavior.changed ){
-			PGLog(@"SAVING %@", behavior);
+			//PGLog(@"SAVING %@", behavior);
 			[self saveObject:behavior];
 		}
 		else{
-			PGLog(@"NOT SAVING %@", behavior);
+			//PGLog(@"NOT SAVING %@", behavior);
 		}
 	}
 }
@@ -122,9 +120,7 @@
 	
 	//[self willChangeValueForKey: @"currentBehavior"];
     //[self didChangeValueForKey: @"currentBehavior"];
-	
-	PGLog(@"validateBindings");
-	
+
 	// assign default routes so it's not "No Value"
 	if ( self.currentBehavior.AlteracValley.routeCollection == nil )
 		self.currentBehavior.AlteracValley.routeCollection = [[waypointController routeCollections] objectAtIndex:0];

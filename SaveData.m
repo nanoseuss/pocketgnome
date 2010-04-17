@@ -186,7 +186,7 @@
 - (void)saveObject: (id)object { 
 	NSString *filePath = [self pathForObjectName:[self objectName:object] withExtension:YES];
 	
-	PGLog(@"[FileManager] Saving %@ to %@", object, filePath);
+	//PGLog(@"[FileManager] Saving %@ to %@", object, filePath);
 	[NSKeyedArchiver archiveRootObject: object toFile: filePath];
 }
 
@@ -254,8 +254,8 @@
 		}
 	}
 	
-	if ( [objectList count] )
-		PGLog(@"[FileManager] Loaded %d objects of type %@", [objectList count], [self objectExtension]);
+	//if ( [objectList count] )
+		//PGLog(@"[FileManager] Loaded %d objects of type %@", [objectList count], [self objectExtension]);
 	
 	return [objectList retain];
 }

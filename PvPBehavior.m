@@ -314,22 +314,22 @@
 
 - (Battleground*)battlegroundForZone:(UInt32)zone{
 	
-	if ( zone == [self.AlteracValley zone] ){
+	if ( zone == [self.AlteracValley zone] && [self.AlteracValley enabled] ){
 		return self.AlteracValley;
 	}
-	else if ( zone == [self.ArathiBasin zone] ){
+	else if ( zone == [self.ArathiBasin zone] && [self.ArathiBasin enabled] ){
 		return self.ArathiBasin;	
 	}
-	else if ( zone == [self.EyeOfTheStorm zone] ){
+	else if ( zone == [self.EyeOfTheStorm zone] && [self.EyeOfTheStorm enabled] ){
 		return self.EyeOfTheStorm;
 	}
-	else if ( zone ==  [self.IsleOfConquest zone] ){
+	else if ( zone ==  [self.IsleOfConquest zone] && [self.IsleOfConquest enabled] ){
 		return self.IsleOfConquest;
 	}
-	else if ( zone == [self.StrandOfTheAncients zone] ){
+	else if ( zone == [self.StrandOfTheAncients zone] && [self.StrandOfTheAncients enabled] ){
 		return self.StrandOfTheAncients;
 	}
-	else if ( zone == [self.WarsongGulch zone] ){
+	else if ( zone == [self.WarsongGulch zone] && [self.WarsongGulch enabled] ){
 		return self.WarsongGulch;
 	}
 	

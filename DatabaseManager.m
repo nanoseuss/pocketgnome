@@ -1,13 +1,31 @@
-//
-//  DatabaseManager.m
-//  Pocket Gnome
-//
-//  Created by Josh on 4/12/10.
-//  Copyright 2010 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id: DatabaseManager.m 315 2010-04-12 04:12:45Z Tanaris4 $
+ *
+ */
 
 #import "DatabaseManager.h"
 #import "Controller.h"
+#import "OffsetController.h"
 
 
 @implementation DatabaseManager
@@ -17,16 +35,9 @@
     if ( self != nil ){
 		
 		_tables = [[NSMutableDictionary dictionary] retain];
-		
-		// if I was awesome I would make this a DB object
-		//	read the data the first time so we don't have to later!
-		[_tables setObject:[NSNumber numberWithUnsignedInt:0xD2E300] forKey:@"Spell"];	// 0x194
-		
-		// add spell table
-		//DbTable *table = [WbTable WoWDbTableWithTablePtr:0xD2E300];
-		//[_tables setObject:table forKey:[NSNumber numberWithUnsignedInt:0x194];
-		 
-		 // ideally I'd like to loop through this and read all of the table info, to be done later ;)
+		_dataLoaded = NO;
+
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(offsetsLoaded:) name: OffsetsLoaded object: nil];
 	}
 	return self;
 }
@@ -93,7 +104,9 @@ typedef struct ClientDb {
 	return YES;
 }
 
-- (BOOL)getObjectForRow:(int)index withTable:(NSString*)table withStruct:(void*)obj withStructSize:(size_t)structSize{
+- (BOOL)getObjectForRow:(int)index withTable:(ClientDbType)tableOffset withStruct:(void*)obj withStructSize:(size_t)structSize{
+	
+	NSNumber *table = [NSNumber numberWithInt:tableOffset];
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	if ( !memory || ![memory isValid] ){
@@ -130,10 +143,16 @@ typedef struct ClientDb {
 			
 			//NSLog(@"[Db] We have a valid struct address! Row is pointing to 0x%X", structAddress);
 			
-			if ( [table isEqualToString:@"Spell"] ){
+			if ( tableOffset == Spell_ ){
 				if ( [self unPackRow:structAddress withStruct:obj withStructSize:structSize] ){
 					return YES;
 				}
+			}
+			// no unpacking necessary!
+			else{
+				PGLog(@"loading at 0x%X", structAddress);
+				[memory loadDataForObject:self atAddress:structAddress Buffer:obj BufLength:structSize];
+				return YES;
 			}
 		}
 	}
@@ -141,5 +160,31 @@ typedef struct ClientDb {
 	return NO;	
 }
 
+#pragma mark Notifications
+
+- (void)offsetsLoaded: (NSNotification*)notification {
+	
+	if ( _dataLoaded )
+		return;
+   
+	// lets load all of our valid offsets for all of our client DBs! (should be pretty patch safe, time will tell!)
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( memory && [memory isValid] ){
+	
+		UInt32 firstOffset = [offsetController offset:@"ClientDb_RegisterBase"] + 0x21;
+		int i = 0;
+		for ( ; i < 0xEC; i++ ){
+			UInt32 ptr = [memory readInt:firstOffset + (0x29*i) withSize:sizeof(UInt32)];
+			UInt32 offset = [memory readInt:firstOffset + (0x29*i) + 0x8 withSize:sizeof(UInt32)];
+			UInt32 tableAddress = [memory readInt:ptr withSize:sizeof(UInt32)];
+			
+			[_tables setObject:[NSNumber numberWithUnsignedInt:tableAddress] forKey:[NSNumber numberWithInt:offset]];	// 0x194
+			
+			//PGLog(@"[%d] Adding address 0x%X for 0x%X", i, tableAddress, offset);
+		}
+	}
+	
+	_dataLoaded = YES;
+}
 		 
 @end

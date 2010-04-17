@@ -641,7 +641,7 @@ static PlayerDataController* sharedController = nil;
 // 1 read
 - (UInt32)honor {
 	UInt32 value = 0;
-	[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_Coinage) Buffer: (Byte*)&value BufLength: sizeof(value)];
+	[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_Honor) Buffer: (Byte*)&value BufLength: sizeof(value)];
 	return value;
 }
 

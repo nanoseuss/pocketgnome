@@ -1042,20 +1042,21 @@ typedef enum SearchType{
 	if ( [mask length] > 0 && [signature length] > 0 ){
 		[resultsTextView setString: @""];
 		
-		NSArray *offsetList = [offsetController offsetWithByteSignature:signature 
-															  withMask:mask 
-														 withEmulation:[emulatePPCButton state]];
+		NSDictionary *offsetDict = [offsetController offsetWithByteSignature:signature 
+															  withMask:mask];
 		
 		// do we have any offsets?
-		if ( [offsetList count] > 0 ){
+		if ( [offsetDict count] > 0 ){
 			
 			NSString *offsets = [[NSString alloc] init];
 			
-			int loc = 1;
-			for ( NSNumber *offset in offsetList ){
-				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"%d: 0x%X\n", loc++, [offset intValue]]];	
-			}
+			NSArray *allKeys = [offsetDict allKeys];
 			
+			int loc = 1;
+			for ( NSNumber *key in allKeys ){
+				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"%d: 0x%X found at 0x%X\n", loc++, [[offsetDict objectForKey:key] unsignedIntValue], [key unsignedIntValue]]];	
+			}
+
 			[resultsTextView setString: offsets];
 			
 		}

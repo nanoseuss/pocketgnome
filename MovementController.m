@@ -239,18 +239,15 @@ typedef enum MovementState{
 	
 	// shoot to go on top of the node a bit (could also check if they are flying mounted)
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
-		NSLog(@"increasing node z position!");
 		Position *position = [object position];
-		[position setZPosition:[position zPosition] + 4.0f];
+		[position setZPosition:[position zPosition] + 3.1f];
 		
 		pos = position;
 	}
 	else{
 		pos = [object position];
 	}
-	
-	NSLog(@"Moving to %@ not %@", pos, [object position]);
-	
+
 	[self moveToPosition:pos];
 	
 	if ( [self.moveToObject isKindOfClass:[Mob class]] || [self.moveToObject isKindOfClass:[Player class]] ){
@@ -621,7 +618,7 @@ typedef enum MovementState{
 	
 	_positionCheck++;
 
-	PGLog(@"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
+	PGLog(@"[%d] Check current position.  Stuck counter: %d.  Reads: %d", _positionCheck, _stuckCounter, [[controller wowMemoryAccess] loadCount]);
 
 	BOOL isPlayerOnGround = [playerData isOnGround];
 	Position *playerPosition = [playerData position];
@@ -677,14 +674,14 @@ typedef enum MovementState{
 		else{
 			reachedDestination = NO;
 		}
-
-		NSLog(@" is %0.2f < %0.2f?", distanceToDestination2D, distanceToObject2D);
 	}
 	
 	// we've reached our position!
 	if ( reachedDestination ){
 		
-		NSLog(@"[Move] Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
+		[[controller wowMemoryAccess] resetLoadCount];
+		
+		PGLog(@"[Move] Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
 		
 		// moving to a unit
 		if ( self.moveToObject ){

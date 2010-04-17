@@ -309,7 +309,65 @@ typedef struct QuestStruct {
 	return YES;
 }
 
+typedef struct PlayerQuest {
+    UInt32 questID;
+    UInt32 state;		// not level requirement, but rather the quest level
+    UInt8  ObjectiveRequiredCounts[4];
+	UInt32 time;
+} PlayerQuest;
+
 - (BOOL)isQuestComplete: (int)index{
+	
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( memory && [memory isValid] ){
+	
+		UInt32 questStart = [[playerController player] infoAddress] + 0x278;
+		/*UInt32 questPointer = [[playerController player] baseAddress] + 0xFF4, questStart = 0;
+		[memory loadDataForObject: self atAddress: questPointer Buffer:(Byte*)&questStart BufLength: sizeof(questStart)];
+		questStart += 0x28;*/
+		PGLog(@"Start: 0x%X", questStart);
+		
+		int i = 0;
+		for ( ; i < 25; i++ ){
+			
+			PlayerQuest quest;
+			if ( [memory loadDataForObject: self atAddress: questStart + (i*0x14) Buffer:(Byte*)&quest BufLength: sizeof(quest)] && quest.questID ){
+				PGLog(@"[%i] %i %i", quest.questID, quest.state, quest.time);
+				int k = 0;
+				for ( ; k < 4; k++ ){
+					PGLog(@" %i", quest.ObjectiveRequiredCounts[k]);
+				}
+			}
+			else{
+				PGLog(@"ending after %d searches...", i);
+				break;
+			}
+		}
+	}
+
+	/*
+	[StructLayout(LayoutKind.Sequential)]
+    public struct PlayerQuest
+    {
+        public int ID;
+        public StateFlag State;
+        [MarshalAs(UnmanagedType.ByValArray,SizeConst = 4)]
+        public short[] ObjectiveRequiredCounts;
+        public int Time;
+		
+        public enum StateFlag : uint
+        {
+            None = 0,
+            Complete = 1,
+            Failed = 2
+        }
+    }
+	*/
+	
+	
+	
+	/*
 	
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
@@ -346,7 +404,7 @@ typedef struct QuestStruct {
 	
 	}
 	return NO;
-	
+	*/
 	//if ( v9 && !DB9BE8[4 * v1] && DB9BEC[4 * v1] )
 	
 	

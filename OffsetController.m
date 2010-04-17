@@ -36,37 +36,13 @@
 - (void)loadEveryOffset;
 - (void)findAllOffsets: (Byte*)data Len:(unsigned long)len StartAddress:(unsigned long)startAddress;
 
-- (unsigned long) dwFindPattern: (unsigned char*)bMask 
-				 withStringMask:(char*)szMask 
-					   withData:(Byte*)dw_Address 
-						withLen:(unsigned long)dw_Len 
-			   withStartAddress:(unsigned long)startAddressOffset 
-				  withMinOffset:(long)minOffset 
-					  withCount:(int)count;
-
-- (unsigned long) dwFindPatternPPC: (unsigned char*)bMask 
-					withStringMask:(char*)szMask 
-						  withData:(Byte*)dw_Address 
-						   withLen:(unsigned long)dw_Len 
-				  withStartAddress:(unsigned long)startAddressOffset 
-					 withMinOffset:(long)minOffset 
-						 withCount:(int)count;
-
-- (void)findPPCOffsets: (Byte*)data Len:(unsigned long)len StartAddress:(unsigned long)startAddress;
 BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const char* szMask);
 
-
 // new scans
-- (NSArray*) findPatternPPC: (unsigned char*)bMask 
-			 withStringMask:(char*)szMask 
-				   withData:(Byte*)dw_Address 
-					withLen:(unsigned long)dw_Len 
-			  withMinOffset:(long)minOffset;
-- (NSArray*) findPattern: (unsigned char*)bMask 
+- (NSDictionary*) findPattern: (unsigned char*)bMask 
 		  withStringMask:(char*)szMask 
 				withData:(Byte*)dw_Address 
-				 withLen:(unsigned long)dw_Len 
-		   withMinOffset:(long)minOffset ;
+				 withLen:(unsigned long)dw_Len ;
 @end
 
 @implementation OffsetController
@@ -98,10 +74,12 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 
 // new and improved offset finder, will loop through our plist file to get the signatures! yay! Easier to store PPC/Intel
 - (void)findOffsets: (Byte*)data Len:(unsigned long)len StartAddress:(unsigned long)startAddress{
-
-	// should only be set to yes during testing!
-	BOOL emulatePPC = NO;
 	
+	if ( IS_PPC ){
+		PGLog(@"[Offset] Power PC is not currently supported by Pocket Gnome!");
+		return;
+	}
+
 	if ( _offsetDictionary ){
 		
 		NSArray *allKeys = [_offsetDictionary allKeys];
@@ -109,9 +87,6 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		// Intel or PPC?
 		NSString *arch = (IS_X86) ? @"Intel" : @"ppc";
 		NSRange range;
-		
-		if ( emulatePPC )
-			arch = @"ppc";
 
 		// this will be a key, such as PLAYER_NAME_STATIC
 		for ( NSString *key in allKeys ){
@@ -128,10 +103,10 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			// lets get the raw data from our objects!
 			NSString *dictMask					= [offsetData objectForKey: @"Mask"];
 			NSString *dictSignature				= [offsetData objectForKey: @"Signature"];
-			NSString *dictStartScanAddress		= [offsetData objectForKey: @"StartScanAddress"];
 			NSString *dictCount					= [offsetData objectForKey: @"Count"];
 			NSString *dictAdditionalOffset		= [offsetData objectForKey: @"AdditionalOffset"];
 			NSString *dictSubtractOffset		= [offsetData objectForKey: @"SubtractOffset"];
+			BOOL useAddress						= [[offsetData objectForKey: @"UseAddress"] boolValue];
 			
 			// no offset data found, move on to the next one!
 			if ( [dictMask length] == 0 || [dictSignature length] == 0 )
@@ -141,16 +116,6 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			unsigned int count = 1;
 			if ( dictCount != nil ){
 				count = [dictCount intValue];
-			}
-
-			// start offset specified?
-			unsigned long startScanAddress = 0x0;
-			if ( [dictStartScanAddress length] > 0 ){
-				range.location = 2;
-				range.length = [dictStartScanAddress length]-range.location;
-				
-				const char *szStartScanAddressInHex = [[dictStartScanAddress substringWithRange:range] UTF8String];
-				startScanAddress = strtol(szStartScanAddressInHex, NULL, 16);
 			}
 			
 			unsigned long additionalOffset = 0x0;
@@ -189,56 +154,57 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			const char *szMaskUTF8 = [dictMask UTF8String];
 			char *szMask = strdup(szMaskUTF8);
 			
-			unsigned long offset = 0x0;
+			NSDictionary *offsetDict = nil;
+			
 			// Intel
-			if ( IS_X86 && !emulatePPC ){
-				offset = [self dwFindPattern:bytes
-										withStringMask:szMask 
-											  withData:data
-											   withLen:len
-									  withStartAddress:startAddress 
-										 withMinOffset:startScanAddress
-											 withCount:count] + additionalOffset - subtractOffset;
+			if ( IS_X86 ){
+				offsetDict = [self findPattern:bytes
+								withStringMask:szMask 
+									  withData:data
+									   withLen:len];
 			}
-			// PPC
-			else {
-				offset = [self dwFindPatternPPC:bytes
-							  withStringMask:szMask 
-									withData:data
-									 withLen:len
-							withStartAddress:startAddress 
-							   withMinOffset:startScanAddress
-								   withCount:count] + additionalOffset - subtractOffset;
-			}
+
+			// we have results! yay!
+			if ( [offsetDict count] ){
 				
-			[offsets setObject: [NSNumber numberWithUnsignedLong:offset] forKey:key];
-			if ( offset > 0x0 ){
-				PGLog(@"%@: 0x%X", key, offset);
+				// the key is the ADDRESS in which we found the offset!
+				NSArray *allKeys = [[offsetDict allKeys] sortedArrayUsingSelector:@selector(compare:)];
+				int i = 1;
+				for ( NSNumber *address in allKeys ){
+					
+					UInt32 offset = [[offsetDict objectForKey:address] unsignedIntValue];
+
+					if ( count == i ){
+						// we are looking for the ADDRESS at which this sig was found (good for identifying the start of a function!)
+						if ( useAddress ){
+							[offsets setObject: address forKey:key];
+							break;
+						}
+						// the offset we wanted that is in the signature
+						else{
+							[offsets setObject: [NSNumber numberWithUnsignedLong:(offset + additionalOffset - subtractOffset)] forKey:key];
+							break;
+						}
+					}
+					i++;
+				}
+			}
+			
+			NSNumber *offset = [offsets objectForKey:key];
+			if ( offset ){
+				PGLog(@"%@: 0x%X", key, [offset unsignedIntValue]);
 			}
 			else{
 				PGLog(@"[Offset] Error! No offset found for key %@", key);
 			}
 		}
 		
+		PGLog(@"[Offset] Loaded %d offsets!", [offsets count]);
+		
 		// can hard code some here
 		
-		// world state: 0xC7A350		// 3.3.2
-		
-		// connecting/auth/success = 1,2
-		// char list retreiving = 3
-		// race/faction change (or customize) in progress? = 9
-		// char decline in progress = 8
-		// char rename in progress = 7
-		// game loading = 10?
-		// game loaded = 0
-		
-		//[offsets setObject:[NSNumber numberWithUnsignedLong:0xC7A350] forKey:@"WorldState"];				// 3.3.2
-        //[offsets setObject:[NSNumber numberWithUnsignedLong:0xE06660] forKey:@"Lua_GetPartyMember"];		// 3.3.2
- 		
-
-        // 0xD8BD20 - charselect, login, charcreate, patchdownload		
-		
         _offsetsLoaded = YES;
+		[[NSNotificationCenter defaultCenter] postNotificationName: OffsetsLoaded object: nil];
 	}
 	// technically should never be here
 	else{
@@ -326,95 +292,6 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	return true;
 }
 
-// not very different from the intel scanner, except we will COMBINE the ?? we find in the signatures
-//  this is due to how PPC handles assembly instructions (at most 4 instructions per line)
-//	so these offsets can be moved over multiple lines + we need to combine it!
-//	we don't have to invert the bytes either as PPC is in big endian - woohoo!
-- (unsigned long) dwFindPatternPPC: (unsigned char*)bMask 
-				 withStringMask:(char*)szMask 
-					   withData:(Byte*)dw_Address 
-						withLen:(unsigned long)dw_Len 
-			   withStartAddress:(unsigned long)startAddressOffset 
-				  withMinOffset:(long)minOffset 
-					  withCount:(int)count
-{
-	unsigned long i;
-	int foundCount = 0;
-	for(i=0; i < dw_Len; i++){
-	
-		if( bDataCompare( (unsigned char*)( dw_Address+i ),bMask,szMask) ){
-			
-			foundCount++;
-
-			const unsigned char* pData = (unsigned char*)( dw_Address+i );
-			char *mask = szMask;
-			unsigned long offset = 0x0;
-			for ( ;*mask;++mask,++pData){
-				if ( *mask == '?' ){
-					offset <<= 8;  
-					offset ^= (long)*pData & 0xFF;   
-				}
-			}
-			
-			if ( offset >= minOffset && count == foundCount ){
-				return offset;
-			}
-			else if ( offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
-			}
-		}
-	}
-	
-	return 0;
-}
-
-- (unsigned long) dwFindPattern: (unsigned char*)bMask 
-				 withStringMask:(char*)szMask 
-					   withData:(Byte*)dw_Address 
-						withLen:(unsigned long)dw_Len 
-			   withStartAddress:(unsigned long)startAddressOffset 
-				  withMinOffset:(long)minOffset 
-					  withCount:(int)count
-{
-	unsigned long i;
-	int foundCount = 0;
-	for(i=0; i < dw_Len; i++){
-		
-		if( bDataCompare( (unsigned char*)( dw_Address+i ),bMask,szMask) ){
-			
-			foundCount++;
-			
-			const unsigned char* pData = (unsigned char*)( dw_Address+i );
-			char *mask = szMask;
-			unsigned long j = 0;
-			for ( ;*mask;++mask,++pData){
-				if ( j && *mask == 'x' ){
-					break;
-				}
-				if ( *mask == '?' ){
-					j++;
-				}
-			}
-			
-			unsigned long offset = 0, k;
-			for (k=0;j>0;j--,k++){
-				--pData;
-				offset <<= 8;  
-				offset ^= (long)*pData & 0xFF;   
-			}
-			
-			if ( offset >= minOffset && count == foundCount ){
-				return offset;
-			}
-			else if ( offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X < 0x%X at 0x%X, ignoring... (%d)", offset, minOffset, i, foundCount);
-			}
-		}
-	}
-	
-	return 0;
-}
-
 - (unsigned long) offset: (NSString*)key{
 	NSNumber *offset = [offsets objectForKey: key];
 	if ( offset ){
@@ -487,9 +364,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 // Success for reading from 0x1000 to 0xC6E000  SourceInfo: 0x5 0x7
 
 #define TEXT_SEGMENT_START		0x1000
-- (NSArray*)offsetWithByteSignature: (NSString*)signature 
-								withMask:(NSString*)mask 
-						   withEmulation:(BOOL)emulatePPC{
+- (NSDictionary*)offsetWithByteSignature: (NSString*)signature 
+								withMask:(NSString*)mask{
 	
 	// grab our chunk of memory (we only want data in the text address)
 	int len = TEXT_SEGMENT_MAX_ADDRESS - TEXT_SEGMENT_START;
@@ -501,7 +377,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	memcpy(byteData, [data bytes], newLength);
 	
 	// the list we'll return!
-	NSArray *offsetList = nil;
+	NSDictionary *offsetDict = nil;
 	
 	// we're good to go!
 	if ( data != nil ){
@@ -525,22 +401,13 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 		const char *szMaskUTF8 = [mask UTF8String];
 		char *szMask = strdup(szMaskUTF8);
 		
-		if ( IS_X86 && !emulatePPC ){
+		if ( IS_X86 ){
 
-			offsetList = [self findPattern:bytes
+			offsetDict = [self findPattern:bytes
 							withStringMask:szMask 
 								  withData:byteData
-								   withLen:len
-							 withMinOffset:0x0];
+								   withLen:len];
 
-		}
-		// PPC
-		else {
-			offsetList = [self findPatternPPC:bytes
-							   withStringMask:szMask 
-									 withData:byteData
-									  withLen:len
-								withMinOffset:0x0];
 		}
 	}
 	else {
@@ -551,52 +418,16 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	if ( byteData )
 		free( byteData );
 	
-	return [[offsetList retain] autorelease];
+	return [[offsetDict retain] autorelease];
 }
 
-- (NSArray*) findPatternPPC: (unsigned char*)bMask 
-					withStringMask:(char*)szMask 
-						  withData:(Byte*)dw_Address 
-						   withLen:(unsigned long)dw_Len 
-					 withMinOffset:(long)minOffset 
-{
-	unsigned long i;
-	NSMutableArray *list = [[NSMutableArray array] retain];
-	for(i=0; i < dw_Len; i++){
-		
-		if( bDataCompare( (unsigned char*)( dw_Address+i ),bMask,szMask) ){
-			
-			const unsigned char* pData = (unsigned char*)( dw_Address+i );
-			char *mask = szMask;
-			unsigned long offset = 0x0;
-			for ( ;*mask;++mask,++pData){
-				if ( *mask == '?' ){
-					offset <<= 8;  
-					offset ^= (long)*pData & 0xFF;   
-				}
-			}
-			
-			if ( offset >= minOffset ){
-				//PGLog(@"[Offset] Found 0x%X, adding to array", offset);
-				[list addObject:[NSNumber numberWithInt:offset]];
-			}
-			else if ( offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X < 0x%X, ignoring... (%d)", offset, minOffset, i);
-			}
-		}
-	}
-	
-	return [[list retain] autorelease];
-}
-
-- (NSArray*) findPattern: (unsigned char*)bMask 
+- (NSDictionary*) findPattern: (unsigned char*)bMask 
 				 withStringMask:(char*)szMask 
 					   withData:(Byte*)dw_Address 
 						withLen:(unsigned long)dw_Len 
-				  withMinOffset:(long)minOffset 
 {
 	unsigned long i;
-	NSMutableArray *list = [[NSMutableArray array] retain];
+	NSMutableDictionary *list = [NSMutableDictionary dictionary];
 	for(i=0; i < dw_Len; i++){
 
 		if( bDataCompare( (unsigned char*)( dw_Address+i ),bMask,szMask) ){
@@ -620,12 +451,9 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				offset ^= (long)*pData & 0xFF;   
 			}
 			
-			if ( offset >= minOffset && offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X, adding to array", offset);
-				[list addObject:[NSNumber numberWithInt:offset]];
-			}
-			else if ( offset > 0x0 ){
-				//PGLog(@"[Offset] Found 0x%X < 0x%X, ignoring... (%d)", offset, minOffset, i);
+			if ( offset > 0x0 ){
+				//PGLog(@" [Offset] Found 0x%X, adding to dictionary at 0x%X", offset, i+TEXT_SEGMENT_START);
+				[list setObject:[NSNumber numberWithUnsignedInt:offset] forKey:[NSNumber numberWithUnsignedInt:i+TEXT_SEGMENT_START]];
 			}
 		}
 	}

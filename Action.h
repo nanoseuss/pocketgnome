@@ -52,6 +52,7 @@ typedef enum ActionType {
     ActionType	_type;
     id			_value;
 	BOOL        _enabled;
+	BOOL		_useMaxRank;
 }
 
 - (id)initWithType: (ActionType)type value: (id)value;
@@ -60,6 +61,7 @@ typedef enum ActionType {
 
 @property (readwrite, assign) ActionType type;
 @property (readwrite, copy) id value;
+@property BOOL useMaxRank;
 
 @property BOOL enabled;
 

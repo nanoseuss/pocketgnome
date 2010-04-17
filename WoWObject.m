@@ -297,7 +297,12 @@
             case OBJECT_GUID_LOW32:
                 desc = @"Object GUID (low 32 bits)";
                 break;
-                
+			case OBJECT_GUID_ALL64:
+				desc = @"Object GUID (low 32 bits)";
+				break;
+			case OBJECT_GUID_ALL64 + 0x4:
+				desc = @"Object GUID (high 32 bits)";
+				break;
             case OBJECT_STRUCT1_POINTER:
                 desc = @"Other Structure Pointer (?)";
                 break;

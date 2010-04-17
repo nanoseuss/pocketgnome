@@ -135,7 +135,7 @@ enum AutomatorIntervalType {
 			_routeCollectionList = [[self loadAllObjects] retain];
 		}
 		
-		PGLog(@"We now have %d objects of route collection", [_routeCollectionList count]);
+		//PGLog(@"We now have %d objects of route collection", [_routeCollectionList count]);
 		
         // listen for notification
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];

@@ -164,6 +164,44 @@ static MemoryAccess *sharedMemoryAccess = nil;
     }
 }
 
+- (int)readInt: (UInt32)address withSize:(size_t)size{
+	
+	int buffer[size];
+
+	if ( [self loadDataForObject: self atAddress:address Buffer:(Byte *)&buffer BufLength:size] ){
+		int val = 0;
+		val = (int)*buffer;
+		return val;
+	}
+	
+	return 0;
+}
+
+- (NSString*)readString: (UInt32)address{
+	
+	char str[256];
+	str[255] = 0;
+	
+	if ( [self loadDataForObject: self atAddress:address Buffer:(Byte *)&str BufLength:sizeof(str)-1] ){
+		NSString *newStr = [NSString stringWithUTF8String: str];
+		return [[newStr retain] autorelease];
+	}
+	
+	return nil;
+}
+
+- (NSNumber*)readNumber: (UInt32)address withSize:(size_t)size{
+	void *buffer = malloc(size);
+	if ( [self loadDataForObject: self atAddress:address Buffer:buffer BufLength:size] ){
+		NSNumber *num = [NSNumber numberWithInt:(int)buffer];
+		free(buffer);
+		return num;
+	}
+	
+	return nil;
+}
+
+
 // basically just a raw reading function.
 // use this method if you need the actual return value from the kernel and want to do your own error checking.
 - (kern_return_t)readAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes {
