@@ -26,38 +26,33 @@
 #import <Cocoa/Cocoa.h>
 
 @class Controller;
+@class BotController;
 @class ChatController;
 @class OffsetController;
 
-#define BindingPrimaryHotkey		@"BindingPrimaryHotkey"
-#define BindingPetAttack			@"BindingPetAttack"
-#define BindingInteractMouseover	@"BindingInteractMouseover"
-#define BindingTargetLast			@"BindingTargetLast"
+#define BindingPrimaryHotkey		@"MULTIACTIONBAR1BUTTON1"
+#define BindingPrimaryHotkeyBackup	@"ACTIONBUTTON1"
+#define BindingPetAttack			@"PETATTACK"
+#define BindingInteractMouseover	@"INTERACTMOUSEOVER"
+#define BindingTargetLast			@"TARGETLASTTARGET"
+#define BindingTurnLeft				@"TURNLEFT"
+#define BindingTurnRight			@"TURNRIGHT"
+#define BindingMoveForward			@"MOVEFORWARD"
 
 @interface BindingsController : NSObject {
 	
 	IBOutlet Controller			*controller;
+	IBOutlet BotController		*botController;
 	IBOutlet ChatController		*chatController;
 	IBOutlet OffsetController	*offsetController;
+	
+	NSArray *_requiredBindings;
+	NSArray *_optionalBindings;
 
 	NSMutableDictionary *_bindings;
 	NSMutableDictionary *_keyCodesWithCommands;
 	
 	NSDictionary *_commandToAscii;
-	
-	// key bindings
-	int _primaryActionOffset;
-	int _primaryActionCode;
-	int _primaryActionModifier;
-	int _petAttackActionOffset;
-	int _petAttackActionCode;
-	int _petAttackActionModifier;
-	int _interactMouseoverActionOffset;
-	int _interactMouseoverActionCode;
-	int _interactMouseoverActionModifier;
-	int _targetLastActionOffset;
-	int _targetLastActionCode;
-	int _targetLastActionModifier;
 	
 	NSMutableDictionary *_bindingsToCodes;		// used w/the defines above
 	
@@ -67,13 +62,16 @@
 // this will send the command to the client (use the above 3 keys - defines)
 - (BOOL)executeBindingForKey:(NSString*)key;
 
-// returns the bar offset (where the spell should be written to)
-- (int)barOffsetForKey:(NSString*)key;
-
 // just tells us if a binding exists!
 - (BOOL)bindingForKeyExists:(NSString*)key;
 
 // only called on bot start
 - (void)reloadBindings;
+
+// returns the bar offset (where the spell should be written to)
+- (int)castingBarOffset;
+
+// validates that all required key bindings exist! returns an error message
+- (NSString*)keyBindingsValid;
 
 @end

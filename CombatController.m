@@ -357,7 +357,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// remember when we started w/this unit
 	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
 	
-	
+	// lets face our new unit!
+	if ( unit != oldTarget ){
+		PGLog(@"[Combat] Facing new target! %@", unit);
+		[playerData faceToward:[unit position]];
+		[movementController establishPosition];		
+	}
 	
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
 	if ( oldTarget && [botController isPvPing] ){

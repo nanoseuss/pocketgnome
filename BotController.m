@@ -1495,7 +1495,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		BOOL doCombatProcedure = YES;
 		
 		// temp fix for looting
-		if ( self.doLooting && [_mobsToLoot count] ){
+		if ( self.doLooting && [self mobToLoot] ){
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 			
 			// we can break out of this procedure early!
@@ -3261,29 +3261,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 	
 	// find our key bindings
-	[bindingsController reloadBindings];
-	BOOL bindingsError = NO;
-	NSMutableString *error = [NSMutableString stringWithFormat:@"You need to bind your keys to something! The following aren't bound:\n"];
-	if ( ![bindingsController bindingForKeyExists:BindingPrimaryHotkey] ){
-		[error appendString:@"\tLower Left Action Bar 1 (Or Action Bar 1)\n"];
-		bindingsError = YES;
-	}
-	else if ( ![bindingsController bindingForKeyExists:BindingPetAttack] && self.theBehavior.usePet ){
-		[error appendString:@"\tPet Attack\n"];
-		bindingsError = YES;
-	}
-	else if ( ![bindingsController bindingForKeyExists:BindingInteractMouseover] ){
-		[error appendString:@"\tInteract With Mouseover\n"];
-		bindingsError = YES;
-	}
-	else if ( ![bindingsController bindingForKeyExists:BindingTargetLast] ){
-		[error appendString:@"\tTarget Last Target\n"];
-		bindingsError = YES;
-	}
-	if ( bindingsError ){
+	NSString *bindingsError = [bindingsController keyBindingsValid];
+	if ( bindingsError != nil ){
         PGLog(@"[Bot] All keys aren't bound!");
         NSBeep();
-        NSRunAlertPanel(@"You need to bind the correct keys in your Game Menu", error, @"Okay", NULL, NULL);
+        NSRunAlertPanel(@"You need to bind the correct keys in your Game Menu", bindingsError, @"Okay", NULL, NULL);
         return;
 	}
 	
@@ -4128,7 +4110,7 @@ NSMutableDictionary *_diffDict = nil;
 	if ( !memory )
 		return NO;
 	
-	int barOffset = [bindingsController barOffsetForKey:BindingPrimaryHotkey];
+	int barOffset = [bindingsController castingBarOffset];
 	if ( barOffset == -1 ){
 		PGLog(@"[Bot] Unable to execute spells! Ahhhhh! Issue with bindings!");
 		return NO;
