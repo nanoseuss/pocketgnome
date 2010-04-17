@@ -160,6 +160,8 @@
 
 - (void)stopBotActions;
 
+- (Mob*)mobToLoot;
+
 // pvp
 - (void)pvpQueueOrStart;
 - (void)pvpQueueBattleground;
@@ -1495,7 +1497,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		BOOL doCombatProcedure = YES;
 		
 		// temp fix for looting
-		if ( self.doLooting && [self mobToLoot] ){
+		if ( [self mobToLoot] ){
 			NSArray *inCombatUnits = [combatController validUnitsWithFriendly:_includeFriendly onlyHostilesInCombat:YES];
 			
 			// we can break out of this procedure early!
@@ -1805,6 +1807,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Loot Helpers
 
 - (void)lootUnit: (WoWObject*) unit{
+	
+	if ( !self.isBotting )
+		return;
    
 	// are we still in the air?  shit we can't loot yet!
 	if ( ![playerController isOnGround] ){
@@ -1905,18 +1910,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		PGLog(@"[Loot] Attempted to loot %d times, moving on...", _lootMacroAttempt);
 	}
 	
-	// fire off notification (sometimes needed if the mob only had $$, or the loot failed)
-	if ( self.unitToLoot ){
-		
-		PGLog(@"[Loot] Firing off loot success");
-		
-		// is it a mob?
-		if ( [self.mobToSkin isKindOfClass: [Mob class]] && [self.mobToSkin isNPC] ){
-			PGLog(@"[Loot] Is mob still lootable? %d", [(Mob*)self.unitToLoot isLootable] );
-		}
-		
-		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
-	}
+	PGLog(@"[Loot] Firing off loot success");
+	[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];	
 }
 
 // This is called when all items have actually been looted (the loot window will NOT be open at this point)
@@ -2085,7 +2080,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self interactWithMouseoverGUID: [mob GUID]];
 	
 	// In the off chance that no items are actually looted
-	//[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: (isNode) ? 6.5f : 2.5f];
+	[self performSelector: @selector(verifyLootSuccess) withObject: nil afterDelay: 2.5f];
 }
 
 #pragma mark -

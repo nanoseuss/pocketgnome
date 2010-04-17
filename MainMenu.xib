@@ -10829,6 +10829,14 @@
 					</object>
 					<int key="connectionID">4306</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">bindingsController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="963237447"/>
+					</object>
+					<int key="connectionID">4307</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -15216,9 +15224,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{323, -94}, {698, 401}}</string>
+					<string>{{323, 0}, {698, 401}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{323, -94}, {698, 401}}</string>
+					<string>{{323, 0}, {698, 401}}</string>
 					<integer value="0"/>
 					<string>{{99, 739}, {705, 301}}</string>
 					<integer value="1"/>
@@ -15815,7 +15823,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4306</int>
+			<int key="maxID">4307</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -16831,6 +16839,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>auraController</string>
+							<string>bindingsController</string>
 							<string>blacklistController</string>
 							<string>botController</string>
 							<string>combatProfileEditor</string>
@@ -16847,6 +16856,7 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
+							<string>BindingsController</string>
 							<string>BlacklistController</string>
 							<string>BotController</string>
 							<string>CombatProfileEditor</string>

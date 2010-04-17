@@ -360,8 +360,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// lets face our new unit!
 	if ( unit != oldTarget ){
 		PGLog(@"[Combat] Facing new target! %@", unit);
-		[playerData faceToward:[unit position]];
-		[movementController establishPosition];		
+		[movementController turnTowardObject:unit];	
 	}
 	
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!

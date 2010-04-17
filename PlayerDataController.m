@@ -647,6 +647,7 @@ static PlayerDataController* sharedController = nil;
 
 // 1 read, 2 writes
 - (void)faceToward: (Position*)position {
+	PGLog(@"[PlayerData] Facing %@", position);
     if([self playerIsValid:self]) {
         Position *ourPosition = [self position];
         [self setHorizontalDirectionFacing: [ourPosition angleTo: position]];

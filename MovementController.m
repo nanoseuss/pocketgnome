@@ -44,6 +44,7 @@
 #import "MobController.h"
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
+#import "BindingsController.h"
 
 #import "Action.h"
 #import "Rule.h"
@@ -156,6 +157,7 @@ typedef enum MovementState{
 		_movingUp = NO;
 		_afkPressForward = NO;
 		_lastCorrectionForward = NO;
+		_lastCorrectionLeft = NO;
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasRevived:) name: PlayerHasRevivedNotification object: nil];
@@ -1484,6 +1486,24 @@ typedef enum MovementState{
     usleep(30000);
 }
 
+- (void)correctDirectionByTurning{
+	
+	if ( _lastCorrectionLeft ){
+		PGLog(@"[Move] Turning right!");
+		[bindingsController executeBindingForKey:BindingTurnRight];
+		usleep([controller refreshDelay]);
+		[bindingsController executeBindingForKey:BindingTurnLeft];
+		_lastCorrectionLeft = NO;
+	}
+	else{
+		PGLog(@"[Move] Turning left!");
+		[bindingsController executeBindingForKey:BindingTurnLeft];
+		usleep([controller refreshDelay]);
+		[bindingsController executeBindingForKey:BindingTurnRight];
+		_lastCorrectionLeft = YES;
+	}
+}
+
 - (void)turnTowardPosition: (Position*)position {
 	
     BOOL printTurnInfo = NO;
@@ -1607,16 +1627,20 @@ typedef enum MovementState{
                 float interval = -1*[date timeIntervalSinceNow], turnRad = fabsf(savedDirection - finalFacing);
                 if(printTurnInfo) PGLog(@"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
             }
-			
-		// mouse turning or CTM
         }
+		
+		// mouse movement or CTM
 		else{
 
-            [playerData faceToward: position];
-			
+			// what are we facing now?
 			float playerDirection = [playerData directionFacing];
 			float theAngle = [playerPosition angleTo: position];
 			
+			PGLog(@"%0.2f %0.2f Difference: %0.2f > %0.2f", playerDirection, theAngle, fabsf( theAngle - playerDirection ), M_PI);
+			
+			// face the other location!
+            [playerData faceToward: position];
+
 			// compensate for the 2pi --> 0 crossover
 			if ( fabsf( theAngle - playerDirection ) > M_PI ) {
 				if(theAngle < playerDirection)  theAngle        += (M_PI*2);
@@ -1626,9 +1650,12 @@ typedef enum MovementState{
 			// find the difference between the angles
 			float angleTo = fabsf(theAngle - playerDirection);
 			
+			PGLog(@" %0.2f > 0.785f", angleTo);
+			
 			// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 			if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
-				[self establishPosition];
+				//[self establishPosition];
+				[self correctDirectionByTurning];
 			}
 			
 			if ( printTurnInfo ) PGLog(@"Doing sharp turn to %.2f", theAngle );
