@@ -511,31 +511,18 @@ typedef enum MovementState{
 		float distanceToWaypoint = [[playerData position] distanceToPosition: [newWaypoint position]];
 
 		float horizontalDistanceToWaypoint = [[playerData position] distanceToPosition2D: [newWaypoint position]];
-
 		float verticalDistanceToWaypoint = [[playerData position] zPosition]-[[newWaypoint position] zPosition];
-	
+		Position *positionAboveWaypoint = [[Position alloc] initWithX:[[newWaypoint position] xPosition] Y:[[newWaypoint position] yPosition] Z:[[playerData position] zPosition]];
+
 		// Only consider this if it's a far off distance
 		if ( distanceToWaypoint > 100.0f && 
 			distanceToWaypoint > ( verticalDistanceToWaypoint/2.0f ) && 
 			verticalDistanceToWaypoint < horizontalDistanceToWaypoint 
 			) {
 
-			log(LOG_MOVEMENT, @"Waypoint is far off so we won't descend until we're closer.");
+			log(LOG_MOVEMENT, @"Waypoint is far off so we won't descend until we're closer. hDist: %0.2f, vDist: %0.2f", horizontalDistanceToWaypoint, verticalDistanceToWaypoint);
 
-			float newX = 0.0;
-			// If it's north of me
-			if ( [[newWaypoint position] xPosition] > [[playerData position] xPosition]) newX = [[newWaypoint position] xPosition]-verticalDistanceToWaypoint;
-			else newX = [[newWaypoint position] xPosition]+verticalDistanceToWaypoint;
-		
-			float newY = 0.0;
-			// If it's west of me
-			if ( [[newWaypoint position] yPosition] > [[playerData position] yPosition]) newY = [[newWaypoint position] yPosition]-verticalDistanceToWaypoint;
-			else newY = [[newWaypoint position] yPosition]+verticalDistanceToWaypoint;
-
-			// Maintain our current altitude until our horizontal distance equals our vertical distance/2
-			float newZ = [[playerData position] zPosition];
-
-			Position *positionToDescend = [[Position alloc] initWithX:newX Y:newY Z:newZ];
+			Position *positionToDescend = [[playerData position] positionAtDistance:verticalDistanceToWaypoint withDestination:positionAboveWaypoint];
 
 			[playerData faceToward: positionToDescend];
 			usleep([controller refreshDelay]*2);
