@@ -353,6 +353,7 @@
 		7DE983820E2B2BA800F41293 /* NSString+Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE983810E2B2BA800F41293 /* NSString+Extras.m */; };
 		7DF445530E241ABA0075B96B /* TotemConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DF445520E241ABA0075B96B /* TotemConditionController.m */; };
 		7DF445550E241AE30075B96B /* TotemCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DF445540E241AE30075B96B /* TotemCondition.xib */; };
+		83A9BBF21178BA03003E3683 /* buildnumber.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -886,6 +887,7 @@
 		7DF445510E241ABA0075B96B /* TotemConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TotemConditionController.h; sourceTree = "<group>"; };
 		7DF445520E241ABA0075B96B /* TotemConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TotemConditionController.m; sourceTree = "<group>"; };
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
+		83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = buildnumber.xcconfig; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -1116,6 +1118,7 @@
 		29B97314FDCFA39411CA2CEA /* WoWWaypoint */ = {
 			isa = PBXGroup;
 			children = (
+				83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */,
 				7D65C8F60D2EE0B100C50DF7 /* GUI Subclasses */,
@@ -1730,6 +1733,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Pocket Gnome" */;
 			buildPhases = (
+				83A9BBD61178B706003E3683 /* Get SVN Revision */,
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
 				8D11072E0486CEB800E47090 /* Frameworks */,
@@ -1975,10 +1979,29 @@
 				034126C4113570E100BE6819 /* PvP.xib in Resources */,
 				0352F46611376DA5005B28D6 /* PVP.png in Resources */,
 				03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */,
+				83A9BBF21178BA03003E3683 /* buildnumber.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		83A9BBD61178B706003E3683 /* Get SVN Revision */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			comments = foo;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Get SVN Revision";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "REV=`/usr/bin/svnversion -nc ${PROJECT_DIR} | /usr/bin/sed -e 's/^[^:]*://;s/[A-Za-z]//'`;echo \"BUILD_NUMBER = $REV\" > ${PROJECT_DIR}/buildnumber.xcconfig\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		8D11072C0486CEB800E47090 /* Sources */ = {
@@ -2151,6 +2174,7 @@
 /* Begin XCBuildConfiguration section */
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
 				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
