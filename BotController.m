@@ -1502,7 +1502,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					if([condition state] == StateDisease)	dispelType = DispelTypeDisease;
 				}
 			}
-			
+
 			log(LOG_CONDITION, @"  Searching for spell '%@'", [condition value]);
 			
 			if (!enemies) enemies = [combatController allAdds];

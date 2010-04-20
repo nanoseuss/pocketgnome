@@ -1123,7 +1123,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 // monitor unit until it dies
 - (void)monitorUnit: (Unit*)unit{
-	
+
 	// invalid unit
 	if ( !unit || ![unit isValid] ) {
 		log(LOG_COMBAT, @"Unit isn't valid! %@", unit);
@@ -1180,7 +1180,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			secondsInCombat = leftCombatTargetCount/10;
 			
-			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"CombatBlacklistDelay"] floatValue];
+			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNotInCombat"] floatValue];
 
 			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
 			if ( secondsInCombat >  combatBlacklistDelay ) {
