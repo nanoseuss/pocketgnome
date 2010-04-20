@@ -93,6 +93,7 @@ typedef enum {
     
     NSDictionary *defaultValues = [NSDictionary dictionaryWithObjectsAndKeys:
                                    [NSNumber numberWithFloat: 7.0],     @"BlacklistTriggerNotInCombat",
+                                   [NSNumber numberWithFloat: 3.0],     @"BlacklistTriggerNodeAttempts",
                                    [NSNumber numberWithFloat: 45.0],    @"BlacklistDurationNotInCombat",
                                    [NSNumber numberWithFloat: 20.0],    @"BlacklistDurationNotInLos",
                                    [NSNumber numberWithFloat: 10.0],    @"BlacklistVerticalOffset",

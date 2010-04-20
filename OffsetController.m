@@ -637,5 +637,9 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 	0x0		- 64-bit GUID
 	0x8		- Player name
  
+ lua_GetInboxNumItems
+	First offset
+		0x0 = # of total items
+		0x4 = # of items in the window
  
  */

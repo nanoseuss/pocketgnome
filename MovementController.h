@@ -20,6 +20,7 @@
 @class MobController;
 @class StatisticsController;
 @class CombatProfileEditor;
+@class BindingsController;
 @class Unit;
 
 @class Route;
@@ -57,6 +58,7 @@ typedef enum MovementType {
 	IBOutlet MobController			*mobController;
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
+	IBOutlet BindingsController		*bindingsController;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementTypePopUp;
@@ -98,6 +100,7 @@ typedef enum MovementType {
 	BOOL _movingUp;
 	BOOL _afkPressForward;
 	BOOL _lastCorrectionForward;
+	BOOL _lastCorrectionLeft;
 	BOOL isFollowing;
 }
 

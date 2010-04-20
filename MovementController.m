@@ -28,6 +28,7 @@
 #import "MobController.h"
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
+#import "BindingsController.h"
 
 #import "Action.h"
 #import "Rule.h"
@@ -144,6 +145,8 @@ typedef enum MovementState{
 		_movingUp = NO;
 		_afkPressForward = NO;
 		_lastCorrectionForward = NO;
+		_lastCorrectionLeft = NO;
+		
 		self.isFollowing = NO;
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
@@ -229,22 +232,25 @@ typedef enum MovementState{
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
 		
 		float distance = [[playerData position] distanceToPosition: [object position]];
-		if (distance > 6.0f) {
+
+		if (distance > 10.0f) {
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
+/*
 			float newX = 0.0;
 			// If it's north of me
-			if ( [[self.moveToObject position] xPosition] > [[playerData position] xPosition]) newX = [[self.moveToObject position] xPosition]+0.8f;
-				else newX = [[self.moveToObject position] xPosition]-0.8f;
+			if ( [[self.moveToObject position] xPosition] > [[playerData position] xPosition]) newX = [[self.moveToObject position] xPosition]+0.5f;
+				else newX = [[self.moveToObject position] xPosition]-0.5f;
 
 			float newY = 0.0;
 			// If it's west of me
-			if ( [[self.moveToObject position] yPosition] > [[playerData position] yPosition]) newY = [[self.moveToObject position] yPosition]+0.8f;
-				else newY = [[self.moveToObject position] yPosition]-0.8f;
+			if ( [[self.moveToObject position] yPosition] > [[playerData position] yPosition]) newY = [[self.moveToObject position] yPosition]+0.5f;
+				else newY = [[self.moveToObject position] yPosition]-0.5f;
 
 			// Above it for a sweet drop in
-			float newZ = [[self.moveToObject position] zPosition]+4.9f;
-
+			float newZ = [[self.moveToObject position] zPosition]+7.9f;
 			self.moveToPosition = [[Position alloc] initWithX:newX Y:newY Z:newZ];
+*/
+			self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:[[self.moveToObject position] zPosition]+10.0f];
 		} else {
 			
 			self.moveToPosition =[object position];
@@ -496,6 +502,46 @@ typedef enum MovementState{
 				// If there are actions to be taken at the current waypoint we don't skip it.
 				newWaypoint = thisWaypoint;
 			}
+		}
+	}
+
+	// Check to see if we're air mounted and this is a long distance waypoint.  If so we wait to start our descent.
+	if ( ![playerData isOnGround] && [[playerData player] isMounted] ) {
+
+		float distanceToWaypoint = [[playerData position] distanceToPosition: [newWaypoint position]];
+
+		float horizontalDistanceToWaypoint = [[playerData position] distanceToPosition2D: [newWaypoint position]];
+
+		float verticalDistanceToWaypoint = [[playerData position] zPosition]-[[newWaypoint position] zPosition];
+	
+		// Only consider this if it's a far off distance
+		if ( distanceToWaypoint > 100.0f && 
+			distanceToWaypoint > ( verticalDistanceToWaypoint/2.0f ) && 
+			verticalDistanceToWaypoint < horizontalDistanceToWaypoint 
+			) {
+
+			log(LOG_MOVEMENT, @"Waypoint is far off so we won't descend until we're closer.");
+
+			float newX = 0.0;
+			// If it's north of me
+			if ( [[newWaypoint position] xPosition] > [[playerData position] xPosition]) newX = [[newWaypoint position] xPosition]-verticalDistanceToWaypoint;
+			else newX = [[newWaypoint position] xPosition]+verticalDistanceToWaypoint;
+		
+			float newY = 0.0;
+			// If it's west of me
+			if ( [[newWaypoint position] yPosition] > [[playerData position] yPosition]) newY = [[newWaypoint position] yPosition]-verticalDistanceToWaypoint;
+			else newY = [[newWaypoint position] yPosition]+verticalDistanceToWaypoint;
+
+			// Maintain our current altitude until our horizontal distance equals our vertical distance/2
+			float newZ = [[playerData position] zPosition];
+
+			Position *positionToDescend = [[Position alloc] initWithX:newX Y:newY Z:newZ];
+
+			[playerData faceToward: positionToDescend];
+			usleep([controller refreshDelay]*2);
+
+			[self moveToPosition: positionToDescend];
+			return;
 		}
 	}
 
@@ -1678,6 +1724,24 @@ typedef enum MovementState{
     usleep(30000);
 }
 
+- (void)correctDirectionByTurning {
+
+	if ( _lastCorrectionLeft ){
+		log(LOG_MOVEMENT, @"Turning right!");
+		[bindingsController executeBindingForKey:BindingTurnRight];
+		usleep([controller refreshDelay]);
+		[bindingsController executeBindingForKey:BindingTurnLeft];
+		_lastCorrectionLeft = NO;
+	}
+	else{
+		log(LOG_MOVEMENT, @"Turning left!");
+		[bindingsController executeBindingForKey:BindingTurnLeft];
+		usleep([controller refreshDelay]);
+		[bindingsController executeBindingForKey:BindingTurnRight];
+		_lastCorrectionLeft = YES;
+	}
+}
+
 - (void)turnTowardPosition: (Position*)position {
 	
     BOOL printTurnInfo = NO;
@@ -1802,15 +1866,21 @@ typedef enum MovementState{
                 if(printTurnInfo) log(LOG_MOVEMENT, @"[Turn] %.3f rad/sec (%.2f/%.2f) at pSpeed %.2f.", turnRad/interval, turnRad, interval, [playerData speed] );
             }
 			
-		// mouse turning or CTM
+		// mouse movement or CTM
         }
 		else{
 
-            [playerData faceToward: position];
+			// what are we facing now?
+//            [playerData faceToward: position];
 			
 			float playerDirection = [playerData directionFacing];
 			float theAngle = [playerPosition angleTo: position];
 			
+			log(LOG_MOVEMENT, @"%0.2f %0.2f Difference: %0.2f > %0.2f", playerDirection, theAngle, fabsf( theAngle - playerDirection ), M_PI);
+
+			// face the other location!
+			[playerData faceToward: position];
+
 			// compensate for the 2pi --> 0 crossover
 			if ( fabsf( theAngle - playerDirection ) > M_PI ) {
 				if(theAngle < playerDirection)  theAngle        += (M_PI*2);
@@ -1822,7 +1892,8 @@ typedef enum MovementState{
 			
 			// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 			if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
-				[self establishPosition];
+//				[self establishPosition];
+				[self correctDirectionByTurning];
 			}
 			
 			if ( printTurnInfo ) log(LOG_MOVEMENT, @"Doing sharp turn to %.2f", theAngle );

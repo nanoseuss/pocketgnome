@@ -2386,7 +2386,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( !memory ) return NO;
 	
-	int barOffset = [bindingsController barOffsetForKey:BindingPrimaryHotkey];
+	int barOffset = [bindingsController castingBarOffset];
 	if ( barOffset == -1 ){
 		log(LOG_ERROR, @"Unable to execute spells! Ahhhhh! Issue with bindings!");
 		return NO;
@@ -2930,6 +2930,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( self.doLooting && [unit isNPC] ) {
 
+		// Reset the loot scan idle timer
+		[self resetLootScanIdleTimer];
+
 		if ( ( [(Mob*)unit isTappedByMe] || [(Mob*)unit isLootable] ) && ![unit isPet] ) {
 
 			log(LOG_LOOT, @"Adding %@ to loot list.", unit);
@@ -2948,14 +2951,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 			if ( [movementController isMoving] ) [movementController stopMovement];
 
-			// Reset the loot scan idle timer
-			[self resetLootScanIdleTimer];
-
 			[self evaluateSituation];
 
 		} else {
-			// Reset the loot scan idle timer
-			[self resetLootScanIdleTimer];
 
 			[self performSelector: @selector(checkUnitForLootable:) withObject:unit afterDelay: 1.0f ];
 			log(LOG_LOOT, @"Mob %@ isn't lootable yet, will check again in a second.", unit);
@@ -3025,20 +3023,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (void)lootUnit: (WoWObject*) unit{
-	
+
 	// are we still in the air?  shit we can't loot yet!
 	if ( ![[playerController player] isOnGround] ) {
-		
+
 		// once the macro failed, so dismount if we need to
 		if ( [[playerController player] isMounted] ) [movementController dismount];
-		
+
 		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit cachedGUID]];
 		NSNumber *count = [_lootDismountCount objectForKey:guid];
 		if ( !count ) count = [NSNumber numberWithInt:1]; else count = [NSNumber numberWithInt:[count intValue] + 1];
 		[_lootDismountCount setObject:count forKey:guid];
-		
+
 		log(LOG_DEV, @"Player is still in the air, waiting to loot. Attempt %@", count);
-		
+
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
 		return;
 	}
@@ -3206,6 +3204,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 // This is called when all items have actually been looted (the loot window will NOT be open at this point)
 - (void)itemsLooted: (NSNotification*)notification {
+
 	if ( !self.isBotting ) return;
 	
 	BOOL wasNode = NO;
@@ -3276,7 +3275,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( wasNode || wasSkin ) delay = 1.1;
 	
 	self.wasLootWindowOpen = NO;
-	
+
+	// Reset the loot scan idle timer
+	[self resetLootScanIdleTimer];
+
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
 
@@ -4459,34 +4461,43 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( !self.doLooting ) return NO;
 
-	if ( playerController.isDead ) return NO;
-
-	// Enforce the loot scan idle
-	if (_lootScanIdleTimer >= 300) {
-		if ( _lootScanCycles != 0 ) _lootScanCycles = 0;
+	if ( playerController.isDead ) {
+		log(LOG_EVALUATE, @"Skipping Loot Evaluation since playerController.isDead");		
 		return NO;
 	}
-
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Loot") return NO;
 
 	// Skip this if there is a procedure going
-	if ( self.procedureInProgress ) return NO;
-
+	if ( self.procedureInProgress ) {
+		log(LOG_EVALUATE, @"Skipping Loot Evaluation since self.procedureInProgress");
+		return NO;
+	}
+	
 	// Skip this if we're supposed to be in combat
-	if ( [combatController inCombat] ) return NO;
-
+	if ( [combatController inCombat] ) {
+		log(LOG_EVALUATE, @"Skipping Loot Evaluation since combatController.inCombat");
+		return NO;
+	}
 	// If we're mounted and in the air lets just skip loot scans
-	if ( ![playerController isOnGround] && [[playerController player] isMounted]) return NO;
+	if ( ![playerController isOnGround] && [[playerController player] isMounted]) {
+		log(LOG_EVALUATE, @"Skipping Loot Evaluation since we're in the air on a mount.");
+		if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
+		return NO;
+	}
 
 	// If we're supposed to be following then follow!
-	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && [[playerController player] isMounted]) return NO;
-
+	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && [[playerController player] isMounted]) {
+		log(LOG_EVALUATE, @"Skipping Loot Evaluation since we're following.");
+		if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
+		return NO;
+	}
+	
 	// If we're moving to the mob let's wait till we get there to do anything
-    if ( [movementController moveToObject] ) return NO;
-
-	// No looting if we're being attacked
-	if ( combatController.unitsAttackingMe.count ) return NO;
+    if ( [movementController moveToObject] && [movementController isMoving] ) {
+		log(LOG_EVALUATE, @"Skipping Loot Evaluation since we're moveing to an object.");
+		return NO;
+	}
 
 	log(LOG_EVALUATE, @"Evaluating for Loot");
 
@@ -4494,6 +4505,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     Mob *mobToLoot	= [self mobToLoot];
 
     if ( !mobToLoot ) {
+
+		// Enforce the loot scan idle
+		if (_lootScanIdleTimer >= 300) {
+			
+			if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
+			if ( _lootScanCycles != 0 ) _lootScanCycles = 0;
+			if ( self.evaluationInProgress ) self.evaluationInProgress = nil;
+			return NO;
+		}
 
 		// Only scan on the 1st cyle
 		if ( _lootScanCycles == 0 ) [self lootScan];
@@ -4511,6 +4531,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	if ( ![mobToLoot isValid] ) {
+
 		if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
 
 		if ( self.evaluationInProgress ) {
@@ -4604,7 +4625,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![movementController moveToObject: mobToLoot] ) 
 		// In the off chance that we're unable to move to it
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-	
+
 	return YES;
 		
 }
@@ -4732,7 +4753,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		int attempts = [blacklistController attemptsForObject:nodeToLoot];
 
-		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= 3 ) {
+		float blacklistTriggerNodeAttempts = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNodeAttempts"] floatValue];
+
+		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= blacklistTriggerNodeAttempts ) {
 			log(LOG_NODE, @"Unable to loot %@, blacklisting.", self.lastAttemptedUnitToLoot);
 			[blacklistController blacklistObject:nodeToLoot];
 
@@ -4912,6 +4935,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( playerController.isDead ) return NO;
 
+	// If we have looting to do we skip this
+	if ( [_mobsToLoot count] ) return NO;
+	
 	// If we're already evaluating or in procedure then let's skip this.
 	if ( self.evaluationInProgress || self.procedureInProgress ) return NO;
 
@@ -5188,10 +5214,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [movementController isMoving] ) {
 		log(LOG_EVALUATE, @"Player is moving so we're suspending evaluation.");
-		[self performSelector: _cmd withObject: nil afterDelay: 0.3];
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
 		return NO;
 	}
-	
+
+	// If we have looting to do we loop
+	if ( [_mobsToLoot count] ) {
+		log(LOG_EVALUATE, @"We have looting to do so we're looping evaluation.");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+	}
+
 	/*
 	 * Evaluation Checks Complete, lets see if we're supposed to do a route.
 	 */
@@ -5376,40 +5409,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// find our key bindings
-	[bindingsController reloadBindings];
-	BOOL bindingsError = NO;
-	NSMutableString *error = [NSMutableString stringWithFormat:@"You need to bind your keys to something! The following aren't bound:\n"];
-	if ( ![bindingsController bindingForKeyExists:BindingPrimaryHotkey] ){
-		[error appendString:@"\tLower Left Action Bar 1 (Or Action Bar 1)\n"];
-		bindingsError = YES;
-	}
-	else if ( ![bindingsController bindingForKeyExists:BindingPetAttack] && self.theBehavior.usePet ){
-		[error appendString:@"\tPet Attack\n"];
-		bindingsError = YES;
-	}
-	else if ( ![bindingsController bindingForKeyExists:BindingInteractMouseover] ){
-		[error appendString:@"\tInteract With Mouseover\n"];
-		bindingsError = YES;
-	}
-	else if ( ![bindingsController bindingForKeyExists:BindingTargetLast] ){
-		[error appendString:@"\tTarget Last Target\n"];
-		bindingsError = YES;
-	}
-
-	else if ( ![bindingsController bindingForKeyExists:BindingStrafeRight] ){
-		[error appendString:@"\tStrafe Right\n"];
-		bindingsError = YES;
-	}
-
-	else if ( ![bindingsController bindingForKeyExists:BindingStrafeLeft] ){
-		[error appendString:@"\tStrafe Left\n"];
-		bindingsError = YES;
-	}
-
-	if ( bindingsError ){
+	NSString *bindingsError = [bindingsController keyBindingsValid];
+	if ( bindingsError != nil ) {
 		log(LOG_STARTUP, @"All keys aren't bound!");
 		NSBeep();
-		NSRunAlertPanel(@"You need to bind the correct keys in your Game Menu", error, @"Okay", NULL, NULL);
+		NSRunAlertPanel(@"You need to bind the correct keys in your Game Menu", bindingsError, @"Okay", NULL, NULL);
 		return;
 	}
 	
