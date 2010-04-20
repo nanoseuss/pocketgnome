@@ -229,7 +229,7 @@ typedef enum MovementState{
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
 		
 		float distance = [[playerData position] distanceToPosition: [object position]];
-		if (distance > 8.0f) {
+		if (distance > 6.0f) {
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
 			float newX = 0.0;
 			// If it's north of me
@@ -457,7 +457,7 @@ typedef enum MovementState{
 	log(LOG_MOVEMENT, @"Finding the closest waypoint");
 
 	Position *playerPosition = [playerData position];
-	Waypoint *newWaypoint = nil;
+	Waypoint *newWaypoint;
 
 	// find the closest waypoint in our primary route!
 	newWaypoint = [self.currentRoute waypointClosestToPosition:playerPosition];
@@ -470,13 +470,33 @@ typedef enum MovementState{
 		int indexNext = [waypoints indexOfObject:self.destinationWaypoint];
 		int indexClosest = [waypoints indexOfObject: newWaypoint];
 
-		NSArray *actions = [self.destinationWaypoint actions];
-		
-		// If there are actions to be taken at the current waypoint we don't skip it.
-		if ( actions && [actions count] > 0 ) newWaypoint = self.destinationWaypoint;
-			// If the closest waypoint is further back than the current one then don't use it.
-			else if ( indexClosest < indexNext) newWaypoint = self.destinationWaypoint;
-	
+		// If the closest waypoint is further back than the current one then don't use it.
+		if ( indexClosest < indexNext) {
+			newWaypoint = self.destinationWaypoint;
+		} else
+
+		// Don't skip more than...
+		if ( (indexClosest-indexNext) > 4 ) {
+			newWaypoint = self.destinationWaypoint;
+		} else {
+
+			Waypoint *thisWaypoint;
+			NSArray *actions;
+			int i;
+
+			for ( i=indexNext; i<indexClosest; i++ ) {
+
+				thisWaypoint = [[self.currentRoute waypoints] objectAtIndex: i];
+
+				actions = [thisWaypoint actions];
+
+				// If there are no actions
+				if ( !actions || [actions count] <= 0 ) continue;
+
+				// If there are actions to be taken at the current waypoint we don't skip it.
+				newWaypoint = thisWaypoint;
+			}
+		}
 	}
 
 	// we have a waypoint to move to!
@@ -495,7 +515,7 @@ typedef enum MovementState{
 	}
 }
 
-- (int)movementType{
+- (int)movementType {
 	return [movementTypePopUp selectedTag];
 }
 
@@ -963,6 +983,12 @@ typedef enum MovementState{
 		return;
 	}
 	
+	if( [controller currentStatus] == @"Bot: Stuck, entering anti-stuck routine" ) {
+		if ( self.isFollowing ) [controller setCurrentStatus: @"Bot: Following"];
+		else if ( self.moveToObject ) [controller setCurrentStatus: @"Bot: Moving to object"];
+		else [controller setCurrentStatus: @"Bot: Patrolling"];
+	}
+
 	// TO DO: moving in the wrong direction check? (can sometimes happen when doing mouse movements based on the speed of the machine)
 }
 
@@ -1000,7 +1026,7 @@ typedef enum MovementState{
 	
 	// is this a new attempt?
 	id lastTarget = [self.unstickifyTarget retain];
-	
+
 	// what is our new "target" we are trying to reach?
 	if ( self.moveToObject ) self.unstickifyTarget = self.moveToObject;
 		else self.unstickifyTarget = self.destinationWaypoint;
@@ -1010,22 +1036,21 @@ typedef enum MovementState{
 
 	_unstickifyTry++;
 	[lastTarget release];
-	
+
 	log(LOG_MOVEMENT, @"Entering anti-stuck procedure! Try %d", _unstickifyTry);
 
 	// anti-stuck for follow!
 	if ( self.isFollowing && _unstickifyTry > 5) {
-		
+
 		log(LOG_MOVEMENT, @"Got stuck while following, cancelling follow!");
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
-		
+
 	}
-	
-	
+
 	// anti-stuck for moving to an object!
 	if ( self.moveToObject ){
-		
+
 		// blacklist unit after 5 tries!
 		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ){
 			
@@ -1095,9 +1120,10 @@ typedef enum MovementState{
 			self.destinationWaypoint = [self.currentRoute waypointClosestToPosition:[playerData position]];
 			
 		}
-		
+
 		[self resumeMovement];
 	}
+
 }
 
 - (void)stepForward{

@@ -167,7 +167,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_InvalidTarget];
 	}
 
-	[botController cancelCurrentProcedure];
+	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
+	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
+
 	[self cancelAllCombat];
 	[botController evaluateSituation];
 }
@@ -181,10 +183,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_NotInLoS];
 	}
 
-	[botController cancelCurrentProcedure];
+	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
+	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
+
 	[self cancelAllCombat];
 	[botController evaluateSituation];
-	
+
 }
 
 // target is out of range
@@ -210,7 +214,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 //		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_OutOfRange];
 //	}
 
-	[botController cancelCurrentProcedure];
+	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
+	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
+
 	[self cancelAllCombat];
 	[botController evaluateSituation];
 	
@@ -223,7 +229,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_RecentlyHelpedFriend];
 	}
 
-	[botController cancelCurrentProcedure];
+	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
+	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
+	
 	[self cancelAllCombat];
 	[botController evaluateSituation];
 	
@@ -282,9 +290,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// Looks like this is called from the PlayerConroller even the bot is off
 	if ( !botController.isBotting ) return nil;
 	
+	if ( [[playerData player] isDead] ) return nil;
+
 	log(LOG_FUNCTION, @"combatList");
 
-//	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 	
 	NSMutableArray *units = [NSMutableArray array];
 	
@@ -331,14 +340,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			target = [mobController mobWithGUID: targetID];
 			if ( target && ![units containsObject: target] && [target isValid] && ![target isDead] && [target isInCombat] && [playerData isHostileWithFaction: [target factionTemplate]] ) {
-				log(LOG_COMBAT, @"%@ Adding Party mob: %@", [self unitHealthBar: target], target);
+				log(LOG_DEV, @"Adding Party mob: %@", target);
 				[units addObject: target];
 				continue;
 			}
 
 			targetPlayer = [playersController playerWithGUID: targetID];
 			if ( targetPlayer && ![units containsObject:targetPlayer] && [targetPlayer isValid] && ![targetPlayer isDead] && [targetPlayer isInCombat] && [playerData isHostileWithFaction: [targetPlayer factionTemplate]] ) {
-				log(LOG_COMBAT, @"%@ Adding Party PvP target: %@", [self unitHealthBar: (Unit*)targetPlayer], targetPlayer);
+				log(LOG_DEV, @"Adding Party PvP target: %@", targetPlayer);
 				[units addObject: targetPlayer];
 				continue;
 			}
@@ -643,6 +652,28 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 	}
 
+	// Get the tanks target
+	if ( [botController tankUnit] && [[botController tankUnit] isInCombat] ) {
+
+		UInt64 targetGUID = [[botController tankUnit] targetID];
+		log(LOG_DEV, @"In a party, checking to see if I need to assist the tank.");
+
+		if ( targetGUID > 0x0) {
+			log(LOG_DEV, @"Tank has a target.");
+			Mob *mob = [mobController mobWithGUID:targetGUID];
+			if ( mob && ![mob isDead]) {
+				[allPotentialUnits addObject:mob];
+				log(LOG_DEV, @"Adding my tank's target to list of valid units");
+			}
+			
+			Player *player = [playersController playerWithGUID: targetGUID];
+			if ( player && ![player isDead] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
+				log(LOG_DEV, @"Adding my tanks PvP target: %@", player);
+				[allPotentialUnits addObject: player];
+			}
+		}
+	}
+
 	// add new units w/in range if we're not on assist
 	if ( botController.theCombatProfile.combatEnabled && !botController.theCombatProfile.onlyRespond && !onlyHostilesInCombat && ![botController isOnAssist] ) {
 		log(LOG_DEV, @"Adding ALL available combat units");
@@ -660,7 +691,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	// add combat units that have been validated! (includes attack unit + add)
 	NSArray *inCombatUnits = [self combatListValidated];
-	if ( [inCombatUnits count] ) {
+	if ( botController.theCombatProfile.combatEnabled && [inCombatUnits count] ) {
 		log(LOG_DEV, @"Adding %d validated in combat units to list", [inCombatUnits count]);
 		for ( Unit *unit in inCombatUnits ) if ( ![allPotentialUnits containsObject:unit] ) [allPotentialUnits addObject:unit];
 	}
@@ -692,13 +723,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			}
 
 			if ( [unit isDead] || [unit isEvading] || ![unit isValid] ) continue;
-			
+
 			if ( [[unit position] verticalDistanceToPosition: playerPosition] > vertOffset ) continue;
-			
+
 			if ( !includeFriendly && [playerData isFriendlyWithFaction: [unit factionTemplate]] ) continue;
 
-			if ( !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) return NO;
-			
+//			if ( !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) return NO;
+
 			// range changes if the unit is friendly or not
 			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
 			range = (self.inCombat ? (isFriendly ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange) : botController.theCombatProfile.engageRange);
@@ -836,7 +867,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 		
 		// Tanks target
-		if ( [botController isTankUnit] && [[botController tankUnit] isInCombat]) {
+		if ( botController.tankUnit && [[botController tankUnit] isInCombat]) {
 			UInt64 targetGUID = [[botController tankUnit] targetID];
 			if ( targetGUID > 0x0) {
 				Mob *tankMob = [mobController mobWithGUID:targetGUID];
@@ -849,6 +880,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// tank gets a pretty big weight @ all times
 		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit GUID] )
 			weight += healthLeft;
+
 		weight *= 1.5;
 	}
 	return weight;
@@ -876,6 +908,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		else if (unitPercentHealth >= 10)	logPrefix = @"[OO         ]";
 		else if (unitPercentHealth > 0)		logPrefix = @"[O          ]";
 		else								logPrefix = @"[           ]";		
+	} else
+	if ( [botController isTank: (Unit*) unit] ) {
+		// Tank
+		if (unitPercentHealth == 100)		logPrefix = @"[-----------]";
+		else if (unitPercentHealth >= 90)	logPrefix = @"[---------- ]";
+		else if (unitPercentHealth >= 80)	logPrefix = @"[---------  ]";
+		else if (unitPercentHealth >= 70)	logPrefix = @"[--------   ]";
+		else if (unitPercentHealth >= 60)	logPrefix = @"[-------    ]";
+		else if (unitPercentHealth >= 50)	logPrefix = @"[------     ]";
+		else if (unitPercentHealth >= 40)	logPrefix = @"[-----      ]";
+		else if (unitPercentHealth >= 30)	logPrefix = @"[----       ]";
+		else if (unitPercentHealth >= 20)	logPrefix = @"[---        ]";
+		else if (unitPercentHealth >= 10)	logPrefix = @"[--         ]";
+		else if (unitPercentHealth > 0)		logPrefix = @"[-          ]";
+		else								logPrefix = @"[ TANK DEAD ]";
 	} else
 	if ([playerData isFriendlyWithFaction: [unit factionTemplate]]) {
 		// Friendly
@@ -1160,7 +1207,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 			return;
 		}
-		
+
 	} else {
 		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		leftCombatCount = 0;
@@ -1231,6 +1278,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		unitTarget = [player targetID];
 		if (
 			![player isDead] &&										// 1 - living units only
+			[playerData isHostileWithFaction: [player factionTemplate]] &&	// Must be hostile players!
 			[player currentHealth] != 1 &&							// 2 - this should be a ghost check, being lazy for now
 			[player isInCombat] &&									// 3 - in combat
 			[player isSelectable] &&								// 4 - can select this target

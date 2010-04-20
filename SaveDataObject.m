@@ -27,7 +27,7 @@
 		// start observing! (so we can detect changes)
 		[self performSelector:@selector(addObservers) withObject:nil afterDelay:1.0f];
 	}
-		
+
     return self;
 }
 

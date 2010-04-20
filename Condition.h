@@ -46,8 +46,9 @@ typedef enum UnitComponents {
     UnitPlayer = 1,
     UnitTarget = 2,
     UnitPlayerPet = 3,
-	UnitFriend = 4,
-	UnitAdd = 5,
+	UnitFriendlies = 4,
+	UnitEnemies = 5,
+	UnitAdd = 6,	// Deprecated I assume?
 } ConditionUnit;
 
 typedef enum QualityComponents {
@@ -124,6 +125,7 @@ typedef enum StateComponents {
     StateIndoors = 9,
     StateSwimming = 10,
     StateTargetingMe = 11,
+    StateTank = 12,
 	
     
 } ConditionState;

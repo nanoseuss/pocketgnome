@@ -491,9 +491,9 @@ typedef enum MovementFlag {
 @class PlayerDataController;
 
 @interface Unit : WoWObject <UnitPosition> {
-
+	
 	IBOutlet PlayerDataController	*playerController;
-
+	
 }
 
 + (id)unitWithAddress: (NSNumber*)address inMemory: (MemoryAccess*)memory;

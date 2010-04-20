@@ -44,7 +44,7 @@
 	BOOL followEnabled;
 	BOOL followStopFollowingOOR;
 	float followStopFollowingRange;
-	BOOL acceptResurrection;
+	BOOL resurrectWithSpiritHealer;
 	BOOL checkForCampers;
 	float checkForCampersRange;
 	BOOL avoidMobsWhenResurrecting;	
@@ -110,7 +110,7 @@
 @property (readwrite, assign) BOOL followEnabled;
 @property (readwrite, assign) BOOL followStopFollowingOOR;
 @property (readwrite, assign) float followStopFollowingRange;
-@property (readwrite, assign) BOOL acceptResurrection;
+@property (readwrite, assign) BOOL resurrectWithSpiritHealer;
 @property (readwrite, assign) float checkForCampersRange;
 @property (readwrite, assign) BOOL avoidMobsWhenResurrecting;
 @property (readwrite, assign) float moveToCorpseRange;

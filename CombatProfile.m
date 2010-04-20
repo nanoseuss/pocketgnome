@@ -56,7 +56,7 @@
 		self.followEnabled = NO;
 		self.followStopFollowingOOR = NO;
 		self.followStopFollowingRange = 50.0f;
-		self.acceptResurrection = NO;
+		self.resurrectWithSpiritHealer = NO;
 		self.checkForCampers = NO;
 		self.checkForCampersRange = 50.0f;
 		self.avoidMobsWhenResurrecting = YES;
@@ -141,7 +141,7 @@
 	copy.followEnabled = self.followEnabled;
 	copy.followStopFollowingOOR = self.followStopFollowingOOR;
 	copy.followStopFollowingRange = self.followStopFollowingRange;
-	copy.acceptResurrection = self.acceptResurrection;
+	copy.resurrectWithSpiritHealer = self.resurrectWithSpiritHealer;
 	copy.checkForCampers = self.checkForCampers;
 	copy.checkForCampersRange = self.checkForCampersRange;
 	copy.avoidMobsWhenResurrecting = self.avoidMobsWhenResurrecting;
@@ -203,7 +203,7 @@
 		self.followEnabled = [[decoder decodeObjectForKey: @"FollowEnabled"] boolValue];
 		self.followStopFollowingOOR = [[decoder decodeObjectForKey: @"FollowStopFollowingOOR"] boolValue];
 		self.followStopFollowingRange = [[decoder decodeObjectForKey: @"FollowStopFollowingRange"] floatValue];
-		self.acceptResurrection = [[decoder decodeObjectForKey: @"AcceptResurrection"] boolValue];
+		self.resurrectWithSpiritHealer = [[decoder decodeObjectForKey: @"ResurrectWithSpiritHealer"] boolValue];
 		self.checkForCampers = [[decoder decodeObjectForKey: @"CheckForCampers"] boolValue];
 		self.checkForCampersRange = [[decoder decodeObjectForKey: @"CheckForCampersRange"] floatValue];
 		self.avoidMobsWhenResurrecting = [[decoder decodeObjectForKey: @"AvoidMobsWhenResurrecting"] boolValue];
@@ -262,7 +262,7 @@
 	[coder encodeObject: [NSNumber numberWithBool: self.followEnabled] forKey: @"FollowEnabled"];
 	[coder encodeObject: [NSNumber numberWithBool: self.followStopFollowingOOR] forKey: @"FollowStopFollowingOOR"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.followStopFollowingRange] forKey: @"FollowStopFollowingRange"];
-	[coder encodeObject: [NSNumber numberWithBool: self.acceptResurrection] forKey: @"AcceptResurrection"];
+	[coder encodeObject: [NSNumber numberWithBool: self.resurrectWithSpiritHealer] forKey: @"ResurrectWithSpiritHealer"];
 	[coder encodeObject: [NSNumber numberWithBool: self.checkForCampers] forKey: @"CheckForCampers"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.checkForCampersRange] forKey: @"CheckForCampersRange"];
 	[coder encodeObject: [NSNumber numberWithBool: self.avoidMobsWhenResurrecting] forKey: @"AvoidMobsWhenResurrecting"];
@@ -325,7 +325,7 @@
 @synthesize followEnabled;
 @synthesize followStopFollowingOOR;
 @synthesize followStopFollowingRange;
-@synthesize acceptResurrection;
+@synthesize resurrectWithSpiritHealer;
 @synthesize checkForCampers;
 @synthesize checkForCampersRange;
 @synthesize avoidMobsWhenResurrecting;

@@ -12,9 +12,9 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="859"/>
 			<integer value="174"/>
 			<integer value="195"/>
-			<integer value="497"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1576,7 +1576,7 @@
 								<object class="NSTabViewItem" id="1015543877">
 									<string key="NSIdentifier">Item 4</string>
 									<object class="NSView" key="NSView" id="1064626453">
-										<reference key="NSNextResponder" ref="157860499"/>
+										<nil key="NSNextResponder"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2180,7 +2180,6 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {458, 232}}</string>
-										<reference key="NSSuperview" ref="157860499"/>
 									</object>
 									<string key="NSLabel">Party</string>
 									<reference key="NSColor" ref="920079583"/>
@@ -2778,7 +2777,7 @@
 								<object class="NSTabViewItem" id="349168650">
 									<string key="NSIdentifier">Item 6</string>
 									<object class="NSView" key="NSView" id="419260901">
-										<nil key="NSNextResponder"/>
+										<reference key="NSNextResponder" ref="157860499"/>
 										<int key="NSvFlags">256</int>
 										<object class="NSMutableArray" key="NSSubviews">
 											<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2922,13 +2921,13 @@
 															<object class="NSButton" id="374350530">
 																<reference key="NSNextResponder" ref="681233607"/>
 																<int key="NSvFlags">268</int>
-																<string key="NSFrame">{{15, 166}, {208, 18}}</string>
+																<string key="NSFrame">{{15, 166}, {171, 18}}</string>
 																<reference key="NSSuperview" ref="681233607"/>
 																<bool key="NSEnabled">YES</bool>
 																<object class="NSButtonCell" key="NSCell" id="85821061">
 																	<int key="NSCellFlags">-2080244224</int>
 																	<int key="NSCellFlags2">131072</int>
-																	<string key="NSContents">Accept resurrection requests.</string>
+																	<string key="NSContents">Resurrect with Spirit Healer.</string>
 																	<reference key="NSSupport" ref="26"/>
 																	<reference key="NSControlView" ref="374350530"/>
 																	<int key="NSButtonFlags">1211912703</int>
@@ -3090,20 +3089,21 @@
 											</object>
 										</object>
 										<string key="NSFrame">{{10, 33}, {458, 232}}</string>
+										<reference key="NSSuperview" ref="157860499"/>
 									</object>
 									<string key="NSLabel">Death</string>
 									<reference key="NSColor" ref="920079583"/>
 									<reference key="NSTabView" ref="157860499"/>
 								</object>
 							</object>
-							<reference key="NSSelectedTabViewItem" ref="1015543877"/>
+							<reference key="NSSelectedTabViewItem" ref="349168650"/>
 							<reference key="NSFont" ref="300528464"/>
 							<int key="NSTvFlags">0</int>
 							<bool key="NSAllowTruncatedLabels">YES</bool>
 							<bool key="NSDrawsBackground">YES</bool>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
-								<reference ref="1064626453"/>
+								<reference ref="419260901"/>
 							</object>
 						</object>
 						<object class="NSButton" id="583623619">
@@ -5058,39 +5058,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: currentCombatProfile.acceptResurrection</string>
-						<reference key="source" ref="374350530"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="374350530"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: currentCombatProfile.acceptResurrection</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">currentCombatProfile.acceptResurrection</string>
-							<object class="NSDictionary" key="NSOptions">
-								<bool key="EncodedWithXMLCoder">YES</bool>
-								<object class="NSArray" key="dict.sortedKeys">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<string>NSMultipleValuesPlaceholder</string>
-									<string>NSNoSelectionPlaceholder</string>
-									<string>NSNotApplicablePlaceholder</string>
-									<string>NSNullPlaceholder</string>
-								</object>
-								<object class="NSMutableArray" key="dict.values">
-									<bool key="EncodedWithXMLCoder">YES</bool>
-									<integer value="0"/>
-									<integer value="0"/>
-									<integer value="0"/>
-									<integer value="0"/>
-								</object>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">878</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: currentCombatProfile.partyEnabled</string>
 						<reference key="source" ref="64631877"/>
 						<reference key="destination" ref="1001"/>
@@ -5516,6 +5483,39 @@
 						</object>
 					</object>
 					<int key="connectionID">985</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: currentCombatProfile.resurrectWithSpiritHealer</string>
+						<reference key="source" ref="374350530"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="374350530"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">value: currentCombatProfile.resurrectWithSpiritHealer</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">currentCombatProfile.resurrectWithSpiritHealer</string>
+							<object class="NSDictionary" key="NSOptions">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSArray" key="dict.sortedKeys">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<string>NSMultipleValuesPlaceholder</string>
+									<string>NSNoSelectionPlaceholder</string>
+									<string>NSNotApplicablePlaceholder</string>
+									<string>NSNullPlaceholder</string>
+								</object>
+								<object class="NSMutableArray" key="dict.values">
+									<bool key="EncodedWithXMLCoder">YES</bool>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+									<integer value="0"/>
+								</object>
+							</object>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">986</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -6951,12 +6951,12 @@
 							<reference ref="1031523399"/>
 							<reference ref="869003165"/>
 							<reference ref="209034717"/>
-							<reference ref="374350530"/>
 							<reference ref="973378586"/>
 							<reference ref="207431955"/>
 							<reference ref="452995486"/>
 							<reference ref="872381291"/>
 							<reference ref="248503267"/>
+							<reference ref="374350530"/>
 						</object>
 						<reference key="parent" ref="419260901"/>
 					</object>
@@ -6997,15 +6997,6 @@
 						<reference key="parent" ref="804372288"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">864</int>
-						<reference key="object" ref="374350530"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="85821061"/>
-						</object>
-						<reference key="parent" ref="804372288"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">865</int>
 						<reference key="object" ref="973378586"/>
 						<object class="NSMutableArray" key="children">
@@ -7018,11 +7009,6 @@
 						<int key="objectID">866</int>
 						<reference key="object" ref="380206139"/>
 						<reference key="parent" ref="973378586"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">867</int>
-						<reference key="object" ref="85821061"/>
-						<reference key="parent" ref="374350530"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">868</int>
@@ -7372,6 +7358,20 @@
 						<int key="objectID">980</int>
 						<reference key="object" ref="766344549"/>
 						<reference key="parent" ref="631850871"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">864</int>
+						<reference key="object" ref="374350530"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="85821061"/>
+						</object>
+						<reference key="parent" ref="804372288"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">867</int>
+						<reference key="object" ref="85821061"/>
+						<reference key="parent" ref="374350530"/>
 					</object>
 				</object>
 			</object>
@@ -7786,9 +7786,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{-943, 180}, {504, 430}}</string>
+					<string>{{-1089, 381}, {504, 430}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{-943, 180}, {504, 430}}</string>
+					<string>{{-1089, 381}, {504, 430}}</string>
 					<integer value="0"/>
 					<string>{{745, 155}, {429, 399}}</string>
 					<boolean value="YES"/>
@@ -8086,7 +8086,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">985</int>
+			<int key="maxID">986</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -8474,6 +8474,7 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>auraController</string>
+							<string>bindingsController</string>
 							<string>blacklistController</string>
 							<string>botController</string>
 							<string>chatController</string>
@@ -8489,6 +8490,7 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
+							<string>BindingsController</string>
 							<string>BlacklistController</string>
 							<string>BotController</string>
 							<string>ChatController</string>

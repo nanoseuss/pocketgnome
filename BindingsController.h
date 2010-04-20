@@ -16,6 +16,8 @@
 #define BindingPetAttack			@"BindingPetAttack"
 #define BindingInteractMouseover	@"BindingInteractMouseover"
 #define BindingTargetLast			@"BindingTargetLast"
+#define BindingStrafeRight			@"BindingStrafeRight"
+#define BindingStrafeLeft			@"BindingStrafeLeft"
 
 @interface BindingsController : NSObject {
 	

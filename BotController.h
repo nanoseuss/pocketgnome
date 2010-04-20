@@ -11,6 +11,7 @@
 @class Mob;
 @class Unit;
 @class Rule;
+@class Condition;
 @class Behavior;
 @class WoWObject;
 @class Waypoint;
@@ -205,15 +206,15 @@
 	NSTimer *_logOutTimer;
     
 	// Party
+	Unit *_tankUnit;
+	Unit *_assistUnit;
 	BOOL _leaderBeenWaiting;
 	
 	// Follow
 	Route *followRoute;
 	BOOL _followSuspended;
-	Unit *followUnit;
-	Unit *assistUnit;
-	Unit *tankUnit;
 	BOOL _followLastSeenPosition;
+	Unit *_followUnit;
 	
 	int _lootScanIdleTimer;
 	int _lootScanCycles;
@@ -338,6 +339,8 @@
 - (void)cancelCurrentEvaluation;
 - (void)cancelCurrentProcedure;
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit;
+- (BOOL)evaluateConditionFriendlies: (Condition*)condition;
+- (BOOL)evaluateConditionEnemies: (Condition*)condition;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
 - (BOOL)evaluateForPVP;
@@ -354,7 +357,8 @@
 
 // Party stuff
 - (BOOL)isOnAssist;
-- (BOOL)isTankUnit;
+- (BOOL)establishTankUnit;
+- (BOOL)isTank:(Unit*)unit;
 - (BOOL)leaderWait;
 - (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
@@ -368,7 +372,6 @@
 - (BOOL)followMountNow;
 - (BOOL)followMountCheck;
 - (BOOL)whisperCommandAllowed: (ChatLogEntry*)entry;
-
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
