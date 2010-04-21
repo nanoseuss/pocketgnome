@@ -231,9 +231,9 @@ typedef enum MovementState{
 	// If this is a Node then let's change the position to one just above it and overshooting it a tad
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
 		float distance = [[playerData position] distanceToPosition: [object position]];
-		if (distance > 9.0f) {
+		if (distance > 10.0f) {
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
-			self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:[[self.moveToObject position] zPosition]+9.0f];
+			self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:[[self.moveToObject position] zPosition]+10.0f];
 		} else {
 			self.moveToPosition =[object position];
 		}

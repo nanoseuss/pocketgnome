@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="44"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -46,7 +46,7 @@
 					<object class="NSPopUpButton" id="828210792">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{150, 4}, {110, 26}}</string>
+						<string key="NSFrame">{{164, 18}, {110, 26}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="477890854">
@@ -124,7 +124,7 @@
 					<object class="NSPopUpButton" id="401360539">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{32, 4}, {87, 26}}</string>
+						<string key="NSFrame">{{32, 18}, {100, 26}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="821341199">
@@ -214,7 +214,7 @@
 					<object class="NSTextField" id="673603263">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{121, 10}, {28, 17}}</string>
+						<string key="NSFrame">{{134, 25}, {28, 17}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="843981962">
@@ -246,7 +246,7 @@
 					<object class="NSTextField" id="991712122">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{471, 6}, {65, 22}}</string>
+						<string key="NSFrame">{{485, 20}, {106, 22}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="762744461">
@@ -277,7 +277,7 @@
 					<object class="NSPopUpButton" id="131497651">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{382, 4}, {84, 26}}</string>
+						<string key="NSFrame">{{396, 18}, {84, 26}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="835454407">
@@ -333,7 +333,7 @@
 					<object class="NSTextField" id="585801449">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{319, 10}, {61, 17}}</string>
+						<string key="NSFrame">{{333, 24}, {61, 17}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="343310078">
@@ -349,7 +349,7 @@
 					<object class="NSTextField" id="276176999">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{265, 6}, {49, 22}}</string>
+						<string key="NSFrame">{{279, 20}, {49, 22}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="443843400">
@@ -425,7 +425,7 @@
 					<object class="NSSegmentedControl" id="645226329">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{542, 5}, {97, 24}}</string>
+						<string key="NSFrame">{{597, 18}, {114, 24}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSSegmentedCell" key="NSCell" id="558191492">
@@ -436,7 +436,6 @@
 							<object class="NSMutableArray" key="NSSegmentImages">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSSegmentItem">
-									<double key="NSSegmentItemWidth">45</double>
 									<string key="NSSegmentItemLabel">Num</string>
 									<string key="NSSegmentItemTooltip">Spell ID Number</string>
 									<int key="NSSegmentItemTag">1</int>
@@ -444,7 +443,6 @@
 									<int key="NSSegmentItemImageScaling">0</int>
 								</object>
 								<object class="NSSegmentItem">
-									<double key="NSSegmentItemWidth">45</double>
 									<string key="NSSegmentItemLabel">Name</string>
 									<string key="NSSegmentItemTooltip">Spell Name</string>
 									<int key="NSSegmentItemTag">3</int>
@@ -457,7 +455,7 @@
 					<object class="NSButton" id="657684083">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{7, 8}, {20, 19}}</string>
+						<string key="NSFrame">{{7, 22}, {20, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="349566237">
@@ -483,7 +481,7 @@
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{644, 36}</string>
+				<string key="NSFrameSize">{729, 50}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -644,15 +642,15 @@
 						<reference key="object" ref="1005"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="828210792"/>
 							<reference ref="401360539"/>
-							<reference ref="673603263"/>
 							<reference ref="991712122"/>
 							<reference ref="131497651"/>
 							<reference ref="585801449"/>
 							<reference ref="276176999"/>
-							<reference ref="645226329"/>
 							<reference ref="657684083"/>
+							<reference ref="673603263"/>
+							<reference ref="828210792"/>
+							<reference ref="645226329"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -935,6 +933,7 @@
 					<string>63.CustomClassName</string>
 					<string>63.IBPluginDependency</string>
 					<string>64.IBPluginDependency</string>
+					<string>64.IBSegmentedControlInspectorSelectedSegmentMetadataKey</string>
 					<string>68.IBAttributePlaceholdersKey</string>
 					<string>68.IBPluginDependency</string>
 					<string>69.IBPluginDependency</string>
@@ -947,7 +946,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{427, 741}, {644, 36}}</string>
+					<string>{{427, 727}, {729, 50}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{479, 239}, {644, 36}}</string>
@@ -1007,6 +1006,7 @@
 					<string>BetterSegmentedControl</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<integer value="1"/>
 					<object class="NSMutableDictionary">
 						<string key="NS.key.0">ToolTip</string>
 						<object class="IBToolTipAttribute" key="NS.object.0">

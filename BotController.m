@@ -882,11 +882,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			case VarietyTargetClass:;
 				log(LOG_CONDITION, @"Doing Target Class condition...");
 				if([condition quality] == QualityNPC) {
-					conditionEval = ([target creatureType] == [condition state]);
+					
+					conditionEval = ( [condition comparator] == CompareIs ) ? ( [target creatureType] == [condition state]) : ([target creatureType] != [condition state]);
+//					conditionEval = ([target creatureType] == [condition state]);
 					log(LOG_CONDITION, @" --> Unit Creature Type %d == %d? %@", [condition state], [target creatureType], YES_NO(conditionEval));
 				}
 				if([condition quality] == QualityPlayer) {
-					conditionEval = ([target unitClass] == [condition state]);
+					conditionEval = ( [condition comparator] == CompareIs ) ? ( [target unitClass] == [condition state] ) : ([target unitClass] != [condition state]);
+//					conditionEval = ([target unitClass] == [condition state]);
 					log(LOG_CONDITION, @" --> Unit Class %d == %d? %@", [condition state], [target unitClass], YES_NO(conditionEval));
 				}
 				break;
@@ -5179,7 +5182,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	Unit *emoteUnit = nil;
-	
+
 	// We have party members
 	if (i > 0) {
 		int randomNumer = SSRandomIntBetween(1, i);
