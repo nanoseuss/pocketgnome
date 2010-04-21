@@ -21,8 +21,8 @@
 #import <Message/NSMailDelivery.h>
 #import <ScriptingBridge/ScriptingBridge.h>
 #import <Foundation/NSAppleEventDescriptor.h>
-#import "Mail.h"    // http://developer.apple.com/samplecode/SBSendEmail/listing4.html
-#import "iChat.h"
+#import "Mail.h"    // http://developer.apple.com/mac/library/samplecode/SBSendEmail
+#import "iChat.h"   // http://developer.apple.com/mac/library/samplecode/iChatStatusFromApplication
 
 #define ChatLog_CounterOffset       0x8
 #define ChatLog_TimestampOffset     0xC
@@ -320,7 +320,7 @@
     BOOL foundService = NO;
     for (iChatService *service in [iChat services]) {
         // Use the first connected AIM service we find
-        if (service.status == iChatConnectionStatusConnected) { // (service.serviceType == iChatServiceTypeAIM) && (
+        if (service.connectionStatus == iChatConnectionStatusConnected || service.status == iChatConnectionStatusConnected) { // (service.serviceType == iChatServiceTypeAIM) && (
             foundService = YES;
             
             // we have a service, find a buddy

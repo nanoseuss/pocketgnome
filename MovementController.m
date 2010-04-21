@@ -230,29 +230,11 @@ typedef enum MovementState{
 
 	// If this is a Node then let's change the position to one just above it and overshooting it a tad
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
-		
 		float distance = [[playerData position] distanceToPosition: [object position]];
-
-		if (distance > 10.0f) {
+		if (distance > 9.0f) {
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
-/*
-			float newX = 0.0;
-			// If it's north of me
-			if ( [[self.moveToObject position] xPosition] > [[playerData position] xPosition]) newX = [[self.moveToObject position] xPosition]+0.5f;
-				else newX = [[self.moveToObject position] xPosition]-0.5f;
-
-			float newY = 0.0;
-			// If it's west of me
-			if ( [[self.moveToObject position] yPosition] > [[playerData position] yPosition]) newY = [[self.moveToObject position] yPosition]+0.5f;
-				else newY = [[self.moveToObject position] yPosition]-0.5f;
-
-			// Above it for a sweet drop in
-			float newZ = [[self.moveToObject position] zPosition]+7.9f;
-			self.moveToPosition = [[Position alloc] initWithX:newX Y:newY Z:newZ];
-*/
-			self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:[[self.moveToObject position] zPosition]+10.0f];
+			self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:[[self.moveToObject position] zPosition]+9.0f];
 		} else {
-			
 			self.moveToPosition =[object position];
 		}
 	} else {
@@ -517,7 +499,8 @@ typedef enum MovementState{
 		// Only consider this if it's a far off distance
 		if ( distanceToWaypoint > 100.0f && 
 			distanceToWaypoint > ( verticalDistanceToWaypoint/2.0f ) && 
-			verticalDistanceToWaypoint < horizontalDistanceToWaypoint 
+			verticalDistanceToWaypoint < horizontalDistanceToWaypoint &&
+			verticalDistanceToWaypoint > 30.0f
 			) {
 
 			log(LOG_MOVEMENT, @"Waypoint is far off so we won't descend until we're closer. hDist: %0.2f, vDist: %0.2f", horizontalDistanceToWaypoint, verticalDistanceToWaypoint);
@@ -540,9 +523,9 @@ typedef enum MovementState{
 
 		[playerData faceToward: [newWaypoint position]];
 		usleep([controller refreshDelay]*2);
-	
+
 		[self moveToPosition:[newWaypoint position]];
-		
+
 	} else {
 		log(LOG_ERROR, @"Unable to find a position to resume movement to!");
 	}
@@ -804,8 +787,6 @@ typedef enum MovementState{
 		return;
 	}
 
-	[botController jumpIfAirMountOnGround];
-
 	if ( self.isFollowing ) {
 		// Check to see if we're close enough to stop.
 
@@ -903,7 +884,9 @@ typedef enum MovementState{
 			[self stopMovement];
 			
 			log(LOG_MOVEMENT, @"Reached our object %@", object);
-			
+
+			if ( isNode && !isPlayerOnGround ) [self dismount];
+
 			// we've reached the unit! Send a notification
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: object];
 			
@@ -1072,6 +1055,8 @@ typedef enum MovementState{
 
 	log(LOG_MOVEMENT, @"Entering anti-stuck procedure! Try %d", _unstickifyTry);
 
+	[botController jumpIfAirMountOnGround];
+	
 	// anti-stuck for follow!
 	if ( self.isFollowing && _unstickifyTry > 5) {
 

@@ -183,10 +183,10 @@ static Controller* sharedController = nil;
     
     if([self isWoWVersionValid]) {
         [aboutValidImage setImage: [NSImage imageNamed: @"good"]];
-        [versionInfoText setStringValue: [NSString stringWithFormat: @"%@ (v%@) is up to date with WoW %@.", [self appName], appVers, [self wowVersionShort]]];
+	[versionInfoText setStringValue: [NSString stringWithFormat: @"%@ v%@ is up to date with WoW %@.", [self appName], appVers, [self wowVersionShort]]];
     } else {
         [aboutValidImage setImage: [NSImage imageNamed: @"bad"]];
-        [versionInfoText setStringValue: [NSString stringWithFormat: @"%@ (v%@) may require WoW %@. Check the site below for more details.", [self appName], appVers, VALID_WOW_VERSION]];
+	[versionInfoText setStringValue: [NSString stringWithFormat: @"%@ v%@ may require WoW %@. Check the site below for more details.", [self appName], appVers, VALID_WOW_VERSION]];
     }
 }
 

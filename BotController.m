@@ -2205,7 +2205,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						// If this is a new combat target then let's face up
 						if ( _lastCombatProcedureTarget != [target GUID] ) {
 							[playerController faceToward: [target position]];
-							[movementController establishPlayerPosition];
+//							[movementController establishPlayerPosition];
 						}
 						_lastCombatProcedureTarget = [target GUID];
 						[combatController stayWithUnit:target withType: TargetEnemy];
@@ -2740,10 +2740,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// don't move if we're PvPing or in a BG
 	if ( self.isPvPing || [playerController isInBG:[playerController zone]] ) return;
-	
+
 	if ( [playerController isDead] && [playerController isGhost] ){
-		log(LOG_GHOST, @"We're dead and starting movement!");
-		[movementController resumeMovement];
+		log(LOG_GHOST, @"We're dead, evaluating.");
+//		[movementController resumeMovement];
+		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:2.0f];
 	}
 }
 
@@ -3022,7 +3023,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	return NO;
 }
 
-- (void)lootUnit: (WoWObject*) unit{
+- (void)lootUnit: (WoWObject*) unit {
 
 	// are we still in the air?  shit we can't loot yet!
 	if ( ![[playerController player] isOnGround] ) {
@@ -3947,12 +3948,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 -(BOOL)evaluateForGhost {
+	
 	log(LOG_FUNCTION, @"evaluateForGhost");
 
-	if ( ![playerController isGhost]) return NO;
+	if ( ![playerController isGhost] ) return NO;
 	
-	if (![self isBotting]) return NO;
-	
+	if ( !self.isBotting ) return NO;
+
 	log(LOG_EVALUATE, @"Evaluating for Ghost");
 
 	if ( !self.evaluationInProgress ) {
@@ -3961,6 +3963,67 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[controller setCurrentStatus: @"Bot: Player is Dead"];
 	}
 
+	if ( theCombatProfile.resurrectWithSpiritHealer ) {
+	// Resurrect with the Spirit Healer
+
+		// Find the Spirit Healer
+		NSMutableArray *mobs = [NSMutableArray array];
+		[mobs addObjectsFromArray: [mobController mobsWithinDistance: 30.0f MobIDs:nil position:[[playerController player]position] aliveOnly:YES]];
+
+		if ( ![mobs count]) {
+			log(LOG_GHOST, @"Cannot find the Spirit Healer, is it in range?");
+			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+			return YES;
+		}
+
+		Mob *spiritHealer;
+
+		log(LOG_DEV, @"Looking for the Spirit Healer...");
+
+		for ( spiritHealer in mobs ) {
+			log(LOG_DEV, @"Checking %@...", spiritHealer.name);
+
+			if ( [[spiritHealer name] isEqualToString: @"Spirit Healer"] ) {
+				log(LOG_GHOST, @"Found %@...", spiritHealer);
+				break;
+			} else {
+				spiritHealer = nil;
+			}
+		}
+		
+		if ( !spiritHealer ) {			
+			log(LOG_GHOST, @"Cannot find the Spirit Healer in the mobs list, is it in range?");
+			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+			return YES;
+		} else {
+		// Found the Spirit Healer
+			log(LOG_DEV, @"Found Spirit Healer!");
+			
+			Position *playerPosition = [playerController position];	
+			Position *spiritHealerPosition = [spiritHealer position];
+			log(LOG_DEV, @"Checking distance...");
+
+			float distanceToSpiritHealer = [playerPosition distanceToPosition: spiritHealerPosition];
+
+			if ( distanceToSpiritHealer > 3.0f ) {
+				log(LOG_DEV, @"Moving to the Spirit Healer.");
+				// Face the target
+				[movementController turnTowardObject: spiritHealer];
+				[movementController moveToObject: spiritHealer];
+				[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+				return YES;
+			}
+
+			log(LOG_GHOST, @"Resurrecting with the Spirit Healer.");
+			// Now we do the actual interaction
+			[self interactWithMouseoverGUID:[spiritHealer GUID]];
+			usleep(10000);
+			[macroController useMacroOrSendCmd:@"ClickFirstButton"];
+			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+			return YES;
+		}
+	}
+	
 	if( ![playerController corpsePosition] ) {
 		log(LOG_DEV, @"Still not near the corpse.");
 		if ( ![movementController isMoving] ) [movementController resumeMovement];
@@ -3980,7 +4043,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else
 		
 	// If we're not close to the corpse let's keep moving
-	if( _ghostDance == 0 && distanceToCorpse > 6.0 ) {
+	if( _ghostDance == 0 && distanceToCorpse > 6.0f ) {
 		log(LOG_DEV, @"Still not near the corpse.");
 		if ( ![movementController isMoving] ) [movementController resumeMovement];
 		return NO;
@@ -4749,7 +4812,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.evaluationInProgress ) log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 
 	// Close enough to loot it
-	if ( nodeDist <= DistanceUntilDismountByNode ) {
+	if ( nodeDist <= 5.0f ) {
 
 		int attempts = [blacklistController attemptsForObject:nodeToLoot];
 
@@ -4777,7 +4840,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// if it's potentially unreachable or at a distance lets make sure we're mounted
 	// We're putting this here so we can run this check prior to the patrol evaluation
 	// This allows us to disregard the mounting if it's not in our behavior (low levels or what ever)
-	if ( nodeDist > 12.0f && ![[playerController player] isMounted ] ) {
+	if ( nodeDist > 8.0f && ![[playerController player] isMounted ] ) {
 		// see if we would be performing anything in the patrol procedure
 		BOOL performPatrolProc = NO;
 		Rule *ruleToCheck;
