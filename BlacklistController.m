@@ -111,7 +111,7 @@
 				
 			// length varies based on reason
 			if ( reason == Reason_NotInCombat) {
-				float BlacklistDurationNotInCombat = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistDurationNotInCombat"] floatValue];
+				float BlacklistDurationNotInCombat = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistDurationNotInCombat"] floatValue];
 				
 				if ( timeSinceBlacklisted < BlacklistDurationNotInCombat ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
@@ -121,7 +121,7 @@
 				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 				
 			} else if ( reason == Reason_NotInLoS) {
-				float BlacklistDurationNotInLos = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistDurationNotInLos"] floatValue];
+				float BlacklistDurationNotInLos = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistDurationNotInLos"] floatValue];
 
 				if ( timeSinceBlacklisted < BlacklistDurationNotInLos ) [infractionsToKeep addObject:infraction];
 				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
@@ -197,6 +197,11 @@
 		// fucker made me fall and almost die? Yea, psh, your ass is blacklisted
 		else if ( reason == Reason_NodeMadeMeFall ){
 			log(LOG_BLACKLIST, @"%@ was blacklisted for making us fall!", obj);
+			return YES;
+		}
+
+		else if ( reason == Reason_NodeMadeMeDie ){
+			log(LOG_BLACKLIST, @"%@ was blacklisted for making us die!", obj);
 			return YES;
 		}
 

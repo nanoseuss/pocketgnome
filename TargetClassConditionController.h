@@ -13,11 +13,12 @@
 
 
 @interface TargetClassConditionController : ConditionController {
-    IBOutlet BetterSegmentedControl *qualitySegment;
-    IBOutlet NSPopUpButton *valuePopUp;
+	IBOutlet BetterSegmentedControl *qualitySegment;
+	IBOutlet BetterSegmentedControl *comparatorSegment;
+	IBOutlet NSPopUpButton *valuePopUp;
     
-    IBOutlet NSMenu *creatureTypeMenu;
-    IBOutlet NSMenu *playerClassMenu;
+	IBOutlet NSMenu *creatureTypeMenu;
+	IBOutlet NSMenu *playerClassMenu;
 }
 
 @end

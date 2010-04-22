@@ -241,17 +241,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 //	[botController cancelCurrentProcedure];
 
 	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
-	/*
-	log(LOG_COMBAT, @"Stepping forward to try to unbug a bad casting position.");
-	[movementController stepForward];
-	usleep(50000);
-	[movementController stopMovement];
-	usleep(50000);
-	[playerData faceToward: [_castingUnit position]];
-	usleep(200000);
-	 */
-	[movementController establishPlayerPosition];
 
+	[movementController turnTowardObject:_castingUnit];
+	[movementController establishPlayerPosition];
 //	[botController actOnUnit: _castingUnit];
 	
 }
@@ -1184,7 +1176,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			
 			secondsInCombat = leftCombatTargetCount/10;
 			
-			float combatBlacklistDelay = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNotInCombat"] floatValue];
+			float combatBlacklistDelay = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNotInCombat"] floatValue];
+//			[[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNotInCombat"] floatValue];
 
 			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
 			if ( secondsInCombat >  combatBlacklistDelay ) {

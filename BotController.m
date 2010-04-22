@@ -2206,10 +2206,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						log(LOG_DEV, @"Targeting Enemy.");
 						
 						// If this is a new combat target then let's face up
-						if ( _lastCombatProcedureTarget != [target GUID] ) {
-							[playerController faceToward: [target position]];
+//						if ( _lastCombatProcedureTarget != [target GUID] ) {
+//							[playerController faceToward: [target position]];
 //							[movementController establishPlayerPosition];
-						}
+//						}
 						_lastCombatProcedureTarget = [target GUID];
 						[combatController stayWithUnit:target withType: TargetEnemy];
 					} else
@@ -2539,16 +2539,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark [Input] MovementController
 
 - (void)reachedFollowUnit: (NSNotification*)notification {
-	
+
 	if ( !self.isBotting ) return;
 	if ( playerController.isDead ) return;
-	
+
 	log(LOG_FUNCTION, @"botController: reachedFollowUnit");
-	
+
 	// Reset the movement controller.  Do we need to switch back to a normal route ?
-	
+
 	[self followRouteClear];
-	
+
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
 	
@@ -2562,7 +2562,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)reachedObject: (NSNotification*)notification {
 	
 	if ( !self.isBotting ) return;
-	
+
 	WoWObject *object = [notification object];
 	
 	log(LOG_FUNCTION, @"Reached object called for %@", object);
@@ -2573,6 +2573,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Reset the party emotes idle
 	if ( theCombatProfile.partyEmotes ) _partyEmoteIdleTimer = 0;
 
+	if ([(Unit*)object isKindOfClass: [Node class]] && [[playerController player] isFlyingMounted] ) {
+		// Pause a moment so we don't fly past this thing as we dismount
+		usleep(300000);
+	}
+	
 	// Back to evaluation
 	[self evaluateSituation];
 
@@ -2715,6 +2720,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     [combatController resetAllCombat];	       // this wipes all combat state
 
 	[self followRouteClear]; 	// Wipe our follow route so we don't try it when we res
+
+	// Check to see if we need to blacklist a node for making us die
+	if ( theCombatProfile.resurrectWithSpiritHealer && 
+		self.lastAttemptedUnitToLoot && 
+		_movingTowardNodeCount > 0 && 
+		[self.lastAttemptedUnitToLoot isValid] 
+		) {
+		
+		log(LOG_NODE, @"%@ made me die, blacklisting.", self.lastAttemptedUnitToLoot);
+		[blacklistController blacklistObject: self.lastAttemptedUnitToLoot withReason:Reason_NodeMadeMeDie];
+	}
+
 	
     // send notification to Growl
     if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
@@ -3036,6 +3053,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[unit cachedGUID]];
 		NSNumber *count = [_lootDismountCount objectForKey:guid];
+
 		if ( !count ) count = [NSNumber numberWithInt:1]; else count = [NSNumber numberWithInt:[count intValue] + 1];
 		[_lootDismountCount setObject:count forKey:guid];
 
@@ -3044,14 +3062,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
 		return;
 	}
-	
+
 	// player moving, wait to loot
-	if ( [movementController isMoving] ){
+	if ( [movementController isMoving] ) {
 		log(LOG_DEV, @"Still moving, waiting to loot");
 		[self performSelector:@selector(lootUnit:) withObject:unit afterDelay:0.1f];
 		return;
 	}
-	
+
 	BOOL isNode = [unit isKindOfClass: [Node class]];
 	
 	self.wasLootWindowOpen	= NO;
@@ -3214,9 +3232,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	BOOL wasNode = NO;
 	BOOL wasSkin = NO;
 	
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
+
 	// If this event fired, we don't need to verifyLootSuccess! We ONLY need verifyLootSuccess when a body has nothing to loot!
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(verifyLootSuccess) object: nil];
-	
+	_movingTowardNodeCount = 0;
+
 	// This lets us know that the LAST loot was just from us looting a corpse (vs. via skinning or herbalism)
 	if ( self.unitToLoot ) {
 		NSDate *currentTime = [NSDate date];
@@ -3271,7 +3292,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		// Reset our attempt variables!
 		_lootMacroAttempt = 0;
-		self.lastAttemptedUnitToLoot = nil;
 	}
 	
 	float delay = 0.5;
@@ -3280,6 +3300,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	self.wasLootWindowOpen = NO;
 
+	self.lastAttemptedUnitToLoot = nil;
+	
 	// Reset the loot scan idle timer
 	[self resetLootScanIdleTimer];
 
@@ -3705,7 +3727,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Player *assistPlayer = [playersController playerWithGUID: theCombatProfile.assistUnitGUID];
 	if ( assistPlayer && [assistPlayer isValid] ) {
 		self.assistUnit = assistPlayer;
-		[playerController faceToward: [assistPlayer position]];
+		[movementController turnTowardObject: assistPlayer];
+//		[playerController faceToward: [assistPlayer position]];
 		log(LOG_PARTY, @"Found the player I'm assisting.");
 		return YES;
 	} else {
@@ -4083,7 +4106,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					log(LOG_DEV, @"Face and Reverse...");
 
 					// Face the target
-					[playerController faceToward: [mob position]];
+					[movementController turnTowardObject: mob];
+
+//					[playerController faceToward: [mob position]];
 					usleep(500000);
 					[movementController moveBackwardStart];
 					usleep(1600000);
@@ -4697,24 +4722,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForMiningAndHerbalism {
-	
+
 	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
 
 	if ( playerController.isDead ) return NO;
 
 	// If we're already mounted in party mode then
 	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
-	
+
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"MiningAndHerbalism" ) return NO;
 
 	if ( self.procedureInProgress ) return NO;
-	
+
 	// If we're moving to the node let's wait till we get there to do anything
     if ([movementController moveToObject]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Mining and Herbalism");
-	
+
 	Position *playerPosition = [playerController position];
 
 	// check for mining and herbalism
@@ -4722,9 +4747,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if(_doMining)			[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: MiningNode maxLevel: _miningLevel]];
 	if(_doHerbalism)		[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: HerbalismNode maxLevel: _herbLevel]];
 	if(_doNetherwingEgg)	[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance EntryID: 185915 position:[playerController position]]];
-	
+
 	[nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
-	
+
 	// If we've no node then skip this
 	if ( ![nodes count] ) {
 		[blacklistController clearAttempts];
@@ -4738,27 +4763,29 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return NO;
 		}
 	}
-				
+
 	// find a valid node to loot
 	Node *thisNode = nil;
 	Node *nodeToLoot = nil;
 	float nodeDist = INFINITY;
-		
+
+	int blacklistTriggerNodeMadeMeFall = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNodMadeMeFall"] intValue];
+	
 	for(thisNode in nodes) {
 
 		if ( ![thisNode validToLoot] ) {
 			log(LOG_NODE, @"%@ is not valid to loot, ignoring...", thisNode);
 			continue;
 		}
-						
+
 		NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[thisNode cachedGUID]];
 		NSNumber *count = [_lootDismountCount objectForKey:guid];
 
 		if ( count ) {
 			
 			// took .5 seconds or longer to fall!
-			if ( [count intValue] > 4 ) {
-				log(LOG_DEV, @"Failed to acquire node %@ after dismounting, ignoring...", thisNode);
+			if ( [count intValue] > 4 && _movingTowardNodeCount >= blacklistTriggerNodeMadeMeFall ) {
+				log(LOG_NODE, @"%@ made me fall after %d attempts, ignoring...", thisNode, blacklistTriggerNodeMadeMeFall);
 				[blacklistController blacklistObject:thisNode withReason:Reason_NodeMadeMeFall];
 				continue;
 			}
@@ -4815,14 +4842,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.evaluationInProgress ) log(LOG_NODE, @"Found node to loot: %@ at dist %.2f", nodeToLoot, nodeDist);
 
 	// Close enough to loot it
-	if ( nodeDist <= 5.0f ) {
+	float closeEnough = 5.0;
+	float horizontalDistanceToNode = [[playerController position] distanceToPosition2D: [nodeToLoot position]];
+	if ( ![playerController isOnGround] && [[playerController player] isMounted] && horizontalDistanceToNode < 2.5f && [[playerController position] xPosition] >= [[nodeToLoot position] xPosition] ) closeEnough = 9.0;
+
+	if ( nodeDist <= closeEnough ) {
 
 		int attempts = [blacklistController attemptsForObject:nodeToLoot];
 
-		float blacklistTriggerNodeAttempts = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNodeAttempts"] floatValue];
+		int blacklistTriggerNodeFailedToLoot = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNodeFailedToLoot"] intValue];
 
-		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= blacklistTriggerNodeAttempts ) {
-			log(LOG_NODE, @"Unable to loot %@, blacklisting.", self.lastAttemptedUnitToLoot);
+		if ( self.lastAttemptedUnitToLoot == nodeToLoot && attempts >= blacklistTriggerNodeFailedToLoot ) {
+
+			log(LOG_NODE, @"Unable to loot %@ after %d attempts, blacklisting.", self.lastAttemptedUnitToLoot, blacklistTriggerNodeFailedToLoot);
 			[blacklistController blacklistObject:nodeToLoot];
 
 			if ( self.evaluationInProgress ) {
@@ -4843,7 +4875,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// if it's potentially unreachable or at a distance lets make sure we're mounted
 	// We're putting this here so we can run this check prior to the patrol evaluation
 	// This allows us to disregard the mounting if it's not in our behavior (low levels or what ever)
-	if ( nodeDist > 8.0f && ![[playerController player] isMounted ] ) {
+	if ( nodeDist > 9.0f && ![[playerController player] isMounted ] ) {
 		// see if we would be performing anything in the patrol procedure
 		BOOL performPatrolProc = NO;
 		Rule *ruleToCheck;
@@ -4865,14 +4897,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Move to it	
 	if ( self.evaluationInProgress != @"MiningAndHerbalism") {
 		log(LOG_DEV, @"Moving to node...");
-		_movingTowardNodeCount = 0;
+		_movingTowardNodeCount = 1;
 	} else {
 		_movingTowardNodeCount++;
 	}
 
 	// have we exceeded the amount of attempts to move to the node?
-	if ( _movingTowardNodeCount > 4 ){
-		log(LOG_NODE, @"Unable to reach %@!, blacklisting.", nodeToLoot);
+	int blacklistTriggerNodeFailedToReach = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNodeFailedToReach"] intValue];
+
+	if ( _movingTowardNodeCount > blacklistTriggerNodeFailedToReach ) {
+		log(LOG_NODE, @"Unable to reach %@ after %d attempts, blacklisting.", nodeToLoot, blacklistTriggerNodeFailedToReach);
 		[blacklistController blacklistObject:nodeToLoot];
 		[movementController resetMoveToObject];
 		self.evaluationInProgress = nil;
@@ -5194,7 +5228,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !emoteUnit && _followUnit && [_followUnit isValid] ) emoteUnit = _followUnit;
 	
 	[playerController targetGuid:[emoteUnit GUID]];
-	[playerController faceToward: [emoteUnit position]];
+	[movementController turnTowardObject: emoteUnit];
+
+//	[playerController faceToward: [emoteUnit position]];
 	usleep(300000);
 	
 	// Actually move a tad
@@ -6035,7 +6071,8 @@ NSMutableDictionary *_diffDict = nil;
 			log(LOG_PARTY, @"Command recieved, facing leader.");
 			[playerController targetGuid:[_followUnit GUID]];
 			usleep(100000);
-			[playerController faceToward: [_followUnit position]];
+			[movementController turnTowardObject: _followUnit];
+//			[playerController faceToward: [_followUnit position]];
 			usleep(300000);
 			
 			[movementController establishPlayerPosition];
@@ -6265,8 +6302,9 @@ NSMutableDictionary *_diffDict = nil;
 		return;
 	}
 
-	// If we're moving and the bot's off let's not interfere
+	// If the bot's off and the player is doing something let's not interfere
 	if ( [movementController isMoving] ) return;
+	if ( ![playerController isCasting] ) return;
 
 	log(LOG_DEV, @"[AFK] Attempt: %d", _afkTimerCounter);
 

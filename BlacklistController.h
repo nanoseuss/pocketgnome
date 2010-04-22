@@ -37,6 +37,7 @@ enum{
 	Reason_InvalidTarget		= 7,
 	Reason_OutOfRange			= 8,
 	Reason_RecentlySkinned		= 9,
+	Reason_NodeMadeMeDie		= 10,
 	
 };
 

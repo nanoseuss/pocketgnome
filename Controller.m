@@ -93,10 +93,12 @@ typedef enum {
     
     NSDictionary *defaultValues = [NSDictionary dictionaryWithObjectsAndKeys:
                                    [NSNumber numberWithFloat: 7.0],     @"BlacklistTriggerNotInCombat",
-                                   [NSNumber numberWithFloat: 3.0],     @"BlacklistTriggerNodeAttempts",
                                    [NSNumber numberWithFloat: 45.0],    @"BlacklistDurationNotInCombat",
                                    [NSNumber numberWithFloat: 20.0],    @"BlacklistDurationNotInLos",
                                    [NSNumber numberWithFloat: 10.0],    @"BlacklistVerticalOffset",
+								   [NSNumber numberWithInt: 3],			@"BlacklistTriggerNodeFailedToReach",
+                                   [NSNumber numberWithInt: 4],			@"BlacklistTriggerNodeFailedToLoot",
+                                   [NSNumber numberWithInt: 2],			@"BlacklistTriggerNodeMadeMeFall",
                                    [NSNumber numberWithBool: YES],      @"MovementUseSmoothTurning",
                                    [NSNumber numberWithFloat: 2.0],     @"MovementMinJumpTime",
                                    [NSNumber numberWithFloat: 6.0],     @"MovementMaxJumpTime",
@@ -109,7 +111,7 @@ typedef enum {
                                    [NSNumber numberWithBool: NO],       @"SecurityDisableLogging",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEnable",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingDev",
-								   [NSNumber numberWithBool: NO],       @"ExtendedLogginEvaluate",
+								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingEvaluate",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingBindings",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMacro",
 								   [NSNumber numberWithBool: NO],       @"ExtendedLoggingMovement",

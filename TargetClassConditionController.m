@@ -45,7 +45,7 @@
     Condition *condition = [Condition conditionWithVariety: VarietyTargetClass 
                                                       unit: UnitTarget
                                                    quality: [qualitySegment selectedTag]
-                                                comparator: CompareIs
+                                                comparator: [comparatorSegment selectedTag]
                                                      state: [[valuePopUp selectedItem] tag]
                                                       type: TypeNone
                                                      value: nil];
@@ -58,7 +58,9 @@
     [super setStateFromCondition: condition];
 
     if( [condition variety] != VarietyTargetClass) return;
-    
+
+    [comparatorSegment selectSegmentWithTag: [condition comparator]];
+	
     [qualitySegment selectSegmentWithTag: [condition quality]];
     [valuePopUp setMenu: creatureTypeMenu];
 

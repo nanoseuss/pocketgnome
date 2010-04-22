@@ -115,12 +115,12 @@ typedef enum MovementState{
 - (id) init{
     self = [super init];
     if ( self != nil ) {
-		
+
 		_stuckDictionary = [[NSMutableDictionary dictionary] retain];
-		
+
 		_currentRouteSet = nil;
 		_currentRouteKey = nil;
-		
+
 		_moveToObject = nil;
 		_moveToPosition = nil;
 		_lastAttemptedPosition = nil;
@@ -220,8 +220,9 @@ typedef enum MovementState{
 
 - (BOOL)moveToObject: (WoWObject*)object{
 	
-	if ( !object || ![object isValid] ){
-		[_moveToObject release]; _moveToObject = nil;
+	if ( !object || ![object isValid] ) {
+		[_moveToObject release];
+		_moveToObject = nil;
 		return NO;
 	}
 
@@ -231,9 +232,9 @@ typedef enum MovementState{
 	// If this is a Node then let's change the position to one just above it and overshooting it a tad
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
 		float distance = [[playerData position] distanceToPosition: [object position]];
-		if (distance > 10.0f) {
+		if (distance > 8.0f) {
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
-			self.moveToPosition = [[Position alloc] initWithX:[[self.moveToObject position] xPosition] Y:[[self.moveToObject position] yPosition] Z:[[self.moveToObject position] zPosition]+10.0f];
+			self.moveToPosition = [[Position alloc] initWithX:[[object position] xPosition] Y:[[object position] yPosition] Z:[[object position] zPosition]+2.5f];
 		} else {
 			self.moveToPosition =[object position];
 		}
@@ -244,8 +245,8 @@ typedef enum MovementState{
 	
 	[self moveToPosition: self.moveToPosition];	
 	
-	if ( [self.moveToObject isKindOfClass:[Mob class]] || [self.moveToObject isKindOfClass:[Player class]] )
-		[self performSelector:@selector(stayWithObject:) withObject:self.moveToObject afterDelay:0.1f];
+	if ( [object isKindOfClass:[Mob class]] || [object isKindOfClass:[Player class]] )
+		[self performSelector:@selector(stayWithObject:) withObject: _moveToObject afterDelay:0.1f];
 	
 	return YES;
 }
@@ -408,7 +409,8 @@ typedef enum MovementState{
 				log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
 				self.destinationWaypoint = newWP;
 				
-				[playerData faceToward: [newWP position]];
+				[self turnTowardPosition: [newWP position]];
+
 				usleep([controller refreshDelay]*2);
 				
 				[self moveToPosition:[newWP position]];
@@ -506,8 +508,9 @@ typedef enum MovementState{
 			log(LOG_MOVEMENT, @"Waypoint is far off so we won't descend until we're closer. hDist: %0.2f, vDist: %0.2f", horizontalDistanceToWaypoint, verticalDistanceToWaypoint);
 
 			Position *positionToDescend = [[playerData position] positionAtDistance:verticalDistanceToWaypoint withDestination:positionAboveWaypoint];
+			
+			[self turnTowardPosition: positionToDescend];
 
-			[playerData faceToward: positionToDescend];
 			usleep([controller refreshDelay]*2);
 
 			[self moveToPosition: positionToDescend];
@@ -521,7 +524,8 @@ typedef enum MovementState{
 		log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWaypoint);
 		self.destinationWaypoint = newWaypoint;
 
-		[playerData faceToward: [newWaypoint position]];
+		[self turnTowardPosition: [newWaypoint position]];
+
 		usleep([controller refreshDelay]*2);
 
 		[self moveToPosition:[newWaypoint position]];
@@ -824,11 +828,12 @@ typedef enum MovementState{
 
 	if (_stuckCounter > 0) log(LOG_MOVEMENT, @"[%d] Check current position.  Stuck counter: %d", _positionCheck, _stuckCounter);
 
-	BOOL isPlayerOnGround = [playerData isOnGround];
 	Position *playerPosition = [playerData position];
 	float playerSpeed = [playerData speed];
+	BOOL isNode = [_moveToObject isKindOfClass: [Node class]];
 
     Position *destPosition = ( _moveToObject ) ? [_moveToObject position] : [_destinationWaypoint position];
+	if (isNode) destPosition = 	_moveToPosition;	// Pass it our overshoot position instead of the real object position
 
 	float distanceToDestination = [playerPosition distanceToPosition: destPosition];
 	
@@ -847,11 +852,10 @@ typedef enum MovementState{
 											//  when on ground: 3.78
 	
 	// If this is a node that we're flying to we'll adjust the distance value
-	BOOL isNode = [self.moveToObject isKindOfClass: [Node class]];
-	if ( isNode && !isPlayerOnGround ) distanceToObject = DistanceUntilDismountByNode;
+	if ( isNode && [[playerData player] isFlyingMounted] ) distanceToObject = DistanceUntilDismountByNode;
 
 	// we've reached our position!
-	if ( distanceToDestination <= distanceToObject ){
+	if ( distanceToDestination <= distanceToObject ) {
 		
 		log(LOG_MOVEMENT, @"Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
 
@@ -881,15 +885,16 @@ typedef enum MovementState{
 			[self resetMovementTimer];
 			
 			// stop movement
-			[self stopMovement];
-			
-			log(LOG_MOVEMENT, @"Reached our object %@", object);
+			if ( [self isMoving] ) [self stopMovement];
 
-			if ( isNode && !isPlayerOnGround ) [self dismount];
+			if ( isNode ) {
+				log(LOG_MOVEMENT, @"Reached our node hover spot %@", object);
+			} else {
+				log(LOG_MOVEMENT, @"Reached our object %@", object);
+			}
 
 			// we've reached the unit! Send a notification
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: object];
-			
 			return;
 		}
 		
@@ -977,7 +982,8 @@ typedef enum MovementState{
 		log(LOG_DEV, @" Checking distance: %0.2f <= %0.2f", distanceTraveled, (maxSpeed/10.0f)/5.0f);
 		
 		// distance + speed check
-		if ( distanceTraveled <= (maxSpeed/10.0f)/5.0f || playerSpeed <= maxSpeed/10.0f ){
+		if ( distanceTraveled <= (maxSpeed/10.0f)/5.0f || playerSpeed <= maxSpeed/10.0f ) {
+			log(LOG_DEV, @"Incrementing the stuck counter!");
 			_stuckCounter++;
 		}
 		
@@ -1178,18 +1184,19 @@ typedef enum MovementState{
 		
 		log(LOG_COMBAT, @"Unit is still close, inching forward.");
 		// Face the target
-		[playerData faceToward: [target position]];
-		usleep(300000);
-
+		[self turnTowardObject: target];
+		
+		usleep(10000);
 		// Move, Jump, Stop
 		[self moveForwardStart];
 		usleep(10000);
 		[self jump];
-		usleep(10000);
+		usleep(500000);
 		[self moveForwardStop];
 
+		[self turnTowardObject: target];
+
 		// Now check again to see if they're in range
-        usleep(100000);
 		float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
 
 		if ( distanceToTarget > [botController.theCombatProfile attackRange]) {
@@ -1243,7 +1250,7 @@ typedef enum MovementState{
 #pragma mark -
 
 - (void)resetMovementTimer{
-	
+
 	//[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(realMoveToNextWaypoint) object: nil];
     [_movementTimer invalidate]; _movementTimer = nil;
 }
@@ -1388,7 +1395,7 @@ typedef enum MovementState{
         }
 		else{
             if ( printTurnInfo ) log(LOG_MOVEMENT, @"DOING SHARP TURN to %.2f", [playerPosition angleTo: position]);
-            [playerData faceToward: position];
+			[self turnTowardPosition: position];
             usleep([controller refreshDelay]*2);
         }
     } else {
@@ -1746,7 +1753,6 @@ typedef enum MovementState{
             //([playerData speed] > 0) ? ([playerData speedMax]/4.0f) : ((startDistance < [playerData speedMax]) ? 1.0f : 2.0f);
             float errorStart = (absAngleTo < M_PI_2) ? (startDistance * sinf(absAngleTo)) : INFINITY;
             
-            
             if( errorStart > (errorLimit) ) { // (fabsf(angleTo) > OneDegree*5) 
 				
                 // compensate for time taken for WoW to process keystrokes.
@@ -1843,8 +1849,6 @@ typedef enum MovementState{
 		else{
 
 			// what are we facing now?
-//            [playerData faceToward: position];
-			
 			float playerDirection = [playerData directionFacing];
 			float theAngle = [playerPosition angleTo: position];
 			
