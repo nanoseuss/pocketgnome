@@ -38,7 +38,7 @@ enum{
 	Reason_OutOfRange			= 8,
 	Reason_RecentlySkinned		= 9,
 	Reason_NodeMadeMeDie		= 10,
-	
+
 };
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason;

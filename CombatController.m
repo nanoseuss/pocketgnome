@@ -194,32 +194,26 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // target is out of range
 - (void)targetOutOfRange: (NSNotification*)notification {
 
-	// If this is a combat target
-//	if ([botController castingUnit] == [self castingUnit]) {
-
-		// if we can correct this error
-		if ( [movementController checkUnitOutOfRange:[self castingUnit]] ) {
-			[botController cancelCurrentProcedure];
-			[self cancelAllCombat];
-			[botController actOnUnit: _castingUnit];
-			return;
-		}
-//	}
-
-	log(LOG_DEV, @"[Notification] %@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
-
-//	if ([botController castingUnit]) {
-// If it's out of range it won't be selected again if we cancel the procedure so why blacklist and potentially screw ourselves if it comes back into range
-//		log(LOG_BLACKLIST, @"%@ %@ is out of range, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
-//		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_OutOfRange];
-//	}
-
+	Unit *thisCastingUnit = _castingUnit;
+	
 	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
 	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
-
 	[self cancelAllCombat];
+
+	// if we can correct this error
+	if ( [movementController checkUnitOutOfRange: thisCastingUnit] ) {
+		[botController actOnUnit: thisCastingUnit];
+		return;
+	}
+
+	log(LOG_COMBAT, @"%@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+
+	if ( thisCastingUnit ) {
+		log(LOG_BLACKLIST, @"%@ %@ is out of range, temporarily blacklisting.", [self unitHealthBar: thisCastingUnit], thisCastingUnit);
+		[blacklistController blacklistObject:thisCastingUnit withReason:Reason_OutOfRange];
+	}
+
 	[botController evaluateSituation];
-	
 }
 
 - (void)morePowerfullSpellActive: (NSNotification*)notification {

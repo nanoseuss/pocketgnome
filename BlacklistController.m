@@ -23,7 +23,7 @@
 // #define BLACKLIST_TIME_NOT_IN_LOS		20.0f
 
 // We got a line of sight error
-#define BLACKLIST_TIME_OUT_OF_RANGE		0.5f
+#define BLACKLIST_TIME_OUT_OF_RANGE		1.0f
 
 // We got an Invalid Target error
 #define BLACKLIST_TIME_INVALID_TARGET		45.0f
@@ -70,12 +70,12 @@
 #pragma mark Blacklisting
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason {
-	
+
 	log(LOG_BLACKLIST, @"Blacklisting %@ for reason %d with retain count %d", obj, reason, [obj retainCount]);
-	
+
 	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
 	NSMutableArray *infractions = [_blacklist objectForKey:guid];
-	
+
 	if ( [infractions count] == 0 ) infractions = [NSMutableArray array];
 
 	[infractions addObject:[NSDictionary dictionaryWithObjectsAndKeys: 
@@ -110,37 +110,48 @@
 			float timeSinceBlacklisted = [date timeIntervalSinceNow] * -1.0f;
 				
 			// length varies based on reason
-			if ( reason == Reason_NotInCombat) {
+			if ( reason == Reason_NotInCombat ) {
 				float BlacklistDurationNotInCombat = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistDurationNotInCombat"] floatValue];
 				
 				if ( timeSinceBlacklisted < BlacklistDurationNotInCombat ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 
-			} else if ( reason == Reason_InvalidTarget) {
+			} else if ( reason == Reason_InvalidTarget ) {
+				
 				if ( timeSinceBlacklisted < BLACKLIST_TIME_INVALID_TARGET ) [infractionsToKeep addObject:infraction];
 				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 				
-			} else if ( reason == Reason_NotInLoS) {
+			} else if ( reason == Reason_NotInLoS ) {
+				
 				float BlacklistDurationNotInLos = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistDurationNotInLos"] floatValue];
 
 				if ( timeSinceBlacklisted < BlacklistDurationNotInLos ) [infractionsToKeep addObject:infraction];
 				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 				
-			} else if ( reason == Reason_OutOfRange) {
+			} else if ( reason == Reason_OutOfRange ) {
 				if ( timeSinceBlacklisted < BLACKLIST_TIME_OUT_OF_RANGE ) [infractionsToKeep addObject:infraction];
 				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 
-			} else if ( reason == Reason_RecentlyResurrected) {
+			} else if ( reason == Reason_RecentlyResurrected ) {
 				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_RESURRECTED ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 
-			} else if ( reason == Reason_RecentlyHelpedFriend) {
+			} else if ( reason == Reason_RecentlyHelpedFriend ) {
 				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_HELPED_FRIEND ) [infractionsToKeep addObject:infraction];
 					else log(LOG_BLACKLIST, @"Expired: %@", infraction);
 
-			} else if ( reason == Reason_RecentlySkinned) {
+			} else if ( reason == Reason_RecentlySkinned ) {
 				if ( timeSinceBlacklisted < BLACKLIST_TIME_RECENTLY_SKINNED ) [infractionsToKeep addObject:infraction];
 				else log(LOG_BLACKLIST, @"Expired: %@", infraction);
+
+			} else if ( reason == Reason_NodeMadeMeFall ) {
+				[infractionsToKeep addObject:infraction];
+
+			} else if ( reason == Reason_NodeMadeMeDie ) {
+				[infractionsToKeep addObject:infraction];
+
+			} else if ( reason == Reason_CantReachObject ) {
+				[infractionsToKeep addObject:infraction];
 				
 			} else {
 				if ( timeSinceBlacklisted < BLACKLIST_TIME ) [infractionsToKeep addObject:infraction];
@@ -160,7 +171,9 @@
 }
 
 - (BOOL)isBlacklisted: (WoWObject*)obj {
-		
+	
+	log(LOG_BLACKLIST, @"Checking status for %@", obj);
+
 	// refresh the blacklist (we could do this on a timer to be more "efficient"
 	[self refreshBlacklist];
 	
@@ -233,7 +246,7 @@
 			totalNone++;
 		}
 	}
-	
+
 	// general blacklisting
 	if ( totalNone >= 3 ) {
 		log(LOG_BLACKLIST, @"Unit %@ blacklisted for total count!", obj);

@@ -1671,11 +1671,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// when we finish PostCombat, go back to evaluation
     if ([[state objectForKey: @"Procedure"] isEqualToString: PostCombatProcedure]) {
 		log(LOG_DEV, @"[Eval] After PostCombat");
-
-// We'll see how we do without this
-		// Make sure we're not unable to read ourselves...
-//		[movementController establishPlayerPosition];
-		
 		[controller setCurrentStatus: @"Bot: Enabled"];
 		self.evaluationInProgress = nil;
 		[self evaluateSituation];
@@ -2197,19 +2192,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					default:
 						break;
 				}
-				
+
 				// lets do the action
-				if ( canPerformAction ){
-					
+				if ( canPerformAction ) {
+
 					// target if needed!
 					if ( [rule target] == TargetEnemy ) {
 						log(LOG_DEV, @"Targeting Enemy.");
 						
 						// If this is a new combat target then let's face up
-//						if ( _lastCombatProcedureTarget != [target GUID] ) {
-//							[playerController faceToward: [target position]];
-//							[movementController establishPlayerPosition];
-//						}
+						if ( _lastCombatProcedureTarget != [target GUID] ) {
+							[movementController correctDirectionByTurning];
+							[movementController establishPlayerPosition];
+						}
 						_lastCombatProcedureTarget = [target GUID];
 						[combatController stayWithUnit:target withType: TargetEnemy];
 					} else
@@ -2993,16 +2988,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (Mob*)mobToLoot {
-	
+
 	if ( !self.doLooting ) return nil;
-	
+
 	// if our loot list is empty scan for missed mobs
     if ( ![_mobsToLoot count] ) return nil;
-	
+
+	[self lootScan];
+
 	Mob *mobToLoot = nil;
 	// sort the loot list by distance
 	[_mobsToLoot sortUsingFunction: DistanceFromPositionCompare context: [playerController position]];
-	
+
 	// find a valid mob to loot
 	for ( mobToLoot in _mobsToLoot ) {
 		if ( mobToLoot && [mobToLoot isValid] ) {
@@ -3304,7 +3301,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	// Reset the loot scan idle timer
 	[self resetLootScanIdleTimer];
-
+	
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
 }
 
@@ -3345,7 +3342,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![unit isNPC] ) return;
 	
 	if ([_mobsToLoot containsObject: unit]) return;
-	
+
+	[self lootScan];
+
 	if ( ![(Mob*)unit isTappedByMe] || ![(Mob*)unit isLootable]  || [unit isPet] ) return;
 	
 	log(LOG_LOOT, @"Adding %@ to loot list.", unit);
@@ -3992,6 +3991,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( theCombatProfile.resurrectWithSpiritHealer ) {
 	// Resurrect with the Spirit Healer
 
+		if ( theCombatProfile.checkForCampers ) {
+			log(LOG_GHOST, @"Checking for campers.");
+			// Check for Campers
+			BOOL nearbyCampers = [playersController playerWithinRangeOfUnit: theCombatProfile.checkForCampersRange Unit:[playerController player] includeFriendly:NO includeHostile:YES];
+			if ( nearbyCampers ) {
+				log(LOG_GHOST, @"Looks like I'm being camped, going to hold of on resurrecting.");
+				[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
+				return YES;
+			}
+			log(LOG_GHOST, @"No campers.");
+		}
+
 		// Find the Spirit Healer
 		NSMutableArray *mobs = [NSMutableArray array];
 		[mobs addObjectsFromArray: [mobController mobsWithinDistance: 30.0f MobIDs:nil position:[[playerController player]position] aliveOnly:YES]];
@@ -4074,7 +4085,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( ![movementController isMoving] ) [movementController resumeMovement];
 		return NO;
 	}
-	
 
 	// we found our corpse
 	[controller setCurrentStatus: @"Bot: Waiting to Resurrect"];
@@ -4795,8 +4805,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_DEV, @"%@ is on the ignore list, ignoring.", thisNode);
 			continue;
 		}
-		
-		if ( thisNode && [thisNode isValid] && ![blacklistController isBlacklisted:thisNode] ) {
+
+		if ( [blacklistController isBlacklisted:thisNode] ) {
+			log(LOG_DEV, @"%@ is blacklisted, ignoring.", thisNode);
+			continue;
+		}
+
+		if ( thisNode && [thisNode isValid] ) {
 			nodeDist = [playerPosition distanceToPosition: [thisNode position]];
 			if ( nodeDist != INFINITY ) {
 				nodeToLoot = thisNode;
@@ -4844,7 +4859,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Close enough to loot it
 	float closeEnough = 5.0;
 	float horizontalDistanceToNode = [[playerController position] distanceToPosition2D: [nodeToLoot position]];
-	if ( ![playerController isOnGround] && [[playerController player] isMounted] && horizontalDistanceToNode < 2.5f && [[playerController position] xPosition] >= [[nodeToLoot position] xPosition] ) closeEnough = 9.0;
+	if ( ![playerController isOnGround] && [[playerController player] isMounted] && horizontalDistanceToNode < 3.0f && [[playerController position] xPosition] >= [[nodeToLoot position] xPosition] ) closeEnough = 7.0;
 
 	if ( nodeDist <= closeEnough ) {
 
@@ -4894,7 +4909,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
-	// Move to it	
+	// Move to it
 	if ( self.evaluationInProgress != @"MiningAndHerbalism") {
 		log(LOG_DEV, @"Moving to node...");
 		_movingTowardNodeCount = 1;
@@ -4906,15 +4921,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	int blacklistTriggerNodeFailedToReach = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNodeFailedToReach"] intValue];
 
 	if ( _movingTowardNodeCount > blacklistTriggerNodeFailedToReach ) {
+
 		log(LOG_NODE, @"Unable to reach %@ after %d attempts, blacklisting.", nodeToLoot, blacklistTriggerNodeFailedToReach);
-		[blacklistController blacklistObject:nodeToLoot];
+		[blacklistController blacklistObject:nodeToLoot withReason:Reason_CantReachObject];
 		[movementController resetMoveToObject];
 		self.evaluationInProgress = nil;
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return YES;
 	}
-
-//	if ( [movementController isMoving] ) [movementController stopMovement];
 
 	self.evaluationInProgress = @"MiningAndHerbalism";
 	[controller setCurrentStatus: @"Bot: Moving to node"];
@@ -4943,8 +4957,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Fishing.");
-
-	if ( !self.evaluationInProgress ) log(LOG_FISHING, @"Fishing scan!");
 
 	Position *playerPosition = [playerController position];
 	
@@ -5005,7 +5017,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		self.evaluationInProgress = nil;
 		
-		log(LOG_FISHING, @"Didn't find a node, so we're doing nothing...");
+		log(LOG_DEV, @"Didn't find a node, so we're doing nothing...");
 		
 	} else {
 		// fish where we are
@@ -5806,9 +5818,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( self.procedureInProgress ) [self cancelCurrentProcedure];
 	if ( self.evaluationInProgress ) [self cancelCurrentEvaluation];
-	
+
 	[movementController resetMovementState];
-    [combatController resetAllCombat];
+	[combatController resetAllCombat];
 	[blacklistController clearAll];
 
 	// Party resets

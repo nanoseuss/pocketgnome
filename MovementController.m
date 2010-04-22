@@ -233,13 +233,30 @@ typedef enum MovementState{
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
 		float distance = [[playerData position] distanceToPosition: [object position]];
 		if (distance > 8.0f) {
+
 			log(LOG_MOVEMENT, @"Over shooting the node for a nice drop in!");
-			self.moveToPosition = [[Position alloc] initWithX:[[object position] xPosition] Y:[[object position] yPosition] Z:[[object position] zPosition]+2.5f];
+			
+			// We over shoot to adjust to give us a lil stop ahead distance
+			float newX = 0.0;
+			// If it's north of me
+			if ( [[self.moveToObject position] xPosition] > [[playerData position] xPosition]) newX = [[self.moveToObject position] xPosition]+0.5f;
+			else newX = [[self.moveToObject position] xPosition]-0.5f;
+			
+			float newY = 0.0;
+			// If it's west of me
+			if ( [[self.moveToObject position] yPosition] > [[playerData position] yPosition]) newY = [[self.moveToObject position] yPosition]+0.5f;
+			else newY = [[self.moveToObject position] yPosition]-0.5f;
+
+			// Just Above it for a sweet drop in
+			float newZ = [[self.moveToObject position] zPosition]+2.5f;
+
+			self.moveToPosition = [[Position alloc] initWithX:newX Y:newY Z:newZ];
+			
 		} else {
 			self.moveToPosition =[object position];
 		}
 	} else {
-		
+
 	  self.moveToPosition =[object position];
 	}
 	
@@ -527,7 +544,7 @@ typedef enum MovementState{
 		[self turnTowardPosition: [newWaypoint position]];
 
 		usleep([controller refreshDelay]*2);
-
+		
 		[self moveToPosition:[newWaypoint position]];
 
 	} else {
@@ -713,10 +730,10 @@ typedef enum MovementState{
 	[self resetMovementTimer];
 
 	[botController jumpIfAirMountOnGround];
-	
+
     Position *playerPosition = [playerData position];
     float distance = [playerPosition distanceToPosition: position];
-	
+
 	// sanity check
     if ( !position || distance == INFINITY ) {
         log(LOG_MOVEMENT, @"Invalid waypoint (distance: %f). Ending patrol.", distance);
@@ -1045,7 +1062,7 @@ typedef enum MovementState{
 	
 	// set our stuck counter to 0!
 	_stuckCounter = 0;
-	
+
 	// is this a new attempt?
 	id lastTarget = [self.unstickifyTarget retain];
 
@@ -1073,10 +1090,29 @@ typedef enum MovementState{
 	}
 
 	// anti-stuck for moving to an object!
-	if ( self.moveToObject ){
+	if ( self.moveToObject ) {
+
+		// If it's a Node we'll adhere to the UI blacklist setting
+		if ( [self.moveToObject isKindOfClass: [Node class]] ) {
+			// have we exceeded the amount of attempts to move to the node?
+
+			int blacklistTriggerNodeFailedToReach = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNodeFailedToReach"] intValue];
+			if ( _unstickifyTry > blacklistTriggerNodeFailedToReach ) {
+
+				log(LOG_NODE, @"Unable to reach %@ after %d attempts, blacklisting.", _moveToObject, blacklistTriggerNodeFailedToReach);
+
+				[blacklistController blacklistObject:self.moveToObject withReason:Reason_CantReachObject];
+				self.moveToObject = nil;
+
+				[self resumeMovement];
+
+				return;			
+				
+			}
+		} else
 
 		// blacklist unit after 5 tries!
-		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ){
+		if ( _unstickifyTry > 5 && _unstickifyTry < 10 ) {
 			
 			log(LOG_MOVEMENT, @"Unable to reach %@, blacklisting", self.moveToObject);
 			
@@ -1088,35 +1124,89 @@ typedef enum MovementState{
 			
 			return;			
 		}
-		
+
 		// player is flying and is stuck :(  makes me sad, lets move up a bit
-		if ( [[playerData player] isFlyingMounted] ){
-			
+		if ( [[playerData player] isFlyingMounted] ) {
+
 			log(LOG_MOVEMENT, @"Moving up since we're flying mounted!");
-			
+
+			if ( _unstickifyTry < 3 ) {
+				// Bump to the right
+				[bindingsController executeBindingForKey:BindingStrafeRight];
+			} else {
+				// Bump to the left
+				[bindingsController executeBindingForKey:BindingStrafeLeft];
+			}
+
 			// move up for 1 second!
+
 			[self moveUpStop];
 			[self moveUpStart];
+
+			if ( _unstickifyTry < 3 ) {
+				// Bump to the right
+				[bindingsController executeBindingForKey:BindingStrafeRight];
+			} else {
+				// Bump to the left
+				[bindingsController executeBindingForKey:BindingStrafeLeft];
+			}
+
 			[self performSelector:@selector(moveUpStop) withObject:nil afterDelay:1.0f];
 			[self performSelector:@selector(resumeMovement) withObject:nil afterDelay:1.1f];
 			return;
 		}
+
+		// Stop n back up a lil
+		if ( [self isMoving] ) [self stopMovement];
+		usleep(100000);
+		[self moveBackwardStart];
+		usleep(400000);
+		[self moveBackwardStop];
+		// Jump n bump to the right
+		[self moveForwardStart];
+		usleep(100000);
+		[self moveUpStart];
+		usleep(100000);
+		[self moveUpStop];
+
+		if ( _unstickifyTry < 3 ) [bindingsController executeBindingForKey:BindingStrafeRight];
+		else [bindingsController executeBindingForKey:BindingStrafeLeft];
+
+		usleep(1000000);
+		[self moveForwardStop];
 		
 		log(LOG_MOVEMENT, @"Moving to an object + stuck and not flying?  shux");
 		[self resumeMovement];
 	}
-	
+
 	// can't reach a waypoint :(
-	else if ( self.destinationWaypoint ){
-		
+	else if ( self.destinationWaypoint ) {
+
 		// player is flying and is stuck :(  makes me sad, lets move up a bit
 		if ( [[playerData player] isFlyingMounted] && _unstickifyTry < 5 ) {
 			
 			log(LOG_MOVEMENT, @"Moving up since we're flying mounted!");
 			
+			if ( _unstickifyTry < 2 ) {
+				// Bump to the right
+				[bindingsController executeBindingForKey:BindingStrafeRight];
+			} else {
+				// Bump to the left
+				[bindingsController executeBindingForKey:BindingStrafeLeft];
+			}
+
 			// move up for 1 second!
 			[self moveUpStop];
 			[self moveUpStart];
+
+			if ( _unstickifyTry < 2 ) {
+				// Bump to the right
+				[bindingsController executeBindingForKey:BindingStrafeRight];
+			} else {
+				// Bump to the left
+				[bindingsController executeBindingForKey:BindingStrafeLeft];
+			}
+			
 			[self performSelector:@selector(moveUpStop) withObject:nil afterDelay:1.0f];
 			[self performSelector:@selector(resumeMovement) withObject:nil afterDelay:1.1f];
 			return;
@@ -1145,22 +1235,28 @@ typedef enum MovementState{
 			
 		}
 
+		// Stop n back up a lil
+		if ( [self isMoving] ) [self stopMovement];
+		usleep(100000);
+		[self moveBackwardStart];
+		usleep(400000);
+		[self moveBackwardStop];
+		// Jump n bump to the right
+		[self moveForwardStart];
+		usleep(100000);
+		[self moveUpStart];
+		usleep(100000);
+		[self moveUpStop];
+
+		if ( _unstickifyTry < 3 ) [bindingsController executeBindingForKey:BindingStrafeRight];
+			else [bindingsController executeBindingForKey:BindingStrafeLeft];
+
+		usleep(1000000);
+		[self moveForwardStop];
+
 		[self resumeMovement];
 	}
 
-}
-
-- (void)stepForward{
-	[self moveForwardStart];
-	usleep(80000);
-	[self moveForwardStop];
-}
-
-- (void)stepBackward{
-	[self moveBackwardStart];
-	// Backwards movement is much slower
-	usleep(300000);
-	[self moveBackwardStop];
 }
 
 - (BOOL)checkUnitOutOfRange: (Unit*)target {
@@ -1182,24 +1278,30 @@ typedef enum MovementState{
 	// If they're just a lil out of range lets inch up
 	if ( distanceToTarget < ([botController.theCombatProfile attackRange] + 5.0f) && ![self isMoving]) {
 		
-		log(LOG_COMBAT, @"Unit is still close, inching forward.");
+		log(LOG_COMBAT, @"Unit is still close, jumping forward.");
+
 		// Face the target
+		[self establishPosition];
 		[self turnTowardObject: target];
-		
-		usleep(10000);
+		usleep([controller refreshDelay]);
+
 		// Move, Jump, Stop
 		[self moveForwardStart];
-		usleep(10000);
-		[self jump];
-		usleep(500000);
+		usleep(100000);
+		[self moveUpStart];
+		usleep(100000);
+		[self moveUpStop];
 		[self moveForwardStop];
+		usleep([controller refreshDelay]*2);
 
 		[self turnTowardObject: target];
+
+		[self establishPosition];
 
 		// Now check again to see if they're in range
 		float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
 
-		if ( distanceToTarget > [botController.theCombatProfile attackRange]) {
+		if ( distanceToTarget > botController.theCombatProfile.attackRange ) {
 			log(LOG_COMBAT, @"Still out of range: %@, giving up.", target);
 			return NO;
 		} else {
@@ -1212,6 +1314,7 @@ typedef enum MovementState{
 	log(LOG_COMBAT, @"Target: %@ has gone out of range: %0.2f", target, distanceToTarget);
     return NO;
 }
+
 - (void)resetMovementState{
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
@@ -1504,29 +1607,6 @@ typedef enum MovementState{
     }
 }
 
-- (void)moveBackwardStart {
-    _isMovingFromKeyboard = YES;
-	
-    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
-    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_DownArrow, TRUE);
-    if(wKeyDown) {
-        CGEventPostToPSN(&wowPSN, wKeyDown);
-        CFRelease(wKeyDown);
-    }
-}
-
-- (void)moveUpStart {
-	_isMovingFromKeyboard = YES;
-	_movingUp = YES;
-
-    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
-    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_Space, TRUE);
-    if(wKeyDown) {
-        CGEventPostToPSN(&wowPSN, wKeyDown);
-        CFRelease(wKeyDown);
-    }
-}
-
 - (void)moveForwardStop {
 	_isMovingFromKeyboard = NO;
 	
@@ -1547,6 +1627,17 @@ typedef enum MovementState{
         CGEventPostToPSN(&wowPSN, wKeyUp);
         CGEventPostToPSN(&wowPSN, wKeyUp);
         CFRelease(wKeyUp);
+    }
+}
+
+- (void)moveBackwardStart {
+    _isMovingFromKeyboard = YES;
+	
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_DownArrow, TRUE);
+    if(wKeyDown) {
+        CGEventPostToPSN(&wowPSN, wKeyDown);
+        CFRelease(wKeyDown);
     }
 }
 
@@ -1571,10 +1662,22 @@ typedef enum MovementState{
     }
 }
 
-- (void)moveUpStop {
-	 _isMovingFromKeyboard = NO;
-	_movingUp = NO;
+- (void)moveUpStart {
+	_isMovingFromKeyboard = YES;
+	_movingUp = YES;
 
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_Space, TRUE);
+    if(wKeyDown) {
+        CGEventPostToPSN(&wowPSN, wKeyDown);
+        CFRelease(wKeyDown);
+    }
+}
+
+- (void)moveUpStop {
+	_isMovingFromKeyboard = NO;
+	_movingUp = NO;
+	
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
     
     // post another key down
@@ -1645,6 +1748,44 @@ typedef enum MovementState{
             CFRelease(keyStroke);
         }
     }
+}
+
+- (void)strafeRightStart {
+/*
+	_isMovingFromKeyboard = YES;
+	_movingUp = YES;
+
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_Space, TRUE);
+    if(wKeyDown) {
+        CGEventPostToPSN(&wowPSN, wKeyDown);
+        CFRelease(wKeyDown);
+    }
+*/
+}
+
+- (void)strafeRightStop {
+/*
+	_isMovingFromKeyboard = NO;
+	_movingUp = NO;
+	
+    ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
+    
+    // post another key down
+    CGEventRef wKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_Space, TRUE);
+    if(wKeyDown) {
+        CGEventPostToPSN(&wowPSN, wKeyDown);
+        CFRelease(wKeyDown);
+    }
+    
+    // then post key up, twice
+    CGEventRef wKeyUp = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)kVK_Space, FALSE);
+    if(wKeyUp) {
+        CGEventPostToPSN(&wowPSN, wKeyUp);
+        CGEventPostToPSN(&wowPSN, wKeyUp);
+        CFRelease(wKeyUp);
+    }
+*/
 }
 
 - (void)turnTowardObject:(WoWObject*)obj{
@@ -1862,14 +2003,14 @@ typedef enum MovementState{
 				if(theAngle < playerDirection)  theAngle        += (M_PI*2);
 				else                            playerDirection += (M_PI*2);
 			}
-			
+
 			// find the difference between the angles
 			float angleTo = fabsf(theAngle - playerDirection);
-			
+
 			// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 			if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
-//				[self establishPosition];
 				[self correctDirectionByTurning];
+				[self establishPlayerPosition];
 			}
 			
 			if ( printTurnInfo ) log(LOG_MOVEMENT, @"Doing sharp turn to %.2f", theAngle );

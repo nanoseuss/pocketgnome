@@ -33,7 +33,7 @@
 #define ReachedFollowUnitNotification      @"ReachedFollowUnitNotification"
 
 // How close do we need to be to a node before we dismount?
-#define DistanceUntilDismountByNode	1.0f
+#define DistanceUntilDismountByNode	1.5f
 
 // how close do we need to be to a school to fish?
 #define NODE_DISTANCE_UNTIL_FISH		17.0f
@@ -145,10 +145,6 @@ typedef enum MovementType {
 // turn toward the object
 - (void)turnTowardObject:(WoWObject*)obj;
 
-// Unbug a caster
-- (void)stepForward;
-- (void)stepBackward;
-
 // check unit for range adjustments
 - (BOOL)checkUnitOutOfRange: (Unit*)target;
 
@@ -172,6 +168,7 @@ typedef enum MovementType {
 
 // establish the player's position
 - (void)establishPlayerPosition;
+- (void)correctDirectionByTurning;
 
 // for now
 - (float)averageSpeed;
