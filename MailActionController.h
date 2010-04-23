@@ -27,7 +27,13 @@
 #import "ActionController.h"
 
 @interface MailActionController : ActionController {
-
+	IBOutlet NSPopUpButton	*profilesPopUp;
+	
+	NSArray *_profiles;
 }
+
++ (id)mailActionControllerWithProfiles: (NSArray*)profiles;
+
+@property (readwrite, copy) NSArray *profiles;
 
 @end

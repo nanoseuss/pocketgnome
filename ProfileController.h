@@ -19,23 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * $Id$
+ * $Id: ProfileController.h 315 2010-04-17 04:12:45Z Tanaris4 $
  *
  */
 
 #import <Cocoa/Cocoa.h>
-#import "ConditionController.h"
 
-@class BetterSegmentedControl;
+#define ProfilesLoaded @"ProfilesLoaded"
 
-
-@interface TargetClassConditionController : ConditionController {
-    IBOutlet BetterSegmentedControl *qualitySegment;
-	IBOutlet BetterSegmentedControl *comparatorSegment;
-    IBOutlet NSPopUpButton *valuePopUp;
-    
-    IBOutlet NSMenu *creatureTypeMenu;
-    IBOutlet NSMenu *playerClassMenu;
+@class FileManager;
+@class Profile;
+@interface ProfileController : NSObject {
+	IBOutlet FileManager *fileManager;
+	
+	NSMutableArray *_profiles;
 }
+
+- (NSArray*)profilesOfClass:(Class)objectClass;
+
+- (void)addProfile:(Profile*)profile;
+- (BOOL)deleteProfile:(Profile*)profile;
+
+- (Profile*)profileForUUID:(NSString*)uuid;
 
 @end

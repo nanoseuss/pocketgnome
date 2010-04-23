@@ -65,7 +65,7 @@
 
 - (void)blacklistObject:(WoWObject *)obj withReason:(int)reason{
 	
-	PGLog(@"[Blacklist] Obj %@ with retain count %d", obj, [obj retainCount]);
+	PGLog(@"[BLACKLISTING] Obj %@ with retain count %d with reason %d", obj, [obj retainCount], reason);
 	
 	NSNumber *guid = [NSNumber numberWithUnsignedLongLong:[obj cachedGUID]];
 	NSMutableArray *infractions = [_blacklist objectForKey:guid];
@@ -167,11 +167,11 @@
 	}
 	
 	// general blacklisting
-	if ( totalNone >= 3 ){
+	if ( totalNone >= 5 ){
 		PGLog(@"[Blacklist] Unit %@ blacklisted for total count!", obj);
 		return YES;
 	}
-	else if ( totalFailedToReach >= 3 ){
+	else if ( totalFailedToReach >= 4 ){
 		PGLog(@"[Blacklist] Object %@ blacklisted because we couldn't reach it!", obj);
 		return YES;
 	}

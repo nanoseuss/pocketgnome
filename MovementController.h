@@ -37,6 +37,8 @@
 @class StatisticsController;
 @class CombatProfileEditor;
 @class BindingsController;
+@class InventoryController;
+@class ProfileController;
 
 @class Route;
 @class Waypoint;
@@ -72,6 +74,8 @@ typedef enum MovementType {
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet BindingsController		*bindingsController;
+	IBOutlet InventoryController	*itemController;
+	IBOutlet ProfileController		*profileController;
 	
 	IBOutlet NSTextField	*logOutStuckAttemptsTextField;
 	IBOutlet NSPopUpButton	*movementTypePopUp;
@@ -106,11 +110,14 @@ typedef enum MovementType {
 	NSDate *_lastJumpTime;
 	
 	int _jumpCooldown;
+	int _jumpAttempt;
 	
 	BOOL _movingUp;
 	BOOL _afkPressForward;
 	BOOL _lastCorrectionForward;
 	BOOL _lastCorrectionLeft;
+	
+	Waypoint *_destinationWaypointUI;
 }
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
@@ -157,6 +164,9 @@ typedef enum MovementType {
 // reset our movement state
 - (void)resetMovementState;
 
+// remove routes
+- (void)resetRoutes;
+
 // just presses forward or backward
 - (void)antiAFK;
 
@@ -167,5 +177,8 @@ typedef enum MovementType {
 - (float)averageSpeed;
 - (float)averageDistance;
 - (BOOL)shouldJump;
+
+// UI
+- (void)moveToWaypointFromUI:(Waypoint*)wp;
 
 @end

@@ -32,6 +32,8 @@
 #import "CombatController.h"
 #import "SpellController.h"
 #import "InventoryController.h"
+#import "ProfileController.h"
+#import "FileManager.h"
 
 #import "WaypointActionEditor.h"
 
@@ -47,6 +49,9 @@
 #import "RouteVisualizationView.h"
 
 #import "BetterTableView.h"
+
+#import "MailActionProfile.h"
+#import "ProfileController.h"
 
 #import "PTHeader.h"
 #import <Growl/GrowlApplicationBridge.h>
@@ -86,6 +91,8 @@ enum AutomatorIntervalType {
 {
     self = [super init];
     if (self != nil) {
+		
+		_currentMailActionProfile = nil;
 
 		_selectedRows = nil;
 		_nameBeforeRename = nil;
@@ -143,6 +150,11 @@ enum AutomatorIntervalType {
                                                  selector: @selector(checkHotkeys:) 
                                                      name: DidLoadViewInMainWindowNotification 
                                                    object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self
+                                                 selector: @selector(profilesLoaded:) 
+                                                     name: ProfilesLoaded 
+                                                   object: nil];
+		
         [NSBundle loadNibNamed: @"Routes" owner: self];
     }
     return self;
@@ -230,6 +242,8 @@ enum AutomatorIntervalType {
 @synthesize validSelection;
 @synthesize validWaypointCount;
 @synthesize isAutomatorRunning;
+
+@synthesize currentMailActionProfile = _currentMailActionProfile;
 
 @synthesize validRouteSelection = _validRouteSelection;
 @synthesize validRouteSetSelected = _validRouteSetSelected;
@@ -442,6 +456,7 @@ enum AutomatorIntervalType {
 - (void)selectCurrentWaypoint:(int)index{
 	
 	if ( [[waypointTable window] isVisible] && [scrollWithRoute state] ) {
+		PGLog(@"about to select? %@ %@", self.currentRouteSet, botController.theRouteSet);
 		if ( self.currentRouteSet == botController.theRouteSet ){
 			[waypointTable selectRow:index byExtendingSelection:NO];
 			[waypointTable scrollRowToVisible:index];
@@ -572,7 +587,7 @@ enum AutomatorIntervalType {
 	
     Waypoint *waypoint = [[self currentRoute] waypointAtIndex: row];
     
-    [movementController moveToWaypoint: waypoint];
+    [movementController moveToWaypointFromUI: waypoint];
 }
 
 - (IBAction)testWaypointSequence: (id)sender {
@@ -1649,6 +1664,150 @@ enum AutomatorIntervalType {
 		else
 			[waypointSectionTitle setStringValue:@"No route set selected"];
 	}
+}
+
+#pragma mark Profiles
+
+- (void)validateProfileBindings{
+	
+	[self willChangeValueForKey: @"mailActionProfiles"];
+	NSArray *profiles = [self mailActionProfiles];
+	NSLog(@"we now have %d profile", [profiles count]);
+	if ( self.currentMailActionProfile == nil && [profiles count] > 0){
+		//[self willChangeValueForKey: @"currentMailActionProfile"];
+		self.currentMailActionProfile = [profiles objectAtIndex:0];
+		//[self didChangeValueForKey: @"currentMailActionProfile"];
+	}
+    [self didChangeValueForKey: @"mailActionProfiles"];
+}
+
+- (IBAction)createProfile: (id)sender{
+	
+	// make sure we have a valid name
+    NSString *name = [sender stringValue];
+    if( [name length] == 0) {
+        NSBeep();
+        return;
+    }
+    
+    // save this into our array
+	MailActionProfile *profile = [MailActionProfile mailActionProfileWithName: name];
+	self.currentMailActionProfile = profile;
+    [profileController addProfile: profile];
+
+	[self validateProfileBindings];
+    
+    [sender setStringValue: @""];
+}
+
+- (IBAction)loadProfile: (id)sender{
+	[self willChangeValueForKey: @"currentMailActionProfile"];
+    [self didChangeValueForKey: @"currentMailActionProfile"];
+}
+
+- (IBAction)removeProfile: (id)sender{
+	[profileController deleteProfile:self.currentMailActionProfile];
+	self.currentMailActionProfile = nil;
+	[self validateProfileBindings];
+}
+
+- (IBAction)renameProfile: (id)sender{
+	
+	_nameBeforeRename = [[[self currentMailActionProfile] name] copy];
+	
+	[NSApp beginSheet: renamePanel
+	   modalForWindow: [self.view window]
+		modalDelegate: nil
+	   didEndSelector: nil //@selector(sheetDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
+}
+
+- (IBAction)closeRename: (id)sender {
+    [[sender window] makeFirstResponder: [[sender window] contentView]];
+    [NSApp endSheet: renamePanel returnCode: 1];
+    [renamePanel orderOut: nil];
+    
+	// did the name change?
+	if ( ![_nameBeforeRename isEqualToString:[[self currentMailActionProfile] name]] ){
+		[self currentMailActionProfile].changed = YES;
+		[fileManager deleteObjectWithFilename:[NSString stringWithFormat:@"%@.%@", _nameBeforeRename, @"mailprofile"]];
+	}
+}
+
+- (IBAction)duplicateProfile: (id)sender{
+	id copy = [self.currentMailActionProfile copy];
+	[profileController addProfile: copy];
+	self.currentMailActionProfile = copy;
+	[self validateProfileBindings];
+}
+
+- (IBAction)saveProfile: (id)sender{
+	[fileManager saveObject:self.currentMailActionProfile];
+}
+	 
+- (IBAction)saveAllProfiles: (id)sender{
+	[fileManager saveObjects: [self mailActionProfiles]];
+}
+
+- (void)importProfileAtPath: (NSString*)path{
+    id importedProfile;
+    NS_DURING {
+        importedProfile = [NSKeyedUnarchiver unarchiveObjectWithFile: path];
+    } NS_HANDLER {
+        importedProfile = nil;
+    } NS_ENDHANDLER
+    
+    if ( importedProfile && [importedProfile isKindOfClass:[MailActionProfile class]] ) {
+		[profileController addProfile:importedProfile];
+		self.currentMailActionProfile = importedProfile;
+		[self validateProfileBindings];
+    }
+    
+    if ( !importedProfile ) {
+        NSRunAlertPanel(@"Profile is not valid", [NSString stringWithFormat: @"The file at %@ cannot be imported because it does not contain a valid profile.", path], @"Okay", NULL, NULL);
+    }
+}
+
+- (IBAction)importProfile: (id)sender{
+	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	
+	[openPanel setCanChooseDirectories: NO];
+	[openPanel setCanCreateDirectories: NO];
+	[openPanel setPrompt: @"Import Profile"];
+	[openPanel setCanChooseFiles: YES];
+    [openPanel setAllowsMultipleSelection: YES];
+	
+	int ret = [openPanel runModalForTypes: [NSArray arrayWithObjects: @"mailprofile", nil]];
+    
+	if ( ret == NSFileHandlingPanelOKButton ) {
+        for ( NSString *profilePath in [openPanel filenames] ) {
+            [self importProfileAtPath: profilePath];
+        }
+	}
+}
+
+- (IBAction)exportProfile: (id)sender{
+    if(![self currentMailActionProfile]) return;
+    
+    NSSavePanel *savePanel = [NSSavePanel savePanel];
+    [savePanel setCanCreateDirectories: YES];
+    [savePanel setTitle: @"Export Profile"];
+    [savePanel setMessage: @"Please choose a destination for this profile."];
+    int ret = [savePanel runModalForDirectory: @"~/Desktop" file: [[[self currentMailActionProfile] name] stringByAppendingPathExtension: @"mailprofile"]];
+    
+	if ( ret == NSFileHandlingPanelOKButton ) {
+        NSString *saveLocation = [savePanel filename];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject: [self currentMailActionProfile]];
+        [data writeToFile: saveLocation atomically: YES];
+    }
+}
+
+- (NSArray*)mailActionProfiles{
+	return [profileController profilesOfClass:[MailActionProfile class]];
+}
+
+- (void)profilesLoaded:(NSNotification *)aNotification {
+	[self validateProfileBindings];
 }
 
 #pragma mark SaveData

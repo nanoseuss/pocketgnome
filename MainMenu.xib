@@ -2,7 +2,7 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D573</string>
+		<string key="IBDocument.SystemVersion">10D2094</string>
 		<string key="IBDocument.InterfaceBuilderVersion">762</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">460.00</string>
@@ -12,7 +12,6 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4288"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1217,7 +1216,7 @@
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{640, 225}</string>
 				<object class="NSView" key="NSWindowView" id="94846559">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -2341,7 +2340,6 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{698, 401}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{640, 247}</string>
@@ -6110,9 +6108,6 @@
 			<object class="NSCustomObject" id="112137998">
 				<string key="NSClassName">BlacklistController</string>
 			</object>
-			<object class="NSCustomObject" id="531846807">
-				<string key="NSClassName">Player</string>
-			</object>
 			<object class="NSCustomObject" id="1040147007">
 				<string key="NSClassName">WaypointActionEditor</string>
 			</object>
@@ -6517,6 +6512,12 @@
 			</object>
 			<object class="NSCustomObject" id="899649312">
 				<string key="NSClassName">DatabaseManager</string>
+			</object>
+			<object class="NSCustomObject" id="788339735">
+				<string key="NSClassName">ProfileController</string>
+			</object>
+			<object class="NSCustomObject" id="654434854">
+				<string key="NSClassName">FileManager</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -10207,14 +10208,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">playersController</string>
-						<reference key="source" ref="531846807"/>
-						<reference key="destination" ref="771133398"/>
-					</object>
-					<int key="connectionID">4068</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">labelNoTarget</string>
 						<reference key="source" ref="226621460"/>
 						<reference key="destination" ref="325567069"/>
@@ -10836,6 +10829,110 @@
 						<reference key="destination" ref="963237447"/>
 					</object>
 					<int key="connectionID">4307</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">mobController</string>
+						<reference key="source" ref="1071325592"/>
+						<reference key="destination" ref="1065682814"/>
+					</object>
+					<int key="connectionID">4309</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">playersController</string>
+						<reference key="source" ref="1071325592"/>
+						<reference key="destination" ref="771133398"/>
+					</object>
+					<int key="connectionID">4310</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">itemController</string>
+						<reference key="source" ref="1071325592"/>
+						<reference key="destination" ref="201772977"/>
+					</object>
+					<int key="connectionID">4311</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nodeController</string>
+						<reference key="source" ref="1071325592"/>
+						<reference key="destination" ref="275065446"/>
+					</object>
+					<int key="connectionID">4312</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">profileController</string>
+						<reference key="source" ref="980198522"/>
+						<reference key="destination" ref="788339735"/>
+					</object>
+					<int key="connectionID">4315</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">fileManager</string>
+						<reference key="source" ref="788339735"/>
+						<reference key="destination" ref="654434854"/>
+					</object>
+					<int key="connectionID">4320</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">fileManager</string>
+						<reference key="source" ref="980198522"/>
+						<reference key="destination" ref="654434854"/>
+					</object>
+					<int key="connectionID">4321</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">profileController</string>
+						<reference key="source" ref="1040147007"/>
+						<reference key="destination" ref="788339735"/>
+					</object>
+					<int key="connectionID">4322</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">itemController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="201772977"/>
+					</object>
+					<int key="connectionID">4323</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">profileController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="788339735"/>
+					</object>
+					<int key="connectionID">4324</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">macroController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="305775892"/>
+					</object>
+					<int key="connectionID">4325</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">botController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="94147614"/>
+					</object>
+					<int key="connectionID">4326</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nodeController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="275065446"/>
+					</object>
+					<int key="connectionID">4327</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -14124,11 +14221,6 @@
 						<string key="objectName">Blacklist</string>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">4067</int>
-						<reference key="object" ref="531846807"/>
-						<reference key="parent" ref="0"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">4069</int>
 						<reference key="object" ref="325567069"/>
 						<object class="NSMutableArray" key="children">
@@ -14600,6 +14692,17 @@
 						<reference key="object" ref="899649312"/>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">ClientDB</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4314</int>
+						<reference key="object" ref="788339735"/>
+						<reference key="parent" ref="0"/>
+						<string key="objectName">Profiles</string>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4319</int>
+						<reference key="object" ref="654434854"/>
+						<reference key="parent" ref="0"/>
 					</object>
 				</object>
 			</object>
@@ -15823,7 +15926,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4307</int>
+			<int key="maxID">4327</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -16567,6 +16670,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">FileManager</string>
+					<string key="superclassName">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">FileManager.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">FishController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -16606,12 +16717,18 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>botController</string>
+							<string>macroController</string>
 							<string>memoryViewController</string>
+							<string>nodeController</string>
 							<string>objectsController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>BotController</string>
+							<string>MacroController</string>
 							<string>MemoryViewController</string>
+							<string>NodeController</string>
 							<string>ObjectsController</string>
 						</object>
 					</object>
@@ -16727,12 +16844,16 @@
 							<string>clearButton</string>
 							<string>controller</string>
 							<string>emulatePPCButton</string>
+							<string>itemController</string>
 							<string>maskTextField</string>
 							<string>memoryTable</string>
 							<string>memoryViewWindow</string>
+							<string>mobController</string>
+							<string>nodeController</string>
 							<string>offsetController</string>
 							<string>offsetScanPanel</string>
 							<string>operatorPopUpButton</string>
+							<string>playersController</string>
 							<string>pointerScanCancelButton</string>
 							<string>pointerScanFindButton</string>
 							<string>pointerScanNumTextField</string>
@@ -16758,12 +16879,16 @@
 							<string>NSButton</string>
 							<string>Controller</string>
 							<string>NSButton</string>
+							<string>InventoryController</string>
 							<string>NSTextField</string>
 							<string>id</string>
 							<string>id</string>
+							<string>MobController</string>
+							<string>NodeController</string>
 							<string>OffsetController</string>
 							<string>NSPanel</string>
 							<string>NSPopUpButton</string>
+							<string>PlayersController</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
@@ -16844,12 +16969,14 @@
 							<string>botController</string>
 							<string>combatProfileEditor</string>
 							<string>controller</string>
+							<string>itemController</string>
 							<string>logOutStuckAttemptsTextField</string>
 							<string>macroController</string>
 							<string>mobController</string>
 							<string>movementTypePopUp</string>
 							<string>offsetController</string>
 							<string>playerData</string>
+							<string>profileController</string>
 							<string>statisticsController</string>
 							<string>waypointController</string>
 						</object>
@@ -16861,12 +16988,14 @@
 							<string>BotController</string>
 							<string>CombatProfileEditor</string>
 							<string>Controller</string>
+							<string>InventoryController</string>
 							<string>NSTextField</string>
 							<string>MacroController</string>
 							<string>MobController</string>
 							<string>NSPopUpButton</string>
 							<string>OffsetController</string>
 							<string>PlayerDataController</string>
+							<string>ProfileController</string>
 							<string>StatisticsController</string>
 							<string>WaypointController</string>
 						</object>
@@ -17063,18 +17192,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">Player</string>
-					<string key="superclassName">Unit</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">playersController</string>
-						<string key="NS.object.0">PlayersController</string>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Player.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">PlayerDataController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -17235,6 +17352,18 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">ProcedureController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ProfileController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">fileManager</string>
+						<string key="NS.object.0">FileManager</string>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">ProfileController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -17513,14 +17642,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">Unit</string>
-					<string key="superclassName">WoWObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">Unit.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">WaypointActionEditor</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -17555,6 +17676,7 @@
 							<string>macroController</string>
 							<string>mobController</string>
 							<string>nodeController</string>
+							<string>profileController</string>
 							<string>spellController</string>
 							<string>waypointController</string>
 							<string>waypointDescription</string>
@@ -17572,6 +17694,7 @@
 							<string>MacroController</string>
 							<string>MobController</string>
 							<string>NodeController</string>
+							<string>ProfileController</string>
 							<string>SpellController</string>
 							<string>WaypointController</string>
 							<string>NSTextField</string>
@@ -17595,20 +17718,30 @@
 							<string>closeAutomatorPanel:</string>
 							<string>closeDescription:</string>
 							<string>closeHelpPanel:</string>
+							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closestWaypoint:</string>
+							<string>createProfile:</string>
 							<string>deleteRouteButton:</string>
 							<string>deleteRouteMenu:</string>
+							<string>duplicateProfile:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
+							<string>exportProfile:</string>
 							<string>exportRoute:</string>
+							<string>importProfile:</string>
 							<string>importRoute:</string>
+							<string>loadProfile:</string>
 							<string>loadRoute:</string>
 							<string>moveToWaypoint:</string>
 							<string>openAutomatorPanel:</string>
+							<string>removeProfile:</string>
 							<string>removeWaypoint:</string>
+							<string>renameProfile:</string>
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
+							<string>saveAllProfiles:</string>
+							<string>saveProfile:</string>
 							<string>setRouteType:</string>
 							<string>startStopAutomator:</string>
 							<string>startingRouteClicked:</string>
@@ -17619,6 +17752,16 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -17663,10 +17806,13 @@
 							<string>combatController</string>
 							<string>controller</string>
 							<string>descriptionPanel</string>
+							<string>fileManager</string>
 							<string>helpPanel</string>
 							<string>mobController</string>
 							<string>movementController</string>
 							<string>playerData</string>
+							<string>profileController</string>
+							<string>renamePanel</string>
 							<string>routeTypeSegment</string>
 							<string>routesTable</string>
 							<string>scrollWithRoute</string>
@@ -17695,13 +17841,16 @@
 							<string>NSButton</string>
 							<string>RouteVisualizationView</string>
 							<string>BotController</string>
-							<string>id</string>
+							<string>CombatController</string>
 							<string>Controller</string>
 							<string>NSPanel</string>
+							<string>FileManager</string>
 							<string>NSPanel</string>
-							<string>id</string>
-							<string>id</string>
+							<string>MobController</string>
+							<string>MovementController</string>
 							<string>PlayerDataController</string>
+							<string>ProfileController</string>
+							<string>NSPanel</string>
 							<string>id</string>
 							<string>NSOutlineView</string>
 							<string>NSButton</string>
@@ -17724,14 +17873,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">WaypointController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WoWObject</string>
-					<string key="superclassName">NSObject</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">WoWObject.h</string>
 					</object>
 				</object>
 			</object>

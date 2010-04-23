@@ -84,6 +84,10 @@
 		03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */; };
 		03A4047C0FE148C60087BC0D /* mbobbleicon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A4047B0FE148C60087BC0D /* mbobbleicon.png */; };
 		03A914E11173F0A400A32F6C /* DatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A914E01173F0A400A32F6C /* DatabaseManager.m */; };
+		03AA3A60117A11EE00037372 /* MailActionProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 03AA3A5F117A11EE00037372 /* MailActionProfile.m */; };
+		03AA3A78117A3D4A00037372 /* ProfileController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03AA3A77117A3D4A00037372 /* ProfileController.m */; };
+		03AA3AE1117A54B500037372 /* Profile.m in Sources */ = {isa = PBXBuildFile; fileRef = 03AA3AE0117A54B500037372 /* Profile.m */; };
+		03AA3B2A117A592700037372 /* FileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 03AA3B29117A592700037372 /* FileManager.m */; };
 		03B6D25E10F626C500EC6EFF /* RuneCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B6D25D10F626C500EC6EFF /* RuneCondition.xib */; };
 		03B6D26210F626EA00EC6EFF /* RuneConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B6D26110F626EA00EC6EFF /* RuneConditionController.m */; };
 		03BB221A112258A00048DE7B /* GateConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BB2219112258A00048DE7B /* GateConditionController.m */; };
@@ -514,6 +518,14 @@
 		03A4047B0FE148C60087BC0D /* mbobbleicon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mbobbleicon.png; sourceTree = "<group>"; };
 		03A914DF1173F0A400A32F6C /* DatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseManager.h; sourceTree = "<group>"; };
 		03A914E01173F0A400A32F6C /* DatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseManager.m; sourceTree = "<group>"; };
+		03AA3A5E117A11EE00037372 /* MailActionProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailActionProfile.h; sourceTree = "<group>"; };
+		03AA3A5F117A11EE00037372 /* MailActionProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MailActionProfile.m; sourceTree = "<group>"; };
+		03AA3A76117A3D4A00037372 /* ProfileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProfileController.h; sourceTree = "<group>"; };
+		03AA3A77117A3D4A00037372 /* ProfileController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProfileController.m; sourceTree = "<group>"; };
+		03AA3ADF117A54B500037372 /* Profile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Profile.h; sourceTree = "<group>"; };
+		03AA3AE0117A54B500037372 /* Profile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Profile.m; sourceTree = "<group>"; };
+		03AA3B28117A592700037372 /* FileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileManager.h; sourceTree = "<group>"; };
+		03AA3B29117A592700037372 /* FileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileManager.m; sourceTree = "<group>"; };
 		03B6D25D10F626C500EC6EFF /* RuneCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RuneCondition.xib; sourceTree = "<group>"; };
 		03B6D26010F626EA00EC6EFF /* RuneConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RuneConditionController.h; sourceTree = "<group>"; };
 		03B6D26110F626EA00EC6EFF /* RuneConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RuneConditionController.m; sourceTree = "<group>"; };
@@ -926,9 +938,6 @@
 			children = (
 				03BB227A1122F1160048DE7B /* StrandStatus.xib */,
 				03BB222911225E410048DE7B /* GateCondition.xib */,
-				0393F52F110A558F00296CF8 /* MailAction.xib */,
-				0393F52B110A558200296CF8 /* ReverseRouteAction.xib */,
-				0393F52C110A558200296CF8 /* VendorAction.xib */,
 				03168DD610FE90B600EF241B /* DurabilityCondition.xib */,
 				03168DD710FE90B600EF241B /* InventoryFreeCondition.xib */,
 				03168DD810FE90B600EF241B /* PlayerLevelCondition.xib */,
@@ -944,6 +953,9 @@
 		03168ED410FF705A00EF241B /* Waypoint Action NIBs */ = {
 			isa = PBXGroup;
 			children = (
+				0393F52F110A558F00296CF8 /* MailAction.xib */,
+				0393F52B110A558200296CF8 /* ReverseRouteAction.xib */,
+				0393F52C110A558200296CF8 /* VendorAction.xib */,
 				03A3211A114E9AC2000D23EE /* JumpToWaypointAction.xib */,
 				0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */,
 				03685FA61103D73B001CE552 /* QuestGrabAction.xib */,
@@ -964,6 +976,7 @@
 		03168EE110FF70E900EF241B /* WaypointActions */ = {
 			isa = PBXGroup;
 			children = (
+				03AA3A5C117A11DC00037372 /* Profiles */,
 				7D370B0B0E7350DD002FE3A4 /* Action.h */,
 				7D370B0C0E7350DD002FE3A4 /* Action.m */,
 				03168EE210FF713000EF241B /* ActionController.h */,
@@ -1049,6 +1062,21 @@
 				039405141163C4FE00D98403 /* WoWDb */,
 			);
 			name = Reversed;
+			sourceTree = "<group>";
+		};
+		03AA3A5C117A11DC00037372 /* Profiles */ = {
+			isa = PBXGroup;
+			children = (
+				03AA3ADF117A54B500037372 /* Profile.h */,
+				03AA3AE0117A54B500037372 /* Profile.m */,
+				03AA3A5E117A11EE00037372 /* MailActionProfile.h */,
+				03AA3A5F117A11EE00037372 /* MailActionProfile.m */,
+				03AA3A76117A3D4A00037372 /* ProfileController.h */,
+				03AA3A77117A3D4A00037372 /* ProfileController.m */,
+				03AA3B28117A592700037372 /* FileManager.h */,
+				03AA3B29117A592700037372 /* FileManager.m */,
+			);
+			name = Profiles;
 			sourceTree = "<group>";
 		};
 		03CFC4D6116BF6FF0030F11E /* Questing */ = {
@@ -2173,6 +2201,10 @@
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
 				03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */,
 				03A914E11173F0A400A32F6C /* DatabaseManager.m in Sources */,
+				03AA3A60117A11EE00037372 /* MailActionProfile.m in Sources */,
+				03AA3A78117A3D4A00037372 /* ProfileController.m in Sources */,
+				03AA3AE1117A54B500037372 /* Profile.m in Sources */,
+				03AA3B2A117A592700037372 /* FileManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

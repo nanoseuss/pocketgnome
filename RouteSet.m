@@ -65,7 +65,6 @@
 {
 	self = [super initWithCoder:decoder];
 	if ( self ) {
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
 		self.parent = [decoder decodeObjectForKey: @"Parent"];
         
@@ -83,7 +82,6 @@
 {
 	[super encodeWithCoder:coder];
 	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 	[coder encodeObject: self.parent forKey: @"Parent"];
 }
@@ -114,7 +112,6 @@
 }
 
 @synthesize parent = _parent;
-@synthesize name = _name;
 @synthesize routes = _routes;
 
 - (void)setRoutes: (NSDictionary*)routes {

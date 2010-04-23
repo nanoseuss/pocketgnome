@@ -62,7 +62,7 @@
     Condition *condition = [Condition conditionWithVariety: VarietyTargetClass 
                                                       unit: UnitTarget
                                                    quality: [qualitySegment selectedTag]
-                                                comparator: CompareIs
+                                                comparator: [comparatorSegment selectedTag]
                                                      state: [[valuePopUp selectedItem] tag]
                                                       type: TypeNone
                                                      value: nil];
@@ -78,7 +78,8 @@
     
     [qualitySegment selectSegmentWithTag: [condition quality]];
     [valuePopUp setMenu: creatureTypeMenu];
-
+	[comparatorSegment selectSegmentWithTag: [condition comparator]];
+	
     [self validateState: nil];
     
     if(![valuePopUp selectItemWithTag: [condition state]]) {

@@ -28,11 +28,17 @@
 
 @interface SaveDataObject : NSObject <NSCoding, NSCopying> {
 	NSString *_UUID;		// unique ID
+	NSString *_name;
+	
+	NSArray *_observers;
 	
 	BOOL _changed;			// use so we know if we should re-save or not
 }
 
 @property (readwrite, assign) BOOL changed;
 @property (readonly, retain) NSString *UUID;
+@property (readwrite, copy) NSString *name;
+
+- (void)updateUUUID;
 
 @end

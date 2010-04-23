@@ -75,6 +75,7 @@
 - (kern_return_t)readAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
 
 - (int)readInt: (UInt32)address withSize:(size_t)size;
+- (long long)readLongLong: (UInt32)address;
 - (NSNumber*)readNumber: (UInt32)address withSize:(size_t)size;
 
 // must be null terminated!

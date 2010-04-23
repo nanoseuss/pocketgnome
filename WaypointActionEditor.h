@@ -34,6 +34,7 @@
 @class CombatProfileEditor;
 @class MobController;
 @class NodeController;
+@class ProfileController;
 
 @interface WaypointActionEditor : NSObject {
 
@@ -44,6 +45,7 @@
 	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet MobController			*mobController;
 	IBOutlet NodeController			*nodeController;
+	IBOutlet ProfileController		*profileController;
 	
 	IBOutlet NSPanel			*editorPanel;
 	IBOutlet NSPopUpButton		*addConditionDropDown;

@@ -25,6 +25,7 @@
 
 #import "MailActionController.h"
 #import "ActionController.h"
+#import "SaveDataObject.h"
 
 @implementation MailActionController : ActionController
 
@@ -34,7 +35,7 @@
     if (self != nil) {
         if(![NSBundle loadNibNamed: @"MailAction" owner: self]) {
             PGLog(@"Error loading MailAction.nib.");
-            
+            _profiles = nil;
             [self release];
             self = nil;
         }
@@ -42,17 +43,67 @@
     return self;
 }
 
+- (id)initWithProfiles: (NSArray*)profiles{
+    self = [self init];
+    if (self != nil) {
+        self.profiles = profiles;
+		
+		if ( [profiles count] == 0 ){
+			[self removeBindings];
+			
+			NSMenu *menu = [[[NSMenu alloc] initWithTitle: @"No Profiles"] autorelease];
+			NSMenuItem *item = [[[NSMenuItem alloc] initWithTitle: @"Create a mail action on the routes tab first!" action: nil keyEquivalent: @""] autorelease];
+			[item setIndentationLevel: 1];
+			[item setTag:0];
+			[menu addItem: item];
+			
+			[profilesPopUp setMenu:menu];	
+		}
+    }
+    return self;
+}
+
++ (id)mailActionControllerWithProfiles: (NSArray*)profiles{
+	return [[[MailActionController alloc] initWithProfiles: profiles] autorelease];
+}
+
+// if we don't remove bindings, it won't leave!
+- (void)removeBindings{
+	
+	// no idea why we have to do this, but yea, removing anyways
+	NSArray *bindings = [profilesPopUp exposedBindings];
+	for ( NSString *binding in bindings ){
+		[profilesPopUp unbind: binding];
+	}
+}
+
+@synthesize profiles = _profiles;
+
 - (IBAction)validateState: (id)sender {
 	
+}
+
+- (void)setStateFromAction: (Action*)action{
+	
+	for ( NSMenuItem *item in [profilesPopUp itemArray] ){
+		if ( [[(SaveDataObject*)[item representedObject] UUID] isEqualToString:[action value]] ){
+			[profilesPopUp selectItem:item];
+			break;
+		}
+	}
+	
+	[super setStateFromAction:action];
 }
 
 - (Action*)action {
     [self validateState: nil];
     
     Action *action = [Action actionWithType:ActionType_Mail value:nil];
+	id value = [(SaveDataObject*)[[profilesPopUp selectedItem] representedObject] UUID];
 	
 	[action setEnabled: self.enabled];
-    
+    [action setValue: value];
+
     return action;
 }
 

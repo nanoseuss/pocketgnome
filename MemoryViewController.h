@@ -28,12 +28,22 @@
 
 @class Controller;
 @class OffsetController;
+@class InventoryController;
+@class MobController;
+@class PlayersController;
+@class NodeController;
 
 @interface MemoryViewController : NSView {
     IBOutlet Controller *controller;
 	IBOutlet OffsetController *offsetController;
     IBOutlet id memoryTable;
     IBOutlet id memoryViewWindow;
+	IBOutlet InventoryController *itemController;
+	IBOutlet MobController *mobController;
+	IBOutlet PlayersController *playersController;
+	IBOutlet NodeController *nodeController;
+	
+	
     IBOutlet NSView *view;
     NSNumber *_currentAddress;
     NSTimer *_refreshTimer;

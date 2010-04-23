@@ -34,14 +34,12 @@
 #define PatrollingProcedure @"PatrollingProcedure"
 
 @interface Behavior : SaveDataObject {
-    NSString *_name;
     BOOL _meleeCombat, _usePet;
     NSMutableDictionary *_procedures;
 }
 
 + (id)behaviorWithName: (NSString*)name;
 
-@property (readwrite, copy) NSString *name;
 @property (readonly, retain) NSDictionary *procedures;
 @property BOOL meleeCombat;
 @property BOOL usePet;

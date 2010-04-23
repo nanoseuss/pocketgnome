@@ -182,8 +182,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // target is out of range
 - (void)outOfRange: (NSNotification*)notification {
 	
+	GUID guid = [playerData targetID];
+	
 	// blacklist?
-	if ( _castingUnit && [playerData targetID] == [_castingUnit GUID] ){
+	if ( _castingUnit && guid == [_castingUnit GUID] ){
+		
+		Unit *unit = [mobController mobWithGUID:guid];
+		if ( !unit ){
+			unit = (Unit*)[playersController playerWithGUID:guid];
+		}
+		
+		if ( [movementController moveToObject] == unit ){
+			PGLog(@"[Combat] Moving to unit, NOT blacklisting");
+			return;
+		}
 		
 		[blacklistController blacklistObject: _castingUnit withReason:Reason_NotInLoS];
 		
@@ -457,13 +469,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( [playerPosition distanceToPosition: [_castingUnit position]] > 5.0f ){
 				PGLog(@"[Combat] Moving to %@", _castingUnit);
 				
-				[movementController moveToObject:_castingUnit];	//andNotify: NO
+				[movementController moveToObject:_castingUnit];
 			}
 		}
 	}
 	
 	// tell/remind bot controller to attack
-	//[botController attackUnit: _castingUnit];
 	[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: 0.25];
 }
 
@@ -483,7 +494,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	self.addUnit = nil;
 	[_friendUnit release];	_friendUnit =  nil;
 	
-	// remove blacklisted units (TO DO: we should only remove those of type Unit)
+	// remove blacklisted units
 	[blacklistController removeAllUnits];
 }
 
@@ -650,11 +661,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (Unit*)findUnitWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat{
 	
 	// flying check?
-	if ( [botController.theCombatProfile ignoreFlying] ){
-		// are we flying?
-		if ( ![[playerData player] isOnGround] ){
-			return nil;
-		}
+	if ( [botController.theCombatProfile ignoreFlying] && [playerData isAirMounted] ){
+		return nil;
 	}
 	
 	// no combat or healing?
@@ -673,7 +681,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			// begin weight calculation
 			int weight = [self weight:unit PlayerPosition:playerPosition];
 
-			//PGLog(@"[Combat] Valid target %@ found with weight %d", unit, weight);
+			PGLog(@"[Combat] Valid target %@ found with weight %d", unit, weight);
 			
 			// best weight
 			if ( weight > highestWeight ){

@@ -19,23 +19,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * $Id$
+ * $Id: FileManager.h 315 2010-04-17 04:12:45Z Tanaris4 $
  *
  */
 
+// this is my version "2" of the file manager, realizing the original SaveData didn't have enough flexibility for my liking!
+//	What assumptions do we need? Objects that are passed MUST have the following:
+//		- a property called name
+//		- a string called objectExtension
+
 #import <Cocoa/Cocoa.h>
-#import "ConditionController.h"
 
-@class BetterSegmentedControl;
+@class SaveDataObject;
 
+@interface FileManager : NSObject {
 
-@interface TargetClassConditionController : ConditionController {
-    IBOutlet BetterSegmentedControl *qualitySegment;
-	IBOutlet BetterSegmentedControl *comparatorSegment;
-    IBOutlet NSPopUpButton *valuePopUp;
-    
-    IBOutlet NSMenu *creatureTypeMenu;
-    IBOutlet NSMenu *playerClassMenu;
 }
+
+// we shouldn't really use this
++ (FileManager*)sharedFileManager;
+
+// save all objects in the array
+- (BOOL)saveObjects:(NSArray*)objects;
+
+// save one object
+- (BOOL)saveObject:(SaveDataObject*)obj;
+
+// get all objects with the extension
+- (NSArray*)getObjectsWithClass:(Class)class;
+
+// delete the object with this file name
+- (BOOL)deleteObjectWithFilename:(NSString*)filename;
+
+// delete an object
+- (BOOL)deleteObject:(SaveDataObject*)obj;
+
+// gets the filename (not path) for an object
+- (NSString*)filenameForObject:(SaveDataObject*)obj;
+
+// old method
+- (NSArray*)dataForKey: (NSString*)key withClass:(Class)class;
 
 @end

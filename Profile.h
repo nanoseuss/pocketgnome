@@ -19,23 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * $Id$
+ * $Id: Profile.h 315 2010-04-17 04:12:45Z Tanaris4 $
  *
  */
 
 #import <Cocoa/Cocoa.h>
-#import "ConditionController.h"
+#import "SaveDataObject.h"
 
-@class BetterSegmentedControl;
+@interface Profile : SaveDataObject {
 
-
-@interface TargetClassConditionController : ConditionController {
-    IBOutlet BetterSegmentedControl *qualitySegment;
-	IBOutlet BetterSegmentedControl *comparatorSegment;
-    IBOutlet NSPopUpButton *valuePopUp;
-    
-    IBOutlet NSMenu *creatureTypeMenu;
-    IBOutlet NSMenu *playerClassMenu;
 }
+
++ (id)profileWithName: (NSString*)name;
 
 @end

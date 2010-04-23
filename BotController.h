@@ -178,9 +178,6 @@
 	float _nodeIgnoreHostileDistance;
 	float _nodeIgnoreMobDistance;
 	
-	// new flying shit
-	int _jumpAttempt;
-	
     // pvp shit
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;

@@ -33,25 +33,36 @@
 @class Controller;
 @class PlayerDataController;
 @class BotController;
+@class ProfileController;
+@class FileManager;
+@class MobController;
+@class CombatController;
+@class MovementController;
 
 @class BetterTableView;
 @class PTHotKey;
 @class SRRecorderControl;
+
+@class MailActionProfile;
 
 @class BetterSegmentedControl;
 @class RouteVisualizationView;
 
 @interface WaypointController : SaveData {
 
-    IBOutlet Controller *controller;
-    IBOutlet PlayerDataController *playerData;
-    IBOutlet id mobController;
-    IBOutlet BotController *botController;
-    IBOutlet id movementController;
-    IBOutlet id combatController;
+    IBOutlet Controller				*controller;
+    IBOutlet PlayerDataController	*playerData;
+    IBOutlet MobController			*mobController;
+    IBOutlet BotController			*botController;
+    IBOutlet MovementController		*movementController;
+    IBOutlet CombatController		*combatController;
+	IBOutlet ProfileController		*profileController;
+	IBOutlet FileManager			*fileManager;
 
     IBOutlet BetterTableView *waypointTable;
 	IBOutlet NSOutlineView *routesTable;
+	
+	IBOutlet NSPanel *renamePanel;
     
     IBOutlet NSView *view;
     IBOutlet RouteVisualizationView *visualizeView;
@@ -109,6 +120,9 @@
 	// for teh n00bs
 	BOOL _firstTimeEverOnTheNewRouteCollections;
 	IBOutlet NSPanel *helpPanel;
+	
+	// new profile stuff
+	MailActionProfile *_currentMailActionProfile;
 }
 
 - (void)saveRoutes;
@@ -126,6 +140,8 @@
 @property (readwrite, retain) RouteSet *currentRouteSet;
 @property (readonly, retain) RouteCollection *currentRouteCollection;
 @property (readwrite, retain) NSString *descriptionMultiRows;
+
+@property (readwrite, retain) MailActionProfile *currentMailActionProfile;
 
 @property BOOL validRouteSelection;
 @property BOOL validRouteSetSelected;
@@ -178,6 +194,20 @@
 - (IBAction)renameRoute: (id)sender;
 - (IBAction)duplicateRoute: (id)sender;
 
+// Profile stuff
+- (IBAction)createProfile: (id)sender;
+- (IBAction)loadProfile: (id)sender;
+- (IBAction)removeProfile: (id)sender;
+- (IBAction)renameProfile: (id)sender;
+- (IBAction)duplicateProfile: (id)sender;
+- (IBAction)closeRename: (id)sender;
+- (IBAction)saveProfile: (id)sender;
+- (IBAction)saveAllProfiles: (id)sender;
+- (IBAction)importProfile: (id)sender;
+- (IBAction)exportProfile: (id)sender;
+- (void)importProfileAtPath: (NSString*)path;
+
+- (NSArray*)mailActionProfiles;
 // TO DO: add import/export/show/duplicate
 
 @end

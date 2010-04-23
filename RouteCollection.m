@@ -64,7 +64,6 @@
 - (id)initWithCoder:(NSCoder *)decoder{
 	self = [super initWithCoder:decoder];
 	if ( self ) {
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSArray array];
 		self.startUUID = [decoder decodeObjectForKey: @"StartUUID"];
 		self.startRouteOnDeath = [[decoder decodeObjectForKey: @"StartRouteOnDeath"] boolValue];
@@ -75,7 +74,6 @@
 -(void)encodeWithCoder:(NSCoder *)coder{
 	[super encodeWithCoder:coder];
 	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 	[coder encodeObject: self.startUUID forKey: @"StartUUID"];
 	[coder encodeObject: [NSNumber numberWithBool:self.startRouteOnDeath] forKey: @"StartRouteOnDeath"];
@@ -105,7 +103,6 @@
 }
 
 @synthesize routes = _routes;
-@synthesize name = _name;
 @synthesize startUUID = _startUUID;
 @synthesize startRouteOnDeath = _startRouteOnDeath;
 

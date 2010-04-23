@@ -27,6 +27,13 @@
 #import "Controller.h"
 #import "OffsetController.h"
 
+#import "InventoryController.h"
+#import "MobController.h"
+#import "NodeController.h"
+#import "PlayersController.h"
+
+#import "Item.h"
+
 #import "WoWObject.h"
 
 typedef enum ViewTypes {
@@ -443,6 +450,8 @@ typedef enum ViewTypes {
 		
 		uint32_t addr = startAddress + rowIndex*size;
 		
+		NSString *value = [self formatNumber:nil WithAddress:addr DisplayFormat:[self displayFormat]];
+		
 		if( [[aTableColumn identifier] isEqualToString: @"Address"] ) {
 			return [NSString stringWithFormat: @"0x%X", addr];
 		}
@@ -455,7 +464,7 @@ typedef enum ViewTypes {
 		}
 		
 		if( [[aTableColumn identifier] isEqualToString: @"Value"] ) {
-			return [self formatNumber:nil WithAddress:addr DisplayFormat:[self displayFormat]];
+			return value;
 		}
 		
 		if( [[aTableColumn identifier] isEqualToString: @"Info"] ) {
@@ -482,12 +491,31 @@ typedef enum ViewTypes {
 				}
 			}
 			
-			NSString *value = [self formatNumber:nil WithAddress:addr DisplayFormat:0];
-			NSNumber *num = [NSNumber numberWithInt:[value integerValue]];
+			NSNumber *num = [NSNumber numberWithInt:[[self formatNumber:nil WithAddress:addr DisplayFormat:0] integerValue]];
 			NSArray *objectAddresses = [controller allObjectAddresses];
 			
 			if ( [objectAddresses containsObject:num] ){
 				return @"OBJECT POINTER";
+			}
+			
+			// 64-bit
+			if ( [self displayFormat] == 2 ){
+				Item *item = [itemController itemForGUID:[value longLongValue]];
+				if ( item ){
+					return [NSString stringWithFormat:@"Item: %@", [item name]];				
+				}
+				Mob *mob = [mobController mobWithGUID:[value longLongValue]];
+				if ( mob ){
+					return [NSString stringWithFormat:@"Mob: %@", [mob name]];				
+				}
+				Player *player = [playersController playerWithGUID:[value longLongValue]];
+				if ( player ){
+					return [NSString stringWithFormat:@"Player: %@", [playersController playerNameWithGUID:[value longLongValue]]];				
+				}
+				/*Node *node = [nodeController nodeWithGUID:[value longLongValue]];
+				if ( node ){
+					return [NSString stringWithFormat:@"Mob: %@", [node name]];				
+				}*/
 			}
 			
 			id info = nil;

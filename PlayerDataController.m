@@ -550,12 +550,25 @@ static PlayerDataController* sharedController = nil;
 
 - (BOOL)isOnGround {
 	
+	UInt32 movementFlags = [self movementFlags];
+	
 	// Player is in the air!
-	if ( ( [self movementFlags] & 0x3000000) == 0x3000000 || ( [self movementFlags] & 0x1000) == 0x1000 ){
+	if ( ( movementFlags & 0x3000000) == 0x3000000 || ( movementFlags & 0x1000) == 0x1000 ){
 		return NO;
 	}
 	
 	return YES;
+}
+
+- (BOOL)isAirMounted{
+	
+	UInt32 movementFlags = [self movementFlags];
+	
+	if ( ( movementFlags & MovementFlags_AirMounted) == MovementFlags_AirMounted || ( movementFlags & MovementFlags_AirMountedInAir) == MovementFlags_AirMountedInAir ){
+		return YES;
+	}
+	
+	return NO;
 }
 
 // 1 write

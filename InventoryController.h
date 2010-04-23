@@ -27,14 +27,23 @@
 #import "ObjectController.h"
 
 @class Item;
+@class MailActionProfile;
 
 @class PlayerDataController;
 @class MemoryViewController;
 @class ObjectsController;
+@class BotController;
+@class MacroController;
+@class NodeController;
 
 @interface InventoryController : ObjectController {
-    IBOutlet MemoryViewController *memoryViewController;
-	IBOutlet ObjectsController	*objectsController;
+    IBOutlet MemoryViewController	*memoryViewController;
+	IBOutlet ObjectsController		*objectsController;
+	
+	// only used for mailing
+	IBOutlet BotController			*botController;
+	IBOutlet MacroController		*macroController;
+	IBOutlet NodeController			*nodeController;
 	
 	int _updateDurabilityCounter;
 
@@ -76,6 +85,9 @@
 
 // Total number of marks (from all BG)
 - (int)pvpMarks;
+
+- (Item*)getBagItem: (int)bag withSlot:(int)slot;
+- (int)mailItemsWithProfile:(MailActionProfile*)profile;
 
 //- (NSMutableArray*)itemsInBags;
 @end

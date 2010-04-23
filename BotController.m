@@ -266,7 +266,6 @@
 		_zoneBeforeHearth = -1;
 		_attackingInStrand = NO;
 		_strandDelay = NO;
-		_jumpAttempt = 0;
 		_includeFriendly = NO;
 		_lastSpellCast = 0;
 		_movingTowardMobCount = 0;
@@ -918,11 +917,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
                 if(test) PGLog(@"Doing Target Class condition...");
                 
                 if([condition quality] == QualityNPC) {
-                    conditionEval = ([target creatureType] == [condition state]);
+					
+					if ( [condition comparator] == CompareIs ){
+						conditionEval = ([target creatureType] == [condition state]);
+					}
+					else{
+						conditionEval = ([target creatureType] != [condition state]);
+					}
                     if(test) PGLog(@" --> Unit Creature Type %d == %d? %@", [condition state], [target creatureType], YES_NO(conditionEval));
                 }
                 if([condition quality] == QualityPlayer) {
-                    conditionEval = ([target unitClass] == [condition state]);
+					if ( [condition comparator] == CompareIs ){
+						conditionEval = ([target unitClass] == [condition state]);
+					}
+					else{
+						conditionEval = ([target unitClass] != [condition state]);
+					}
                     if(test) PGLog(@" --> Unit Class %d == %d? %@", [condition state], [target unitClass], YES_NO(conditionEval));
                 }
                 break;
@@ -1527,7 +1537,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
 				if ( tries ){
 					if ( [tries intValue] > 3 ){
-						PGLog(@"[Procedure^^^^^^^^^^^^^] Rule %d failed after %@ attempts!", i, tries);
+						//PGLog(@"[Procedure^^^^^^^^^^^^^] Rule %d failed after %@ attempts!", i, tries);
 						continue;
 					}
 				}
@@ -1710,7 +1720,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 						
 						NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target GUID]];
-						PGLog(@"[Procedure^^^^^^^^^^^^^] Looking for key %@", triedRuleKey);
+						//PGLog(@"[Procedure^^^^^^^^^^^^^] Looking for key %@", triedRuleKey);
 						
 						NSNumber *tries = [rulesTried objectForKey:triedRuleKey];
 						
@@ -1722,7 +1732,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							tries = [NSNumber numberWithInt:1];
 						}
 						
-						PGLog(@"[Procedure^^^^^^^^^^^^^] Setting tried %@ with value %@", triedRuleKey, tries);
+						//PGLog(@"[Procedure^^^^^^^^^^^^^] Setting tried %@ with value %@", triedRuleKey, tries);
 
 						[rulesTried setObject:tries forKey:triedRuleKey];
 					}
@@ -2666,19 +2676,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
         return NO;
     }
 	
-	// Is the player air mounted, and on the ground?  Me no likely - lets jump!
-	UInt32 movementFlags = [playerController movementFlags];
-	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
-		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
-			usleep(200000);
-			PGLog(@"[Bot] Player on ground, jumping!");
-			[movementController jump];
-			usleep(10000);
-		}
-		
-		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
-	}
-	
 	// party options
 	// auto-queue button name: LFDDungeonReadyDialogueEnterDungeonButton
 	if ( theCombatProfile.partyEnabled && theCombatProfile.followUnit && theCombatProfile.followUnitGUID > 0x0 ){
@@ -2874,6 +2871,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
     }
+	
+	PGLog(@"UNIT TO ACT ON: %@", unitToActOn );
     
     // otherwise, attack the unit
     if ( [unitToActOn isValid] && (unitToActOnDist < INFINITY) && [self combatProcedureValidForUnit:unitToActOn] ) {
@@ -5124,8 +5123,10 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
 	if ( _pvpIsInBG && !isPlayerInBG ){
 		_pvpIsInBG = NO;
 
-		PGLog( @"[PvP] Player has left the battleground...");
+		// when we get here, the player has LEFT the battleground, and is now in a new zone + chilling, waiting ;)
+		//	this would be an ideal place to start our bot up again once we enable those features ;)
 		
+		PGLog( @"[PvP] Player has left the battleground...");
 		// technically we shouldn't have to do this, but just in case (it's done by the offset check)
 		[self stopBotActions];
 		
@@ -5249,7 +5250,22 @@ SET accountList "!ACCOUNT1|ACCOUNT2|"
     self.pvpAntiAFKCounter = 0;
 	
 	// now leave
-	[macroController useMacroOrSendCmd:@"LeaveBattlefield"];	
+	[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
+	
+	// reset our movement routes!
+	[movementController resetRoutes];
+	
+	// so we already stopped the bot at this point, but should we "start" it again?
+	BOOL useRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue];
+	if ( useRoute ){
+		self.theRouteCollection = [[routePopup selectedItem] representedObject];
+        self.theRouteSet = [_theRouteCollection startingRoute];
+	}
+	// no route! disable!
+	else{
+		self.theRouteCollection = nil;
+        self.theRouteSet = nil;
+	}
 }
 
 // this will keep us from going afk
@@ -5382,11 +5398,29 @@ typedef struct SpelldbcFake{
 	UInt32 addresses[0xAA];
 }SpelldbcFake;
 
-
 - (IBAction)test: (id)sender{
+	
+	[self getBagItem:0 withSlot:0];
+	return;
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
+	
+	// Loop through backpack first!
+	
+	
+	//itemGUIDinSlot
+	
+	
+	// time to test mailing shit!!!
+	// bag IDs are at: 0xD92660
+	
+	// mfg the list of the items IN the bag (GUIDs) are at 0x870 from the base address, total items in the bag is at 0x868
+	
+	
+	
+	
+	return;
 	UInt32 itemID = 2136;		// item was 2136
 	SpelldbcFake t;
 	[databaseManager getObjectForRow:itemID withTable:ItemRandomSuffix withStruct:&t withStructSize:sizeof(t)];

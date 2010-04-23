@@ -45,6 +45,10 @@
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
 #import "BindingsController.h"
+#import "InventoryController.h"
+#import "ProfileController.h"
+#import "Profile.h"
+#import "MailActionProfile.h"
 
 #import "Action.h"
 #import "Rule.h"
@@ -77,6 +81,8 @@
 @interface MovementController (Internal)
 
 - (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;
+
+- (void)moveToWaypoint: (Waypoint*)waypoint;
 
 - (void)turnLeft: (BOOL)go;
 - (void)turnRight: (BOOL)go;
@@ -242,7 +248,7 @@ typedef enum MovementState{
 	// shoot to go on top of the node a bit (could also check if they are flying mounted)
 	if ( [(Unit*)object isKindOfClass: [Node class]] && ![playerData isOnGround] ) {
 		Position *position = [object position];
-		[position setZPosition:[position zPosition] + 3.1f];
+		[position setZPosition:[position zPosition] + 4.0f];
 		
 		pos = position;
 	}
@@ -370,7 +376,7 @@ typedef enum MovementState{
 		// previous waypoint to move to
 		if ( self.destinationWaypoint ){
 			PGLog(@"[Move] Moving to WP: %@", self.destinationWaypoint);
-			[self moveToPosition:[self.destinationWaypoint position]];
+			[self moveToWaypoint:self.destinationWaypoint];
 		}
 		// find the closest waypoint
 		else{
@@ -417,9 +423,7 @@ typedef enum MovementState{
 			// we have a waypoint to move to!
 			if ( newWP ){
 				PGLog(@"[Move] Found waypoint %@ to move to", newWP);
-				self.destinationWaypoint = newWP;
-				
-				[self moveToPosition:[newWP position]];
+				[self moveToWaypoint:newWP];
 			}
 			else{
 				PGLog(@"[Move] Error, unable to find a position to resume movement to!");
@@ -439,10 +443,18 @@ typedef enum MovementState{
 
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 	
+	int index = [[_currentRoute waypoints] indexOfObject: waypoint];
+	[waypointController selectCurrentWaypoint:index];
+	
 	PGLog(@"[Move] Moving to a waypoint: %@", waypoint);
 	self.destinationWaypoint = waypoint;
 	
 	[self moveToPosition:[waypoint position]];
+}
+
+- (void)moveToWaypointFromUI:(Waypoint*)wp{
+	_destinationWaypointUI = [wp retain];
+	[self moveToPosition:[wp position]];
 }
 
 - (void)moveToNextWaypoint{
@@ -501,10 +513,8 @@ typedef enum MovementState{
 		}
 		
 		// increment something here to keep track of how many waypoints we've moved to?
-		
-		self.destinationWaypoint = [waypoints objectAtIndex:index];
-		PGLog(@"[Move] Moving to next waypoint of %@ with index %d", self.destinationWaypoint, index);
-		[self moveToPosition:[self.destinationWaypoint position]];
+
+		[self moveToWaypoint:[waypoints objectAtIndex:index]];
 	}
 	else{
 		PGLog(@"[Move] Error, there are no waypoints for the current route");
@@ -612,7 +622,7 @@ typedef enum MovementState{
 - (void)checkCurrentPosition: (NSTimer*)timer {
 	
 	// stopped botting?  end!
-	if ( ![botController isBotting] ) {
+	if ( ![botController isBotting] && !_destinationWaypointUI ) {
 		PGLog(@"[Move] We're not botting, stop the timer!");
 		[self resetMovementState];
 		return;
@@ -650,9 +660,15 @@ typedef enum MovementState{
 	}
 	
 	// check to see if we're near our target
-	float distanceToObject = 5.0f;			// this used to be (playerSpeed/2.0)
+	float distanceToObject = (playerSpeed/2.0); //5.0f;			// this used to be (playerSpeed/2.0)
+											//  when flying: 13.3 yards (since max is 26.6)
 											//	when on mount:	7.0
 											//  when on ground: 3.78
+	
+	if ( distanceToObject < 3.0f ){
+		PGLog(@"[Move] Distance to low! Switching from %0.2f to 5.0f", distanceToObject);
+		distanceToObject = 5.0f;
+	}
 	
 	BOOL reachedDestination = NO;
 	
@@ -665,21 +681,37 @@ typedef enum MovementState{
 	if ( [self.moveToObject isKindOfClass: [Node class]] && !isPlayerOnGround ){
 		
 		float distanceToDestination2D = [playerPosition distanceToPosition2D: destPosition];
-		float distanceToObject2D = 1.25f;
+		float distanceToObject2D = 1.5f;
+		
+		PGLog(@"  %0.2f < 10.0f && %0.2f < %0.2f", distanceToObject, distanceToDestination2D, distanceToObject2D);
 		
 		// we want to make the assumption that:
 		//	we are within 5 yards of the 3D coordinates (so we don't fall to far)
 		//	we are within 1.25 yards of the 2D coordinates (so we're damn close to falling on the top)
-		if ( reachedDestination && distanceToDestination2D < distanceToObject2D ){
-			
+		if ( distanceToObject < 10.0f && distanceToDestination2D < distanceToObject2D ){
+			reachedDestination = YES;
 		}
 		else{
 			reachedDestination = NO;
 		}
 	}
 	
+	// if we have an action to do at our destination, we want the range to be 5.0!
+	if ( !self.moveToObject && self.destinationWaypoint ){
+		NSArray *actions = [self.destinationWaypoint actions];
+		if ( actions && [actions count] > 0 && distanceToDestination > 5.0f ){
+			PGLog(@"[Move] Didn't reach our destination, we have an action to perform! Limiting to 5.0");
+			reachedDestination = NO;
+		}
+	}
+	
 	// we've reached our position!
 	if ( reachedDestination ){
+		
+		// request from UI!
+		if ( _destinationWaypointUI ){
+			[_destinationWaypointUI release]; _destinationWaypointUI = nil;
+		}
 		
 		[[controller wowMemoryAccess] resetLoadCount];
 		
@@ -742,6 +774,19 @@ typedef enum MovementState{
 		[self correctDirection: NO];
 	}
 	
+	// are we on the ground + should jump?
+	UInt32 movementFlags = [playerData movementFlags];
+	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
+		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
+			usleep(200000);
+			PGLog(@"[Bot] Player on ground, jumping!");
+			[self jump];
+			usleep(10000);
+		}
+		
+		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
+	}
+	
 	// *******************************************************
 	// if we we get here, we're not close enough :(
 	// *******************************************************
@@ -799,7 +844,6 @@ typedef enum MovementState{
 	}
 	
 	// are we stuck moving up?
-	UInt32 movementFlags = [playerData movementFlags];
 	if ( movementFlags & MovementFlag_FlyUp && !_movingUp ){
 		PGLog(@"[Move] We're stuck moving up! Fixing!");
 		[self moveUpStop];
@@ -938,6 +982,16 @@ typedef enum MovementState{
 		
 		[self resumeMovement];
 	}
+}
+
+- (void)resetRoutes{
+	// to be safe
+	[self resetMovementState];
+	
+	// dump the routes!
+	self.currentRouteSet = nil;
+	self.currentRouteKey = nil;
+	self.currentRoute = nil;	
 }
 
 - (void)resetMovementState{
@@ -1212,10 +1266,10 @@ typedef enum MovementState{
 	}
 	
 	// do nothing if they're PvPing
-	if ( [botController isPvPing] || [playerData isInBG:[playerData zone]] ){
+	/*if ( [botController isPvPing] || [playerData isInBG:[playerData zone]] ){
 		PGLog(@"[Move] Ignoring corpse route because we're PvPing!");
 		return;
-	}
+	}*/
 	
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ){
@@ -2038,7 +2092,7 @@ typedef enum MovementState{
 			int waypointIndex = [[action value] intValue] - 1;
 			NSArray *waypoints = [self.currentRoute waypoints];
 			
-			if ( waypointIndex >= 1 && waypointIndex < [waypoints count] ){
+			if ( waypointIndex >= 0 && waypointIndex < [waypoints count] ){
 				self.destinationWaypoint = [waypoints objectAtIndex:waypointIndex];
 				PGLog(@"[Waypoint] Jumping to waypoint %@", self.destinationWaypoint);
 				[self resumeMovement];
@@ -2046,6 +2100,16 @@ typedef enum MovementState{
 			else{
 				PGLog(@"[Waypoint] Error, unable to move to waypoint index %d, out of range!", waypointIndex);
 			}
+		}
+		
+		// mail
+		else if ( [action type] == ActionType_Mail ){
+			
+			MailActionProfile *profile = (MailActionProfile*)[profileController profileForUUID:[action value]];
+			
+			PGLog(@"[Waypoint] Initiating mailing profile: %@", profile);
+
+			[itemController mailItemsWithProfile:profile];
 		}
 	}
 	

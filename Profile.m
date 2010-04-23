@@ -19,23 +19,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * $Id$
+ * $Id: Profile.m 315 2010-04-17 04:12:45Z Tanaris4 $
  *
  */
 
-#import <Cocoa/Cocoa.h>
-#import "ConditionController.h"
+#import "Profile.h"
+#import "SaveDataObject.h"
 
-@class BetterSegmentedControl;
+@implementation Profile
 
+- (id) init
+{
+    self = [super init];
+    if (self != nil) {
+		_name = @"";
+    }
+    return self;
+}
 
-@interface TargetClassConditionController : ConditionController {
-    IBOutlet BetterSegmentedControl *qualitySegment;
-	IBOutlet BetterSegmentedControl *comparatorSegment;
-    IBOutlet NSPopUpButton *valuePopUp;
+- (id)initWithName: (NSString*)name {
+    self = [self init];
     
-    IBOutlet NSMenu *creatureTypeMenu;
-    IBOutlet NSMenu *playerClassMenu;
+    _name = [[name copy] retain];
+
+    return self;
+}
+
++ (id)profileWithName: (NSString*)name {
+    return [[[Profile alloc] initWithName: name] autorelease];
+}
+
+- (id)initWithCoder:(NSCoder *)decoder{
+	if ( !self ){
+		self = [self init];
+	}
+	
+	if ( self ) {
+		[super initWithCoder:decoder];
+	}
+	return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)coder{
+	[super encodeWithCoder:coder];
+}
+
+- (id)copyWithZone:(NSZone *)zone{
+    Profile *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
+    return copy;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+	self.changed = YES;
 }
 
 @end

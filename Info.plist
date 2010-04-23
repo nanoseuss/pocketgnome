@@ -2,18 +2,30 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>SUFeedURL</key>
-	<string>http://pg.savorydeviate.com/appcast.xml</string>
-	<key>SUEnableSystemProfiling</key>
-	<string>YES</string>
-	<key>SUEnableAutomaticChecks</key>
-	<string>YES</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
 	<string>${PRODUCT_NAME}</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mailprofile</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>pgRoute</string>
+			<key>CFBundleTypeName</key>
+			<string>Mail Action Profile</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSDocumentClass</key>
+			<string>MailActionProfile</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>XML</string>
+		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
@@ -136,6 +148,12 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NoAccessApplication</string>
+	<key>SUEnableAutomaticChecks</key>
+	<string>YES</string>
+	<key>SUEnableSystemProfiling</key>
+	<string>YES</string>
+	<key>SUFeedURL</key>
+	<string>http://pg.savorydeviate.com/appcast.xml</string>
 	<key>SUPublicDSAKeyFile</key>
 	<string>dsa_pub.pem</string>
 	<key>UTExportedTypeDeclarations</key>

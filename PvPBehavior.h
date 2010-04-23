@@ -37,8 +37,6 @@
 
 @interface PvPBehavior : SaveDataObject {
 	
-	NSString *_name;
-	
 	// battlegrounds
 	Battleground *_bgAlteracValley, *_bgArathiBasin, *_bgEyeOfTheStorm, *_bgIsleOfConquest, *_bgStrandOfTheAncients, *_bgWarsongGulch;
 	
@@ -58,7 +56,6 @@
 @property (readwrite, retain) Battleground *IsleOfConquest;
 @property (readwrite, retain) Battleground *StrandOfTheAncients;
 @property (readwrite, retain) Battleground *WarsongGulch;
-@property (readwrite, copy) NSString *name;
 
 @property (readwrite, assign) BOOL random;
 @property (readwrite, assign) BOOL stopHonor;

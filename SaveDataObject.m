@@ -37,9 +37,14 @@
     self = [super init];
     if (self != nil) {
 		self.changed = NO;
+		self.name = nil;
 		
 		// create a new UUID
 		self.UUID = [self generateUUID];
+		
+		_observers = nil;
+		
+		PGLog(@"%@ init", self);
 		
 		// start observing! (so we can detect changes)
 		[self performSelector:@selector(addObservers) withObject:nil afterDelay:1.0f];
@@ -48,14 +53,28 @@
     return self;
 }
 
+- (void)dealloc{
+	[self removeObserver:self forKeyPath:@"name"];
+	for ( NSString *observer in _observers ){
+		[self removeObserver:self forKeyPath:observer];
+	}
+	[_observers release]; _observers = nil;
+	[super dealloc];
+}
+
 @synthesize changed = _changed;
 @synthesize UUID = _UUID;
+@synthesize	name = _name;
 
 // called when loading from disk!
 - (id)initWithCoder:(NSCoder *)decoder{
-	self = [super init];
+	if ( !self ){
+		self = [self init];
+	}
+	
 	if ( self ) {
 		self.UUID = [decoder decodeObjectForKey: @"UUID"];
+		self.name = [decoder decodeObjectForKey: @"Name"];
 		
 		// create a new UUID?
 		if ( !self.UUID || [self.UUID length] == 0 ){
@@ -70,6 +89,7 @@
 // called when we're saving a file
 - (void)encodeWithCoder:(NSCoder *)coder{
 	[coder encodeObject: self.UUID forKey: @"UUID"];
+	[coder encodeObject: self.name forKey: @"Name"];
 }
 
 - (id)copyWithZone:(NSZone *)zone{
@@ -84,15 +104,27 @@
 	return [uuid retain];
 }
 
+- (void)updateUUUID{
+	self.UUID = [self generateUUID];
+}
+
 - (void)setChanged:(BOOL)val{
 	//PGLog(@"[Changed] Set from %d to %d for %@", _changed, val, self);
 	_changed = val;
 }
 
-// Observations (to detect when an object changes)
-
+// observations (to detect when an object changes)
 - (void)addObservers{
-	
+	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	PGLog(@"%@ adding %d observers", self, [_observers count]);
+	for ( NSString *observer in _observers ){
+		[self addObserver: self forKeyPath: observer options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	}
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	self.changed = YES;
 }
 
 @end

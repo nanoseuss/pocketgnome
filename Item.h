@@ -65,7 +65,6 @@ typedef enum {
 - (ItemType)itemType;
 - (NSString*)itemTypeString;
 + (NSString*)stringForItemType: (ItemType)type;
-
 - (NSString*)itemSubtypeString;
 
 - (GUID)ownerUID;
@@ -90,6 +89,6 @@ typedef enum {
 - (BOOL)isSoulbound;
 
 - (UInt32)bagSize;
-- (UInt64)itemUIDinSlot: (UInt32)slotNum;
+- (UInt64)itemGUIDinSlot: (UInt32)slotNum;
 
 @end

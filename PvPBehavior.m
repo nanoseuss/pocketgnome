@@ -54,6 +54,22 @@
 		_waitTime = 10.0f;
 		
 		_name = [[NSString stringWithFormat:@"Unknown"] retain];
+		
+		_observers = [[NSArray arrayWithObjects: 
+					  @"AlteracValley",
+					  @"ArathiBasin",
+					  @"EyeOfTheStorm",
+					  @"IsleOfConquest",
+					  @"StrandOfTheAncients",
+					  @"WarsongGulch",
+					  @"random",
+					  @"stopHonor",
+					  @"stopHonorTotal",
+					  @"leaveIfInactive",
+					  @"preparationDelay",
+					  @"waitToLeave",
+					  @"waitTime", nil] retain];
+		
     }
     return self;
 }
@@ -66,7 +82,7 @@
 	[_bgStrandOfTheAncients release];
 	[_bgWarsongGulch release];
 	[_name release];
-	
+
 	// TO DO: remove observers!
 	//[self removeObserver: self forKeyPath: @"numberOfDays"];
 	
@@ -154,8 +170,6 @@
 @synthesize StrandOfTheAncients = _bgStrandOfTheAncients;
 @synthesize WarsongGulch = _bgWarsongGulch;
 
-@synthesize name = _name;
-
 @synthesize random = _random;
 @synthesize stopHonor = _stopHonor;
 @synthesize stopHonorTotal = _stopHonorTotal;
@@ -163,28 +177,6 @@
 @synthesize preparationDelay = _preparationDelay;
 @synthesize waitToLeave = _waitToLeave;
 @synthesize waitTime = _waitTime;
-
-- (void)addObservers{
-	[self addObserver: self forKeyPath: @"AlteracValley" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"ArathiBasin" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"EyeOfTheStorm" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"IsleOfConquest" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"StrandOfTheAncients" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"WarsongGulch" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"random" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"stopHonor" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"stopHonorTotal" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"leaveIfInactive" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"preparationDelay" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"waitToLeave" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"waitTime" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
-	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
-	self.changed = YES;
-}
 
 // little helper
 - (BOOL)isValid{

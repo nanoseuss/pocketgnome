@@ -19,23 +19,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * $Id$
+ * $Id: MailActionProfile.h 315 2010-04-17 04:12:45Z Tanaris4 $
  *
  */
 
 #import <Cocoa/Cocoa.h>
-#import "ConditionController.h"
+#import "Profile.h"
 
-@class BetterSegmentedControl;
-
-
-@interface TargetClassConditionController : ConditionController {
-    IBOutlet BetterSegmentedControl *qualitySegment;
-	IBOutlet BetterSegmentedControl *comparatorSegment;
-    IBOutlet NSPopUpButton *valuePopUp;
-    
-    IBOutlet NSMenu *creatureTypeMenu;
-    IBOutlet NSMenu *playerClassMenu;
+@interface MailActionProfile : Profile {
+	
+	BOOL _qualityPoor, _qualityCommon, _qualityUncommon, _qualityRare, _qualityEpic, _qualityLegendary;
+	BOOL _includeItems, _excludeItems;
+	NSString *_itemsToInclude, *_itemsToExclude, *_sendTo;
 }
+
++ (id)mailActionProfileWithName: (NSString*)name;
+
+@property (readwrite, assign) BOOL qualityPoor;
+@property (readwrite, assign) BOOL qualityCommon;
+@property (readwrite, assign) BOOL qualityUncommon;
+@property (readwrite, assign) BOOL qualityRare;
+@property (readwrite, assign) BOOL qualityEpic;
+@property (readwrite, assign) BOOL qualityLegendary;
+@property (readwrite, assign) BOOL includeItems;
+@property (readwrite, assign) BOOL excludeItems;
+@property (readwrite, copy) NSString *itemsToInclude;
+@property (readwrite, copy) NSString *itemsToExclude;
+@property (readwrite, copy) NSString *sendTo;
+
+// returns an array of the names trimmed
+- (NSArray*)inclusions;
+- (NSArray*)exclusions;
 
 @end

@@ -177,6 +177,12 @@ static MemoryAccess *sharedMemoryAccess = nil;
 	return 0;
 }
 
+- (long long)readLongLong: (UInt32)address{
+	UInt64 val = 0;
+	[self loadDataForObject: self atAddress:address Buffer:(Byte *)&val BufLength:sizeof(val)];
+	return val;
+}
+
 - (NSString*)readString: (UInt32)address{
 	
 	char str[256];

@@ -72,7 +72,6 @@
 {
 	self = [super initWithCoder:decoder];
 	if ( self ) {
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.procedures = [decoder decodeObjectForKey: @"Procedures"] ? [decoder decodeObjectForKey: @"Procedures"] : [NSDictionary dictionary];
         
         // make sure we have a procedure object for every type
@@ -102,7 +101,6 @@
 {
 	[super encodeWithCoder:coder];
 	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.procedures forKey: @"Procedures"];
     [coder encodeObject: [NSNumber numberWithBool: self.meleeCombat] forKey: @"MeleeCombat"];
     [coder encodeObject: [NSNumber numberWithBool: self.usePet] forKey: @"UsePet"];
@@ -137,7 +135,6 @@
 @synthesize procedures = _procedures;
 @synthesize meleeCombat = _meleeCombat;
 @synthesize usePet = _usePet;
-@synthesize name = _name;
 
 - (Procedure*)procedureForKey: (NSString*)key {
     return [_procedures objectForKey: key];

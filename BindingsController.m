@@ -498,7 +498,7 @@ typedef struct WoWBinding {
 		}
 		// no binding /cry
 		else{
-			PGLog(@"[Bindings] No valid key binding found for %@", binding);
+			//PGLog(@"[Bindings] No valid key binding found for %@", binding);
 		}
 	}
 }

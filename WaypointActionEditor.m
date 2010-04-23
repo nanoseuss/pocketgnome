@@ -73,6 +73,9 @@
 #import "CombatProfileEditor.h"
 #import "MobController.h"
 #import "NodeController.h"
+#import "ProfileController.h"
+
+#import "MailActionProfile.h"
 
 @implementation WaypointActionEditor
 
@@ -162,7 +165,7 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_QuestGrab)			newAction = [[[QuestGrabActionController alloc] init] autorelease];
 	else if ( type == ActionType_CombatProfile)		newAction = [CombatProfileActionController combatProfileActionControllerWithProfiles:[combatProfileEditor combatProfiles]];
 	else if ( type == ActionType_Vendor)			newAction = [[[VendorActionController alloc] init] autorelease];
-	else if ( type == ActionType_Mail)				newAction = [[[MailActionController alloc] init] autorelease];
+	else if ( type == ActionType_Mail)				newAction = [MailActionController mailActionControllerWithProfiles:[profileController profilesOfClass:[MailActionProfile class]]];
 	else if ( type == ActionType_ReverseRoute)		newAction = [[[ReverseRouteActionController alloc] init] autorelease];
 	else if ( type == ActionType_InteractNPC){
 		NSArray *nearbyMobs = [mobController mobsWithinDistance:8.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				
