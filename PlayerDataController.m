@@ -42,6 +42,7 @@
 #import "Spell.h"
 #import "Player.h"
 #import "Position.h"
+#import "PlayersController.h"
 
 #import "ImageAndTextCell.h"
 
@@ -800,6 +801,34 @@ static PlayerDataController* sharedController = nil;
 		return YES;
 	return NO;	
 }
+
+
+- (NSArray *) partyMembers {
+    
+    NSMutableArray *listMembers = [NSMutableArray array];
+	
+    GUID playerGUID = 0x0;
+    Player *player = nil;
+	
+	int indx = 0;
+    for( indx=0; indx<4; indx++) {
+		
+        [[controller wowMemoryAccess] loadDataForObject: self atAddress: ([offsetController offset:@"Lua_GetPartyMember"] +(0x8*indx)) Buffer: (Byte *)&playerGUID BufLength: sizeof(playerGUID)];
+        
+        if (playerGUID > 0) {
+            
+            player = [[PlayersController sharedPlayers] playerWithGUID:playerGUID];
+			if (player != nil) {
+				[listMembers addObject:player]; 
+			}
+			
+        }
+		
+    }
+	
+	return [listMembers copy];
+}
+
 
 - (BOOL)isInCombat {
     if( ([self stateFlags] & (1 << 19)) == (1 << 19))

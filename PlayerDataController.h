@@ -182,6 +182,8 @@ enum ePlayer_RuneTypes {
 - (UInt64)comboPointUID;
 
 - (BOOL)isInParty;
+- (NSArray *) partyMembers;
+
 - (BOOL)isInCombat;
 - (BOOL)isLooting;
 - (BOOL)isCasting;
