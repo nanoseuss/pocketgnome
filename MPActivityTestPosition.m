@@ -25,7 +25,7 @@
 #import "Spell.h"
 
 @implementation MPActivityTest
-@synthesize key, targetName;
+@synthesize key, targetName, mySpell;
 
 
 - (id) init {
@@ -40,6 +40,8 @@
 		key = nil;
 		targetName = nil;
 		
+		self.mySpell = nil;
+		
 //		self.timerWaitTime =  [MPTimer randomTimerFrom:20 To:80];
 		
 		
@@ -50,7 +52,8 @@
 
 - (void) dealloc
 {
- //   [timerWaitTime release];
+	[mySpell release];
+	
     [super dealloc];
 }
 
@@ -67,7 +70,7 @@
 
 - (BOOL) work {
 	
-	if ((key == nil) || ([key isEqualToString:@"positioncheck"])) {
+	if ([key isEqualToString:@"positioncheck"]) {
 		
 		
 		
@@ -114,7 +117,8 @@
 				PGLog(@"   ---> Left");
 			}
 			*/
-			
+
+			//// testing mover : move to a given location with facing
 			MPMover *mover = [MPMover sharedMPMover];
 			int direction = [mover directionOfPosition:[targetMob position]];
 			PGLog(@" ---> mover directionOfPosition: %d  angleTowards[%0.4f]", direction, [mover angleTurnTowards:[targetMob position]]);
@@ -123,7 +127,6 @@
 			
 //			[mover moveTowards:(MPLocation *)[targetMob position] within:3.0f facing:(MPLocation *)[targetMob position]];
 			[mover moveTowards:testLoc within:1.0f facing:(MPLocation *)[targetMob position]];
-			[mover action];
 			
 			
 			/*
@@ -164,6 +167,7 @@
 					PGLog(@"   ---> Already have Thorns!");
 				}
 			}
+ 
 			
 			
 			/*
@@ -203,14 +207,33 @@
 			 }
 			 
 			 
-			 
 			 */
 			
 		} else {
 			PGLog(@" Position Check: mob[%@] not found", targetName);
 		}
 		
+		
+		
 	}
+	
+	
+	
+	if ((key == nil) || ([key isEqualToString:@"spellrankcheck"])) {
+		
+		
+		if (mySpell == nil) {
+			self.mySpell = [MPSpell wrath];
+		}
+		
+		// make sure list of player spells updated
+		[[SpellController sharedSpells] reloadPlayerSpells];
+		[mySpell scanForSpell];
+		
+		
+	}
+	
+	
 //	NSInteger testVal = [[task patherController] getMyLevel];
 //	PGLog(@" the patherController's test value[%d]", testVal );
 	

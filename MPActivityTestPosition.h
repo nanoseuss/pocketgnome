@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "MPActivity.h"
 @class MPMover;
+@class MPSpell;
 @class MPTask;
 
 
@@ -17,10 +18,11 @@
 // actions.  It will 
 @interface MPActivityTest : MPActivity {
 	NSString *key, *targetName;
-	
+	MPSpell *mySpell;
 	
 }
 @property (readwrite, assign) NSString *key, *targetName;
+@property (retain) MPSpell *mySpell;
 
 
 - (id) init;

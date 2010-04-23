@@ -14,6 +14,7 @@
 #import "BotController.h"
 #import "MPActivityApproach.h"
 #import "MPActivityLoot.h"
+#import "MPMover.h"
 
 
 
@@ -102,11 +103,21 @@
 //	if (lootActivity != nil) return YES;
 	
 	Mob *lootMob = [self mobToLoot];
-	float currentDistance;
+//	float currentDistance;
 	
 	// if mob found
 	if (lootMob != nil) {
 
+		BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[lootMob position] within:4.9f facing:(MPLocation *)[lootMob position]];
+		if (wantToApproach) {
+			
+			state = LootStateApproaching;
+		} else {
+			
+			state = LootStateLooting;
+		}
+		
+		/*
 		currentDistance = [self myDistanceToMob:lootMob];
 		if (currentDistance > 4.90) {
 		
@@ -116,6 +127,7 @@
 		
 			state = LootStateLooting;
 		}
+		 */
 	}
 	else {
 		PGLog( @"[TaskLoot] No lootMob Found!  wtds = false");	

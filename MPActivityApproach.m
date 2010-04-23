@@ -18,70 +18,43 @@
 
 
 @implementation MPActivityApproach
-@synthesize unit, useMount, lastPosition, moveTimer, movementController, playerDataController;
+@synthesize unit, mover, useMount;
+
+
 
 - (id) initWithUnit: (Unit*)aUnit andDistance:(float)howClose andTask:(MPTask*)aTask  {
 	
 	if ((self = [super initWithName:@"Approach" andTask:aTask])) {
 		self.unit = aUnit;
 		distance = howClose;
-		self.lastPosition = nil;
 		
-		self.moveTimer = [MPTimer timer:850];
-		
-		self.movementController = [[task patherController] movementController];
-		self.playerDataController = [[task patherController] playerData];
+		self.mover = [MPMover sharedMPMover];
+
 	}
 	return self;
 }
 
 
+
 - (void) dealloc
 {
     [unit release];
-	[movementController release];
-	[playerDataController release];
-	[moveTimer release];
-	[lastPosition release];
+	[mover release];
+
 	
     [super dealloc];
 }
+
 
 
 #pragma mark -
 
 
 
-
 - (void) start {
 
-	
-	/*
-	// face Unit
-	[playerDataController faceToward:[unit position]];
-	
-	// ensure movementController isn't running a route
-	[movementController resetMovementState];
-	[movementController setCurrentRouteSet:nil];
-	
-	// tell mC our desired distance
-	[movementController setCloseEnough:distance];
-	
-	// start moving towards given unit
-	[movementController moveToObject:unit];
-	
-	
-	[moveTimer start];
-	 */
-	
-	// make sure mC is stopped
-	[movementController resetMovementState];
-	
-	//MPMover *mover = [MPMover sharedMPMover];
-	[[MPMover sharedMPMover] moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]];
-	
-	
-	self.lastPosition = [unit position];
+	[mover moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]];
+
 }
 
 
@@ -89,75 +62,12 @@
 // Make sure we are making progress towards the target.  Stop when in range.
 - (BOOL) work {
 	
+//	return (![mover moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]]);
+	
+	// let's try cutting it off when within distance (and not worried about facing as well)
+	[mover moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]];
+	return ([task myDistanceToPosition:[unit position]] <= distance);
 
-	
-	return (![[MPMover sharedMPMover] moveTowards:(MPLocation *)[unit position] within:distance facing:(MPLocation *)[unit position]]);
-	
-	
-///// old movement Controller code:
-/*
-	// ok, current mC will walk us to 5.0yds of our unit.
-
-	// if distance to unit < distance 
-	Position *playerPosition = [playerDataController position];
-	float currentDistance = [playerPosition distanceToPosition: [unit position]];
-	if ( currentDistance < distance ) {
-	
-		PGLog(@"[work] currentDistance[%0.2f] < distance[%0.2f] --> stopping!",currentDistance, distance);
-		
-		// stop movement
-		[movementController stopMovement];
-		
-		// we are within our desired distance so we are done
-		return YES;
-	} // end if
-
-
-
-	// if we aren't moving for some reason 
-	if (![movementController isMoving]) { 
-	
-		PGLog(@"[work] don't seem to be moving! --> resume");
-		// resumeMovement
-		//[movementController resumeMovement];
-		[self start];
-	}
-	
-*/	
-	
-	
-	
-	
-	
-	
-	
-	
-	// if movement controller has different unit selected:
-//	if ([movementController unit] != unit) {
-//		PGLog(@"[work] movement controller has wrong unit!  try again.");
-//		[self start];
-//	}
-	
-	
-/*	if (lastPosition != nil) {
-		
-		if ([lastPosition distanceToPosition:[unit position]] > 0.1f) {
-			// adjust for movement ... 
-			[movementController moveToObject:unit andNotify:NO];
-		}
-	}
-*/
-	
-	// start moving towards given unit
-/*
-	if ([moveTimer ready]) {
-		[movementController moveToMelee:unit];
-		[moveTimer reset];
-	}
-*/
-	
-	// otherwise, we exit (but we are not "done"). 
-	return NO;
 }
 
 
@@ -165,17 +75,13 @@
 // we are interrupted before we arrived.  Make sure we stop moving.
 - (void) stop{
 	
-	[[MPMover sharedMPMover] stopAllMovement];
-	
-/*
-//	[movementController pauseMovement];
-	[movementController setCloseEnough:5.0f];
-	[movementController stopMovement];
-	[movementController resetMovementState];
-*/
+	[mover stopAllMovement];
 }
 
+
+
 #pragma mark -
+
 
 
 - (NSString *) description {
@@ -184,8 +90,8 @@
 	[text appendFormat:@"%@\n", self.name];
 	if (unit != nil) {
 		
-		Position *playerPosition = [playerDataController position];
-		float currentDistance = [playerPosition distanceToPosition: [unit position]];
+//		Position *playerPosition = [playerDataController position];
+		float currentDistance = [task myDistanceToMob:(Mob *)unit];
 	
 		[text appendFormat:@"  approaching [%@]  [%0.2f / %0.2f]", [unit name], currentDistance, distance];
 		
@@ -196,7 +102,11 @@
 	return text;
 }
 
+
+
 #pragma mark -
+
+
 
 + (id) approachUnit:(Unit*)aUnit withinDistance:(float) howClose forTask:(MPTask *)aTask {
 

@@ -174,6 +174,7 @@
 	[attackActivity release];
 	[waitActivity release];
 	
+	[selectedMob release];
 	[mobController release];
 	[playerData release];
 	[customClass release];
@@ -408,7 +409,7 @@ PGLog( @"   state[Waiting]");
 			if (approachActivity == nil) {
 			
 				// create approachTask
-				float howClose = (attackDistance  > 5.0f) ? (attackDistance -2.5): 4.0f;
+				float howClose = (attackDistance  > 5.0f) ? (attackDistance -1.5f): 4.0f;
 				self.approachActivity = [MPActivityApproach approachUnit:currentMob withinDistance:howClose forTask:self];
 				
 			}

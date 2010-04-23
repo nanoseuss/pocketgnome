@@ -24,7 +24,7 @@ typedef enum AttackState {
  * @class      MPActivityAttack
  * @abstract   This activity initiates combat with an in game unit.
  * @discussion 
- * Found someone who needs a little punishing?  This is the task for you.
+ * Found someone who needs a little punishing?  This is the activity for you.
  *
  */
 @interface MPActivityAttack : MPActivity {

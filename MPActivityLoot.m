@@ -7,16 +7,17 @@
 //
 
 #import "MPActivityLoot.h"
+#import "BotController.h"
+#import "BlacklistController.h"
+#import "Errors.h"
+#import "LootController.h"
+#import "Mob.h"
+//#import "MovementController.h"
+#import "MPMover.h"
 #import "MPTask.h"
 #import "MPTimer.h"
-#import "Mob.h"
 #import "PatherController.h"
-#import "BotController.h"
-#import "MovementController.h"
-#import "LootController.h"
 #import "PlayerDataController.h"
-#import "Errors.h"
-#import "BlacklistController.h"
 
 @interface MPActivityLoot (Internal)
 
@@ -29,7 +30,8 @@
 
 
 @implementation MPActivityLoot
-@synthesize lootMob, timeOut, timeToSkin, movementController;
+@synthesize lootMob, timeOut, timeToSkin, mover; 
+//movementController;
 
 - (id)  initWithMob:(Mob *) aMob andShouldSkin:(BOOL)doSkin andTask:(MPTask*)aTask  {
 	
@@ -40,7 +42,8 @@
 		self.timeOut = [MPTimer timer:2150];
 		self.timeToSkin = [MPTimer timer:3750];
 		attemptCount = 0;
-		self.movementController = [[task patherController] movementController];
+		self.mover = [MPMover sharedMPMover];
+//		self.movementController = [[task patherController] movementController];
 
 	}
 	return self;
@@ -52,7 +55,8 @@
     [lootMob release];
 	[timeOut release];
 	[timeToSkin release];
-	[movementController release];
+	[mover release];
+//	[movementController release];
 	
     [super dealloc];
 }
@@ -79,8 +83,9 @@
 			PGLog( @"[ActivityLoot] [start] clicking on Mob ... ");
 		
 			// face mob
-			[movementController stopMovement];
-			[movementController turnTowardObject:lootMob];
+			[mover faceLocation:(MPLocation *)[lootMob position]];
+//			[movementController stopMovement];
+//			[movementController turnTowardObject:lootMob];
 			
 			// mouse click on mob
 			[self clickMob];

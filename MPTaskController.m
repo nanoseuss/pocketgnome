@@ -141,6 +141,10 @@ static MPTask *rootTask = nil;
 				// currentActivity.start()
 				[currentActivity start];
 			}
+			
+			// update the UI to reflect the new change
+			[[PatherController sharedPatherController] updateUI];
+			
 		} // end if
 
 		

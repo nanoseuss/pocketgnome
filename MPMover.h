@@ -49,9 +49,10 @@
 - (void) stopMove;
 - (void) stopAllMovement;
 
-- (int) directionOfPosition: (Position *)position;
+- (int) directionOfPosition: (Position *)position;	// <-- Testing: should be internal
+- (float) angleTurnTowards: (Position *)position;	// <-- Testing: should be internal
 
-- (float) angleTurnTowards: (Position *)position;
+- (void) faceLocation: (MPLocation *) location;
 
 - (BOOL) shouldMoveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing;
 - (BOOL) shouldMoveTowards: (MPLocation *)locDestination within:(float)howClose facing:(MPLocation *)locFacing withinTolerance:(float) toleranceAngle;

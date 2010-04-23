@@ -9,8 +9,9 @@
 #import <Cocoa/Cocoa.h>
 #import "MPActivity.h"
 @class MPTimer;
-@class MovementController;
+//@class MovementController;
 @class Mob;
+@class MPMover;
 
 
 typedef enum LootActivity { 
@@ -28,11 +29,13 @@ typedef enum LootActivity {
 	Mob *lootMob;
 	MPLootActivity state;
 	MPTimer *timeOut, *timeToSkin;
-	MovementController *movementController;
+	MPMover *mover;
+//	MovementController *movementController;
 }
 @property (retain) MPTimer *timeOut, *timeToSkin;
 @property (retain) Mob *lootMob;
-@property (retain) MovementController *movementController;
+@property (retain) MPMover *mover;
+//@property (retain) MovementController *movementController;
 
 
 #pragma mark -

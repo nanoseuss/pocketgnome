@@ -247,24 +247,24 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 	
 	// if location is too far to my left
 	if (angleTo > angleTolerance) {
-PGLog(@" facing angleTo[%0.4f] ---> rotate Left ", angleTo);		
+//PGLog(@" facing angleTo[%0.4f] ---> rotate Left ", angleTo);		
 		[self rotateLeft:YES];
 		
 	} else if (angleTo < -angleTolerance) {
 		// if position is too far to my right
-PGLog(@" facing angleTo[%0.4f] ---> rotate Right ", angleTo);		
+//PGLog(@" facing angleTo[%0.4f] ---> rotate Right ", angleTo);		
 		[self rotateRight:YES];
 		
 	} else if (rotateLeft || rotateRight) {
 		// location is in front of me, but I'm scheduled to turn still 
 
-PGLog(@" facing angleTo[%0.4f] ---> Stop Turning ", angleTo);
+//PGLog(@" facing angleTo[%0.4f] ---> Stop Turning ", angleTo);
 		[self rotateLeft:NO];
 		[self rotateRight:NO];
 	}
-else {
-PGLog(@" facing angleTo[%0.4f] ---> keep! ", angleTo);		
-}
+//else {
+//PGLog(@" facing angleTo[%0.4f] ---> keep! ", angleTo);		
+//}
 	
 }
 
@@ -349,45 +349,38 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	////
 	
 	if ((!tempRunForwards) && (tempRunForwards != oldRunForwards)) {
-		[self pressKey:kVK_ANSI_W];
 		[self releaseKey:kVK_ANSI_W]; // Forwards
-		[self releaseKey:kVK_ANSI_W]; // Forwards
+		PGLog(@"   ++Release [Forwards]++");
 	}
 	
 	if ((!tempRunBackwards) && (tempRunBackwards != oldRunBackwards)) {
-		[self pressKey:kVK_ANSI_S];
 		[self releaseKey:kVK_ANSI_S]; // Backwards
-		[self releaseKey:kVK_ANSI_S]; // Backwards
+		PGLog(@"   ++Release [Backwards]++");
 	}
 	
 	if ((!tempStrafeLeft) && (tempStrafeLeft != oldStrafeLeft)) {
-		[self pressKey:kVK_ANSI_Q];
 		[self releaseKey:kVK_ANSI_Q];
-		[self releaseKey:kVK_ANSI_Q];
+		PGLog(@"   ++Release [Strafe Left]++");
 	}
 	
 	if ((!tempStrafeRight) && (tempStrafeRight != oldStrafeRight)) {
-		[self pressKey:kVK_ANSI_E];
 		[self releaseKey:kVK_ANSI_E];
-		[self releaseKey:kVK_ANSI_E];
+		PGLog(@"   ++Release [Strafe Right]++");
 	}
 	
 	if ((!tempRotateLeft) && (tempRotateLeft != oldRotateLeft)) {
-		[self pressKey:kVK_ANSI_A];
 		[self releaseKey:kVK_ANSI_A];
-		[self releaseKey:kVK_ANSI_A];
+		PGLog(@"   ++Release [Rotate Left]++");
 	}
 	
 	if ((!tempRotateRight) && (tempRotateRight != oldRotateRight)) {
-		[self pressKey:kVK_ANSI_D];
 		[self releaseKey:kVK_ANSI_D];
-		[self releaseKey:kVK_ANSI_D];
+		PGLog(@"   ++Release [Rotate Right]++");
 	}
 	
 	if ((!tempSwimUp) && (tempSwimUp != oldSwimUp)) {
-		[self pressKey:kVK_Space];
 		[self releaseKey:kVK_Space];
-		[self releaseKey:kVK_Space];
+		PGLog(@"   ++Release [Swim Up]++");
 	}
 	
 	////
@@ -396,30 +389,37 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	
 	if ((tempRunForwards) && (tempRunForwards != oldRunForwards)) {
 		[self pressKey:kVK_ANSI_W];
+		PGLog(@"   ++Press [Forwards]++");
 	}
 	
 	if ((tempRunBackwards) && (tempRunBackwards != oldRunBackwards)) {
 		[self pressKey:kVK_ANSI_S];
+		PGLog(@"   ++Press [Backwards]++");
 	}
 	
 	if ((tempStrafeLeft) && (tempStrafeLeft != oldStrafeLeft)) {
 		[self pressKey:kVK_ANSI_Q];
+		PGLog(@"   ++Press [Strafe Left]++");
 	}
 	
 	if ((tempStrafeRight) && (tempStrafeRight != oldStrafeRight)) {
 		[self pressKey:kVK_ANSI_E];
+		PGLog(@"   ++Press [Strafe Right]++");
 	}
 	
 	if ((tempRotateLeft) && (tempRotateLeft != oldRotateLeft)) {
 		[self pressKey:kVK_ANSI_A];
+		PGLog(@"   ++Press [Rotate Left]++");
 	}
 	
 	if ((tempRotateRight) && (tempRotateRight != oldRotateRight)) {
 		[self pressKey:kVK_ANSI_D];
+		PGLog(@"   ++Press [Rotate Right]++");
 	}
 	
 	if ((tempSwimUp) && (tempSwimUp != oldSwimUp)) {
 		[self pressKey:kVK_Space];
+		PGLog(@"   ++Press [Swim Up]++");
 	}
 	
 	////
@@ -441,7 +441,7 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 - (void) action {
 	
 	// To Do:  make sure Pather is running, if not, return
-	PGLog(@" -- Action -- " );
+	//PGLog(@" -- Action -- " );
 	[self calculateMovementTowards:destinationLocation];
 	[self calculateFacingTowards:facingLocation];
 	[self pressAndReleaseKeys];
@@ -585,8 +585,8 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	
 	self.facingLocation = nil;
 	
-	rotateLeft = NO;
-	rotateRight = NO;
+	[self rotateLeft:NO];
+	[self rotateRight:NO];
 }
 
 
@@ -597,15 +597,15 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	}
 	
 	self.destinationLocation = nil;
-	self.facingLocation = nil;
+//	self.facingLocation = nil;
 	
-	runForwards  =  NO;
-	runBackwards =  NO;
-	strafeLeft	 =  NO;
-	strafeRight  =  NO;
-	rotateLeft	 =  NO;
-	rotateRight	 =  NO;
-	swimUp		 =  NO;
+	[self forwards:NO];
+	[self backwards:NO];
+	[self strafeLeft:NO];
+	[self strafeRight:NO];
+	[self rotateLeft:NO];
+	[self rotateRight:NO];
+	[self swimUp:NO];
 	
 	// should I pause here?
 	
@@ -615,7 +615,7 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	
 	// release all keys
 	
-	[self resetMovementState];
+//	[self resetMovementState];
 	
 	[self stopMove];
 	

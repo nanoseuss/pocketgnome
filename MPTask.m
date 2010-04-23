@@ -13,7 +13,9 @@
 #import "MPTaskWhen.h"
 #import "MPTaskUntil.h"
 #import "MPTestTask.h"
+#import "MPTaskAssist.h"
 #import "MPTaskDefend.h"
+#import "MPTaskFollow.h"
 #import "MPTaskRest.h"
 #import "MPTaskRoute.h"
 #import "MPTaskPull.h"
@@ -648,8 +650,14 @@
 	if ([lcTaskName isEqualToString:@"until"]) {
 		return [MPTaskUntil initWithPather:controller];
 	}
+	if ([lcTaskName isEqualToString:@"assist"]) {
+		return [MPTaskAssist initWithPather:controller];
+	}
 	if ([lcTaskName isEqualToString:@"defend"]) {
 		return [MPTaskDefend initWithPather:controller];
+	}
+	if ([lcTaskName isEqualToString:@"follow"]) {
+		return [MPTaskFollow initWithPather:controller];
 	}
 	if ([lcTaskName isEqualToString:@"ghostroute"]) {
 		return [MPTaskGhostRoute initWithPather:controller];

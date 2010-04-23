@@ -11,11 +11,16 @@
 
 @class MPTask;
 @class Unit;
+@class MPMover;
+
+
+/*
 @class MovementController;
 @class PatherController;
 @class PlayerDataController;
 @class Position;
 @class MPTimer;
+ */
 
 /*!
  * @class      MPActivityApproach
@@ -35,18 +40,13 @@
 	Unit *unit; // the unit to approach
 	float distance; // how close to approach
 	BOOL useMount;  // mount to get there?
-	Position *lastPosition;  // the unit's last targeted position.
-	MPTimer *moveTimer; // time between moveToMelee commands
-	
-	MovementController *movementController;
-	PlayerDataController *playerDataController;
+	MPMover *mover; // our mover object
+
 }
 @property (readwrite, retain) Unit *unit;
 @property (readwrite) BOOL useMount;
-@property (retain) Position *lastPosition;
-@property (retain) MovementController *movementController;
-@property (retain) PlayerDataController *playerDataController;
-@property (retain) MPTimer *moveTimer;
+@property (retain) MPMover *mover;
+
 
 
 

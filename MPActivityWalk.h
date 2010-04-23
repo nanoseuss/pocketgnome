@@ -8,19 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 #import "MPActivity.h"
+@class MPCustomClass;
+@class MPMover;
 @class MovementController;
-@class PatherController;
-@class BotController;
 @class Route;
-@class MPTimer;
-@class Waypoint;
-@class RouteSet;
 
-
-typedef enum WalkState { 
-    WalkStateNotStarted		= 1,	// marks that we haven't begun walking, (so don't "resume" )
-    WalkStateStarted		= 2		// we've already begun traveling the route, so ok to "resume"
-} MPWalkState; 
 
 /*!
  * @class      MPActivityWalk
@@ -28,12 +20,10 @@ typedef enum WalkState {
  * @discussion 
  * Need to get from one location to another?  This is the activity to use.  
  *
- * This activity relys on PocketGnome's default MovementController (MC) to move.  The MC 
- * is based on a defined Route.  So this Activity will attemp to generate a route to give the 
- * MC, so it can do it's thing.
+ * This activity is about walking longer distances.  Use this activity to walk a route, or walk to 
+ * locations that are "farther" away.  
  *
  * This activity can be created several ways:
- *
  * - [MPActivityWalk walkRoute: forTask: useMount:] : A route is given, so this is easy.  Just pass this onto the MC.
  *
  * - [MPActivityWait walkToLocation: forTask: useMount:] : given a location we will have to generate a 
@@ -43,29 +33,27 @@ typedef enum WalkState {
  *
  */
 @interface MPActivityWalk : MPActivity {
-	Route *route;
-	RouteSet *routeSet;
+	
+	NSArray *listLocations;
+	MPMover *mover;
+	int currentIndex;
 	BOOL useMount;
 	MovementController *movementController;
-	MPTimer *timerMoveDelay;
-	int currentIndex, previousIndex, indexLastWaypoint;
-	MPWalkState state;
+	MPCustomClass *customClass;
 }
-@property (retain) Route *route;
-@property (retain) RouteSet *routeSet;
-@property (readwrite) BOOL useMount;
-@property (readwrite, retain) MPTimer *timerMoveDelay;
+@property (retain) NSArray *listLocations;
+@property (retain) MPCustomClass *customClass;
+@property (retain) MPMover *mover;
 @property (retain) MovementController *movementController;
+
 
 - (id) initWithRoute: (Route*)aRoute andTask:(MPTask*)aTask usingMount:(BOOL)mount;
 
 
+ 
 #pragma mark -
-#pragma mark Helper methods
 
-- (Waypoint*)closestWaypoint;
 
-#pragma mark -
 
 /*!
  * @function walkRoute:forTask:useMount:
@@ -74,6 +62,8 @@ typedef enum WalkState {
  *	Returns a walk activity to run the current route.
  */
 + (id) walkRoute: (Route *) aRoute forTask:(MPTask *)aTask useMount:(BOOL)mount;
+
+
 
 /*!
  * @function walkToLocation:forTask:useMount:
