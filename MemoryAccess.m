@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
+
 #import "MemoryAccess.h"
 #import <mach/vm_map.h>
 #import <mach/mach_traps.h>
@@ -19,7 +44,7 @@ static MemoryAccess *sharedMemoryAccess = nil;
 - (id)initWithPID:(pid_t)PID {
     [super init];
     AppPid = PID;
-    log(LOG_MEMORY, @"Got WoW PID: %d; GodMode: %d", PID, MEMORY_GOD_MODE);
+    PGLog(@"Got WoW PID: %d; GodMode: %d", PID, MEMORY_GOD_MODE);
     task_for_pid(current_task(), AppPid, &MySlaveTask);
     
     _loaderDict = [[NSMutableDictionary dictionary] retain];
@@ -58,7 +83,7 @@ static MemoryAccess *sharedMemoryAccess = nil;
         usleep(50000);
         err = GetProcessForPID(AppPid, &psn);
         if( err != noErr) {
-            log(LOG_MEMORY, @"appPID = %d; err = %d; pSN = { %d, %d }", AppPid, err, psn.lowLongOfPSN, psn.highLongOfPSN);
+            PGLog(@"appPID = %d; err = %d; pSN = { %d, %d }", AppPid, err, psn.lowLongOfPSN, psn.highLongOfPSN);
             return NO;
         }
     }
@@ -70,7 +95,7 @@ static MemoryAccess *sharedMemoryAccess = nil;
 }
 
 - (void)printLoadCount {
-    log(LOG_MEMORY, @"%@ has processed %d reads.", self, readsProcessed);
+    PGLog(@"%@ has processed %d reads.", self, readsProcessed);
 }
 
 - (int)loadCount {
@@ -122,7 +147,7 @@ static MemoryAccess *sharedMemoryAccess = nil;
 	/*
     if(readsProcessed % 20000 == 0) {
         [self printLoadCount];
-        log(LOG_MEMORY, @"Loader Dict: %@", loaderDict);
+        PGLog(@"Loader Dict: %@", loaderDict);
     }*/
 
     if(MEMORY_GOD_MODE) {
@@ -138,6 +163,50 @@ static MemoryAccess *sharedMemoryAccess = nil;
         
     }
 }
+
+- (int)readInt: (UInt32)address withSize:(size_t)size{
+	
+	int buffer[size];
+
+	if ( [self loadDataForObject: self atAddress:address Buffer:(Byte *)&buffer BufLength:size] ){
+		int val = 0;
+		val = (int)*buffer;
+		return val;
+	}
+	
+	return 0;
+}
+
+- (long long)readLongLong: (UInt32)address{
+	UInt64 val = 0;
+	[self loadDataForObject: self atAddress:address Buffer:(Byte *)&val BufLength:sizeof(val)];
+	return val;
+}
+
+- (NSString*)readString: (UInt32)address{
+	
+	char str[256];
+	str[255] = 0;
+	
+	if ( [self loadDataForObject: self atAddress:address Buffer:(Byte *)&str BufLength:sizeof(str)-1] ){
+		NSString *newStr = [NSString stringWithUTF8String: str];
+		return [[newStr retain] autorelease];
+	}
+	
+	return nil;
+}
+
+- (NSNumber*)readNumber: (UInt32)address withSize:(size_t)size{
+	void *buffer = malloc(size);
+	if ( [self loadDataForObject: self atAddress:address Buffer:buffer BufLength:size] ){
+		NSNumber *num = [NSNumber numberWithInt:(int)buffer];
+		free(buffer);
+		return num;
+	}
+	
+	return nil;
+}
+
 
 // basically just a raw reading function.
 // use this method if you need the actual return value from the kernel and want to do your own error checking.

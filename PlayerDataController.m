@@ -1,10 +1,27 @@
-//
-//  PlayerDataController.m
-//  Pocket Gnome
-//
-//  Created by Jon Drummond on 12/15/07.
-//  Copyright 2007 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
 
 #import "PlayerDataController.h"
 #import "Offsets.h"
@@ -103,7 +120,7 @@ static PlayerDataController* sharedController = nil;
 
 - (void)viewLoaded: (NSNotification*)notification {
     //if( [notification object] == self.view ) {
-    //    log(LOG_DEV, @"loaded");
+    //    PGLog(@"loaded");
     //    [[AuraController sharedController] aurasForUnit: [self player]];
     //} 
 }
@@ -236,7 +253,7 @@ static PlayerDataController* sharedController = nil;
 #pragma mark -
 
 - (BOOL)playerIsValid{
-	//log(LOG_DEV, @"UI UI UI");
+	//PGLog(@"UI UI UI");
 	return [self playerIsValid:nil];	
 }
 // 4 reads
@@ -261,7 +278,7 @@ static PlayerDataController* sharedController = nil;
 	// is the player still valid?
     if ( GUID_LOW32(globalGUID) == selfGUID && objectType == TYPEID_PLAYER && previousPtr > 0x0 ) {
 		if ( !_lastState ) {
-			log(LOG_DEV, @"[Player] Player is valid. %@", [sender class]);
+			PGLog(@"[Player] Player is valid. %@", [sender class]);
 			
 			[self loadState];
 			
@@ -271,7 +288,7 @@ static PlayerDataController* sharedController = nil;
 	}
 
     if ( _lastState ) {
-        log(LOG_DEV, @"[Player] Player is invalid. %@", [sender class]);
+        PGLog(@"[Player] Player is invalid. %@", [sender class]);
         [self resetState];
     }
     return NO;
@@ -311,7 +328,7 @@ static PlayerDataController* sharedController = nil;
     if(memory && _baselineAddress && [self baselineAddress]) {
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)];
         [memory loadDataForObject: self atAddress: ([self baselineAddress] + OBJECT_FIELDS_PTR) Buffer: (Byte*)&playerAddress BufLength: sizeof(playerAddress)];
-		log(LOG_DEV, @"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
+		PGLog(@"[PlayerData] Type: %d Address: 0x%X  BaselineAddress: 0x%X", objectType, playerAddress, [self baselineAddress]);
     }
 
     // if we got a ~~~~
@@ -338,7 +355,7 @@ static PlayerDataController* sharedController = nil;
         return;
     }
     
-    log(LOG_DEV, @"Error: Attemping to load invalid player; bailing. Address: 0x%X Type: %d", playerAddress, objectType);
+    PGLog(@"Error: Attemping to load invalid player; bailing. Address: 0x%X Type: %d", playerAddress, objectType);
     [self resetState];
 }
 
@@ -517,7 +534,7 @@ static PlayerDataController* sharedController = nil;
 		return runesAvailable;
 	}
 
-	log(LOG_DEV, @"[Rune] No rune state found");
+	PGLog(@"[Rune] No rune state found");
 	
 	return 0;	
 }
@@ -533,12 +550,25 @@ static PlayerDataController* sharedController = nil;
 
 - (BOOL)isOnGround {
 	
+	UInt32 movementFlags = [self movementFlags];
+	
 	// Player is in the air!
-	if ( ( [self movementFlags] & 0x3000000) == 0x3000000 || ( [self movementFlags] & 0x1000) == 0x1000 ){
+	if ( ( movementFlags & 0x3000000) == 0x3000000 || ( movementFlags & 0x1000) == 0x1000 ){
 		return NO;
 	}
 	
 	return YES;
+}
+
+- (BOOL)isAirMounted{
+	
+	UInt32 movementFlags = [self movementFlags];
+	
+	if ( ( movementFlags & MovementFlags_AirMounted) == MovementFlags_AirMounted || ( movementFlags & MovementFlags_AirMountedInAir) == MovementFlags_AirMountedInAir ){
+		return YES;
+	}
+	
+	return NO;
 }
 
 // 1 write
@@ -624,12 +654,13 @@ static PlayerDataController* sharedController = nil;
 // 1 read
 - (UInt32)honor {
 	UInt32 value = 0;
-	[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_Coinage) Buffer: (Byte*)&value BufLength: sizeof(value)];
+	[[controller wowMemoryAccess] loadDataForObject: self atAddress: ([self infoAddress] + PlayerField_Honor) Buffer: (Byte*)&value BufLength: sizeof(value)];
 	return value;
 }
 
 // 1 read, 2 writes
 - (void)faceToward: (Position*)position {
+	PGLog(@"[PlayerData] Facing %@", position);
     if([self playerIsValid:self]) {
         Position *ourPosition = [self position];
         [self setHorizontalDirectionFacing: [ourPosition angleTo: position]];
@@ -669,7 +700,7 @@ static PlayerDataController* sharedController = nil;
 
 - (BOOL)targetGuid: (GUID)guid{
 	
-	log(LOG_DEV, @"[PlayerData] Attempted to target 0x%qX", guid);
+	PGLog(@"[PlayerData] Attempted to target 0x%qX", guid);
 	
 	MemoryAccess *memory = [controller wowMemoryAccess];
     if ( memory && [memory isValid] && [memory saveDataForAddress: ([offsetController offset:@"TARGET_TABLE_STATIC"] + TARGET_LAST) Buffer: (Byte *)&guid BufLength: sizeof(guid)] ) {
@@ -678,7 +709,7 @@ static PlayerDataController* sharedController = nil;
 		
 		[bindingsController executeBindingForKey:BindingTargetLast];
 		
-		log(LOG_DEV, @"[PlayerData] Targetting last target: 0x%qX", guid);
+		PGLog(@"[PlayerData] Targetting last target: 0x%qX", guid);
 		
 		return YES;       
 	}
@@ -690,7 +721,7 @@ static PlayerDataController* sharedController = nil;
 	
 	// is target valid
 	if ( !target || ![target isValid] ){
-		log(LOG_DEV, @"[Player] Unable to target %@", target);
+		PGLog(@"[Player] Unable to target %@", target);
 		[mobController clearTargets];
 		return [self setTarget:0];
 	}
@@ -784,26 +815,6 @@ static PlayerDataController* sharedController = nil;
 	return NO;	
 }
 
-- (UInt64)PartyMember: (int)whichMember{
-	GUID partyGUID = 0x0;
-	
-	whichMember--;	// We'll make it so you can use 1-6
-	
-	UInt64 memberOffset = 0x8 * whichMember;
-	
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"Lua_GetPartyMember"] + memberOffset Buffer: (Byte *)&partyGUID BufLength: sizeof(partyGUID)];
-	return partyGUID;
-}
-
-// We should make this one work, I'm pretty new to this offset stuff so I failed
-- (BOOL)UnitInParty: (UInt64)targetID {
-	GUID partyGUID = targetID;
-    [[controller wowMemoryAccess] loadDataForObject: self atAddress: [offsetController offset:@"Lua_UnitInParty"] Buffer: (Byte *)&partyGUID BufLength: sizeof(partyGUID)];
-
-	if ( partyGUID > 0x0 ) return YES;
-	return NO;	
-}
-
 - (BOOL)isInCombat {
     if( ([self stateFlags] & (1 << 19)) == (1 << 19))
         return YES;
@@ -872,7 +883,7 @@ static PlayerDataController* sharedController = nil;
             // sometimes it's simply 0x500, moreoften 0x80500
             // 0x90500 seems to be the default state, but often isn't (wtf)
             // 0x--100 on a gryphon
-            log(LOG_DEV, @"toCast = %d, castID = %d, channelID = %d", toCastID, castID, channelID);
+            PGLog(@"toCast = %d, castID = %d, channelID = %d", toCastID, castID, channelID);
             return YES;
         }*/
     }
@@ -968,9 +979,9 @@ static PlayerDataController* sharedController = nil;
         UInt32 endTime = 0;
         [memory loadDataForObject: self atAddress: [self baselineAddress] + BaseField_Spell_TimeEnd Buffer: (Byte *)&endTime BufLength: sizeof(endTime)];
         if(endTime) { // we are casting and it has a designated end time
-            //log(LOG_DEV, @"[cast] %d vs. %d", endTime, currentTime);
+            //PGLog(@"[cast] %d vs. %d", endTime, currentTime);
             if(endTime >= currentTime) {
-                //log(LOG_DEV, @"[cast] %f", ((endTime - currentTime) / 1000.0f));
+                //PGLog(@"[cast] %f", ((endTime - currentTime) / 1000.0f));
                 return ((endTime - currentTime) / 1000.0f);
             }
         }
@@ -983,7 +994,7 @@ static PlayerDataController* sharedController = nil;
                 return ((endTime - currentTime) / 1000.0f);
         }
     }
-    // log(LOG_DEV, @"nothing from castTimeRemaining");
+    // PGLog(@"nothing from castTimeRemaining");
     return 0;
 }
 
@@ -1022,7 +1033,7 @@ static PlayerDataController* sharedController = nil;
 
 - (IBAction)showPlayerStructure: (id)sender {
     
-    //log(LOG_DEV, @"%@", NSStringFromPoint(NSPointFromCGPoint([controller screenPointForGamePosition: [self position]])));
+    //PGLog(@"%@", NSStringFromPoint(NSPointFromCGPoint([controller screenPointForGamePosition: [self position]])));
     
     [memoryViewController showObjectMemory: [self player]];
     [controller showMemoryView];
@@ -1095,7 +1106,7 @@ static PlayerDataController* sharedController = nil;
         // check pet
         if( self.pet && (![self.pet isValid] || ([player petGUID] == 0))) {
             self.pet = nil;
-            log(LOG_DEV, @"[Player] Pet is no longer valid.");
+            PGLog(@"[Player] Pet is no longer valid.");
         }
         
         // player has a pet, but we don't know which mob it is
@@ -1106,7 +1117,7 @@ static PlayerDataController* sharedController = nil;
             // this mob is really our pet, right?
             if( [pet isValid] && ((playerGUID == [pet summonedBy]) || (playerGUID == [pet createdBy]) || (playerGUID == [pet charmedBy]))) {
                 self.pet = pet;
-                log(LOG_DEV, @"[Player] Found pet: %@", pet);
+                PGLog(@"[Player] Found pet: %@", pet);
             } else {
                 // [[MobController sharedController] enumerateAllMobs];
             }
@@ -1117,7 +1128,7 @@ static PlayerDataController* sharedController = nil;
             savedLevel = level;
         } else {
             if(level == (savedLevel+1)) {
-                log(LOG_DEV, @"[Player] Level up! You have reached level %d", level);
+                PGLog(@"[Player] Level up! You have reached level %d", level);
                 savedLevel = level;
                 
                 if( [controller sendGrowlNotifications] && [GrowlApplicationBridge isGrowlInstalled] && [GrowlApplicationBridge isGrowlRunning]) {
@@ -1205,12 +1216,12 @@ static PlayerDataController* sharedController = nil;
         BOOL combatState = [self isInCombat];
         if( !_lastCombatState && combatState) {
             // we were not in combat, now we are
-            log(LOG_DEV, @"[PlayerData] ------ Player Entering Combat ------");
+            PGLog(@"[PlayerData] ------ Player Entering Combat ------");
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerEnteringCombatNotification object: nil];
         }
         if( _lastCombatState && !combatState) {
             // we were in combat, now we are not
-			log(LOG_DEV, @"[PlayerData] ------ Player Leaving Combat ------");
+			PGLog(@"[PlayerData] ------ Player Leaving Combat ------");
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerLeavingCombatNotification object: nil];
         }
         _lastCombatState = combatState;

@@ -1,10 +1,27 @@
-//
-//  ChatController.m
-//  Pocket Gnome
-//
-//  Created by Jon Drummond on 4/28/08.
-//  Copyright 2008 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
 
 #import <Carbon/Carbon.h>
 #import <CoreServices/CoreServices.h>
@@ -102,7 +119,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
             // found ascii value: now we must determine which block it is
             keycode = ix & 0x7f; // 0111 1111 mask
             numbloc = ix >> 7;
-            // log(LOG_DEV, @"Found ascii at %d; block = %d, keycode = %d", ix, numbloc, keycode);
+            // PGLog(@"Found ascii at %d; block = %d, keycode = %d", ix, numbloc, keycode);
             break;
         }
     }
@@ -162,13 +179,13 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
         return;
     }
 	
-	log(LOG_DEV, @"[Chat] Sending '%@'", keySequence);
+	//PGLog(@"[Chat] Sending '%@'", keySequence);
     
     // get our C string from the NSString
     int strLen = [keySequence length];
     unichar buffer[strLen+1];
     [keySequence getCharacters: buffer];
-    log(LOG_DEV, @"Sequence \"%@\" has %d characters.", keySequence, strLen);
+    //PGLog(@"Sequence \"%@\" has %d characters.", keySequence, strLen);
     
     // create the event source
     CGEventRef tempEvent = CGEventCreate(NULL);
@@ -192,7 +209,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
             
             // if we have a valid keycode, hit it
             if(keyCode >= 0) {
-                log(LOG_DEV, @"%d (shift: %d)", keyCode, shift);
+                //PGLog(@"%d (shift: %d)", keyCode, shift);
                 
                 // create key events
                 CGEventRef keyDn = CGEventCreateKeyboardEvent(source, (CGKeyCode)keyCode, TRUE);
@@ -267,7 +284,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
     if((hotkey < 0) || (hotkey > 128)) return;
     //if(modifier < 0 || modifier > 3) return;
 	
-    log(LOG_DEV, @"[Chat] Pressing %d with flags 0x%X", hotkey, modifier);
+    //PGLog(@"[Chat] Pressing %d with flags 0x%X", hotkey, modifier);
     
     unsigned int flags = modifier;
     ProcessSerialNumber wowPSN = [controller getWoWProcessSerialNumber];
@@ -355,7 +372,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode)
         if(keyUp)  CFRelease(keyUp);
         // CFRelease(source);
     } else {
-        log(LOG_GENERAL, @"invalid source with hotkey %d", hotkey);
+        PGLog(@"invalid source with hotkey %d", hotkey);
     }
 }
 

@@ -1,10 +1,27 @@
-//
-//  Position.m
-//  Pocket Gnome
-//
-//  Created by Jon Drummond on 12/16/07.
-//  Copyright 2007 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
 
 #import "Position.h"
 
@@ -116,7 +133,7 @@
     float yDiff = [position yPosition] - [self yPosition];
     float distance = [self distanceToPosition2D: position];
     NSPoint mobUnitVector = NSMakePoint(xDiff/distance, yDiff/distance);
-    // log(LOG_GENERAL, @"Unit Vector to Mob: %@", NSStringFromPoint(mobUnitVector));
+    // PGLog(@"Unit Vector to Mob: %@", NSStringFromPoint(mobUnitVector));
     
     // create unit vector of player facing angle
     //float angle = [playerDataController playerDirection];
@@ -126,8 +143,8 @@
     // determine the angle between the Mob and North
     float angleBetween = mobUnitVector.x*northUnitVector.x + mobUnitVector.y*northUnitVector.y;
     float angleOffset = acosf(angleBetween);
-    // log(LOG_GENERAL, @"Cosine of angle between: %f", angleBetween);
-    // log(LOG_GENERAL, @"Angle (rad) between: %f", angleOffset);
+    // PGLog(@"Cosine of angle between: %f", angleBetween);
+    // PGLog(@"Angle (rad) between: %f", angleOffset);
     
     if(mobUnitVector.y > 0) // mob is in N-->W-->S half of the compass
         return angleOffset;
@@ -165,7 +182,7 @@
         angleBetween = 0.0f - angleBetween;
     }
 
-    //log(LOG_GENERAL, @"Got vertical angle between: %f; cosine: %f", angleBetween, cosine);
+    //PGLog(@"Got vertical angle between: %f; cosine: %f", angleBetween, cosine);
     return angleBetween;
 }
 

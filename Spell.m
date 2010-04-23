@@ -1,10 +1,27 @@
-//
-//  Spell.m
-//  Pocket Gnome
-//
-//  Created by Jon Drummond on 12/22/07.
-//  Copyright 2007 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
 
 #import "Spell.h"
 
@@ -70,7 +87,7 @@
         if(self.name) {
             NSRange range = [self.name rangeOfString: @"html>"];
             if( ([self.name length] == 0) || (range.location != NSNotFound)) {
-                // log(LOG_GENERAL, @"Name for spell %@ is invalid.", self.ID);
+                // PGLog(@"Name for spell %@ is invalid.", self.ID);
                 self.name = nil;
             }
         }
@@ -395,7 +412,7 @@
     [_downloadData release]; _downloadData = nil;
  
     // inform the user
-    log(LOG_GENERAL, @"Connection failed! Error - %@ %@",
+    PGLog(@"Connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey:NSErrorFailingURLStringKey]);
 }
@@ -436,12 +453,12 @@
                     break;
             }
             
-            log(LOG_GENERAL, @"Spell %d does not exist on wowhead.", spellID);
+            PGLog(@"Spell %d does not exist on wowhead.", spellID);
             return;
         } else {
             if( [scanner scanUpToString: @"Bad Request" intoString: nil] && ![scanner isAtEnd]) {
                 int spellID = [[self ID] intValue];
-                log(LOG_GENERAL, @"Error loading spell %d.", spellID);
+                PGLog(@"Error loading spell %d.", spellID);
                 return;
             } else {
                 [scanner setScanLocation: 0];
@@ -556,18 +573,18 @@
             float castTime = 0;
             if([scanner scanFloat: &castTime]) {
                 self.castTime = [NSNumber numberWithFloat: castTime];
-                // log(LOG_GENERAL, @"Loaded cast time %@ for spell %@", self.castTime, self);
+                // PGLog(@"Loaded cast time %@ for spell %@", self.castTime, self);
             } else {
                 if([scanner scanString: @"Instant" intoString: nil]) {
                     self.castTime = [NSNumber numberWithFloat: 0];
-                    // log(LOG_GENERAL, @"Loaded cast time instant! for spell %@", self);
+                    // PGLog(@"Loaded cast time instant! for spell %@", self);
                 } else {
-                    // log(LOG_GENERAL, @"Got nothing for %@", self);
+                    // PGLog(@"Got nothing for %@", self);
                     self.castTime = nil;
                 }
             }
         } else {
-            // log(LOG_GENERAL, @"No cast time entry for %@", self);
+            // PGLog(@"No cast time entry for %@", self);
             [scanner setScanLocation: scanSave];
             self.castTime = nil;
         }
@@ -612,7 +629,7 @@
         } else {
             [scanner setScanLocation: scanSave]; // some spells dont have cooldowns
 			
-			// log(LOG_GENERAL, @"Loaded: %@; Rank %@; %@ yards; %@ seconds; school: %@; dispel: %@", self.name, self.rank, self.range, self.cooldown, self.school, self.dispelType);
+			// PGLog(@"Loaded: %@; Rank %@; %@ yards; %@ seconds; school: %@; dispel: %@", self.name, self.rank, self.range, self.cooldown, self.school, self.dispelType);
         }
 		
 		
@@ -632,14 +649,14 @@
 		[scanner setScanLocation: scanSave];
 		
 		if ( [self.mount intValue] > 0 ){
-			log(LOG_GENERAL, @"mount: %@  %@ %@", [self ID], self.mount, self.mechanic);
+			PGLog(@"mount: %@  %@ %@", [self ID], self.mount, self.mechanic);
 		}
 		
 		// get if this is a fast mount
         scanSave = [scanner scanLocation];
         if([scanner scanUpToString: MOUNT_FAST intoString: nil] && [scanner scanString: MOUNT_FAST intoString: NULL]) {
         } else {
-            // log(LOG_GENERAL, @"No cast time entry for %@", self);
+            // PGLog(@"No cast time entry for %@", self);
             [scanner setScanLocation: scanSave];
         }
 		
@@ -659,7 +676,7 @@
 		}
     }
 	else{
-		log(LOG_GENERAL, @"[Spell] Error grabbing data for Spell ID: %@", [self ID]);
+		PGLog(@"[Spell] Error grabbing data for Spell ID: %@", [self ID]);
 	}
 }
 
