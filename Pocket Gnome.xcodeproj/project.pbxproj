@@ -109,6 +109,9 @@
 		283E08911166E13400DE13C5 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
 		283E089B1166E13900DE13C5 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 283E08901166E13400DE13C5 /* Sparkle.framework */; };
 		28BF8AD01162E3FE00166879 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 28BF8ACF1162E3FE00166879 /* LICENSE */; };
+		34009337117C3A0400B049A2 /* MPTaskFollow.m in Sources */ = {isa = PBXBuildFile; fileRef = 34009336117C3A0400B049A2 /* MPTaskFollow.m */; };
+		3400933C117C4A7A00B049A2 /* MPActivityFollow.m in Sources */ = {isa = PBXBuildFile; fileRef = 3400933B117C4A7A00B049A2 /* MPActivityFollow.m */; };
+		3400954A117EF71400B049A2 /* MPTaskAssist.m in Sources */ = {isa = PBXBuildFile; fileRef = 34009549117EF71400B049A2 /* MPTaskAssist.m */; };
 		34083ADC10AFC3CA00401B07 /* MPSquareTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 34083ADB10AFC3CA00401B07 /* MPSquareTree.m */; };
 		340895D311625375002A16B7 /* MPMover.m in Sources */ = {isa = PBXBuildFile; fileRef = 340895D211625375002A16B7 /* MPMover.m */; };
 		342303B4109EF0E20046EC13 /* MPPointTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303B3109EF0E20046EC13 /* MPPointTree.m */; };
@@ -631,6 +634,12 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* PocketGnome_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PocketGnome_Prefix.pch; sourceTree = "<group>"; };
+		34009335117C3A0400B049A2 /* MPTaskFollow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskFollow.h; sourceTree = "<group>"; };
+		34009336117C3A0400B049A2 /* MPTaskFollow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskFollow.m; sourceTree = "<group>"; };
+		3400933A117C4A7A00B049A2 /* MPActivityFollow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityFollow.h; sourceTree = "<group>"; };
+		3400933B117C4A7A00B049A2 /* MPActivityFollow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityFollow.m; sourceTree = "<group>"; };
+		34009548117EF71400B049A2 /* MPTaskAssist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskAssist.h; sourceTree = "<group>"; };
+		34009549117EF71400B049A2 /* MPTaskAssist.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskAssist.m; sourceTree = "<group>"; };
 		34083ADA10AFC3CA00401B07 /* MPSquareTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSquareTree.h; sourceTree = "<group>"; };
 		34083ADB10AFC3CA00401B07 /* MPSquareTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSquareTree.m; sourceTree = "<group>"; };
 		340895D111625375002A16B7 /* MPMover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMover.h; sourceTree = "<group>"; };
@@ -1550,6 +1559,8 @@
 				34AE0B301068FADC005F7C01 /* MPActivityAttack.m */,
 				3430E9C21069D88500F7B575 /* MPActivityApproach.h */,
 				3430E9C31069D88500F7B575 /* MPActivityApproach.m */,
+				3400933A117C4A7A00B049A2 /* MPActivityFollow.h */,
+				3400933B117C4A7A00B049A2 /* MPActivityFollow.m */,
 				34A3A05710723C9400BC8A42 /* MPActivityLoot.h */,
 				34A3A05810723C9400BC8A42 /* MPActivityLoot.m */,
 				8462E433107A36BF00A5D217 /* MPActivityRest.h */,
@@ -1636,10 +1647,14 @@
 			children = (
 				34B094A310670BC100EC8D5A /* MPTask.h */,
 				34B094A410670BC100EC8D5A /* MPTask.m */,
+				34009548117EF71400B049A2 /* MPTaskAssist.h */,
+				34009549117EF71400B049A2 /* MPTaskAssist.m */,
 				34B094A910670BC100EC8D5A /* MPTaskConditional.h */,
 				34B094AA10670BC100EC8D5A /* MPTaskConditional.m */,
 				84AC54F91074F6CE006342D8 /* MPTaskDefend.h */,
 				84AC54FA1074F6CE006342D8 /* MPTaskDefend.m */,
+				34009335117C3A0400B049A2 /* MPTaskFollow.h */,
+				34009336117C3A0400B049A2 /* MPTaskFollow.m */,
 				8474F10910777E5B0017C0B5 /* MPTaskGhostRoute.h */,
 				8474F10A10777E5B0017C0B5 /* MPTaskGhostRoute.m */,
 				34B094AB10670BC100EC8D5A /* MPTaskIf.h */,
@@ -2687,6 +2702,9 @@
 				34C3531C116F56E4002B11E5 /* MPActivityTestPosition.m in Sources */,
 				34C3566A117738B3002B11E5 /* MPSpell.m in Sources */,
 				34C356E81178BF5D002B11E5 /* MPCustomClassScrubDruid.m in Sources */,
+				34009337117C3A0400B049A2 /* MPTaskFollow.m in Sources */,
+				3400933C117C4A7A00B049A2 /* MPActivityFollow.m in Sources */,
+				3400954A117EF71400B049A2 /* MPTaskAssist.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
