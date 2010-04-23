@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  PvPController.h
+//  Pocket Gnome
+//
+//  Created by Josh on 2/24/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
+//
 
 #import "PvPController.h"
 #import "SaveData.h"
@@ -51,6 +34,8 @@
 		_currentBehavior = nil;
 		
 		_nameBeforeRename = nil;
+		
+		log(LOG_GENERAL, @"[PvP] Loaded %d objects", [self.behaviors count] );
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
 		
@@ -97,11 +82,11 @@
 - (void)saveBehaviors{
 	for ( PvPBehavior *behavior in self.behaviors ){
 		if ( behavior.changed ){
-			//PGLog(@"SAVING %@", behavior);
+			log(LOG_GENERAL, @"SAVING %@", behavior);
 			[self saveObject:behavior];
 		}
 		else{
-			//PGLog(@"NOT SAVING %@", behavior);
+			log(LOG_GENERAL, @"NOT SAVING %@", behavior);
 		}
 	}
 }
@@ -120,7 +105,9 @@
 	
 	//[self willChangeValueForKey: @"currentBehavior"];
     //[self didChangeValueForKey: @"currentBehavior"];
-
+	
+	log(LOG_GENERAL, @"validateBindings");
+	
 	// assign default routes so it's not "No Value"
 	if ( self.currentBehavior.AlteracValley.routeCollection == nil )
 		self.currentBehavior.AlteracValley.routeCollection = [[waypointController routeCollections] objectAtIndex:0];
@@ -156,11 +143,11 @@
 	
 	// found a new one
 	if ( newRC ){
-		//PGLog(@"[PvP] Found route collection for %@, 0x%X vs. 0x%X", bg, bg.routeCollection, newRC);
+		//log(LOG_GENERAL, @"[PvP] Found route collection for %@, 0x%X vs. 0x%X", bg, bg.routeCollection, newRC);
 		bg.routeCollection = newRC;
 	}
 	else{
-		PGLog(@"[PvP] Didn't find for %@? %@", bg, bg.routeCollection);
+		log(LOG_GENERAL, @"[PvP] Didn't find for %@? %@", bg, bg.routeCollection);
 		bg.routeCollection = nil;
 	}
 }
@@ -206,7 +193,7 @@
 	
     //[ruleTable reloadData];
     
-    PGLog(@"Added behavior: %@", [behavior name]);
+    log(LOG_GENERAL, @"Added behavior: %@", [behavior name]);
 }
 
 #pragma mark UI
@@ -291,7 +278,7 @@
 			[self addBehavior: importedBehavior];
 		}
 		else{
-			PGLog(@"[PvP] Error on importing behavior, object %@", importedBehavior);
+			log(LOG_GENERAL, @"[PvP] Error on importing behavior, object %@", importedBehavior);
 		}
     }
     
@@ -338,10 +325,10 @@
 	
 	for ( PvPBehavior *behavior in self.behaviors ){
 		
-		PGLog(@"%@ %d 0x%X", behavior, [behavior changed], behavior);
+		log(LOG_GENERAL, @"%@ %d 0x%X", behavior, [behavior changed], behavior);
 		
 		if ( behavior.changed ){
-			PGLog(@"[PvP] Saving %@ 0x%X", behavior, behavior);
+			log(LOG_GENERAL, @"[PvP] Saving %@ 0x%X", behavior, behavior);
 			
 			[behavior setChanged:NO];
 			

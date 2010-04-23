@@ -1,33 +1,17 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  BotController.h
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 1/14/08.
+//  Copyright 2008 Savory Software, LLC. All rights reserved.
+//
 
 #import <Cocoa/Cocoa.h>
 
 @class Mob;
 @class Unit;
 @class Rule;
+@class Condition;
 @class Behavior;
 @class WoWObject;
 @class Waypoint;
@@ -36,6 +20,7 @@
 @class RouteCollection;
 @class CombatProfile;
 @class PvPBehavior;
+@class Position;
 
 @class PTHotKey;
 @class SRRecorderControl;
@@ -52,6 +37,7 @@
 @class MobController;
 @class ChatController;
 @class ChatLogController;
+@class ChatLogEntry;
 @class Controller;
 @class WaypointController;
 @class ProcedureController;
@@ -67,17 +53,17 @@
 @class StatisticsController;
 @class BindingsController;
 @class PvPController;
-@class DatabaseManager;
 
 @class ScanGridView;
 
-#define ErrorSpellNotReady			@"ErrorSpellNotReady"
-#define ErrorTargetNotInLOS			@"ErrorTargetNotInLOS"
-#define ErrorInvalidTarget			@"ErrorInvalidTarget"
-#define ErrorOutOfRange				@"ErrorOutOfRange"
-#define ErrorTargetNotInFront		@"ErrorTargetNotInFront"
+#define ErrorSpellNotReady				@"ErrorSpellNotReady"
+#define ErrorTargetNotInLOS				@"ErrorTargetNotInLOS"
+#define ErrorInvalidTarget				@"ErrorInvalidTarget"
+#define ErrorTargetOutOfRange			@"ErrorTargetOutOfRange"
+#define ErrorTargetNotInFront			@"ErrorTargetNotInFront"
+#define ErrorMorePowerfullSpellActive	@"ErrorMorePowerfullSpellActive"
 
-#define BotStarted					@"BotStarted"
+#define BotStarted						@"BotStarted"
 
 // Hotkey set flags
 #define	HotKeyStartStop				0x1
@@ -110,11 +96,13 @@
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet BindingsController		*bindingsController;
 	IBOutlet PvPController			*pvpController;
-	IBOutlet DatabaseManager		*databaseManager;
+
 
 	IBOutlet QuestController		*questController;
 	IBOutlet CorpseController		*corpseController;
-	
+
+	IBOutlet Route					*Route;	// is this right?
+
     IBOutlet NSView *view;
     
 	RouteCollection *_theRouteCollection;
@@ -127,28 +115,34 @@
     
 	UInt32 _lastSpellCastGameTime;
 	UInt32 _lastSpellCast;
-    BOOL _doMining, _doHerbalism, _doSkinning, _doLooting, _doNetherwingEgg, _doFishing;
+    BOOL _doMining, _doHerbalism, _doSkinning, _doNinjaSkin, _doLooting, _doNetherwingEgg, _doFishing;
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
     BOOL _didPreCombatProcedure;
-	int _doRegenProcedure;
     NSString *_procedureInProgress;
+	NSString *_evaluationInProgress;
+	
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
+	Mob *_mobJustSkinned;
     Unit *preCombatUnit;
+	Unit *castingUnit;		// the unit we're casting on!
+
     NSMutableArray *_mobsToLoot;
-    int _reviveAttempt, _skinAttempt;
+    int _reviveAttempt, _ghostDance, _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
 	NSDate *startDate;
 	int _lastActionErrorCode;
 	UInt32 _lastActionTime;
 	int _zoneBeforeHearth;
+	UInt64 _lastCombatProcedureTarget;
 	
 	// healing shit
 	BOOL _shouldFollow;
 	Unit *_lastUnitAttemptedToHealed;
 	BOOL _includeFriendly;
+	BOOL _includeFriendlyPatrol;
 	
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;
@@ -159,6 +153,7 @@
 	NSDate *skinStartTime;
 	BOOL _lootUseItems;
 	int _movingTowardMobCount;
+	int _movingTowardNodeCount;
 	
 	NSMutableArray *_routesChecked;
 	
@@ -178,10 +173,19 @@
 	float _nodeIgnoreHostileDistance;
 	float _nodeIgnoreMobDistance;
 	
+	// new flying shit
+	int _jumpAttempt;
+	Position *_lastGoodFollowPosition;
+	
+	// mount correction (sometimes we can't mount)
+	int _mountAttempt;
+	NSDate *_mountLastAttempt;
+	
     // pvp shit
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
     int _pvpAntiAFKCounter;
+//    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
 	BOOL _attackingInStrand;
@@ -201,6 +205,27 @@
 	// log out options
 	NSTimer *_logOutTimer;
     
+	// Party
+	Unit *_tankUnit;
+	Unit *_assistUnit;
+	BOOL _leaderBeenWaiting;
+	
+	// Follow
+	Route *followRoute;
+	BOOL _followSuspended;
+	BOOL _followLastSeenPosition;
+	Unit *_followUnit;
+	
+	int _lootScanIdleTimer;
+	int _lootScanCycles;
+
+	int _partyEmoteIdleTimer;
+	int _partyEmoteTimeSince;
+	NSString *_lastEmote;
+	int _lastEmoteShuffled;
+
+	BOOL _wasLootWindowOpen;
+	
     // -----------------
     // -----------------
     
@@ -231,6 +256,7 @@
     IBOutlet id miningSkillText;
     IBOutlet id herbalismSkillText;
     IBOutlet NSButton *skinningCheckbox;
+	IBOutlet NSButton *ninjaSkinCheckbox;
     IBOutlet id skinningSkillText;
     IBOutlet id gatherDistText;
     IBOutlet NSButton *lootCheckbox;
@@ -277,6 +303,7 @@
 @property (readwrite, assign) BOOL isBotting;
 @property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
+@property (retain) NSString *evaluationInProgress;
 
 @property (readonly, retain) RouteCollection *theRouteCollection;
 @property (readwrite, retain) RouteSet *theRouteSet;
@@ -286,9 +313,20 @@
 @property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
 @property (readonly, retain) NSDate *skinStartTime;
+@property (readonly, retain) Unit *castingUnit;
+@property (readonly, retain) Unit *followUnit;
+@property (readonly, retain) Unit *assistUnit;
+@property (readonly, retain) Unit *tankUnit;
+@property (readwrite, assign) BOOL followSuspended;
+@property (readonly, retain) Route *followRoute;
 
+@property (readwrite, assign) BOOL wasLootWindowOpen;
 
 - (void)testRule: (Rule*)rule;
+
+- (BOOL)performProcedureMobCheck: (Unit*)target;
+- (BOOL)lootScan;
+- (void)resetLootScanIdleTimer;
 
 // Input from CombatController
 //- (void)addingUnit: (Unit*)unit;
@@ -298,9 +336,42 @@
 
 // Input from MovementController;
 //- (void)reachedUnit: (WoWObject*)unit;
-- (BOOL)shouldProceedFromWaypoint: (Waypoint*)waypoint;
+- (void)cancelCurrentEvaluation;
+- (void)cancelCurrentProcedure;
+- (BOOL)combatProcedureValidForUnit: (Unit*)unit;
+- (BOOL)evaluateConditionFriendlies: (Condition*)condition;
+- (BOOL)evaluateConditionEnemies: (Condition*)condition;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
+- (BOOL)evaluateForPVP;
+- (BOOL)evaluateForGhost;
+- (BOOL)evaluateForParty;
+- (BOOL)evaluateForFollow;
+- (BOOL)evaluateForCombatContinuation;
+- (BOOL)evaluateForRegen;
+- (BOOL)evaluateForLoot;
+- (BOOL)evaluateForCombatStart;
+- (BOOL)evaluateForMiningAndHerbalism;
+- (BOOL)evaluateForFishing;
+- (BOOL)evaluateForPatrol;
+
+// Party stuff
+- (BOOL)isOnAssist;
+- (BOOL)establishTankUnit;
+- (BOOL)isTank:(Unit*)unit;
+- (BOOL)leaderWait;
+- (void)followRouteClear;
+- (void)jumpIfAirMountOnGround;
+- (NSString*)randomEmote: (Unit*)emoteUnit;
+- (NSString*)emoteGeneral;
+- (NSString*)emoteFriend;
+- (NSString*)emoteSexy;
+
+// Follow stuff
+- (void)followRouteClear;
+- (BOOL)followMountNow;
+- (BOOL)followMountCheck;
+- (BOOL)whisperCommandAllowed: (ChatLogEntry*)entry;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
@@ -332,6 +403,8 @@
 - (void)interactWithNode:(UInt32)entryID;
 - (void)logOut;
 
+- (void)logOutWithMessage:(NSString*)message;
+	
 // for new action/conditions
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
 

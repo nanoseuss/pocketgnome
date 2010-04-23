@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  Route.m
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 12/16/07.
+//  Copyright 2007 Savory Software, LLC. All rights reserved.
+//
 
 #import "Route.h"
 
@@ -65,8 +48,8 @@
     Route *copy = [[[self class] allocWithZone: zone] init];
     copy.waypoints = self.waypoints;
     
-    // PGLog(@"Old route: %@", self.waypoints);
-    // PGLog(@"New route: %@", copy.waypoints);
+    // log(LOG_GENERAL, @"Old route: %@", self.waypoints);
+    // log(LOG_GENERAL, @"New route: %@", copy.waypoints);
     
     return copy;
 }
@@ -109,30 +92,32 @@
     float minDist = INFINITY, tempDist = 0;
     for ( Waypoint *waypoint in [self waypoints] ) {
         tempDist = [position distanceToPosition: [waypoint position]];
-		//PGLog(@" %0.2f < %0.2f  %@", tempDist, minDist, waypoint);
+		//log(LOG_GENERAL, @" %0.2f < %0.2f  %@", tempDist, minDist, waypoint);
         if ( (tempDist < minDist) && (tempDist >= 0.0f) ) {
             minDist = tempDist;
             closestWP = waypoint;
         }
     }
 
-	PGLog(@"[Move] Closest WP found at a distance of %0.2f  Vertical Distance: %0.2f Total waypoints searched: %d", minDist, [position verticalDistanceToPosition:[closestWP position]], [[self waypoints] count]);
+	log(LOG_MOVEMENT, @"Closest WP found at a distance of %0.2f  Vertical Distance: %0.2f Total waypoints searched: %d", minDist, [position verticalDistanceToPosition:[closestWP position]], [[self waypoints] count]);
 	
     return [[closestWP retain] autorelease];
 }
 
 - (void)addWaypoint: (Waypoint*)waypoint {
-    if(waypoint != nil)
+    if(waypoint != nil) {
+        log(LOG_DEV, @"addWaypoint: adding waypoint");
         [_waypoints addObject: waypoint];
-    else
-        PGLog(@"addWaypoint: failed; waypoint is nil");
+   } else {
+        log(LOG_GENERAL, @"addWaypoint: failed; waypoint is nil");
+   }
 }
 
 - (void)insertWaypoint: (Waypoint*)waypoint atIndex: (unsigned)index {
     if(waypoint != nil && index >= 0 && index <= [_waypoints count])
         [_waypoints insertObject: waypoint atIndex: index];
     else
-        PGLog(@"insertWaypoint:atIndex: failed; either waypoint is nil or index is out of bounds");
+        log(LOG_GENERAL, @"insertWaypoint:atIndex: failed; either waypoint is nil or index is out of bounds");
 }
 
 - (void)removeWaypoint: (Waypoint*)waypoint {
@@ -144,4 +129,9 @@
     if(index >= 0 && index < [_waypoints count])
         [_waypoints removeObjectAtIndex: index];
 }
+
+- (void)removeAllWaypoints {
+    [_waypoints removeAllObjects];
+}
+
 @end

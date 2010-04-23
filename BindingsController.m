@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  BindingsController.h
+//  Pocket Gnome
+//
+//  Created by Josh on 1/28/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
+//
 
 #import "BindingsController.h"
 
@@ -53,13 +36,15 @@
 		_guid = 0x0;
 		
 		// required bindings
-		_requiredBindings = [[NSArray arrayWithObjects:	
-							  @"MULTIACTIONBAR1BUTTON1",		// lower left action bar
+		_requiredBindings = [[NSArray arrayWithObjects: 
+							  @"MULTIACTIONBAR1BUTTON1",            // lower left action bar
 							  @"INTERACTMOUSEOVER",
 							  @"TARGETLASTTARGET",
 							  @"TURNLEFT",
 							  @"TURNRIGHT",
 							  @"MOVEFORWARD",
+							  @"STRAFERIGHT",
+							  @"STRAFELEFT",
 							  nil] retain];
 		
 		// optional - basically back up in case any of the above are NOT bound
@@ -207,7 +192,7 @@ typedef struct WoWBinding {
 		// loop through all structs!
 		while ( [memory loadDataForObject: self atAddress: structPointer Buffer: (Byte*)&bindingStruct BufLength: sizeof(bindingStruct)] && bindingStruct.nextBinding > 0x0 && !(bindingStruct.nextBinding & 0x1) ){
 
-			//PGLog(@"[Bindings] Struct found at 0x%X", structPointer);
+			//log(LOG_BINDINGS, @"[Bindings] Struct found at 0x%X", structPointer);
 
 			// initiate our variables
 			NSString *key = nil;
@@ -216,24 +201,23 @@ typedef struct WoWBinding {
 			tmpKey[63] = 0;
 			tmpCmd[63] = 0;
 
-			
 			if ( [memory loadDataForObject: self atAddress: bindingStruct.keyPointer Buffer: (Byte *)&tmpKey BufLength: sizeof(tmpKey)-1] ){
 				key = [NSString stringWithUTF8String: tmpKey];
-				//PGLog(@"[Bindings] Key %@ found at 0x%X", key, bindingStruct.keyPointer);
+				//log(LOG_BINDINGS, @"[Bindings] Key %@ found at 0x%X", key, bindingStruct.keyPointer);
 			}
 			
 			if ( [memory loadDataForObject: self atAddress: bindingStruct.cmdPointer Buffer: (Byte *)&tmpCmd BufLength: sizeof(tmpCmd)-1] ){
 				cmd = [NSString stringWithUTF8String: tmpCmd];
-				//PGLog(@"[Bindings] Command %@ found at 0x%X", cmd, bindingStruct.cmdPointer);
+				//log(LOG_BINDINGS, @"[Bindings] Command %@ found at 0x%X", cmd, bindingStruct.cmdPointer);
 			}
 			
 			// add it
 			if ( [key length] && [cmd length] ){
-				//PGLog(@"%@ -> %@", key, cmd);
+				//log(LOG_BINDINGS, @"%@ -> %@", key, cmd);
 				[_bindings setObject:cmd forKey:key];
 			}
 			
-			//PGLog(@"[Bindings] Code %d for %@", [chatController keyCodeForCharacter:key], key);
+			//log(LOG_BINDINGS, @"[Bindings] Code %d for %@", [chatController keyCodeForCharacter:key], key);
 			
 			// we already made it through the list! break!
 			if ( firstStruct == bindingStruct.nextBinding ){
@@ -292,7 +276,7 @@ typedef struct WoWBinding {
 		// remove the previous commands
 		[allCodes removeAllObjects];
 		
-		//PGLog(@"[Bindings] Command: %@ %@", [_bindings objectForKey:key], key);
+		//log(LOG_BINDINGS, @"[Bindings] Command: %@ %@", [_bindings objectForKey:key], key);
 		
 		// this will tell us where the "-" is in our string!
 		int i, splitIndex = -1;
@@ -315,7 +299,7 @@ typedef struct WoWBinding {
 
 			/*NSString *binding = [[_bindings objectForKey:key] lowercaseString];
 			if ( [binding isEqualToString:[[NSString stringWithFormat:@"MULTIACTIONBAR1BUTTON1"] lowercaseString]] ){
-				PGLog(@" %@", command1);
+				log(LOG_BINDINGS, @" %@", command1);
 			}*/
 		}
 		// 2 commands
@@ -398,9 +382,9 @@ typedef struct WoWBinding {
 	if ( [unknownCodes count] ){
 		for ( NSString *cmd in unknownCodes ){
 			if ( ![_commandToAscii objectForKey:cmd] ){
-				PGLog(@"[Bindings] Unable to find code for %@, report it to Tanaris4!", cmd);
+				log(LOG_BINDINGS, @"[Bindings] Unable to find code for %@, report it to Tanaris4!", cmd);
 			}
-			//PGLog(@" \@\"%@\",", cmd);
+			//log(LOG_BINDINGS, @" \@\"%@\",", cmd);
 		}
 	}
 }
@@ -488,39 +472,40 @@ typedef struct WoWBinding {
 		
 		// we have a valid binding!
 		if ( code != -1  ){
-
+			
 			// add our object!
 			[_bindingsToCodes setObject:[NSDictionary dictionaryWithObjectsAndKeys:
-										 [NSNumber numberWithInt:code],			@"Code",
-										 [NSNumber numberWithInt:modifier],		@"Modifier",
+										 [NSNumber numberWithInt:code],                 @"Code",
+										 [NSNumber numberWithInt:modifier],             @"Modifier",
 										 nil]
-									forKey:binding];	// key is something like MULTIACTIONBAR1BUTTON1
+								 forKey:binding];        // key is something like MULTIACTIONBAR1BUTTON1
 		}
 		// no binding /cry
 		else{
-			//PGLog(@"[Bindings] No valid key binding found for %@", binding);
+			log(LOG_BINDINGS, @"No valid key binding found for %@", binding);
 		}
 	}
 }
 
 - (BOOL)executeBindingForKey:(NSString*)key{
 	
+	log(LOG_BINDINGS, @"Executing %@", key);
+	
 	NSDictionary *dict = [_bindingsToCodes objectForKey:key];
 	
 	// special case! Try for a backup!
 	if ( !dict && [key isEqualToString:BindingPrimaryHotkey] ){
-		PGLog(@"[Bindings] No code found for %@, searching for %@", key, BindingPrimaryHotkeyBackup);
-		dict = [_bindingsToCodes objectForKey:BindingPrimaryHotkeyBackup];		
+		log(LOG_BINDINGS, @"No code found for %@, searching for %@", key, BindingPrimaryHotkeyBackup);
+		dict = [_bindingsToCodes objectForKey:BindingPrimaryHotkeyBackup];
 	}
 	
 	if ( dict ){
+		//int offset		= [[dict objectForKey:@"Offset"] intValue];
 		int code		= [[dict objectForKey:@"Code"] intValue];
 		int modifier	= [[dict objectForKey:@"Modifier"] intValue];
 		
-		PGLog(@"[Bindings] Executing %@ with code 0x%X and modifier 0x%X", key, code, modifier);
-		
 		// close chat box?
-		if ( [controller isWoWChatBoxOpen] && code != kVK_F13 && code != kVK_F14 && code != kVK_F15 ){
+		if ( [controller isWoWChatBoxOpen] && code != kVK_F13 && code != kVK_F14 && code != kVK_F15){
 			[chatController pressHotkey:kVK_Escape withModifier:0x0];
 			usleep(10000);
 		}
@@ -530,14 +515,14 @@ typedef struct WoWBinding {
 		return YES;
 	}
 	else{
-		PGLog(@"[Bindings] Unable to find binding for %@", key);
+		log(LOG_BINDINGS, @"[Bindings] Unable to find binding for %@", key);
 	}
 	
 	return NO;
 }
 
 - (int)castingBarOffset{
-		
+	
 	// primary is valid
 	if ( [_bindingsToCodes objectForKey:BindingPrimaryHotkey] ){
 		return BAR6_OFFSET;
@@ -590,7 +575,7 @@ typedef struct WoWBinding {
 		return error;
 	}
 	
-	return nil;	
+	return nil;     
 }
 
 @end

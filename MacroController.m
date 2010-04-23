@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  MacroController.m
+//  Pocket Gnome
+//
+//  Created by Josh on 9/21/09.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
+//
 
 #import <Carbon/Carbon.h>
 
@@ -118,7 +101,7 @@
 	NSString *macroCommand = [macroData valueForKey:@"Macro"];
 	
 	if ( !macroCommand || [macroCommand length] == 0 ) {
-		PGLog(@"[Macro] Using the key as a command!");
+		log(LOG_MACRO, @"Using the key as a command!");
 		macroCommand = key;
 	}
 	
@@ -129,7 +112,7 @@
 
 		// hit escape to close the chat window if it's open
 		if ( [controller isWoWChatBoxOpen] ){
-			PGLog(@"[Macro] Sending escape to close open chat!");
+			log(LOG_MACRO, @"Sending escape to close open chat!");
 			[chatController sendKeySequence: [NSString stringWithFormat: @"%c", kEscapeCharCode]];
 			usleep(100000);
 		}
@@ -139,7 +122,7 @@
 		usleep(100000);
 		[chatController sendKeySequence: [NSString stringWithFormat: @"%@%c", macroCommand, '\n']];
 		
-		PGLog(@"[Macro] I just typed the '%@' command. I'm not really sure why.", key);
+		log(LOG_MACRO, @"I just typed the '%@' command. I'm not really sure why.", key);
 	}
 }
 
@@ -211,7 +194,7 @@
 	if ( macro ){
 		UInt32 macroID = [[macro number] unsignedIntValue];
 		
-		//PGLog(@"[Macro] Executing macro '%@' with id 0x%X", key, macroID);
+		//log(LOG_MACRO, @"Executing macro '%@' with id 0x%X", key, macroID);
 		
 		[botController performAction:USE_MACRO_MASK + macroID];
 		usleep(100000);
@@ -247,7 +230,7 @@
 			// search for partial match!
 			NSRange range = [[macro body] rangeOfString : macroCommand];
 			if ( range.location != NSNotFound ) {
-				PGLog(@"[Macro] Found partial match! '%@'", macroCommand);
+				log(LOG_MACRO, @"Found partial match! '%@'", macroCommand);
 				return macro;
 			}
 		}
@@ -295,7 +278,7 @@
 			// search for partial match!
 			NSRange range = [[macro body] rangeOfString : command];
 			if ( range.location != NSNotFound ) {
-				PGLog(@"[Macro] Found partial match! '%@'", command);
+				log(LOG_MACRO, @"Found partial match! '%@'", command);
 				return [macro.number intValue];
 			}
 		}
@@ -380,12 +363,12 @@
 			newMacroBody[strlen(oldBody)] = '\0';
 			[memory saveDataForAddress: objectPtr+0x160 Buffer: (Byte *)newMacroBody BufLength:sizeof(newMacroBody)];
 			
-			//PGLog(@"[Macro] Completed execution of %@ using macro ID %d", macroCommand, macroID);
+			log(LOG_MACRO, @"Completed execution of %@ using macro ID %d", macroCommand, macroID);
 			
 			return YES;
 		}
 		else{
-			PGLog(@"[Macro] Error, unable to find execute a null macro command!");
+			log(LOG_MACRO, @"Error, unable to find execute a null macro command!");
 		}
 	}
 	

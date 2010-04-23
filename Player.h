@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  Player.h
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 5/25/08.
+//  Copyright 2008 Savory Software, LLC. All rights reserved.
+//
 
 #import <Cocoa/Cocoa.h>
 #import "Unit.h"
@@ -42,24 +25,22 @@ enum ePlayerFields {
     // PlayerField_FarSight                     = 0xE68, // 3.1 unknown
     // PlayerField_ComboPoint_Target            = 0xE70, // 3.1 unknown
 
-	PlayerField_Experience                      = 0x9E8,
-	PlayerField_NextLevel_Experience            = 0x9EC,
-	
-	PlayerField_QuestInfo						= 0xFF4,	// pointer to a struct (not just quest info...)
+	PlayerField_Experience                      = 0x980,
+	PlayerField_NextLevel_Experience            = 0x984,
 
 	PlayerField_TrackResources					= 0xF94,	// 3.2.2b
 	
-    PlayerField_RestState_Experience            = 0x1244, // rest experience remaining
-    PlayerField_Coinage                         = 0x1248, // in copper
+    PlayerField_RestState_Experience            = 0x11DC, // rest experience remaining
+    PlayerField_Coinage                         = 0x11E0, // in copper
 	
     // 3.1 unknown
     // PlayerField_ManaRegen                       = 0x1870, // (float, per second)
     // PlayerField_ManaRegen_Combat                = 0x1874, // (float, per second)
     PlayerField_MaxLevel                        = 0x1380,
 	
-	PlayerField_Honor							= 0x13F4,
-	PlayerField_ArenaPoints						= 0x13F8,
-	PlayerField_Level							= 0x13FC,		// speculation - not sure needs testing
+	PlayerField_Honor							= 0x138C,
+	PlayerField_ArenaPoints						= 0x1390,
+	PlayerField_Level							= 0x1394,		// speculation - not sure needs testing
 	
 	PlayerField_QuestStart						= 0x1A30,	// Every 0x10 is another quest ID.. Keep going til you hit 0, that is the full quest list
 	

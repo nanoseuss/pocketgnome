@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  CombatController.h
+//  Pocket Gnome
+//
+//  Created by Josh on 12/19/09.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
+//
 
 #import <Cocoa/Cocoa.h>
 
@@ -35,11 +18,13 @@
 @class BlacklistController;
 @class AuraController;
 @class MacroController;
+@class BindingsController;
 
 @class Position;
 @class Unit;
 
 #define UnitDiedNotification		@"UnitDiedNotification"
+#define UnitTappedNotification		@"UnitTappedNotification"
 #define UnitEnteredCombat			@"UnitEnteredCombat"
 
 @interface CombatController : NSObject {
@@ -53,6 +38,7 @@
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet AuraController			*auraController;
 	IBOutlet MacroController		*macroController;
+	IBOutlet BindingsController		*bindingsController;
 	
 	// three different types of units to be tracked at all times
 	Unit *_attackUnit;
@@ -64,6 +50,7 @@
 	IBOutlet NSTableView *combatTable;
 	
 	BOOL _inCombat;
+	BOOL _hasStepped;
 	
 	NSDate *_enteredCombat;
 	
@@ -71,13 +58,16 @@
 	NSMutableArray *_unitsAllCombat;		// meant for the display table ONLY!
 	
 	NSMutableDictionary *_unitLeftCombatCount;
+	NSMutableDictionary *_unitLeftCombatTargetCount;
 }
 
 @property BOOL inCombat;
 @property (readonly, retain) Unit *attackUnit;
 @property (readonly, retain) Unit *castingUnit;
 @property (readonly, retain) Unit *addUnit;
+@property (readonly, retain) NSMutableArray *unitsAttackingMe;
 
+// @property (readonly) NSString *unitHealthBar:(Unit*)unit;
 
 // weighted units we're in combat with
 - (NSArray*)combatList;
@@ -104,6 +94,9 @@
 // INPUT: from PlayerDataController when a user enters combat
 - (void)doCombatSearch;
 
+- (NSArray*)friendlyUnits;
+- (NSArray*)friendlyCorpses;
+
 // OUPUT: could also be using [playerController isInCombat]
 - (BOOL)combatEnabled;
 
@@ -116,5 +109,7 @@
 // UI
 - (void)showCombatPanel;
 - (void)updateCombatTable;
+
+- (NSString*)unitHealthBar: (Unit*)unit;
 
 @end

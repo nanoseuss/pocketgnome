@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  SpellController.m
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 12/20/07.
+//  Copyright 2007 Savory Software, LLC. All rights reserved.
+//
 
 #import <ScreenSaver/ScreenSaver.h>
 
@@ -151,7 +134,7 @@ static SpellController *sharedSpells = nil;
     }
     
     if(numLoaded > 0) {
-        // PGLog(@"[Spells] Loading %d unknown spells from wowhead.", numLoaded);
+        // log(LOG_GENERAL, @"[Spells] Loading %d unknown spells from wowhead.", numLoaded);
     }
 }
 
@@ -215,7 +198,7 @@ static SpellController *sharedSpells = nil;
 		int32_t totalMounts = 0;
 		[memory loadDataForObject: self atAddress: companionOffset + 0x10 Buffer: (Byte *)&totalMounts BufLength: sizeof(totalMounts)];
 		
-		PGLog(@"[Mount] You have %d mounts, loading!", totalMounts);
+		log(LOG_DEV, @"[Mount] You have %d mounts, loading!", totalMounts);
 		
 		// grab the pointer to the list
 		if([memory loadDataForObject: self atAddress: companionOffset + 0x14 Buffer: (Byte *)&mountAddress BufLength: sizeof(mountAddress)] && mountAddress) {
@@ -230,13 +213,13 @@ static SpellController *sharedSpells = nil;
 						// create a new spell if necessary
 						spell = [Spell spellWithID: [NSNumber numberWithUnsignedInt: value]];
 						if ( !spell ){
-							PGLog(@"[Spell] Mount %d not found!", value );
+							log(LOG_GENERAL, @"[Spell] Mount %d not found!", value );
 							continue;
 						}
 						
 						// spell isn't a mount? snap we probably need to reload it's data!
 						if ( ![spell isMount] ){
-							PGLog(@"[Spell] Mount %d isn't registered as a mount! Reloading data", value);
+							log(LOG_GENERAL, @"[Spell] Mount %d isn't registered as a mount! Reloading data", value);
 							[spell reloadSpellData];
 						}
 						
@@ -250,7 +233,7 @@ static SpellController *sharedSpells = nil;
 			}
 		}
 		
-		//PGLog(@"[Mount] Broke after search of %d mounts", i);
+		//log(LOG_GENERAL, @"[Mount] Broke after search of %d mounts", i);
 	}
     
     // update list of known spells
@@ -334,7 +317,7 @@ static SpellController *sharedSpells = nil;
 
 - (Spell*)spellForName: (NSString*)name {
     if(!name || ![name length]) return nil;
-    //PGLog(@"[Spell] Searching for spell \"%@\"", name);
+    //log(LOG_GENERAL, @"[Spell] Searching for spell \"%@\"", name);
 	
 	// always return the highest one!
 	UInt32 spellID = 0;
@@ -360,42 +343,20 @@ static SpellController *sharedSpells = nil;
     return [_spellBook objectForKey: spellID];
 }
 
-- (Spell*)highestRankOfSpell: (Spell*)incSpell withBook:(id)spellBook{
-	if( !incSpell || !spellBook || [spellBook count] == 0 )
-		return nil;
-	
+- (Spell*)highestRankOfSpell: (Spell*)incSpell {
+    if(!incSpell) return nil;
+    
     Spell *highestRankSpell = incSpell;
-	
-	NSArray *spellList = [NSArray array];
-	if ( [spellBook isKindOfClass:[NSArray array]] ){
-		spellList = spellBook;
-	}
-	else if ( [spellBook isKindOfClass:[NSDictionary dictionary]] ){
-		spellList = [(NSDictionary*)spellBook allValues];
-	}
-
-    for ( Spell *spell in spellList ){
-		
+    for(Spell *spell in [_spellBook allValues]) {
         // if the spell names match
-        if ( [spell name] && [spell rank] && [[spell name] isEqualToString: [incSpell name]] ){
-			
+        if([spell name] && [spell rank] && [[spell name] isEqualToString: [incSpell name]]) {
             // see which one has the higher rank
-            if ( [[spell rank] intValue] > [[highestRankSpell rank] intValue] ){
+            if( [[spell rank] intValue] > [[highestRankSpell rank] intValue])
                 highestRankSpell = spell;
-			}
         }
     }
     
     return highestRankSpell;
-}
-
-- (Spell*)highestRankOfSpellForPlayer: (Spell*)incSpell {
-	return [self highestRankOfSpell:incSpell withBook:_playerSpells]; 
-}
-
-
-- (Spell*)highestRankOfSpell: (Spell*)incSpell {
-	return [self highestRankOfSpell:incSpell withBook:_spellBook]; 
 }
 
 - (Spell*)playerSpellForName: (NSString*)spellName{
@@ -464,11 +425,11 @@ static SpellController *sharedSpells = nil;
 		
 		// make sure we can cast the spell!
 		if ( [self isUsableAction:[[spell ID] intValue]] ){
-			PGLog(@"[Mount] Found usable mount! %@", spell);
+			log(LOG_MOUNT, @"Found usable mount! %@", spell);
 			return spell;
 		}
 		
-		PGLog(@"[Mount] Unable to verify spell %@, trying to find another (if no mount is on an action bar this will fail forever).", spell);
+		log(LOG_GENERAL, @"[Mount] Unable to verify spell %@, trying to find another (if no mount is on an action bar this will fail forever).", spell);
 		
 		// this spell failed, remove it so we don't select it again
 		[mounts removeObjectAtIndex:randomMount];
@@ -493,7 +454,7 @@ static SpellController *sharedSpells = nil;
     if(![spell ID]) return NO;
     if([[spell ID] unsignedIntValue] > 1000000) return NO;
     if( ![self spellForID: [spell ID]] ) {
-        // PGLog(@"Adding spell %@ as recognized.", spell);
+        // log(LOG_GENERAL, @"Adding spell %@ as recognized.", spell);
         [_spellBook setObject: spell forKey: [spell ID]];
         [self synchronizeSpells];
         return YES;
@@ -823,7 +784,7 @@ static SpellController *sharedSpells = nil;
 	[memory loadDataForObject: self atAddress: [offsetController offset:@"Lua_IsUsableAction"] + (slot*4) Buffer: (Byte *)&isUsable BufLength: sizeof(isUsable)];
 	[memory loadDataForObject: self atAddress: [offsetController offset:@"Lua_IsUsableActionNotEnough"] + (slot*4) Buffer: (Byte *)&dueToMana BufLength: sizeof(dueToMana)];
 	
-	//PGLog(@" [Spell] For slot 0x%X, usable? %d due to mana? %d", slot, isUsable, dueToMana);
+	//log(LOG_GENERAL, @" [Spell] For slot 0x%X, usable? %d due to mana? %d", slot, isUsable, dueToMana);
 	
 	// yay! we can use this ability!
 	if ( isUsable && !dueToMana ){
@@ -879,14 +840,14 @@ static SpellController *sharedSpells = nil;
 	
 	return NO;
 	
-	//PGLog(@"Spell offset: 0x%X", spellOffset);
+	//log(LOG_GENERAL, @"Spell offset: 0x%X", spellOffset);
 
 
 	
 	
 	/*UInt32 hotbarBaseOffset = [offsetController offset:@"HOTBAR_BASE_STATIC"];
 	 
-	 PGLog(@"writing to 0x%X", hotbarBaseOffset + BAR6_OFFSET);
+	 log(LOG_GENERAL, @"writing to 0x%X", hotbarBaseOffset + BAR6_OFFSET);
 	 
 	 // get the old spell
 	 UInt32 oldActionID = 0;

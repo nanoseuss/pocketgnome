@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  SwitchRouteActionController.m
+//  Pocket Gnome
+//
+//  Created by Josh on 1/14/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
+//
 
 #import "SwitchRouteActionController.h"
 #import "ActionController.h"
@@ -36,7 +19,7 @@
     if (self != nil) {
 		_routes = nil;
         if(![NSBundle loadNibNamed: @"SwitchRouteAction" owner: self]) {
-            PGLog(@"Error loading SwitchRouteAction.nib.");
+            log(LOG_GENERAL, @"Error loading SwitchRouteAction.nib.");
             
             [self release];
             self = nil;
@@ -84,10 +67,10 @@
 	
 	for ( NSMenuItem *item in [routePopUp itemArray] ){
 		
-		//PGLog(@"not equal? %@ %@", [(RouteSet*)[item representedObject] UUID], action.value);
+		log(LOG_GENERAL, @"not equal? %@ %@", [(RouteSet*)[item representedObject] UUID], action.value);
 		
 		if ( [[(RouteSet*)[item representedObject] UUID] isEqualToString:action.value] ){
-			//PGLog(@"ZOMG EQUAL!");
+			log(LOG_GENERAL, @"ZOMG EQUAL!");
 			[routePopUp selectItem:item];
 			break;
 		}
@@ -103,6 +86,8 @@
 	
 	[action setEnabled: self.enabled];
 	[action setValue: [[[routePopUp selectedItem] representedObject] UUID]];
+	
+	log(LOG_GENERAL, @" saving %d %@ for %@", self.enabled, [[[routePopUp selectedItem] representedObject] UUID], self);
     
     return action;
 }

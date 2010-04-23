@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  StatisticsController.m
+//  Pocket Gnome
+//
+//  Created by Josh on 10/12/09.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
+//
 
 #import "StatisticsController.h"
 #import "Controller.h"
@@ -29,7 +12,6 @@
 #import "LootController.h"
 #import "CombatController.h"
 #import "BotController.h"
-
 #import "Mob.h"
 
 @interface StatisticsController (Internal)
@@ -52,9 +34,9 @@
                                                      name: NSApplicationWillTerminateNotification 
                                                    object: nil];
         /*[[NSNotificationCenter defaultCenter] addObserver: self
-                                                 selector: @selector(playerIsValid:) 
-                                                     name: PlayerIsValidNotification 
-                                                   object: nil];*/
+		 selector: @selector(playerIsValid:) 
+		 name: PlayerIsValidNotification 
+		 object: nil];*/
 		[[NSNotificationCenter defaultCenter] addObserver: self
                                                  selector: @selector(itemLooted:) 
                                                      name: ItemLootedNotification 
@@ -107,7 +89,7 @@
 	
 	// only updating if this window is visible!
 	if ( ![[memoryOperationsTable window] isVisible] ){
-		[self performSelector: @selector(updateStatistics) withObject: nil afterDelay: _updateFrequency];	
+		[self performSelector: @selector(updateStatistics) withObject: nil afterDelay: _updateFrequency];       
 		return;
 	}
 	
@@ -153,7 +135,7 @@
 		[memoryOperationsTable reloadData];
 	}
 	
-	[self performSelector: @selector(updateStatistics) withObject: nil afterDelay: _updateFrequency];	
+	[self performSelector: @selector(updateStatistics) withObject: nil afterDelay: _updateFrequency];       
 }
 
 #pragma mark Interface Actions
@@ -164,7 +146,7 @@
 	_startHonor = [playerController honor];
 	_lootedItems = 0;
 	_mobsKilled = 0;
-
+	
 	// reset memory data
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	if ( memory ){
@@ -179,7 +161,7 @@
 - (int)killCountForEntryID:(int)entryID{
 	NSNumber *mobID = [NSNumber numberWithUnsignedLong:entryID];
 	NSNumber *count = [_mobsKilledDictionary objectForKey:mobID];
-						 
+	
 	if ( count )
 		return [count intValue];
 	return 0;
@@ -192,7 +174,7 @@
 }
 
 /*- (void)playerIsValid: (NSNotification*)notification {
-}*/
+ }*/
 
 - (void)itemLooted: (NSNotification*)notification {
 	_lootedItems++;
@@ -201,7 +183,7 @@
 - (void)unitDied: (NSNotification*)notification {
 	
 	id obj = [notification object];
-
+	
 	_mobsKilled++;
 	
 	// incremement

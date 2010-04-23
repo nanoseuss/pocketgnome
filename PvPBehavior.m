@@ -1,34 +1,17 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  PvPBehavior.m
+//  Pocket Gnome
+//
+//  Created by Josh on 2/24/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
+//
 
 #import "PvPBehavior.h"
 
 #import "Battleground.h"
 #import "SaveDataObject.h"
 
-#define TotalBattlegrounds			6
+#define TotalBattlegrounds                      6
 
 @implementation PvPBehavior
 
@@ -38,12 +21,12 @@
     if ( self != nil ){
 		
 		// initiate our BGs
-		_bgAlteracValley			= [[Battleground battlegroundWithName:@"Alterac Valley" andZone:ZoneAlteracValley andQueueID:1] retain];
-		_bgArathiBasin				= [[Battleground battlegroundWithName:@"Arathi Basin" andZone:ZoneArathiBasin andQueueID:3] retain];
-		_bgEyeOfTheStorm			= [[Battleground battlegroundWithName:@"Eye of the Storm" andZone:ZoneEyeOfTheStorm andQueueID:7] retain];
-		_bgIsleOfConquest			= [[Battleground battlegroundWithName:@"Isle of Conquest" andZone:ZoneIsleOfConquest andQueueID:30] retain];
-		_bgStrandOfTheAncients		= [[Battleground battlegroundWithName:@"Strand of the Ancients" andZone:ZoneStrandOfTheAncients andQueueID:9] retain];
-		_bgWarsongGulch				= [[Battleground battlegroundWithName:@"Warsong Gulch" andZone:ZoneWarsongGulch andQueueID:2] retain];
+		_bgAlteracValley                        = [[Battleground battlegroundWithName:@"Alterac Valley" andZone:ZoneAlteracValley andQueueID:1] retain];
+		_bgArathiBasin                          = [[Battleground battlegroundWithName:@"Arathi Basin" andZone:ZoneArathiBasin andQueueID:3] retain];
+		_bgEyeOfTheStorm                        = [[Battleground battlegroundWithName:@"Eye of the Storm" andZone:ZoneEyeOfTheStorm andQueueID:7] retain];
+		_bgIsleOfConquest                       = [[Battleground battlegroundWithName:@"Isle of Conquest" andZone:ZoneIsleOfConquest andQueueID:30] retain];
+		_bgStrandOfTheAncients          = [[Battleground battlegroundWithName:@"Strand of the Ancients" andZone:ZoneStrandOfTheAncients andQueueID:9] retain];
+		_bgWarsongGulch                         = [[Battleground battlegroundWithName:@"Warsong Gulch" andZone:ZoneWarsongGulch andQueueID:2] retain];
 		
 		_random = NO;
 		_stopHonor = 0;
@@ -54,22 +37,6 @@
 		_waitTime = 10.0f;
 		
 		_name = [[NSString stringWithFormat:@"Unknown"] retain];
-		
-		_observers = [[NSArray arrayWithObjects: 
-					  @"AlteracValley",
-					  @"ArathiBasin",
-					  @"EyeOfTheStorm",
-					  @"IsleOfConquest",
-					  @"StrandOfTheAncients",
-					  @"WarsongGulch",
-					  @"random",
-					  @"stopHonor",
-					  @"stopHonorTotal",
-					  @"leaveIfInactive",
-					  @"preparationDelay",
-					  @"waitToLeave",
-					  @"waitTime", nil] retain];
-		
     }
     return self;
 }
@@ -82,7 +49,7 @@
 	[_bgStrandOfTheAncients release];
 	[_bgWarsongGulch release];
 	[_name release];
-
+	
 	// TO DO: remove observers!
 	//[self removeObserver: self forKeyPath: @"numberOfDays"];
 	
@@ -105,12 +72,12 @@
 	self = [self init];
 	if ( self ) {
 		
-		self.AlteracValley			= [decoder decodeObjectForKey: @"AlteracValley"];
-		self.ArathiBasin			= [decoder decodeObjectForKey: @"ArathiBasin"];
-		self.EyeOfTheStorm			= [decoder decodeObjectForKey: @"EyeOfTheStorm"];
-		self.IsleOfConquest			= [decoder decodeObjectForKey: @"IsleOfConquest"];
-		self.StrandOfTheAncients	= [decoder decodeObjectForKey: @"StrandOfTheAncients"];
-		self.WarsongGulch			= [decoder decodeObjectForKey: @"WarsongGulch"];
+		self.AlteracValley                      = [decoder decodeObjectForKey: @"AlteracValley"];
+		self.ArathiBasin                        = [decoder decodeObjectForKey: @"ArathiBasin"];
+		self.EyeOfTheStorm                      = [decoder decodeObjectForKey: @"EyeOfTheStorm"];
+		self.IsleOfConquest                     = [decoder decodeObjectForKey: @"IsleOfConquest"];
+		self.StrandOfTheAncients        = [decoder decodeObjectForKey: @"StrandOfTheAncients"];
+		self.WarsongGulch                       = [decoder decodeObjectForKey: @"WarsongGulch"];
 		
 		self.random = [[decoder decodeObjectForKey: @"Random"] boolValue];
 		self.stopHonor = [[decoder decodeObjectForKey: @"StopHonor"] intValue];
@@ -170,6 +137,8 @@
 @synthesize StrandOfTheAncients = _bgStrandOfTheAncients;
 @synthesize WarsongGulch = _bgWarsongGulch;
 
+@synthesize name = _name;
+
 @synthesize random = _random;
 @synthesize stopHonor = _stopHonor;
 @synthesize stopHonorTotal = _stopHonorTotal;
@@ -177,6 +146,28 @@
 @synthesize preparationDelay = _preparationDelay;
 @synthesize waitToLeave = _waitToLeave;
 @synthesize waitTime = _waitTime;
+
+- (void)addObservers{
+	[self addObserver: self forKeyPath: @"AlteracValley" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"ArathiBasin" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"EyeOfTheStorm" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"IsleOfConquest" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"StrandOfTheAncients" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"WarsongGulch" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"random" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stopHonor" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"stopHonorTotal" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"leaveIfInactive" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"preparationDelay" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"waitToLeave" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+	[self addObserver: self forKeyPath: @"waitTime" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
+	PGLog(@"%@ changed! %@ %@", self, keyPath, change);
+	self.changed = YES;
+}
 
 // little helper
 - (BOOL)isValid{
@@ -198,14 +189,14 @@
 	
 	// don't have the total for random!
 	/*if ( self.random && totalEnabled != TotalBattlegrounds ){
-		return NO;
-	}*/
+	 return NO;
+	 }*/
 	// none enabled
 	if ( totalEnabled == 0 ){
 		return NO;
 	}
 	
-	return YES;	
+	return YES;     
 }
 
 // we need a route collection for each BG
@@ -223,7 +214,7 @@
 	if ( self.StrandOfTheAncients.enabled && self.StrandOfTheAncients.routeCollection != nil )
 		totalEnabled++;
 	if ( self.WarsongGulch.enabled && self.WarsongGulch.routeCollection != nil )
-		totalEnabled++;	
+		totalEnabled++; 
 	
 	if ( totalEnabled == TotalBattlegrounds ){
 		return YES;
@@ -306,22 +297,22 @@
 
 - (Battleground*)battlegroundForZone:(UInt32)zone{
 	
-	if ( zone == [self.AlteracValley zone] && [self.AlteracValley enabled] ){
+	if ( zone == [self.AlteracValley zone] ){
 		return self.AlteracValley;
 	}
-	else if ( zone == [self.ArathiBasin zone] && [self.ArathiBasin enabled] ){
-		return self.ArathiBasin;	
+	else if ( zone == [self.ArathiBasin zone] ){
+		return self.ArathiBasin;        
 	}
-	else if ( zone == [self.EyeOfTheStorm zone] && [self.EyeOfTheStorm enabled] ){
+	else if ( zone == [self.EyeOfTheStorm zone] ){
 		return self.EyeOfTheStorm;
 	}
-	else if ( zone ==  [self.IsleOfConquest zone] && [self.IsleOfConquest enabled] ){
+	else if ( zone ==  [self.IsleOfConquest zone] ){
 		return self.IsleOfConquest;
 	}
-	else if ( zone == [self.StrandOfTheAncients zone] && [self.StrandOfTheAncients enabled] ){
+	else if ( zone == [self.StrandOfTheAncients zone] ){
 		return self.StrandOfTheAncients;
 	}
-	else if ( zone == [self.WarsongGulch zone] && [self.WarsongGulch enabled] ){
+	else if ( zone == [self.WarsongGulch zone] ){
 		return self.WarsongGulch;
 	}
 	
@@ -343,7 +334,7 @@
 		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.StrandOfTheAncients queueID]]];
 	if ( self.WarsongGulch.enabled && self.WarsongGulch.routeCollection != nil )
 		[bgs appendString:[NSString stringWithFormat:@"%d,", [self.WarsongGulch queueID]]];
-
+	
 	NSRange range = NSMakeRange(0, [bgs length] - 1);
 	NSString *str = [bgs substringWithRange:range];
 	

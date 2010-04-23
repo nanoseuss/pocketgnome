@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  SaveData.m
+//  Pocket Gnome
+//
+//  Created by Josh on 1/26/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
+//
 
 #import "SaveData.h"
 #import "SaveDataObject.h"
@@ -46,7 +29,7 @@
 		// create folder?
 		folder = [folder stringByExpandingTildeInPath];
 		if ( [fileManager fileExistsAtPath: folder] == NO ) {
-			PGLog(@"[FileManager] Save data folder does not exist! Creating %@", folder);
+			log(LOG_GENERAL, @"[FileManager] Save data folder does not exist! Creating %@", folder);
 			[fileManager createDirectoryAtPath: folder attributes: nil];
 		}
 		
@@ -131,7 +114,7 @@
 	NSString *dir = [self pathForObjectName:nil withExtension:NO];
 	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:dir error:&error];
 	if ( error ){
-		PGLog(@"[FileManager] Error when deleting your objects from %@! %@", directoryList, error);
+		log(LOG_GENERAL, @"[FileManager] Error when deleting your objects from %@! %@", directoryList, error);
 		return;
 	}
 	
@@ -146,9 +129,9 @@
 				
 				NSString *filePath = [dir stringByAppendingPathComponent: fileName];
 				
-				PGLog(@"[FileManager] Removing %@", filePath);
+				log(LOG_GENERAL, @"[FileManager] Removing %@", filePath);
 				if ( ![fileManager removeItemAtPath:filePath error:&error] ){
-					PGLog(@"[FileManager] Error %@ when trying to delete object %@", error, filePath);
+					log(LOG_GENERAL, @"[FileManager] Error %@ when trying to delete object %@", error, filePath);
 				}
 			}
 		}
@@ -164,7 +147,7 @@
 	if ( [fileManager fileExistsAtPath: filePath] ){
 		NSError *error = nil;
 		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
-			PGLog(@"[FileManager] Error %@ when trying to delete object %@", error, filePath);
+			log(LOG_GENERAL, @"[FileManager] Error %@ when trying to delete object %@", error, filePath);
 		}
 	}
 }
@@ -177,7 +160,7 @@
 	if ( [fileManager fileExistsAtPath: filePath] ){
 		NSError *error = nil;
 		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
-			PGLog(@"[FileManager] Error %@ when trying to delete object %@", error, filePath);
+			log(LOG_GENERAL, @"[FileManager] Error %@ when trying to delete object %@", error, filePath);
 		}
 	}
 }
@@ -186,7 +169,7 @@
 - (void)saveObject: (id)object { 
 	NSString *filePath = [self pathForObjectName:[self objectName:object] withExtension:YES];
 	
-	//PGLog(@"[FileManager] Saving %@ to %@", object, filePath);
+	log(LOG_GENERAL, @"[FileManager] Saving %@ to %@", object, filePath);
 	[NSKeyedArchiver archiveRootObject: object toFile: filePath];
 }
 
@@ -197,7 +180,7 @@
 	// verify the file exists
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	if ( [fileManager fileExistsAtPath: path] == NO ) {
-		PGLog(@"[FileManager] Object %@ is missing! Unable to load", fileName);
+		log(LOG_GENERAL, @"[FileManager] Object %@ is missing! Unable to load", fileName);
 		return nil;
 	}
 	
@@ -219,7 +202,7 @@
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSArray *directoryList = [fileManager contentsOfDirectoryAtPath:[self pathForObjectName:nil withExtension:NO] error:&error];
 	if ( error ){
-		PGLog(@"[FileManager] Error when reading your objects from %@! %@", directoryList, error);
+		log(LOG_GENERAL, @"[FileManager] Error when reading your objects from %@! %@", directoryList, error);
 		return nil;
 	}
 	
@@ -254,8 +237,8 @@
 		}
 	}
 	
-	//if ( [objectList count] )
-		//PGLog(@"[FileManager] Loaded %d objects of type %@", [objectList count], [self objectExtension]);
+	if ( [objectList count] )
+		log(LOG_GENERAL, @"[FileManager] Loaded %d objects of type %@", [objectList count], [self objectExtension]);
 	
 	return [objectList retain];
 }
@@ -282,7 +265,7 @@
 					[objects addObject:obj];
 				}
 				
-				PGLog(@"[FileManager] Imported %d objects of type %@", [objects count], [self objectExtension]);
+				log(LOG_GENERAL, @"[FileManager] Imported %d objects of type %@", [objects count], [self objectExtension]);
 				
 				return objects;
 			}

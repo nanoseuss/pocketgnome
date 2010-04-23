@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  BonjourController.m
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 8/2/08.
+//  Copyright 2008 Jon Drummond. All rights reserved.
+//
 
 #import "BonjourController.h"
 #import "NSData+SockAddr.h"
@@ -95,7 +78,7 @@
 
 - (void)appWillTerminate:(NSNotification *)notification
 {
-	PGLog(@"Terminating network connection.");
+	log(LOG_GENERAL, @"Terminating network connection.");
 	[[NSNotificationCenter defaultCenter] removeObserver: self];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver: self];
 	
@@ -103,7 +86,7 @@
 }
 
 - (void)connectionDied:(NSNotification*)aNotification {
-	PGLog(@"Server connection died: %@", [aNotification object]);
+	log(LOG_GENERAL, @"Server connection died: %@", [aNotification object]);
 	[[NSNotificationCenter defaultCenter] removeObserver: self 
 													name: NSConnectionDidDieNotification
 												  object: [aNotification object]];
@@ -112,7 +95,7 @@
 }
 
 - (void)openNetworkConnection {
-	// PGLog(@"Initiating network connection.");
+	// log(LOG_GENERAL, @"Initiating network connection.");
 	// reset any previous state
 	[self resetNetworkConnection];
 	
@@ -120,7 +103,7 @@
 	NSSocketPort *receivePort = [[[NSSocketPort alloc] initWithTCPPort: 0] autorelease];
     
     if(!receivePort) {
-        PGLog(@"Server: Unable to obtain a port from the kernel. Terminating publish.");
+        log(LOG_GENERAL, @"Server: Unable to obtain a port from the kernel. Terminating publish.");
         return;
     }
     
@@ -130,7 +113,7 @@
     self.connection = [NSConnection connectionWithReceivePort: receivePort 
 													  sendPort: nil];
 	if(!self.connection) {
-		PGLog(@"Server: Error creating the Connection.");
+		log(LOG_GENERAL, @"Server: Error creating the Connection.");
 		self.connection = nil;
     }
 	
@@ -152,11 +135,11 @@
 
 #pragma mark NetService Delegates
 - (void)netService:(NSNetService*)service didNotPublish:(NSDictionary *)errorDict {
-    PGLog(@"Error publishing service: %@", errorDict);
+    log(LOG_GENERAL, @"Error publishing service: %@", errorDict);
 }
 
 - (void)netServiceDidPublish:(NSNetService *)sender {
-    PGLog(@"Service published as \"%@\"", [self.netService name]);
+    log(LOG_GENERAL, @"Service published as \"%@\"", [self.netService name]);
 }
 
 #pragma mark - 

@@ -3,12 +3,12 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">10D573</string>
-		<string key="IBDocument.InterfaceBuilderVersion">762</string>
+		<string key="IBDocument.InterfaceBuilderVersion">740</string>
 		<string key="IBDocument.AppKitVersion">1038.29</string>
 		<string key="IBDocument.HIToolboxVersion">460.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">762</string>
+			<string key="NS.object.0">740</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1058,7 +1058,7 @@
 										<object class="NSTextFieldCell" key="NSCell" id="295960763">
 											<int key="NSCellFlags">67239488</int>
 											<int key="NSCellFlags2">71304192</int>
-											<string key="NSContents">PvP Profile:</string>
+											<string key="NSContents">PvP Behavior:</string>
 											<reference key="NSSupport" ref="1039970681"/>
 											<reference key="NSControlView" ref="124142105"/>
 											<reference key="NSBackgroundColor" ref="620660649"/>
@@ -1161,7 +1161,7 @@
 											<int key="NSCellFlags2">268436480</int>
 											<string key="NSContents"/>
 											<reference key="NSSupport" ref="1039970681"/>
-											<string key="NSPlaceholderString">Enter a name and press return to create a new PvP profile.</string>
+											<string key="NSPlaceholderString">Enter a name and press return to create a new PvP behavior.</string>
 											<reference key="NSControlView" ref="900057412"/>
 											<bool key="NSDrawsBackground">YES</bool>
 											<int key="NSTextBezelStyle">1</int>
@@ -1223,7 +1223,7 @@
 						<object class="NSTextFieldCell" key="NSTitleCell">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">PvP Profile</string>
+							<string key="NSContents">PvP Behaviors</string>
 							<reference key="NSSupport" ref="26"/>
 							<reference key="NSBackgroundColor" ref="395286365"/>
 							<object class="NSColor" key="NSTextColor">
@@ -3574,7 +3574,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{566, 354}, {749, 445}}</string>
+					<string>{{471, 381}, {749, 445}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{353, 328}, {625, 477}}</string>
@@ -3785,14 +3785,12 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>botController</string>
 							<string>chatController</string>
 							<string>controller</string>
 							<string>offsetController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>BotController</string>
 							<string>ChatController</string>
 							<string>Controller</string>
 							<string>OffsetController</string>
@@ -3840,6 +3838,9 @@
 							<string>login:</string>
 							<string>lootHotkeyHelp:</string>
 							<string>maltby:</string>
+							<string>pvpBMSelectAction:</string>
+							<string>pvpStartStop:</string>
+							<string>pvpTestWarning:</string>
 							<string>startBot:</string>
 							<string>startStopBot:</string>
 							<string>stopBot:</string>
@@ -3850,6 +3851,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3888,7 +3892,6 @@
 							<string>combatProfilePopup</string>
 							<string>controller</string>
 							<string>corpseController</string>
-							<string>databaseManager</string>
 							<string>fishController</string>
 							<string>fishingApplyLureCheckbox</string>
 							<string>fishingCheckbox</string>
@@ -3937,8 +3940,14 @@
 							<string>playerController</string>
 							<string>playersController</string>
 							<string>procedureController</string>
+							<string>pvpBMSelectPanel</string>
+							<string>pvpBannerImage</string>
 							<string>pvpBehaviorPopUp</string>
 							<string>pvpController</string>
+							<string>pvpLeaveInactiveCheckbox</string>
+							<string>pvpPlayWarningCheckbox</string>
+							<string>pvpStartStopButton</string>
+							<string>pvpWaitForPreparationBuff</string>
 							<string>questController</string>
 							<string>routePopup</string>
 							<string>runningTimer</string>
@@ -3971,7 +3980,6 @@
 							<string>id</string>
 							<string>Controller</string>
 							<string>CorpseController</string>
-							<string>DatabaseManager</string>
 							<string>FishController</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
@@ -4020,8 +4028,14 @@
 							<string>PlayerDataController</string>
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
+							<string>NSPanel</string>
+							<string>NSImageView</string>
 							<string>NSPopUpButton</string>
 							<string>PvPController</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
+							<string>NSButton</string>
 							<string>QuestController</string>
 							<string>id</string>
 							<string>NSTextField</string>
@@ -4368,27 +4382,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">DatabaseManager</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>controller</string>
-							<string>offsetController</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>Controller</string>
-							<string>OffsetController</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">DatabaseManager.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">FishController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -4549,16 +4542,12 @@
 							<string>clearButton</string>
 							<string>controller</string>
 							<string>emulatePPCButton</string>
-							<string>itemController</string>
 							<string>maskTextField</string>
 							<string>memoryTable</string>
 							<string>memoryViewWindow</string>
-							<string>mobController</string>
-							<string>nodeController</string>
 							<string>offsetController</string>
 							<string>offsetScanPanel</string>
 							<string>operatorPopUpButton</string>
-							<string>playersController</string>
 							<string>pointerScanCancelButton</string>
 							<string>pointerScanFindButton</string>
 							<string>pointerScanNumTextField</string>
@@ -4584,16 +4573,12 @@
 							<string>NSButton</string>
 							<string>Controller</string>
 							<string>NSButton</string>
-							<string>InventoryController</string>
 							<string>NSTextField</string>
 							<string>id</string>
 							<string>id</string>
-							<string>MobController</string>
-							<string>NodeController</string>
 							<string>OffsetController</string>
 							<string>NSPanel</string>
 							<string>NSPopUpButton</string>
-							<string>PlayersController</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSTextField</string>
@@ -4669,7 +4654,6 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>auraController</string>
-							<string>bindingsController</string>
 							<string>blacklistController</string>
 							<string>botController</string>
 							<string>combatProfileEditor</string>
@@ -4686,7 +4670,6 @@
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>AuraController</string>
-							<string>BindingsController</string>
 							<string>BlacklistController</string>
 							<string>BotController</string>
 							<string>CombatProfileEditor</string>
@@ -5095,20 +5078,12 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>botController</string>
 							<string>controller</string>
-							<string>macroController</string>
-							<string>mobController</string>
-							<string>offsetController</string>
-							<string>playerController</string>
+							<string>playerDataController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>BotController</string>
 							<string>Controller</string>
-							<string>MacroController</string>
-							<string>MobController</string>
-							<string>OffsetController</string>
 							<string>PlayerDataController</string>
 						</object>
 					</object>
@@ -5262,24 +5237,18 @@
 							<string>closeAutomatorPanel:</string>
 							<string>closeDescription:</string>
 							<string>closeHelpPanel:</string>
-							<string>closeRename:</string>
 							<string>closeVisualize:</string>
 							<string>closestWaypoint:</string>
-							<string>createProfile:</string>
 							<string>deleteRouteButton:</string>
 							<string>deleteRouteMenu:</string>
-							<string>duplicateProfile:</string>
 							<string>duplicateRoute:</string>
 							<string>editWaypointAction:</string>
 							<string>exportRoute:</string>
 							<string>importRoute:</string>
-							<string>loadProfile:</string>
 							<string>loadRoute:</string>
 							<string>moveToWaypoint:</string>
 							<string>openAutomatorPanel:</string>
-							<string>removeProfile:</string>
 							<string>removeWaypoint:</string>
-							<string>renameProfile:</string>
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
@@ -5292,12 +5261,6 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6072,7 +6035,6 @@
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
-		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
@@ -6088,22 +6050,5 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<string key="IBDocument.LastKnownRelativeProjectPath">Pocket Gnome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
-		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<bool key="EncodedWithXMLCoder">YES</bool>
-			<object class="NSArray" key="dict.sortedKeys">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>NSActionTemplate</string>
-				<string>NSMenuCheckmark</string>
-				<string>NSMenuMixedState</string>
-				<string>NSSwitch</string>
-			</object>
-			<object class="NSMutableArray" key="dict.values">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{15, 15}</string>
-				<string>{9, 8}</string>
-				<string>{7, 2}</string>
-				<string>{15, 15}</string>
-			</object>
-		</object>
 	</data>
 </archive>

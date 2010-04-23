@@ -7,7 +7,6 @@
     #import "SecureUserDefaults.h"
 	#import "LogController.h"
 	#import "Globals.h"
-	#import "ClientDbDefines.h"
     
     typedef UInt64 GUID;
 

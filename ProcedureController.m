@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  ProcedureController.m
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 1/4/08.
+//  Copyright 2008 Savory Software, LLC. All rights reserved.
+//
 
 #import "ProcedureController.h"
 #import "SpellController.h"
@@ -179,7 +162,7 @@
 	
     [ruleTable reloadData];
     
-    //PGLog(@"Added behavior: %@", [behavior name]);
+    //log(LOG_GENERAL, @"Added behavior: %@", [behavior name]);
 }
 
 - (IBAction)createBehavior: (id)sender {
@@ -274,11 +257,11 @@
         
         if( (Rule*)contextInfo ) {
             // we are editing (replacing) a rule
-            //PGLog(@"Replacing with rule: %@", rule);
+            //log(LOG_GENERAL, @"Replacing with rule: %@", rule);
             [[self currentProcedure] replaceRuleAtIndex: [ruleTable selectedRow] withRule: rule];
         } else {
             // we are adding a rule
-            //PGLog(@"Adding new rule: %@", rule);
+            //log(LOG_GENERAL, @"Adding new rule: %@", rule);
             [[self currentProcedure] addRule: rule];
         }
         
@@ -505,7 +488,7 @@
     while(row != NSNotFound) {
         if([[self currentProcedure] ruleAtIndex: row]) {
             Rule *rule = [[self currentProcedure] ruleAtIndex: row];
-            // PGLog(@"Copy rule: %@, (0x%X)", rule, &rule);
+            // log(LOG_GENERAL, @"Copy rule: %@, (0x%X)", rule, &rule);
             [rulesToCopy addObject: rule];
             if(row == [selectedRows lastIndex]) [rulesDescription appendString: [rule description]];
             else                                [rulesDescription appendFormat: @"%@\n", [rule description]];
@@ -540,7 +523,7 @@
             else                pasteRow++;
             
             for(Rule *rule in copiedRules) {
-                // PGLog(@"Pasting rule: %@ (0x%X)", rule, &rule);
+                // log(LOG_GENERAL, @"Pasting rule: %@ (0x%X)", rule, &rule);
                 [[self currentProcedure] insertRule: rule atIndex: pasteRow];
             }
             
@@ -610,7 +593,7 @@
     int dragRow = [rowIndexes firstIndex];
     
     if(dragRow < row) row--;
-    //PGLog(@"Got drag for row %d to row %d", dragRow, row);
+    //log(LOG_GENERAL, @"Got drag for row %d to row %d", dragRow, row);
     
     // Move the specified row to its new location...
     Rule *dragRule = [[self currentProcedure] ruleAtIndex: dragRow];

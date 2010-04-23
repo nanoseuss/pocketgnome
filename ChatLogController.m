@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  ChatLogController.m
+//  Pocket Gnome
+//
+//  Created by Jon Drummond on 4/3/09.
+//  Copyright 2009 Savory Software, LLC. All rights reserved.
+//
 
 #import "ChatLogController.h"
 
@@ -38,8 +21,8 @@
 #import <Message/NSMailDelivery.h>
 #import <ScriptingBridge/ScriptingBridge.h>
 #import <Foundation/NSAppleEventDescriptor.h>
-#import "Mail.h"    // http://developer.apple.com/samplecode/SBSendEmail/listing4.html
-#import "iChat.h"
+#import "Mail.h"    // http://developer.apple.com/mac/library/samplecode/SBSendEmail
+#import "iChat.h"   // http://developer.apple.com/mac/library/samplecode/iChatStatusFromApplication
 
 #define ChatLog_CounterOffset       0x8
 #define ChatLog_TimestampOffset     0xC
@@ -171,7 +154,7 @@
                     foundAt = i;
                 }
                 NSString *chatEntry = [NSString stringWithUTF8String: buffer];
-				//PGLog(@"Chat found: %@", chatEntry );
+				//log(LOG_GENERAL, @"Chat found: %@", chatEntry );
 				
                 if([chatEntry length]) {
                     // "Type: [17], Channel: [General - Whatev], Player Name: [PlayerName], Text: [Text]"
@@ -186,7 +169,7 @@
                             [chatComponents setObject: value forKey: key];
                         } else {
                             // bad data
-                            //PGLog(@"Throwing out bad data: \"%@\"", component);
+                            //log(LOG_GENERAL, @"Throwing out bad data: \"%@\"", component);
                         }
                     }
                     if([chatComponents count]) {
@@ -214,7 +197,7 @@
     }
 	
 
-	//PGLog(@"[Chat] New chat scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
+	//log(LOG_GENERAL, @"[Chat] New chat scan took %.2f seconds and %d memory operations.", [date timeIntervalSinceNow]*-1.0, [memory loadCount]);
 	
     
     [self performSelectorOnMainThread: @selector(scanCompleteWithNewEntries:) withObject: chatEntries waitUntilDone: YES];
@@ -337,7 +320,7 @@
     BOOL foundService = NO;
     for (iChatService *service in [iChat services]) {
         // Use the first connected AIM service we find
-        if (service.connectionStatus == iChatConnectionStatusConnected) { // (service.serviceType == iChatServiceTypeAIM) && (
+        if (service.connectionStatus == iChatConnectionStatusConnected || service.status == iChatConnectionStatusConnected) { // (service.serviceType == iChatServiceTypeAIM) && (
             foundService = YES;
             
             // we have a service, find a buddy
@@ -375,20 +358,20 @@
                     }
                 }
                 @catch (NSException * e) {
-                    PGLog(@"Could not send chat message: %@", e);
+                    log(LOG_GENERAL, @"Could not send chat message: %@", e);
                     return NO;
                 }
                 
                 return YES;
                 
             } else {
-                PGLog(@"Could not locate buddy \"%@\"!", buddyName);
+                log(LOG_GENERAL, @"Could not locate buddy \"%@\"!", buddyName);
             }
         }
     }
     
     if(!foundService) {
-        PGLog(@"Could not find active iChat service!");
+        log(LOG_GENERAL, @"Could not find active iChat service!");
     }
     
     return NO;
@@ -432,15 +415,15 @@
             if([emailMessage send]) {
                 return YES;
             } else {
-                PGLog(@"Email message could not be sent!");
+                log(LOG_GENERAL, @"Email message could not be sent!");
             }
         }
         @catch (NSException * e) {
-            PGLog(@"Email message could not be sent! %@", e);
+            log(LOG_GENERAL, @"Email message could not be sent! %@", e);
             return NO;
         }
     } else {
-        PGLog(@"No account is configured in Mail!");
+        log(LOG_GENERAL, @"No account is configured in Mail!");
     }
     return NO;
 }
@@ -506,7 +489,7 @@
     //[self setCurrentRouteSet: routeSet];
     //[waypointTable reloadData];
     
-    // PGLog(@"Added route: %@", [routeSet name]);
+    // log(LOG_GENERAL, @"Added route: %@", [routeSet name]);
 }
 
 - (IBAction)createChatAction: (id)sender {
@@ -545,7 +528,7 @@
             }
         }
     } else {
-        PGLog(@"Mail delivery is NOT configured.");
+        log(LOG_GENERAL, @"Mail delivery is NOT configured.");
     }
 }
 
@@ -574,7 +557,7 @@
 	if ( checkWhispers ){
 		if ( [numWhispers intValue] >= [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"AlarmWhisperedTimes"] intValue] ){
 			[[NSSound soundNamed: @"alarm"] play];
-			PGLog(@"[Chat] You have been whispered %@ times by %@. Last message: %@", numWhispers, [entry playerName], [entry text] );
+			log(LOG_GENERAL, @"[Chat] You have been whispered %@ times by %@. Last message: %@", numWhispers, [entry playerName], [entry text] );
 		}
 	}
 }

@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+//  CombatProfileActionController.h
+//  Pocket Gnome
+//
+//  Created by Josh on 1/19/10.
+//  Copyright 2010 Savory Software, LLC. All rights reserved.
+//
 
 #import <Cocoa/Cocoa.h>
 #import "IgnoreEntry.h"
@@ -31,6 +14,7 @@
 @class Player;
 
 @interface CombatProfile : SaveDataObject {
+    NSString *_name;
     NSMutableArray *_combatEntries;
     
     BOOL combatEnabled, onlyRespond, attackNeutralNPCs, attackHostileNPCs, attackPlayers, attackPets;
@@ -50,6 +34,25 @@
     
     float attackRange, engageRange;
     int attackLevelMin, attackLevelMax;
+	
+	// New additions
+	BOOL partyDoNotInitiate;
+	BOOL partyIgnoreOtherFriendlies;
+	BOOL partyEmotes;
+	int partyEmotesIdleTime;
+	int partyEmotesInterval;
+	BOOL followEnabled;
+	BOOL followStopFollowingOOR;
+	float followStopFollowingRange;
+	BOOL resurrectWithSpiritHealer;
+	BOOL checkForCampers;
+	float checkForCampersRange;
+	BOOL avoidMobsWhenResurrecting;	
+	float moveToCorpseRange;
+
+	BOOL partyLeaderWait;
+	float partyLeaderWaitRange;
+
 }
 
 + (id)combatProfile;
@@ -65,6 +68,7 @@
 - (void)removeEntryAtIndex: (unsigned)index;
 
 @property (readwrite, retain) NSArray *entries;
+@property (readwrite, copy) NSString *name;
 @property (readwrite, assign) UInt64 tankUnitGUID;
 @property (readwrite, assign) UInt64 assistUnitGUID;
 @property (readwrite, assign) UInt64 followUnitGUID;
@@ -91,10 +95,26 @@
 @property (readwrite, assign) float healingRange;
 @property (readwrite, assign) BOOL mountEnabled;
 @property (readwrite, assign) BOOL disableRelease;
-
 @property (readwrite, assign) float attackRange;
 @property (readwrite, assign) float engageRange;
 @property (readwrite, assign) int attackLevelMin;
 @property (readwrite, assign) int attackLevelMax;
+
+// New additions
+@property (readwrite, assign) BOOL checkForCampers;
+@property (readwrite, assign) BOOL partyDoNotInitiate;
+@property (readwrite, assign) BOOL partyIgnoreOtherFriendlies;
+@property (readwrite, assign) BOOL partyEmotes;
+@property (readwrite, assign) int partyEmotesIdleTime;
+@property (readwrite, assign) int partyEmotesInterval;
+@property (readwrite, assign) BOOL followEnabled;
+@property (readwrite, assign) BOOL followStopFollowingOOR;
+@property (readwrite, assign) float followStopFollowingRange;
+@property (readwrite, assign) BOOL resurrectWithSpiritHealer;
+@property (readwrite, assign) float checkForCampersRange;
+@property (readwrite, assign) BOOL avoidMobsWhenResurrecting;
+@property (readwrite, assign) float moveToCorpseRange;
+@property (readwrite, assign) BOOL partyLeaderWait;
+@property (readwrite, assign) float partyLeaderWaitRange;
 
 @end

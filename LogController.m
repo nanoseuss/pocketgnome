@@ -1,27 +1,10 @@
-/*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * $Id$
- *
- */
+//
+// LogController.m
+// Pocket Gnome
+//
+// Created by benemorius on 12/17/09.
+// Copyright 2009 Savory Software, LLC. All rights reserved.
+//
 
 #import "LogController.h"
 
@@ -30,11 +13,40 @@
 
 + (BOOL) canLog:(char*)type_s, ...
 {
-	NSString* type = [NSString stringWithFormat:@"log_%s", type_s];
-	
-	
+	// Check to see whether or not extended logging is even on
+	if ( [[[NSUserDefaults standardUserDefaults] objectForKey: @"ExtendedLoggingEnable"] boolValue] ) {
+
+		// Extended logging is on so lets see if we're supposed to log the requested type
+		NSString* type = [NSString stringWithFormat:@"ExtendedLogging%s", type_s];
+		
+		if ([[NSUserDefaults standardUserDefaults] objectForKey: type])
+			return( [[[NSUserDefaults standardUserDefaults] objectForKey: type] boolValue] );
+
+		//			return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+
+	} else {
+		// These are the types we supress when Extended Logging isn't enabled
+
+		if (type_s == LOG_CONDITION) return NO;
+		if (type_s == LOG_RULE) return NO;
+		if (type_s == LOG_MOVEMENT) return NO;
+		if (type_s == LOG_DEV) return NO;
+		if (type_s == LOG_WAYPOINT) return NO;
+		if (type_s == LOG_BINDINGS) return NO;
+		if (type_s == LOG_STATISTICS) return NO;
+		if (type_s == LOG_MACRO) return NO;
+		if (type_s == LOG_EVALUATE) return NO;
+		if (type_s == LOG_BLACKLIST) return NO;
+		if (type_s == LOG_FUNCTION) return NO;
+		if (type_s == LOG_MEMORY) return NO;
+		if (type_s == LOG_PROCEDURE) return NO;
+		if (type_s == LOG_CONTROLLER) return NO;
+
+	}
+
+	// If it's not been supressed let's allow it
 	return YES;
-	//return([[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: type] boolValue]);
+	
 }
 
 + (NSString*) log:(char*)type_s, ...

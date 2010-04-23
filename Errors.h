@@ -1,25 +1,9 @@
 /*
- * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ *  Errors.h
+ *  Pocket Gnome
  *
- * $Id$
+ *  Created by Josh on 6/9/09.
+ *  Copyright 2007 Savory Software, LLC. All rights reserved.
  *
  */
 
@@ -28,8 +12,8 @@
 typedef enum CastError {
     ErrNone = 0,
 	ErrNotFound = 1,
-    ErrInventoryFull = 2,				// @"Inventory is Full"
-    ErrTargetNotInLOS = 3,
+	ErrInventoryFull = 2,				// @"Inventory is Full"
+	ErrTargetNotInLOS = 3,
 	ErrCantMove = 4,
 	ErrTargetNotInFrnt = 5,	
 	ErrWrng_Way = 6,
@@ -44,6 +28,7 @@ typedef enum CastError {
 	ErrTargetDead = 15,
 	ErrCantAttackMounted = 16,
 	ErrYouAreMounted = 17,
+	ErrMorePowerfullSpellActive = 18,
 } CastError;
 
 #define INV_FULL			@"Inventory is full."
@@ -63,6 +48,7 @@ typedef enum CastError {
 #define CANT_ATTACK_MOUNTED	@"Can't attack while mounted."
 #define YOU_ARE_MOUNTED		@"You are mounted."
 #define CANT_ATTACK_TARGET	@"You cannot attack that target."
+#define MORE_POWERFUL_SPELL_ACTIVE	@"A more powerful spell is already active"
 
 
 //Must have a Fishing Pole equipped
