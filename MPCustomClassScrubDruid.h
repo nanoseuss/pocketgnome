@@ -18,9 +18,13 @@
 
 @interface MPCustomClassScrubDruid : MPCustomClass {
 
-	MPSpell *wrath;
+	MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+	NSArray *listSpells, *listParty;
+	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 	MPCCCombatState state;
 }
-@property (retain) MPSpell *wrath;
+@property (retain) MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+@property (retain) NSArray *listSpells, *listParty;
+@property (retain) MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 
 @end

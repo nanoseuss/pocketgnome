@@ -91,16 +91,23 @@ typedef enum CCCombatState {
 - (BOOL) rest;
 
 /*!
- * @function castBuffs
- * @abstract Perform any buff actions.
+ * @function runningAction
+ * @abstract Perform any checks and actions while patrolling.
  * @discussion 
- * Implement your class's Buff actions.
- *
- * Called by the Buff{} task.
+ * This method is called by the MPActivityWalk activity as it is walking. It should be
+ * called ~10/sec.  So don't attempt to do very much on each call.
  */
-- (void) castBuffs;
+- (void) runningAction;
 
 
+/*!
+ * @function setup
+ * @abstract Setup your bot for action. 
+ * @discussion 
+ * This method will be called once Pather is ready to run.  At this point, your character
+ * should be loaded in memory, and you should then do your initial spell setup.
+ */
+- (void) setup;
 
 + (id) classWithController: (PatherController *) controller;
 @end

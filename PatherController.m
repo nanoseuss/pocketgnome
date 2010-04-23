@@ -68,7 +68,7 @@
 @synthesize botController, controller, macroController, movementController, mobController, playerData, combatController, lootController, waypointController, blacklistController, navigationController;
 @synthesize timerCheckPatherStopConditions, timerEvaluateTasks, timerProcessCurrentActivity, timerUpdateUI, timerPerformanceCycle, timerMPMover;
 @synthesize timerWorkTime;
-@synthesize customClass;
+@synthesize listCustomClasses, customClass;
 @synthesize combatMover;
 @synthesize unitsLootBlacklisted;
 @synthesize deleteMeRouteDest;
@@ -92,6 +92,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 		self.timerMPMover = nil;
 		
 		self.timerWorkTime = [MPTimer timer:1000];
+		self.listCustomClasses = [NSMutableArray array];
 		self.customClass = nil;
 		self.combatMover = [MPMover sharedMPMover];
 		
@@ -154,6 +155,23 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 	}
 	
 	
+	
+	// Now populate the list of custom Classes here:
+	[listCustomClasses addObject:[MPCustomClassPG classWithController:self]];
+	[listCustomClasses addObject:[MPCustomClassScrubDruid classWithController:self]];
+	[chooseCustomClass removeAllItems];
+	for( MPCustomClass *currClass in listCustomClasses) {
+		[chooseCustomClass addItemWithTitle:[currClass name]];
+	}
+	
+	// Initialize Chosen Class to previous settings
+	if ([[NSUserDefaults standardUserDefaults] objectForKey: @"PatherCustomClassChosen"]) {
+		NSString *chosenClassName = [[NSUserDefaults standardUserDefaults] objectForKey: @"PatherCustomClassChosen"];
+		[chooseCustomClass selectItemWithTitle:chosenClassName];
+	}
+	
+	
+	
 	//// init the NavMesh display Options:
 	[scaleSlider setFloatValue:1.0f];
 	[navMeshView setScaleSetting:1.0f];
@@ -187,6 +205,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 	// update averateLoad
 //	[averageLoadIndicator setIntValue:[performanceController averageLoad]];
 	
+PGLog( @" End ::: [[[[updateUI() ... ]]]]" );
 	// now record our current work time.
 	[performanceController storeWorkTime:[timerWorkTime elapsedTime]];
 }
@@ -209,6 +228,32 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
         [[NSUserDefaults standardUserDefaults] synchronize];
 		
     }
+	
+}
+
+
+
+- (IBAction) chooseClass: sender {
+	
+	NSString *chosenClassName = [chooseCustomClass titleOfSelectedItem];
+	
+	[chooseCustomClass synchronizeTitleAndSelectedItem];
+	
+	// Store this task file info in UserDefaults
+	[[NSUserDefaults standardUserDefaults] setObject:chosenClassName forKey: @"PatherCustomClassChosen"];
+	[[NSUserDefaults standardUserDefaults] synchronize];
+	
+	for (MPCustomClass *currClass in listCustomClasses) {
+	
+		if ([[currClass name] isEqualToString:chosenClassName]) {
+			
+			if (![[customClass name] isEqualToString:[currClass name]]) {
+				PGLog(@"  *** Changing Custom Class to [%@]", [currClass name]);
+				self.customClass = currClass;
+				[customClass setup];
+			}
+		}
+	}
 	
 }
 
@@ -243,27 +288,33 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 	// if we are not already running ... 
 	if ([taskController currentRunningState] != RunningStateRunning) {
 		PGLog( @"   taskController !Running");
+		
 		//// BotController setup
 		[botController setPatherEnabled:YES];
 		[botController startBot:nil];
+		
 		
 		//// Verify Task File is loaded
 		[taskController loadTaskFile:[pathView stringValue] withPather:self];
 		[taskOutlineView reloadData]; // reload the Task View now.
 		
+		
 		//// Load up CustomClass 
-		// do logic to figure out which customClass object to load here
 		if ( customClass == nil) {
-//			self.customClass = [MPCustomClassPG classWithController:self];
-			self.customClass = [MPCustomClassScrubDruid classWithController:self];
-			
-			if ([[customClass name] isEqualToString:@"Pocket Gnome"])
-			{
-				[combatController setPatherEnabled:NO];
-			} else {
-				[combatController setPatherEnabled:YES];
-			}
+			[self chooseClass:nil];
 		}
+		PGLog(@"Using customClass [%@]", [customClass name]);
+		if ([[customClass name] isEqualToString:@"Pocket Gnome"])
+		{
+			[combatController setPatherCCEnabled:NO];
+			[botController setPatherCCEnabled:NO];
+		} else {
+			// if not using the PG custom class, then tell 
+			// combatController & botController to disengage
+			[combatController setPatherCCEnabled:YES];
+			[botController setPatherCCEnabled:YES];
+		}
+		[customClass setup];
 		
 	}
 	
@@ -832,6 +883,12 @@ PGLog( @"        ---> RunningStateStopped");
 			// finally enable our button
 			[startBotButton setEnabled:YES];
 			[pauseBotButton setEnabled:NO];
+			
+			// return Bot Controller to Normal State:
+			[botController setPatherEnabled:NO];
+			[botController setPatherCCEnabled:NO];
+			[combatController setPatherCCEnabled:NO];
+			[botController stopBot:nil];
 			
 			break;
 			

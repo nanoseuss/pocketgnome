@@ -301,6 +301,11 @@
 		_afkTimer = [NSTimer scheduledTimerWithTimeInterval: 30.0f target: self selector: @selector(afkTimer:) userInfo: nil repeats: YES];
 	
 		
+		// initial Pather Flags:
+		patherEnabled = NO;
+		patherCCEnabled = NO;
+		
+		
         [NSBundle loadNibNamed: @"Bot" owner: self];
     } 
     return self;
@@ -381,7 +386,7 @@
 @synthesize doLooting       = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
 
-@synthesize patherEnabled;
+@synthesize patherEnabled, patherCCEnabled;
 
 - (NSString*)sectionTitle {
     return @"Start/Stop Bot";
@@ -1392,6 +1397,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)performProcedureWithState: (NSDictionary*)state {
 	
+	if (patherCCEnabled) return; // let Pather CC handle this.
+	
 	// player dead?
 	if ( [playerController isDead] ){
 		PGLog(@"[Procedure] Player is dead! Aborting!");
@@ -2109,6 +2116,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)unitEnteredCombat: (NSNotification*)notification {
 	if(![self isBotting]) return;
+	if(patherCCEnabled) return;
 	
 	Unit *unit = [notification object];
 	
@@ -2240,6 +2248,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 // this function will actually fire off our combat procedure if needed! 
 - (void)actOnUnit: (Unit*)unit {
 	if ( ![self isBotting] )	return;
+	if (patherCCEnabled) return;
 	
 	// in theory we should never be here
 	if ( [blacklistController isBlacklisted:unit] ){
@@ -4224,35 +4233,38 @@ NSMutableDictionary *_diffDict = nil;
 		 _lastActionErrorCode = lastErrorMessage;
 		 PGLog(@"[Bot] Spell %d didn't cast(%d): %@", actionID, lastErrorMessage, [playerController lastErrorMessage] );
 
-		 // do something?
-		 if ( lastErrorMessage == ErrSpellNot_Ready){
-			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];	
-		 }
-		 else if ( lastErrorMessage == ErrTargetNotInLOS ){
-			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInLOS object: nil];	
-		 }
-		 else if ( lastErrorMessage == ErrInvalidTarget ){
-			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];
-		 }
-		 else if ( lastErrorMessage == ErrTargetOutRange ){
-			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorOutOfRange object: nil];
-		 }
-		 else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ){
-			 if ( ![playerController isOnGround] ){
-				 [movementController dismount];
+		 
+		 if (!patherCCEnabled) {
+			 
+			 // do something?
+			 if ( lastErrorMessage == ErrSpellNot_Ready){
+				 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];	
 			 }
+			 else if ( lastErrorMessage == ErrTargetNotInLOS ){
+				 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInLOS object: nil];	
+			 }
+			 else if ( lastErrorMessage == ErrInvalidTarget ){
+				 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];
+			 }
+			 else if ( lastErrorMessage == ErrTargetOutRange ){
+				 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorOutOfRange object: nil];
+			 }
+			 else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ){
+				 if ( ![playerController isOnGround] ){
+					 [movementController dismount];
+				 }
+			 }
+			 // do we need to log out?
+			 else if ( lastErrorMessage == ErrInventoryFull ){
+				 if ( [logOutOnFullInventoryCheckbox state] )
+					 [self logOutWithMessage:@"Inventory full, closing game"];
+			 }
+			 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ){
+				 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
+			 }
+			 
+			 PGLog(@"[Bot] Action taken! Result: %d", lastErrorMessage);
 		 }
-		 // do we need to log out?
-		 else if ( lastErrorMessage == ErrInventoryFull ){
-			 if ( [logOutOnFullInventoryCheckbox state] )
-				 [self logOutWithMessage:@"Inventory full, closing game"];
-		 }
-		 else if ( lastErrorMessage == ErrTargetNotInFrnt || lastErrorMessage == ErrWrng_Way ){
-			 [[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetNotInFront object: nil];
-		 }
-		 
-		 PGLog(@"[Bot] Action taken! Result: %d", lastErrorMessage);
-		 
 		 return lastErrorMessage;
 	}
 	

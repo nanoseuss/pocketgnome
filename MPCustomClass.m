@@ -39,6 +39,10 @@
 
 #pragma mark -
 
+- (NSString *) name {
+	return @"MPCustomClass -- Name Undefined";
+}
+
 // action to perform before attacking target
 - (void) preCombatWithMob: (Mob *) aMob atDistance:(float) distanceToMob {
 	
@@ -60,8 +64,17 @@
 
 
 // do your actions for buffing
-- (void) castBuffs {
+- (void) runningAction {
+	
+	
+	
+}
 
+
+
+- (void) setup {
+	
+	
 }
 
 #pragma mark -

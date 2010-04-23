@@ -74,14 +74,14 @@
 	
 	
 	//// Pather Additions:
-	BOOL patherEnabled;
+	BOOL patherCCEnabled;
 }
 
 @property BOOL inCombat;
 @property (readonly, retain) Unit *attackUnit;
 @property (readonly, retain) Unit *castingUnit;
 @property (readonly, retain) Unit *addUnit;
-@property BOOL patherEnabled;
+@property BOOL patherCCEnabled;
 
 
 // weighted units we're in combat with

@@ -14,16 +14,41 @@
 #import "BlacklistController.h"
 #import "MPSpell.h"
 #import "MPMover.h"
+#import "Player.h"
 #import "Unit.h"
+#import "MPTimer.h"
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize wrath;
+@synthesize wrath, mf, motw, rejuv, healingTouch, thorns, listSpells, listParty, timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
-		self.wrath = [MPSpell wrath];
+		self.wrath = nil;
+		self.mf    = nil;
+		self.motw  = nil;
+		self.rejuv = nil;
+		self.healingTouch = nil;
+		self.thorns = nil;
+
+		self.listSpells = nil;
+		
+		self.listParty = nil;
+		
+		
+		self.timerGCD =  [MPTimer timer:1000]; // 1 sec cooldown
+		[timerGCD forceReady]; // start off ready
+		
+		self.timerRefreshParty = [MPTimer timer:300000];  // 5 minutes
+		[timerRefreshParty forceReady];
+		
+		self.timerBuffCheck = [MPTimer timer:3000];  // every 3 seconds
+		[timerBuffCheck forceReady];
+		
+		self.timerSpellScan = [MPTimer timer:300000]; // 5 minutes
+		[timerSpellScan forceReady];
+		
 		state = CCCombatPreCombat;
 	}
 	return self;
@@ -31,7 +56,18 @@
 
 - (void) dealloc
 {
-    
+	[wrath release];
+	[mf release];
+	[motw release];
+	[rejuv release];
+	[healingTouch release];
+	[thorns release];
+    [timerGCD release];
+	[timerRefreshParty release];
+	[timerBuffCheck release];
+	[timerSpellScan release];
+	[listSpells release];
+	[listParty release];
 	
     [super dealloc];
 }
@@ -48,12 +84,21 @@
 
 - (void) preCombatWithMob: (Mob *) aMob atDistance:(float) distanceToMob {
 	
-	// Normally preCombatWithMob: atDistance: ] is called numerous times for 
+	// preCombatWithMob:atDistance:  is called numerous times for 
 	// your CC to determine what to do on approaching your target (at various distances)
-	// however in PG, all that is handled with [botController preCombatWithMob:].
-	// So here we simply call that 1x and then return.
 	
+	//// let's make sure we have our buffs up:
+	PlayerDataController *me = [PlayerDataController sharedController];
+	Player *myToon = [me player];
+	if( ![thorns unitHasBuff:myToon]) {
+		[me setPrimaryTarget:myToon];
+		[thorns cast];
+	}
 	
+	if( ![motw unitHasBuff:myToon]) {
+		[me setPrimaryTarget:myToon];
+		[motw cast];
+	}
 	
 	state = CCCombatPreCombat;
 }
@@ -167,27 +212,71 @@
 			// face target
 			PGLog(@"     --> Facing Target");
 			MPMover *mover = [MPMover sharedMPMover];
-			MPLocation *targetLocation = (MPLocation *)[currentMob position];
-			[mover moveTowards:targetLocation within:28.0f facing:targetLocation];
-//			[mover action];
+			MPLocation *targetLocation = (MPLocation *)[mob position];
+			[mover moveTowards:targetLocation within:33.0f facing:targetLocation];
+
 			
 			//// make sure we stop here!
 			
 			
+			int error = 0;
+			
+			//// do my healing checks here:
+			
+			
+			
+			
 			
 			// make sure I'm targeting the target:
-			PlayerDataController *me = [PlayerDataController sharedController];
-			if ([me targetID] != [currentMob GUID]) {
-				PGLog(@"     --> Setting Target : myTarget[%ld]  mob[%ld]",[me targetID], [currentMob GUID]);
-				[me setPrimaryTarget:currentMob];
+//			PlayerDataController *me = [PlayerDataController sharedController];
+			if ([me targetID] != [mob GUID]) {
+				PGLog(@"     --> Setting Target : myTarget[0x%X]  mob[0x%X]",[me targetID], [mob lowGUID]);
+				[me setPrimaryTarget:mob];
 			}
 			
+			PGLog(@"  Casting:");
 			
-			// cast
-			int error = [wrath cast];
-			PGLog(@"    ---> wrath cast error[%d]", error);
+			if ([timerGCD ready]) {
+				PGLog( @"   timerGGD ready");
 			
-			
+				if( ![me isCasting] ) {
+					PGLog( @"   me !casting");
+					
+					
+					if ([mf canCast]) {
+						
+						if (![mf unitHasDebuff:mob]) {
+							
+							error = [mf cast];
+							if (!error) {
+								[timerGCD start];
+								return CombatStateInCombat;
+							}
+							
+						}
+					} 
+					else {
+						PGLog( @"   MF : !canCast");
+					}
+					
+					
+					if ([wrath canCast]) {
+						PGLog(@"    Wrath: canCast");
+						
+						// cast
+						error = [wrath cast];
+						if(!error){
+							[timerGCD start];
+							return CombatStateInCombat;
+						}
+						PGLog(@"    ---> wrath cast error[%d]", error);
+						
+					}
+				
+				}
+				
+				
+			}
 
 			return CombatStateInCombat;
 			break;
@@ -201,10 +290,9 @@
 }
 
 
-- (BOOL) rest {
-	
 
-	
+- (BOOL) rest {
+
 	PlayerDataController *player = [PlayerDataController sharedController];
 	
 	// if !inCombat
@@ -220,6 +308,99 @@
 		} // end if
 	}
 	return YES;
+}
+
+
+
+- (void) runningAction {
+	
+	// make sure our spell list is updated
+	if ([timerSpellScan ready] ) {
+		
+		for(MPSpell *spell in listSpells) {
+			PGLog(@"reloading spell[%@]", [spell name]);
+			[spell loadPlayerSettings];
+		}
+		[timerSpellScan reset];
+	}
+	
+	// make sure our list of party members is updated
+	if ([timerRefreshParty ready]) {
+		
+		self.listParty = [[PlayerDataController sharedController] partyMembers];
+		
+		PGLog(@" refreshing Party Members: count[%d]", [listParty count]);
+		[timerRefreshParty reset];
+	}
+	
+	
+	// check everyone for Buffs
+	PlayerDataController *me = [PlayerDataController sharedController];
+	if ([timerBuffCheck ready]) {
+		
+		//// Check if party members have buffs
+		for( Player* player in listParty) {
+		
+			PGLog(@"checking party member buffs [%@]", [player name]);
+			if( ![thorns unitHasBuff:(Unit*)player]) {
+				[me setPrimaryTarget:player];
+				[thorns cast];
+				[timerBuffCheck reset];
+				return;
+			}
+			
+			if( ![motw unitHasBuff:(Unit *)player]) {
+				[me setPrimaryTarget:player];
+				[motw cast];
+				[timerBuffCheck reset];
+				return;
+			}
+		}
+		
+		//// personal buffs
+		Unit *myCharacter = [[PlayerDataController sharedController] player];
+		if( ![thorns unitHasBuff:myCharacter]) {
+			[me setPrimaryTarget:myCharacter];
+			[thorns cast];
+			[timerBuffCheck reset];
+			return;
+		}
+		
+		if( ![motw unitHasBuff:(Unit *)myCharacter]) {
+			[me setPrimaryTarget:myCharacter];
+			[motw cast];
+			[timerBuffCheck reset];
+			return;
+		}
+	
+		[timerBuffCheck reset];
+	}
+	
+}
+
+
+
+- (void) setup {
+	
+	self.wrath = [MPSpell wrath];
+	self.mf    = [MPSpell moonfire];
+	self.motw  = [MPSpell motw];
+	self.rejuv = [MPSpell rejuvenation];
+	self.healingTouch = [MPSpell healingTouch];
+	self.thorns = [MPSpell thorns];
+	
+	
+	NSMutableArray *spells = [NSMutableArray array];
+	[spells addObject:wrath];
+	[spells addObject:mf];
+	[spells addObject:motw];
+	[spells addObject:rejuv];
+	[spells addObject:healingTouch];
+	[spells addObject:thorns];
+	self.listSpells = [spells copy];
+	
+	self.listParty = [[PlayerDataController sharedController] partyMembers];
+	
 }
 
 

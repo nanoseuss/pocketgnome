@@ -54,7 +54,7 @@
 	IBOutlet NSLevelIndicator* averageLoadIndicator;
 	IBOutlet NSTextField* taskDescription;
 	IBOutlet NSTextField* activityDescription;
-	
+	IBOutlet NSPopUpButton* chooseCustomClass;
 	
 	// TaskGenerator Tab
 	IBOutlet NSTextField* generatedTask;
@@ -102,6 +102,7 @@
 	NSMutableArray *unitsLootBlacklisted;  // when looting mob failed, don't try again.
 	
 	// CustomClass 
+	NSMutableArray *listCustomClasses;
 	MPCustomClass *customClass;
 	
 	MPMover *combatMover;
@@ -134,7 +135,7 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 
-
+@property (retain) NSMutableArray *listCustomClasses;
 @property (retain) MPCustomClass *customClass;
 @property (retain) MPMover *combatMover;
 
@@ -151,6 +152,16 @@
  *	This routine is responsible for letting the user select a file, and then reading in the Task info. 
  */
 - (IBAction) findFile: sender;
+
+
+
+/*!
+ * @function chooseClass
+ * @abstract Updates our Custom Class to the selected option.
+ * @discussion
+ *	Allows the user select on of the available custom classes to run. 
+ */
+- (IBAction) chooseClass: sender;
 
 
 /*!

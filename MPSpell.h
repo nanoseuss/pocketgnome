@@ -7,8 +7,9 @@
 //
 
 #import <Cocoa/Cocoa.h>
-@class Spell;
 @class BotController;
+@class Spell;
+@class SpellController;
 @class Unit;
 
 
@@ -21,20 +22,25 @@
  */
 @interface MPSpell : NSObject {
 	UInt32 spellID;
+	int currentRank;
 	NSString *name;
 	Spell *mySpell;
 	NSMutableArray *listIDs, *listBuffIDs;
 	
 	BotController *botController;
+	SpellController *spellController;
 	
 }
 @property (retain) Spell *mySpell;
 @property (readwrite,retain) NSString *name;
 @property (retain) NSMutableArray *listIDs, *listBuffIDs;
 @property (retain) BotController *botController;
+@property (retain) SpellController *spellController;
 
 - (void) addID: (int) anID;
+- (BOOL) canCast;
 - (BOOL) cast;
+- (void) scanForSpell;
 - (void) loadPlayerSettings;
 
 
@@ -42,6 +48,10 @@
 - (BOOL) unitHasDebuff: (Unit *)unit;
 
 + (id) spell;
++ (id) healingTouch;
++ (id) moonfire;
++ (id) motw;
++ (id) rejuvenation;
 + (id) thorns;
 + (id) wrath;
 

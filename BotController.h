@@ -204,7 +204,8 @@
 	NSTimer *_logOutTimer;
 
     // Pather is enabled Flag
-	BOOL patherEnabled;
+	BOOL patherEnabled;	  // <-- is Pather Task system being used
+	BOOL patherCCEnabled; // <-- is a Pather Custom Class being used
 	
     // -----------------
     // -----------------
@@ -293,6 +294,7 @@
 @property (readonly, retain) NSDate *skinStartTime;
 
 @property (readwrite, assign) BOOL patherEnabled;
+@property (readwrite, assign) BOOL patherCCEnabled;
 
 - (void)testRule: (Rule*)rule;
 
