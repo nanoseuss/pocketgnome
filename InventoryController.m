@@ -1,20 +1,46 @@
-//
-//  InventoryController.m
-//  Pocket Gnome
-//
-//  Created by Jon Drummond on 12/27/07.
-//  Copyright 2007 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
 
+
+#import "ObjectsController.h"
+#import "PlayerDataController.h"
+#import "MacroController.h"
+#import "BotController.h"
+#import "NodeController.h"
 #import "InventoryController.h"
 #import "Controller.h"
 #import "MemoryViewController.h"
+
 #import "Offsets.h"
+
 #import "Item.h"
 #import "WoWObject.h"
-#import "PlayerDataController.h"
-#import "ObjectsController.h"
 #import "Player.h"
+#import "Node.h"
+
+// #import "MailActionProfile.h"
 
 @implementation InventoryController
 
@@ -442,6 +468,237 @@ static InventoryController *sharedInventory = nil;
 - (BOOL)arePlayerBagsFull{
 	//log(LOG_GENERAL, @"%d == %d", [self bagSpacesAvailable], [self bagSpacesTotal]);
 	return [self bagSpacesAvailable] == 0;
+}
+
+#define MAX_BAGS 4
+#define MAX_SLOTSIZE 40         // i think it's really 32, but just to be safe ;)
+
+- (int)mailItemsWithProfile:(MailActionProfile*)profile{
+	
+	int itemsMailed = 0;
+	
+	// array of objects which contains:
+	//      item ID, slot $, bag #
+	Item *allItems[MAX_BAGS+1][MAX_SLOTSIZE] = {{0}};
+	int currentSlot = 1;
+	
+	// backpack items first
+	NSArray *backpackGUIDs = [[playerData player] itemGUIDsInBackpack];
+	for ( NSNumber *guid in backpackGUIDs ){
+		Item *item = [self itemForGUID:[guid unsignedLongLongValue]];
+		
+		if ( item ){
+			allItems[0][currentSlot++] = [item retain];
+		}
+	}
+	
+	// now for bags!
+	UInt32 bagListOffset = 0xD92660;
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	
+	if ( memory && [memory isValid] ){
+		
+		// loop through all valid bags (up to 4)!
+		int bag = 0;
+		for ( ; bag < 4; bag++ ){
+			
+			// valid bag?
+			GUID bagGUID = [memory readLongLong:bagListOffset + ( bag * 8)];
+			if ( bagGUID > 0x0 ){
+				Item *itemBag = [self itemForGUID:bagGUID];
+				
+				if ( itemBag ){
+					int bagSlot = 1;
+					int bagSize = [itemBag bagSize];        // 1 read
+					for ( ; bagSlot <= bagSize; bagSlot++ ){
+						
+						// valid item at this slot?
+						GUID guid = [itemBag itemGUIDinSlot:bagSlot];
+						Item *item = [self itemForGUID:guid];
+						if ( item ){
+							allItems[bag+1][bagSlot] = [item retain];
+						}                                                       
+					}
+				}
+			}
+		}
+	}
+	
+	// items to exclude/include!
+	NSArray *exclusions = [profile exclusions];
+	NSArray *inclusions = [profile inclusions];
+	
+	// now remove items from the list we shouldn't mail!
+	int k = 0;
+	for ( ; k < MAX_BAGS; k++ ){
+		int j = 0;
+		for ( ; j < MAX_SLOTSIZE; j++ ){
+			if ( allItems[k][j] != nil ){
+				Item *item = allItems[k][j];
+				
+				// remove exclusions
+				if ( exclusions != nil ){
+					for ( NSString *itemName in exclusions ){
+						if ( [[item name] isCaseInsensitiveLike:itemName] ){
+							log(LOG_GENERAL, @"[Mail] Removing item %@ to be mailed", item);
+							allItems[k][j] = nil;
+						}
+					}
+				}
+
+				// check for inclusions
+				if ( inclusions != nil ){
+					BOOL found = NO;
+					for ( NSString *itemName in inclusions ){
+						if ( [[item name] isCaseInsensitiveLike:itemName] ){
+							found = YES;
+							log(LOG_GENERAL, @"[Mail] Saving %@ to be mailed", item);
+							itemsMailed++;
+
+							// in case our exclusion removed it
+							allItems[k][j] = item;
+						}
+					}
+					
+					// we will want to check for types here, once I figure this out!
+					if ( !found ){
+						log(LOG_GENERAL, @"[Mail] Removing %@ to be mailed", item);
+						allItems[k][j] = nil;
+					}
+				}
+			}
+		}
+	}
+	
+	// time to mail some items!
+	if ( itemsMailed > 0 ){
+		
+		// open up the mailbox
+		Node *mailbox = [nodeController closestNodeWithName:@"Mailbox"];
+		
+		if ( mailbox ){
+			[botController interactWithMouseoverGUID:[mailbox GUID]];
+			usleep(500000);
+			
+			[macroController useMacroOrSendCmd:@"/click MailFrameTab2"];
+			usleep(100000);
+		}
+		else{
+			log(LOG_GENERAL, @"[Mail] No mailbox found, aborting");
+			return 0;
+		}
+		
+		log(LOG_GENERAL, @"[Mail] Found %d items to mail! Beginning process with %@!", itemsMailed, mailbox);
+		
+		int totalAdded = 0;
+		
+		// while we have items to mail!
+		while ( itemsMailed > 0 ){
+			
+			// we have items to mail!
+			if ( totalAdded > 0 ){
+				log(LOG_GENERAL, @"[Mail] Sending %d items", totalAdded );
+				itemsMailed -= totalAdded;
+				
+				// send the mail
+				NSString *macroCommand = [NSString stringWithFormat:@"/script SendMail( \"%@\", \" \", \" \");", profile.sendTo];
+				[macroController useMacroOrSendCmd:macroCommand];
+				usleep(100000);
+				totalAdded = 0;
+				continue;
+			}
+			
+			int k = 0;
+			for ( ; k < MAX_BAGS; k++ ){
+				// time to mail!
+				if ( totalAdded == 12 ){
+					break;
+				}
+				
+				int j = 0;
+				for ( ; j < MAX_SLOTSIZE; j++ ){
+					
+					// time to mail!
+					if ( totalAdded == 12 ){
+						break;
+					}
+					
+					// we have an item to mail!
+					if ( allItems[k][j] != nil ){
+						log(LOG_GENERAL, @"[%d] Found item %@ to mail", totalAdded, allItems[k][j]);
+						
+						// move the item to the mail
+						NSString *macroCommand = [NSString stringWithFormat:@"/script UseContainerItem(%d, %d);", k, j];
+						[macroController useMacroOrSendCmd:macroCommand];
+						usleep(50000);
+						
+						totalAdded++;
+						allItems[k][j] = nil;
+					}
+				}
+			}
+		}
+	}
+	
+	return itemsMailed;
+}
+
+- (Item*)getBagItem: (int)bag withSlot:(int)slot{
+	
+	int currentSlot = 1;
+	
+	// backpack!
+	if ( bag == 0 ){
+		
+		NSArray *backpackGUIDs = [[playerData player] itemGUIDsInBackpack];
+		NSLog(@"Backpack");
+		for ( NSNumber *guid in backpackGUIDs ){
+			Item *item = [self itemForGUID:[guid unsignedLongLongValue]];
+			
+			if ( item ){
+				log(LOG_GENERAL, @" {%d, %d} %@", 0, currentSlot++, [item name]);
+				return [[item retain] autorelease];
+			}
+		}               
+	}
+	
+	else{
+		UInt32 bagListOffset = 0xD92660;
+		MemoryAccess *memory = [controller wowMemoryAccess];
+		
+		if ( memory && [memory isValid] ){
+			
+			// loop through all valid bags (up to 4)!
+			int bag = 0;
+			for ( ; bag < 4; bag++ ){
+				
+				// valid bag?
+				GUID bagGUID = [memory readLongLong:bagListOffset + ( bag * 8)];
+				if ( bagGUID > 0x0 ){
+					Item *itemBag = [self itemForGUID:bagGUID];
+					
+					if ( itemBag ){
+						log(LOG_GENERAL, @"Bag: %@", [itemBag name]);
+						
+						int bagSlot = 1;
+						int bagSize = [itemBag bagSize];        // 1 read
+						for ( ; bagSlot <= bagSize; bagSlot++ ){
+							
+							// valid item at this slot?
+							GUID guid = [itemBag itemGUIDinSlot:bagSlot];
+							Item *item = [self itemForGUID:guid];
+							if ( item ){
+								log(LOG_GENERAL, @" {%d, %d} %@", bag+1, bagSlot, [item name]);
+								return [[item retain] autorelease];
+							}                                                       
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return nil;
 }
 
 #pragma mark Sub Class implementations

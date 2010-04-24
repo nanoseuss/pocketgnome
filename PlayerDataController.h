@@ -176,6 +176,7 @@ enum ePlayer_RuneTypes {
 - (BOOL)isFriendlyWithFaction: (UInt32)faction;
 
 - (BOOL)isOnGround;
+- (BOOL)isAirMounted;
 
 - (UInt32)spellCasting;
 - (float)castTime;

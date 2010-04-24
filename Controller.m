@@ -303,6 +303,12 @@ static Controller* sharedController = nil;
         [mainToolbar setSelectedItemIdentifier: [pvpToolbarItem itemIdentifier]];
         return YES;
     }
+	else if ( [[filename pathExtension] isEqualToString: @"mailprofile"] ) {
+	        [routeController importProfileAtPath: filename];
+	        [self toolbarItemSelected: routesToolbarItem];
+	        [mainToolbar setSelectedItemIdentifier: [routesToolbarItem itemIdentifier]];
+	        return YES;
+    }
     
     return NO;
 }
@@ -449,7 +455,7 @@ typedef struct NameObjectStruct{
 		_currentAddress = objectAddress;
 		
 		// save the object addresses
-		[_objectAddresses addObject:[NSNumber numberWithInt:objectAddress]];
+		[_objectAddresses addObject:[NSNumber numberWithUnsignedInt:objectAddress]];
 	}
 	
 	// we have the addresses now, lets add them to our respective controllers
@@ -483,7 +489,7 @@ typedef struct NameObjectStruct{
 			}
 		}
 	}
-	
+
 	UInt32 nextObjectAddress = 0;
 	if([memory loadDataForObject: self atAddress: _currentAddress + 0x34 Buffer: (Byte*)&nextObjectAddress BufLength: sizeof(nextObjectAddress)] && nextObjectAddress) {
 		return nextObjectAddress;
@@ -496,8 +502,8 @@ typedef struct NameObjectStruct{
 	
 	UInt32 objectAddress = 0;
 	for ( NSNumber *objAddress in _objectAddresses ){
-		objectAddress = [objAddress intValue];
-		
+		objectAddress = [objAddress unsignedIntValue];
+
 		int objectType = TYPEID_UNKNOWN;
 		if ( [memory loadDataForObject: self atAddress: (objectAddress + OBJECT_TYPE_ID) Buffer: (Byte*)&objectType BufLength: sizeof(objectType)] ) {
 

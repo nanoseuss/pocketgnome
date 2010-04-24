@@ -29,6 +29,10 @@
 #import "StatisticsController.h"
 #import "CombatProfileEditor.h"
 #import "BindingsController.h"
+#import "InventoryController.h"
+#import "Profile.h"
+// #import "ProfileController.h"
+// #import "MailActionProfile.h"
 
 #import "Action.h"
 #import "Rule.h"
@@ -64,6 +68,8 @@
 @interface MovementController (Internal)
 
 - (void)setClickToMove:(Position*)position andType:(UInt32)type andGUID:(UInt64)guid;
+
+- (void)moveToWaypoint: (Waypoint*)waypoint;
 
 - (void)turnLeft: (BOOL)go;
 - (void)turnRight: (BOOL)go;
@@ -542,7 +548,7 @@ typedef enum MovementState{
 		[self turnTowardPosition: [newWaypoint position]];
 
 		usleep([controller refreshDelay]*2);
-		
+
 		[self moveToWaypoint:newWaypoint];
 
 	} else {
@@ -1325,6 +1331,16 @@ typedef enum MovementState{
     return NO;
 }
 
+- (void)resetRoutes{
+	// to be safe
+	[self resetMovementState];
+
+	// dump the routes!
+	self.currentRouteSet = nil;
+	self.currentRouteKey = nil;
+	self.currentRoute = nil;
+}
+
 - (void)resetMovementState{
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
@@ -1539,13 +1555,15 @@ typedef enum MovementState{
 	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] && ![botController isPvPing] ){
 		return;
 	}
-	
+
+/*
 	// do nothing if they're PvPing
 	if ( [botController isPvPing] || [playerData isInBG:[playerData zone]] ){
 		log(LOG_MOVEMENT, @"[Move] Ignoring corpse route because we're PvPing!");
 		return;
 	}
-	
+*/
+
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ){
 		
@@ -2376,47 +2394,56 @@ typedef enum MovementState{
 					// now send the repair macro
 					[macroController useMacro:@"RepairAll"];	
 					
-					log(LOG_MOVEMENT, @"[Waypoint] All items repaired");
+					log(LOG_WAYPOINT, @"All items repaired");
 				}
 			}
 			else{
-				log(LOG_MOVEMENT, @"[Waypoint] Unable to repair, no repair NPC found!");
+				log(LOG_WAYPOINT, @"Unable to repair, no repair NPC found!");
 			}
 		}
 		
 		// switch combat profile
-		else if ( [action type] == ActionType_CombatProfile ){
-			log(LOG_MOVEMENT, @"[Waypoint] Switching from combat profile %@", botController.theCombatProfile);
-			
+		else if ( [action type] == ActionType_CombatProfile ) {
+			log(LOG_WAYPOINT, @"Switching from combat profile %@", botController.theCombatProfile);
+
 			CombatProfile *profile = nil;
 			NSString *UUID = [action value];
 			for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
-				if ( [UUID isEqualToString:[otherProfile UUID]] ){
+				if ( [UUID isEqualToString:[otherProfile UUID]] ) {
 					profile = otherProfile;
 					break;
 				}
 			}
-			
+
 			[botController changeCombatProfile:profile];
 		}
-		
+
 		// jump to waypoint
-		else if ( [action type] == ActionType_JumpToWaypoint ){
-			
+		else if ( [action type] == ActionType_JumpToWaypoint ) {
+
 			int waypointIndex = [[action value] intValue] - 1;
 			NSArray *waypoints = [self.currentRoute waypoints];
-			
-			if ( waypointIndex >= 1 && waypointIndex < [waypoints count] ){
+
+			if ( waypointIndex >= 0 && waypointIndex < [waypoints count] ){
 				self.destinationWaypoint = [waypoints objectAtIndex:waypointIndex];
-				log(LOG_MOVEMENT, @"[Waypoint] Jumping to waypoint %@", self.destinationWaypoint);
+				log(LOG_WAYPOINT, @"Jumping to waypoint %@", self.destinationWaypoint);
 				[self resumeMovement];
 			}
 			else{
-				log(LOG_MOVEMENT, @"[Waypoint] Error, unable to move to waypoint index %d, out of range!", waypointIndex);
+				log(LOG_WAYPOINT, @"Error, unable to move to waypoint index %d, out of range!", waypointIndex);
 			}
 		}
+		
+		// mail
+		else if ( [action type] == ActionType_Mail ){
+
+			MailActionProfile *profile = (MailActionProfile*)[profileController profileForUUID:[action value]];
+			log(LOG_WAYPOINT, @"Initiating mailing profile: %@", profile);
+			[itemController mailItemsWithProfile:profile];
+		}
+
 	}
-	
+
 	log(LOG_MOVEMENT, @"[Waypoint] Action %d complete, checking for more!", actionToExecute);
 	
 	[self performSelector: _cmd

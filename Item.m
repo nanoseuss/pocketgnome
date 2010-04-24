@@ -939,15 +939,16 @@ enum ItemFlags
 }
 
 
-- (UInt64)itemUIDinSlot: (UInt32)slotNum {
-    if(slotNum < 1 || slotNum > [self bagSize])
+- (UInt64)itemGUIDinSlot: (UInt32)slotNum {
+    if ( slotNum < 1 || slotNum > [self bagSize] )
         return 0;
 
-    if([self isBag]) {
+    if ( [self isBag] ) {
         UInt64 value = 0;
         if([_memory loadDataForObject: self atAddress: ([self infoAddress] + CONTAINER_FIELD_SLOT_1 + (CONTAINER_FIELD_SLOT_SIZE*(slotNum-1)) ) Buffer: (Byte *)&value BufLength: sizeof(value)])
             return value;
     }
+	
     return 0;
 }
 

@@ -1,23 +1,47 @@
-//
-//  MemoryViewController.m
-//  Pocket Gnome
-//
-//  Created by Jon Drummond on 12/16/07.
-//  Copyright 2007 Savory Software, LLC. All rights reserved.
-//
+/*
+ * Copyright (c) 2007-2010 Savory Software, LLC, http://pg.savorydeviate.com/
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * $Id$
+ *
+ */
 
 #import "MemoryViewController.h"
 #import "Controller.h"
 #import "OffsetController.h"
 
+#import "InventoryController.h"
+#import "MobController.h"
+#import "NodeController.h"
+#import "PlayersController.h"
+
+#import "Item.h"
+
 #import "WoWObject.h"
 
 typedef enum ViewTypes {
 	View_UInt32 = 0,
-	View_Int32	= 1,
-	View_UInt64	= 2,
-	View_Float	= 3,
-	View_Hex32	= 4,
+	View_Int32      = 1,
+	View_UInt64     = 2,
+	View_Float      = 3,
+	View_Hex32      = 4,
 	View_UInt16 = 5,
 } ViewTypes;
 
@@ -257,7 +281,7 @@ typedef enum ViewTypes {
 		_pointerScanThread = [[NSThread alloc] initWithTarget:self
 													 selector:@selector(pointerScan:)
 													   object:address];
-		//[pointerScanNumTextField setIntValue:1];	// only scan the 1!
+		//[pointerScanNumTextField setIntValue:1];      // only scan the 1!
 		[_pointerScanThread start];
 	}
 }
@@ -272,7 +296,7 @@ typedef enum ViewTypes {
 		if ( displayFormat == 0 || displayFormat == 1 || displayFormat == 4 ){
 			uint32_t value32;
 			if ( [memory loadDataForObject: self atAddress: addr Buffer: (Byte*)&value32 BufLength: sizeof(value32)] )
-				num = [NSNumber numberWithInt:value32];				
+				num = [NSNumber numberWithInt:value32];                         
 		}
 		// 64 bit
 		else if ( displayFormat == 2 ){
@@ -347,7 +371,7 @@ typedef enum ViewTypes {
 	uint32_t value32;
 	int i;
 	for ( i = 0; i < _displayCount; i++ ){
-		uint32_t addr = startAddress + i*size;	
+		uint32_t addr = startAddress + i*size;  
 		
 		MemoryAccess *memory = [controller wowMemoryAccess];
         int ret = [memory readAddress: addr Buffer: (Byte*)&value32 BufLength: sizeof(value32)];
@@ -426,6 +450,8 @@ typedef enum ViewTypes {
 		
 		uint32_t addr = startAddress + rowIndex*size;
 		
+		NSString *value = [self formatNumber:nil WithAddress:addr DisplayFormat:[self displayFormat]];
+		
 		if( [[aTableColumn identifier] isEqualToString: @"Address"] ) {
 			return [NSString stringWithFormat: @"0x%X", addr];
 		}
@@ -438,7 +464,7 @@ typedef enum ViewTypes {
 		}
 		
 		if( [[aTableColumn identifier] isEqualToString: @"Value"] ) {
-			return [self formatNumber:nil WithAddress:addr DisplayFormat:[self displayFormat]];
+			return value;
 		}
 		
 		if( [[aTableColumn identifier] isEqualToString: @"Info"] ) {
@@ -455,22 +481,41 @@ typedef enum ViewTypes {
 						NSMutableString *addresses = [NSMutableString string];
 						
 						for ( NSNumber *address in pointers ){
-							[addresses appendString:[NSString stringWithFormat:@"0x%X ", [address unsignedIntValue]]];							
+							[addresses appendString:[NSString stringWithFormat:@"0x%X ", [address unsignedIntValue]]];                                                      
 						}
 						return addresses;
 					}
 					else{
-						return [NSString stringWithFormat:@"PTR: 0x%X", [[pointers objectAtIndex:0] unsignedIntValue]];					
+						return [NSString stringWithFormat:@"PTR: 0x%X", [[pointers objectAtIndex:0] unsignedIntValue]];                                 
 					}
 				}
 			}
 			
-			NSString *value = [self formatNumber:nil WithAddress:addr DisplayFormat:0];
-			NSNumber *num = [NSNumber numberWithInt:[value integerValue]];
+			NSNumber *num = [NSNumber numberWithInt:[[self formatNumber:nil WithAddress:addr DisplayFormat:0] integerValue]];
 			NSArray *objectAddresses = [controller allObjectAddresses];
 			
 			if ( [objectAddresses containsObject:num] ){
 				return @"OBJECT POINTER";
+			}
+			
+			// 64-bit
+			if ( [self displayFormat] == 2 ){
+				Item *item = [itemController itemForGUID:[value longLongValue]];
+				if ( item ){
+					return [NSString stringWithFormat:@"Item: %@", [item name]];                            
+				}
+				Mob *mob = [mobController mobWithGUID:[value longLongValue]];
+				if ( mob ){
+					return [NSString stringWithFormat:@"Mob: %@", [mob name]];                              
+				}
+				Player *player = [playersController playerWithGUID:[value longLongValue]];
+				if ( player ){
+					return [NSString stringWithFormat:@"Player: %@", [playersController playerNameWithGUID:[value longLongValue]]];                         
+				}
+				/*Node *node = [nodeController nodeWithGUID:[value longLongValue]];
+				 if ( node ){
+				 return [NSString stringWithFormat:@"Mob: %@", [node name]];                             
+				 }*/
 			}
 			
 			id info = nil;
@@ -495,7 +540,7 @@ typedef enum ViewTypes {
 		
 		if( [[aTableColumn identifier] isEqualToString: @"Bit"] ) {
 			
-			//  0x0   0x1  0x2  0x4  0x8  0x10  0x20  0x40  0x80	0x100
+			//  0x0   0x1  0x2  0x4  0x8  0x10  0x20  0x40  0x80    0x100
 			
 			NSString *num = [NSString stringWithFormat:@"0x%X", rowIndex];
 			
@@ -623,13 +668,13 @@ typedef enum ViewTypes {
 		int totalInvalids = 0;
 		// update values
 		for ( NSMutableDictionary *dict in (NSArray*)objects ){
-
+			
 			WoWObject *obj = [dict valueForKey:@"Object"];
 			
 			if ( [obj isStale] || ![obj isValid] ){
 				log(LOG_MEMORY, @"[Memory] Object no longer valid, aborting");
 				totalInvalids++;
-				continue;		
+				continue;               
 			}
 			
 			UInt32 addressSize = [[(NSMutableDictionary*)dict valueForKey:@"Size"] unsignedIntValue];
@@ -645,7 +690,7 @@ typedef enum ViewTypes {
 		UInt32 addressSize = [[firstObjectDict valueForKey:@"Size"] unsignedIntValue];
 		int i;
 		for ( i = 0; i < addressSize; i++ ){
-			uint32_t addr = firstObjectStartAddress + i*4;	
+			uint32_t addr = firstObjectStartAddress + i*4;  
 			NSNumber *value = [firstObjectValues objectForKey:[NSNumber numberWithUnsignedInt:addr]];
 			
 			BOOL different = NO;
@@ -663,7 +708,7 @@ typedef enum ViewTypes {
 					break;
 				}
 			}
-
+			
 			if ( different ){
 				WoWObject *obj = [[(NSArray*)objects objectAtIndex:0] valueForKey:@"Object"];
 				uint32_t startAddress = [obj baseAddress];
@@ -676,14 +721,14 @@ typedef enum ViewTypes {
 				NSNumber *value1 = [[[(NSArray*)objects objectAtIndex:1] valueForKey:@"StartValues"] objectForKey:[NSNumber numberWithUnsignedInt:addr3]];
 				
 				/*obj = [[(NSArray*)objects objectAtIndex:2] valueForKey:@"Object"];
-				startAddress = [obj baseAddress];
-				addr3 = startAddress + i*4;
-				NSNumber *value2 = [[[(NSArray*)objects objectAtIndex:2] valueForKey:@"StartValues"] objectForKey:[NSNumber numberWithUnsignedInt:addr3]];
-				
-				obj = [[(NSArray*)objects objectAtIndex:3] valueForKey:@"Object"];
-				startAddress = [obj baseAddress];
-				addr3 = startAddress + i*4;
-				NSNumber *value3 = [[[(NSArray*)objects objectAtIndex:3] valueForKey:@"StartValues"] objectForKey:[NSNumber numberWithUnsignedInt:addr3]];*/
+				 startAddress = [obj baseAddress];
+				 addr3 = startAddress + i*4;
+				 NSNumber *value2 = [[[(NSArray*)objects objectAtIndex:2] valueForKey:@"StartValues"] objectForKey:[NSNumber numberWithUnsignedInt:addr3]];
+				 
+				 obj = [[(NSArray*)objects objectAtIndex:3] valueForKey:@"Object"];
+				 startAddress = [obj baseAddress];
+				 addr3 = startAddress + i*4;
+				 NSNumber *value3 = [[[(NSArray*)objects objectAtIndex:3] valueForKey:@"StartValues"] objectForKey:[NSNumber numberWithUnsignedInt:addr3]];*/
 				
 				UInt32 offset = addr - firstObjectStartAddress;
 				
@@ -693,7 +738,7 @@ typedef enum ViewTypes {
 		}
 		
 		log(LOG_MEMORY, @"------------------------------");
-
+		
 		
 		// all are invalid :(
 		if ( totalInvalids == [objects count] ){
@@ -701,7 +746,7 @@ typedef enum ViewTypes {
 			return;
 		}
 		
-		[self performSelector:@selector(monitorObjects:) withObject:objects afterDelay:0.1f];	
+		[self performSelector:@selector(monitorObjects:) withObject:objects afterDelay:0.1f];   
 	}
 	
 	// lets start monitoring!
@@ -709,7 +754,7 @@ typedef enum ViewTypes {
 		
 		NSMutableArray *objectsWithData = [[NSMutableArray array] retain];
 		
-
+		
 		for ( WoWObject *obj in (NSArray*)objects ){
 			
 			NSNumber *addressesToMonitor = [NSNumber numberWithUnsignedInt:(([obj memoryEnd] - [obj memoryStart] + 0x1000) / sizeof(UInt32))];
@@ -721,10 +766,10 @@ typedef enum ViewTypes {
 										 startValues,@"StartValues",
 										 nil];
 			
-			[objectsWithData addObject:dict];				
+			[objectsWithData addObject:dict];                               
 		}
 		
-		[self performSelector:@selector(monitorObjects:) withObject:objectsWithData afterDelay:0.1f];		
+		[self performSelector:@selector(monitorObjects:) withObject:objectsWithData afterDelay:0.1f];           
 	}
 	
 }
@@ -739,7 +784,7 @@ typedef enum ViewTypes {
 			
 			if ( [obj isStale] || ![obj isValid] ){
 				log(LOG_MEMORY, @"[Memory] Object no longer valid, aborting");
-				return;				
+				return;                         
 			}
 			
 			UInt32 addressSize = [[(NSMutableDictionary*)object valueForKey:@"Size"] unsignedIntValue];
@@ -769,10 +814,10 @@ typedef enum ViewTypes {
 			NSDictionary *startValues = [self valuesForObject:object withAddressSize:[addressesToMonitor intValue]];
 			
 			NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-								  object, @"Object",
-								  addressesToMonitor, @"Size",
-								  startValues,@"StartValues",
-								  nil];
+										 object, @"Object",
+										 addressesToMonitor, @"Size",
+										 startValues,@"StartValues",
+										 nil];
 			
 			log(LOG_MEMORY, @"[Memory] Starting to monitor %@ with base address 0x%X!", object, [object baseAddress]);
 			[self performSelector:@selector(monitorObject:) withObject:dict afterDelay:0.1f];
@@ -791,7 +836,7 @@ typedef enum ViewTypes {
 	uint32_t value32;
 	int i;
 	for ( i = 0; i < addressSize; i++ ){
-		uint32_t addr = startAddress + i*size;	
+		uint32_t addr = startAddress + i*size;  
 		
 		MemoryAccess *memory = [controller wowMemoryAccess];
         int ret = [memory readAddress: addr Buffer: (Byte*)&value32 BufLength: sizeof(value32)];
@@ -810,13 +855,13 @@ typedef enum ViewTypes {
 #pragma mark Search Options
 
 typedef enum Types {
-	Type_8bit	= 0,
-	Type_16bit	= 1,
-	Type_32bit	= 2,
-	Type_64bit	= 3,
-	Type_Float	= 4,
-	Type_Double	= 5,
-	Type_String	= 6,
+	Type_8bit       = 0,
+	Type_16bit      = 1,
+	Type_32bit      = 2,
+	Type_64bit      = 3,
+	Type_Float      = 4,
+	Type_Double     = 5,
+	Type_String     = 6,
 } Types;
 
 typedef enum Signage{
@@ -829,7 +874,7 @@ typedef enum SearchType{
 	Value_Last = 1,
 } SearchType;
 
-- (IBAction)openSearch: (id)sender{	
+- (IBAction)openSearch: (id)sender{     
 	[searchPanel makeKeyAndOrderFront: self];
 }
 
@@ -847,10 +892,10 @@ typedef enum SearchType{
 			log(LOG_MEMORY, @"searching for new values... %d %d", sizeof(float), sizeof(double));
 			
 			/*NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys: 
-								[NSNumber numberWithInt:[signMatrix selectedTag]],		@"Sign",
-								[NSNumber numberWithInt:[signMatrix selectedTag]],		@"Type",
-								[searchText stringValue],								@"Value",				  
-								nil];*/
+			 [NSNumber numberWithInt:[signMatrix selectedTag]],              @"Sign",
+			 [NSNumber numberWithInt:[signMatrix selectedTag]],              @"Type",
+			 [searchText stringValue],                                                               @"Value",                                 
+			 nil];*/
 			
 			//[NSThread detachNewThreadSelector: @selector(searchPlease:) toTarget: self withObject: dict];
 		}
@@ -875,26 +920,26 @@ typedef enum SearchType{
 - (void)searchPlease: (NSDictionary*)dict{
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	
-	int searchType	= [[dict objectForKey:@"Type"] intValue];
-	//int signage		= [[dict objectForKey:@"Sign"] intValue];
+	int searchType  = [[dict objectForKey:@"Type"] intValue];
+	//int signage           = [[dict objectForKey:@"Sign"] intValue];
 	//NSString *value = [dict objectForKey:@"Value"];
     NSDate *date = [NSDate date];
 	
 	// determine the size we are searching for
 	size_t size = 0;
-	if ( searchType == Type_8bit )				// 1
+	if ( searchType == Type_8bit )                          // 1
 		size = sizeof(uint8_t);
-	else if ( searchType == Type_16bit )		// 2
+	else if ( searchType == Type_16bit )            // 2
 		size = sizeof(uint16_t);
-	else if ( searchType == Type_32bit )		// 4
+	else if ( searchType == Type_32bit )            // 4
 		size = sizeof(uint32_t);
-	else if ( searchType == Type_64bit )		// 8
+	else if ( searchType == Type_64bit )            // 8
 		size = sizeof(uint64_t);
-	else if ( searchType == Type_Float )		// 4
+	else if ( searchType == Type_Float )            // 4
 		size = sizeof(float);
-	else if ( searchType == Type_Double )		// 8
+	else if ( searchType == Type_Double )           // 8
 		size = sizeof(double);
-
+	
 	// block of data!
 	Byte *dataBlock = malloc(size);
 	
@@ -956,10 +1001,10 @@ typedef enum SearchType{
 								 }*/
 								// is this our address?
 								/*if ( *checkVal == addressToFind ){
-									UInt32 foundAddress = SourceAddress + x;
-									log(LOG_MEMORY, @"Match for 0x%X found at 0x%X", addressToFind, foundAddress);
-									[addressesFound addObject:[NSNumber numberWithUnsignedInt:foundAddress]];
-								}*/
+								 UInt32 foundAddress = SourceAddress + x;
+								 log(LOG_MEMORY, @"Match for 0x%X found at 0x%X", addressToFind, foundAddress);
+								 [addressesFound addObject:[NSNumber numberWithUnsignedInt:foundAddress]];
+								 }*/
                             }
                         }
                     } NS_HANDLER {
@@ -981,16 +1026,16 @@ typedef enum SearchType{
     
     log(LOG_MEMORY, @"[Memory] Pointer scan took %.4f seconds.", 0.0f-[date timeIntervalSinceNow]);
     /*
-	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-						  address,				@"Address",
-						  addressesFound,      @"Addresses",
-						  nil];
-	
-	
-    // tell the main thread we are done
-	[self performSelectorOnMainThread: @selector(findPointerAddresses:)
-						   withObject: dict
-                        waitUntilDone: NO];*/
+	 NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+	 address,                              @"Address",
+	 addressesFound,      @"Addresses",
+	 nil];
+	 
+	 
+	 // tell the main thread we are done
+	 [self performSelectorOnMainThread: @selector(findPointerAddresses:)
+	 withObject: dict
+	 waitUntilDone: NO];*/
     
     [pool release];
 }
@@ -998,12 +1043,12 @@ typedef enum SearchType{
 #pragma mark OFfset Scanner UI
 
 - (IBAction)openOffsetPanel: (id)sender {
-
-        [NSApp beginSheet: offsetScanPanel
-           modalForWindow: [self.view window]
-            modalDelegate: self
-           didEndSelector: @selector(offsetSheetDidEnd: returnCode: contextInfo:)
-              contextInfo: nil];
+	
+	[NSApp beginSheet: offsetScanPanel
+	   modalForWindow: [self.view window]
+		modalDelegate: self
+	   didEndSelector: @selector(offsetSheetDidEnd: returnCode: contextInfo:)
+		  contextInfo: nil];
 }
 
 - (void)offsetSheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
@@ -1025,18 +1070,19 @@ typedef enum SearchType{
 	if ( [mask length] > 0 && [signature length] > 0 ){
 		[resultsTextView setString: @""];
 		
-		NSArray *offsetList = [offsetController offsetWithByteSignature:signature 
-															  withMask:mask 
-														 withEmulation:[emulatePPCButton state]];
+		NSDictionary *offsetDict = [offsetController offsetWithByteSignature:signature 
+																	withMask:mask];
 		
 		// do we have any offsets?
-		if ( [offsetList count] > 0 ){
+		if ( [offsetDict count] > 0 ){
 			
 			NSString *offsets = [[NSString alloc] init];
 			
+			NSArray *allKeys = [offsetDict allKeys];
+			
 			int loc = 1;
-			for ( NSNumber *offset in offsetList ){
-				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"%d: 0x%X\n", loc++, [offset intValue]]];	
+			for ( NSNumber *key in allKeys ){
+				offsets = [offsets stringByAppendingString: [NSString stringWithFormat:@"%d: 0x%X found at 0x%X\n", loc++, [[offsetDict objectForKey:key] unsignedIntValue], [key unsignedIntValue]]];  
 			}
 			
 			[resultsTextView setString: offsets];
@@ -1097,7 +1143,7 @@ typedef enum SearchType{
 	UInt32 currentAddress = [self.currentAddress unsignedIntValue];
 	
 	_pointerScanThread = [[NSThread alloc] initWithTarget:self
-												selector:@selector(pointerScan:)
+												 selector:@selector(pointerScan:)
 												   object:[NSNumber numberWithUnsignedInt:currentAddress]];
 	[_pointerScanThread start];
 }
@@ -1111,7 +1157,7 @@ typedef enum SearchType{
 	int i = 0;
 	for ( ; i < numPointers; i++ ){
 		if ( [[NSThread currentThread] isCancelled] ){
-			break;		
+			break;          
 		}
 		
 		// find pointers
@@ -1170,9 +1216,9 @@ typedef enum SearchType{
 				
 				// check for thread cancellation
 				if ( [[NSThread currentThread] isCancelled] ){
-					break;		
+					break;          
 				}
-
+				
                 // ensure we have access to this block
                 if ((SourceInfo.protection & VM_PROT_READ)) {
                     NS_DURING {
@@ -1217,7 +1263,7 @@ typedef enum SearchType{
     log(LOG_MEMORY, @"[Memory] Pointer scan took %.4f seconds and found %d pointers.", 0.0f-[date timeIntervalSinceNow], [addressesFound count]);
     
 	NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-						  address,				@"Address",
+						  address,                              @"Address",
 						  addressesFound,      @"Addresses",
 						  nil];
 	
