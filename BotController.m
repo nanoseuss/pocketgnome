@@ -24,7 +24,6 @@
  */
 
 #import "BotController.h"
-
 #import "Controller.h"
 #import "ChatController.h"
 #import "PlayerDataController.h"
@@ -2301,11 +2300,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: _cmd
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 								[state objectForKey: @"Procedure"],				@"Procedure",
-								[NSNumber numberWithInt: completed],		@"CompletedRules",
+								[NSNumber numberWithInt: completed],			@"CompletedRules",
 								[NSNumber numberWithInt: attempts+1],			@"RuleAttempts",			// but increment attempts
 								rulesTried,										@"RulesTried",				// track how many times we've tried each rule
 								[NSNumber numberWithInt:actionsPerformed],		@"ActionsPerformed",
-								target,											@"Target", nil]
+								originalTarget,									@"Target", nil]
 				   afterDelay:	0.1f];
 		
 		log(LOG_DEV, @"Rule executed, trying for more rules!");
@@ -2461,7 +2460,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		_lastActionErrorCode = lastErrorMessage;
 		log(LOG_PROCEDURE, @"%@ %@ Spell %d didn't cast: %@", [combatController unitHealthBar: castingUnit], castingUnit,  actionID, [playerController lastErrorMessage] );
-		
+
 		// do something?
 		if ( lastErrorMessage == ErrSpellNot_Ready){
 			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorSpellNotReady object: nil];
@@ -2471,6 +2470,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 		else if ( lastErrorMessage == ErrInvalidTarget ){
 			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorInvalidTarget object: nil];
+		}
+		else if ( lastErrorMessage == ErrTargetDead ){
+			[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: nil];
 		}
 		else if ( lastErrorMessage == ErrTargetOutRange ){
 			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorTargetOutOfRange object: nil];
@@ -2504,7 +2506,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (void)monitorRegen: (NSDate*)start{
 	
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 	
 	if ( [playerController isInCombat] ){
 		log(LOG_FUNCTION, @"monitorRegen");
@@ -2553,7 +2555,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)reachedFollowUnit: (NSNotification*)notification {
 
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 
 	log(LOG_FUNCTION, @"botController: reachedFollowUnit");
 
@@ -2612,7 +2614,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)unitEnteredCombat: (NSNotification*)notification {
 
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 
 	Unit *unit = [notification object];
 
@@ -2676,7 +2678,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)playerEnteringCombat: (NSNotification*)notification {
 
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 	
 	log(LOG_DEV, @"Entering combat");
 	[blacklistController clearAttempts];
@@ -2689,7 +2691,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	_didPreCombatProcedure = NO;
 
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 
 	[self resetLootScanIdleTimer];
 
@@ -2733,13 +2735,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	[self followRouteClear]; 	// Wipe our follow route so we don't try it when we res
 
+	if ( [_mobsToLoot count] ) [_mobsToLoot removeAllObjects];
+
 	// Check to see if we need to blacklist a node for making us die
 	if ( theCombatProfile.resurrectWithSpiritHealer && 
 		self.lastAttemptedUnitToLoot && 
 		_movingTowardNodeCount > 0 && 
 		[self.lastAttemptedUnitToLoot isValid] 
 		) {
-		
 		log(LOG_NODE, @"%@ made me die, blacklisting.", self.lastAttemptedUnitToLoot);
 		[blacklistController blacklistObject: self.lastAttemptedUnitToLoot withReason:Reason_NodeMadeMeDie];
 	}
@@ -2774,7 +2777,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [playerController isDead] && [playerController isGhost] ){
 		log(LOG_DEV, @"We're dead, evaluating.");
-		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:5.0f];
+		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.1f];
 	}
 }
 
@@ -2863,7 +2866,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	Procedure *procedure = [self.theBehavior procedureForKey: CombatProcedure];
     int ruleCount = [procedure ruleCount];
@@ -2887,7 +2890,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)actOnUnit: (Unit*)unit {
 
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 	
 	// in theory we should never be here
 	if ( [blacklistController isBlacklisted:unit] ) {
@@ -2948,13 +2951,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)unitDied: (NSNotification*)notification{
 
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 
 	Unit *unit = [notification object];
 
 	log(LOG_DEV, @"Unit %@ killed %@", unit, [unit class]);
 
 	// unit dead, reset!
+	if ( self.procedureInProgress ) [self cancelCurrentProcedure];
+	if ( self.evaluationInProgress ) [self cancelCurrentEvaluation];
+
 	if ( !self.evaluationInProgress ) [movementController resetMoveToObject];
 
 	if ( [unit isNPC] ) log(LOG_DEV, @"NPC Died, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
@@ -2970,26 +2976,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			if ( ![_mobsToLoot containsObject: unit]) [_mobsToLoot addObject: (Mob*)unit];
 
 			// If we're in a party we don't stop to loot right away
-			if ( theCombatProfile.partyEnabled &&  [playerController isInParty] ) return;
-
-			// If we're in evaluation or a procedure other than Patrol let's continue what we're currently doing
-			if ( self.procedureInProgress && self.procedureInProgress != @"PatrollingProcedure" ) return;
-			if ( self.evaluationInProgress && self.evaluationInProgress != @"Patrol" ) return;
-
-			// Stop what we're doing so we can evaluate for loot
-			if ( self.procedureInProgress ) [self cancelCurrentProcedure];
-			if ( self.evaluationInProgress ) [self cancelCurrentEvaluation];
-
+//			if ( (!theCombatProfile.partyEnabled &&  ![playerController isInParty] ) return;
 			if ( [movementController isMoving] ) [movementController stopMovement];
 
-			[self evaluateSituation];
-
-		} else {
-
-			[self performSelector: @selector(checkUnitForLootable:) withObject:unit afterDelay: 1.0f ];
-			log(LOG_LOOT, @"Mob %@ isn't lootable yet, will check again in a second.", unit);
+//		} else {
+//			[self performSelector: @selector(checkUnitForLootable:) withObject:unit afterDelay: 1.0f ];
+//			log(LOG_LOOT, @"Mob %@ isn't lootable yet, will check again in a second.", unit);
 		}
 	}
+
+	[self evaluateSituation];
 }
 
 #pragma mark -
@@ -3028,7 +3024,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)lootScan {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	if ( !self.doLooting ) return NO;
 
@@ -3386,7 +3382,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(void)followRouteRecord {
 	
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 	
 	log(LOG_FUNCTION, @"followRouteRecord");
 	
@@ -3505,7 +3501,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)followMountCheck {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	log(LOG_FUNCTION, @"followMountCheck");
 
@@ -3559,7 +3555,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)followMountNow{
 	
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	if ( !_followUnit ) return NO;
 	
@@ -3625,7 +3621,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)findFollowUnit {
 	
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	// If it's a new target then we need to clear the route
 	[self followRouteClear];
@@ -3665,7 +3661,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)findPartyFollowUnit {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	// If it's a new target then we need to clear the route
 	[self followRouteClear];
@@ -3726,7 +3722,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)isOnAssist {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	if ( !theCombatProfile.partyEnabled || !theCombatProfile.assistUnit || theCombatProfile.assistUnitGUID <= 0x0 ) return NO;
 
@@ -3761,7 +3757,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)establishTankUnit {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	if ( !theCombatProfile.partyEnabled || !theCombatProfile.tankUnit || theCombatProfile.tankUnitGUID <= 0x0 ) {
 		if ( _tankUnit ) _tankUnit = nil;
@@ -3797,7 +3793,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)leaderWait {
 
 	if ( !self.isBotting ) return NO;
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	if ( !theCombatProfile.partyEnabled || !theCombatProfile.partyLeaderWait ) return NO;
 	
@@ -3849,7 +3845,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (void)jumpIfAirMountOnGround {
 
 	if ( !self.isBotting ) return;
-	if ( playerController.isDead ) return;
+	if ( [playerController isDead] ) return;
 
 	// Is the player air mounted, and on the ground?  Me no likey - lets jump!
 	UInt32 movementFlags = [playerController movementFlags];
@@ -4170,7 +4166,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForParty {
 	
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 	
 	log(LOG_FUNCTION, @"evaluateForParty");
 
@@ -4221,7 +4217,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForFollow {
 	
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	log(LOG_FUNCTION, @"evaluateForFollow");
 
@@ -4344,7 +4340,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForCombatContinuation {
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	log(LOG_FUNCTION, @"evaluateForCombatContinuation");
 
@@ -4385,7 +4381,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForCombatStart {
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	log(LOG_FUNCTION, @"evaluateForCombatStart");
 
@@ -4463,7 +4459,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 -(BOOL) evaluateForRegen {
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Regen" ) return NO;
@@ -4577,7 +4573,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( !self.doLooting ) return NO;
 
-	if ( playerController.isDead ) {
+	if ( [playerController isDead] ) {
 		log(LOG_EVALUATE, @"Skipping Loot Evaluation since playerController.isDead");		
 		return NO;
 	}
@@ -4750,7 +4746,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	// If we're already mounted in party mode then
 	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
@@ -4966,7 +4962,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [movementController moveToObject] ) return NO;
 	if ( !_doFishing ) return NO;
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	// If we're supposed to be following then follow!
 	if ( theCombatProfile.partyEnabled && [self followUnit] && [[playerController player] isMounted]) return NO;
@@ -5060,7 +5056,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForPatrol {
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	// If we have looting to do we skip this
 	if ( [_mobsToLoot count] ) return NO;
@@ -5204,7 +5200,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( !theCombatProfile.partyEmotes ) return NO;
 
-	if ( playerController.isDead ) return NO;
+	if ( [playerController isDead] ) return NO;
 
 	if ( [movementController isMoving] ) return NO;
 	
@@ -5257,7 +5253,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[playerController targetGuid:[emoteUnit GUID]];
 	[movementController turnTowardObject: emoteUnit];
 
-//	[playerController faceToward: [emoteUnit position]];
 	usleep(300000);
 	
 	// Actually move a tad
@@ -5269,6 +5264,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		log(LOG_PARTY, @"Emote: %@", emote);
 	}
+
 	[chatController sendKeySequence: [NSString stringWithFormat: @"%c%@%c", '\n', emote, '\n']];
 
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
@@ -5282,11 +5278,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     [NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 
+	// Don't know why this isn't working....
+	int gameState = [controller gameState];
+	if ( gameState ==  GameState_Loading ) {
+		log(LOG_EVALUATE, @"Game is loading, waiting to evaluate...");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+	}
+
 	if ( [self evaluationInProgress] ) {
 		log(LOG_EVALUATE, @"Evaluating Situation with %@ in progress", [self evaluationInProgress]);
 	} else {
 		log(LOG_EVALUATE, @"Evaluating Situation");
 	}
+
 
 	// Order of operations is established here
 	
@@ -5342,7 +5347,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	if ( [movementController isMoving] ) {
-		log(LOG_EVALUATE, @"Player is moving so we're suspending evaluation.");
+		log(LOG_EVALUATE, @"Player is moving so we're not processing movement.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
 		return NO;
 	}
@@ -5354,6 +5359,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 
+	// If we have combat to do we loop
+	if ( [combatController inCombat] && ![playerController isAirMounted] ) {
+		// This is intended to help us not continue a route when our behavior has broken or we've ran out of mana.
+		log(LOG_EVALUATE, @"We have combat to do so we're looping evaluation.");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1];
+		return NO;
+	}
+	
 	/*
 	 * Evaluation Checks Complete, lets see if we're supposed to do a route.
 	 */

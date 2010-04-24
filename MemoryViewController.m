@@ -1069,7 +1069,7 @@ typedef enum SearchType{
 	// do we have a mask and signature?
 	if ( [mask length] > 0 && [signature length] > 0 ){
 		[resultsTextView setString: @""];
-		
+	
 		NSDictionary *offsetDict = [offsetController offsetWithByteSignature:signature 
 																	withMask:mask];
 		

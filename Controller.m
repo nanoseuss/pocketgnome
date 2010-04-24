@@ -1402,10 +1402,7 @@ typedef struct NameObjectStruct{
 
 #pragma mark WorldState/LoginState
 
-#define GameState_Unknown		-1
-#define GameState_LoggingIn		0
-#define GameState_Valid			1
-#define GameState_Loading		2
+
 
 - (int)gameState{
 	
