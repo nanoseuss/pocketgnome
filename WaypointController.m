@@ -25,7 +25,7 @@
 #import "Action.h"
 #import "Mob.h"
 #import "ActionMenusController.h"
-#import "SaveData.h"
+#import "FileController.h"
 
 #import "RouteVisualizationView.h"
 
@@ -80,23 +80,26 @@ enum AutomatorIntervalType {
 		_currentRouteCollection = nil;
 		_routeCollectionList = [[NSMutableArray array] retain];
 		
-		// pull data from the .plist file
-		NSArray *routes = [[self loadAllDataForKey:@"Routes" withClass:[RouteSet class]] retain];
+		// needed since the connection hasn't been done @ this point (and we want the Bot.xib file to see the routes!)
+		if ( fileController == nil ){
+			fileController = [FileController sharedFileController]; 
+		}
 		
-		// pull routes from .route files
-		_myHackVariableToLoadOldData = YES;
+		// pull data from the .plist file
+		NSArray *routes = [[fileController dataForKey:@"Routes" withClass:[RouteSet class]] retain];
+		
+		// try to load .route files if they exist
 		if ( !routes ){
-			routes = [[self loadAllObjects] retain];
+			routes = [[fileController getObjectsWithClass:[RouteSet class]] retain];
 		}
 		
 		// delete old files!
 		if ( [routes count] > 0 ){
+			for ( RouteSet *route in routes ){
+				[fileController deleteObject:route];
+			}
 			log(LOG_WAYPOINT, @"[Routes] Converting all routes to the new format! Removing old files!");
-			[self deleteAllObjects];
 		}
-		
-		// stop using .route
-		_myHackVariableToLoadOldData = NO;
 		
 		// then we need to convert our routes above, I love how much I change things QQ
 		if ( [routes count] > 0 ){
@@ -110,12 +113,12 @@ enum AutomatorIntervalType {
 			}
 			
 			// save for the first time
-			[self saveRoutes];
+			[fileController saveObjects:_routeCollectionList];
 			
 			_firstTimeEverOnTheNewRouteCollections = YES;
 		}
 		else{
-			_routeCollectionList = [[self loadAllObjects] retain];
+			_routeCollectionList = [[fileController getObjectsWithClass:[RouteCollection class]] retain];
 		}
 		
 		log(LOG_WAYPOINT, @"We now have %d objects of route collection", [_routeCollectionList count]);
@@ -132,6 +135,7 @@ enum AutomatorIntervalType {
 }
 
 - (void)awakeFromNib {
+
     self.minSectionSize = [self.view frame].size;
     self.maxSectionSize = NSZeroSize;
 
@@ -173,13 +177,9 @@ enum AutomatorIntervalType {
 
 - (void)saveRoutes {
 	
-	// lets save our collections!
-	for ( RouteCollection *rc in _routeCollectionList ){
-		//if ( rc.changed ){
-			[self saveObject:rc];
-		//}
-	}
-	
+	// save
+	[fileController saveObjects:_routeCollectionList];
+
 	// we no longer use this anymore! Yay!
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"IgnoreRoute"];
 	[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"Routes"];
@@ -556,7 +556,7 @@ enum AutomatorIntervalType {
 	
     Waypoint *waypoint = [[self currentRoute] waypointAtIndex: row];
     
-    [movementController moveToWaypoint: waypoint];
+    [movementController moveToWaypointFromUI: waypoint];
 }
 
 - (IBAction)testWaypointSequence: (id)sender {
@@ -1339,7 +1339,7 @@ enum AutomatorIntervalType {
 			[_routeCollectionList removeObject:rc];
 			
 			// delete the file from our disk!
-			[self deleteObject:rc];
+			[fileController deleteObject:rc];
 			
 			[routesTable reloadData];
 		}
@@ -1633,26 +1633,6 @@ enum AutomatorIntervalType {
 		else
 			[waypointSectionTitle setStringValue:@"No route set selected"];
 	}
-}
-
-#pragma mark SaveData
-
-// for saving
-- (NSString*)objectExtension{
-	// just to load old data
-	if ( _myHackVariableToLoadOldData ){
-		return @"route";
-	}
-	
-	return @"routecollection";
-}
-
-- (NSString*)objectName:(id)object{
-	if ( _myHackVariableToLoadOldData ){
-		return [(RouteSet*)object name];
-	}
-	
-	return [(RouteCollection*)object name];
 }
 
 @end

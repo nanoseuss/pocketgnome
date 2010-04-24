@@ -8,13 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 #import "IgnoreEntry.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 @class Unit;
 @class Player;
 
-@interface CombatProfile : SaveDataObject {
-    NSString *_name;
+@interface CombatProfile : FileObject {
     NSMutableArray *_combatEntries;
     
     BOOL combatEnabled, onlyRespond, attackNeutralNPCs, attackHostileNPCs, attackPlayers, attackPets;
@@ -68,7 +67,6 @@
 - (void)removeEntryAtIndex: (unsigned)index;
 
 @property (readwrite, retain) NSArray *entries;
-@property (readwrite, copy) NSString *name;
 @property (readwrite, assign) UInt64 tankUnitGUID;
 @property (readwrite, assign) UInt64 assistUnitGUID;
 @property (readwrite, assign) UInt64 followUnitGUID;

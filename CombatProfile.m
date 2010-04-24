@@ -11,7 +11,7 @@
 #import "Mob.h"
 #import "IgnoreEntry.h"
 #import "Offsets.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 #import "PlayerDataController.h"
 
@@ -21,7 +21,6 @@
 {
     self = [super init];
     if (self != nil) {
-        self.name = nil;
         self.entries = [NSArray array];
         self.combatEnabled = YES;
         self.onlyRespond = NO;
@@ -156,11 +155,10 @@
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	self = [super initWithCoder:decoder];
+	self = [self init];
 	if ( self ) {
         self.entries = [decoder decodeObjectForKey: @"IgnoreList"] ? [decoder decodeObjectForKey: @"IgnoreList"] : [NSArray array];
 
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.combatEnabled = [[decoder decodeObjectForKey: @"CombatEnabled"] boolValue];
         self.onlyRespond = [[decoder decodeObjectForKey: @"OnlyRespond"] boolValue];
         self.attackNeutralNPCs = [[decoder decodeObjectForKey: @"AttackNeutralNPCs"] boolValue];
@@ -211,6 +209,7 @@
 		self.partyLeaderWait = [[decoder decodeObjectForKey: @"partyLeaderWait"] boolValue];
 		self.partyLeaderWaitRange = [[decoder decodeObjectForKey: @"partyLeaderWait"] floatValue];
 		
+		[super initWithCoder:decoder];
 	}
 	return self;
 }
@@ -219,7 +218,6 @@
 {
 	[super encodeWithCoder:coder];
 	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: [NSNumber numberWithBool: self.combatEnabled] forKey: @"CombatEnabled"];
     [coder encodeObject: [NSNumber numberWithBool: self.onlyRespond] forKey: @"OnlyRespond"];
     [coder encodeObject: [NSNumber numberWithBool: self.attackNeutralNPCs] forKey: @"AttackNeutralNPCs"];

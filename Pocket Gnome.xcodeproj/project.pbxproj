@@ -92,13 +92,14 @@
 		03BB227B1122F1160048DE7B /* StrandStatus.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03BB227A1122F1160048DE7B /* StrandStatus.xib */; };
 		03BB227E1122F1240048DE7B /* StrandStatusConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BB227D1122F1240048DE7B /* StrandStatusConditionController.m */; };
 		03BD330E11120A7A00941971 /* BindingsController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BD330D11120A7A00941971 /* BindingsController.m */; };
+		03BE961A11828343004DBFBF /* FileController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BE961911828343004DBFBF /* FileController.m */; };
 		03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
 		03C42CCA1096839E0085E888 /* Macros.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03C42CC91096839E0085E888 /* Macros.plist */; };
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
 		03E1D73B110F54BE003180E4 /* SaveData.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E1D73A110F54BE003180E4 /* SaveData.m */; };
-		03E1D7B8110F62CD003180E4 /* SaveDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E1D7B7110F62CD003180E4 /* SaveDataObject.m */; };
+		03E1D7B8110F62CD003180E4 /* FileObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E1D7B7110F62CD003180E4 /* FileObject.m */; };
 		03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */; };
 		03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */; };
 		03FFD596110CB5440046AEDF /* InteractNPCActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD593110CB5440046AEDF /* InteractNPCActionController.m */; };
@@ -521,6 +522,8 @@
 		03BB227D1122F1240048DE7B /* StrandStatusConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StrandStatusConditionController.m; sourceTree = "<group>"; };
 		03BD330C11120A7A00941971 /* BindingsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BindingsController.h; sourceTree = "<group>"; };
 		03BD330D11120A7A00941971 /* BindingsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BindingsController.m; sourceTree = "<group>"; };
+		03BE961811828343004DBFBF /* FileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileController.h; sourceTree = "<group>"; };
+		03BE961911828343004DBFBF /* FileController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileController.m; sourceTree = "<group>"; };
 		03C42CC91096839E0085E888 /* Macros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Macros.plist; sourceTree = "<group>"; };
 		03CEF7840FCCD93100B47336 /* Corpse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Corpse.h; sourceTree = "<group>"; };
 		03CEF7850FCCD93100B47336 /* Corpse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Corpse.m; sourceTree = "<group>"; };
@@ -529,8 +532,8 @@
 		03D65A581090EC0D00537E9C /* OffsetSignatures.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OffsetSignatures.plist; sourceTree = "<group>"; };
 		03E1D739110F54BE003180E4 /* SaveData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveData.h; sourceTree = "<group>"; };
 		03E1D73A110F54BE003180E4 /* SaveData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SaveData.m; sourceTree = "<group>"; };
-		03E1D7B6110F62CD003180E4 /* SaveDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveDataObject.h; sourceTree = "<group>"; };
-		03E1D7B7110F62CD003180E4 /* SaveDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SaveDataObject.m; sourceTree = "<group>"; };
+		03E1D7B6110F62CD003180E4 /* FileObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileObject.h; sourceTree = "<group>"; };
+		03E1D7B7110F62CD003180E4 /* FileObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileObject.m; sourceTree = "<group>"; };
 		03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MobsKilledCondition.xib; sourceTree = "<group>"; };
 		03FFD46C110B930F0046AEDF /* MobsKilledConditionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobsKilledConditionController.h; sourceTree = "<group>"; };
 		03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MobsKilledConditionController.m; sourceTree = "<group>"; };
@@ -1025,6 +1028,19 @@
 			name = "Object Controllers";
 			sourceTree = "<group>";
 		};
+		03BE9607118282E4004DBFBF /* File Management */ = {
+			isa = PBXGroup;
+			children = (
+				03E1D739110F54BE003180E4 /* SaveData.h */,
+				03E1D73A110F54BE003180E4 /* SaveData.m */,
+				03E1D7B6110F62CD003180E4 /* FileObject.h */,
+				03E1D7B7110F62CD003180E4 /* FileObject.m */,
+				03BE961811828343004DBFBF /* FileController.h */,
+				03BE961911828343004DBFBF /* FileController.m */,
+			);
+			name = "File Management";
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -1126,6 +1142,7 @@
 				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
 				034126E21135773900BE6819 /* PvP */,
 				7D72453E0D1511E20094665C /* Units */,
+				03BE9607118282E4004DBFBF /* File Management */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				7D1B3A560F89885D005CA0CD /* Mail.app */,
@@ -1139,10 +1156,6 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				03E1D739110F54BE003180E4 /* SaveData.h */,
-				03E1D73A110F54BE003180E4 /* SaveData.m */,
-				03E1D7B6110F62CD003180E4 /* SaveDataObject.h */,
-				03E1D7B7110F62CD003180E4 /* SaveDataObject.m */,
 				7D41E8B60DEA31DD00118EA0 /* ImageAndTextCell.h */,
 				7D41E8B70DEA31DD00118EA0 /* ImageAndTextCell.m */,
 				7D2167440DC4566600D5A815 /* PTKeyCode */,
@@ -2133,7 +2146,7 @@
 				03FFD596110CB5440046AEDF /* InteractNPCActionController.m in Sources */,
 				03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */,
 				03E1D73B110F54BE003180E4 /* SaveData.m in Sources */,
-				03E1D7B8110F62CD003180E4 /* SaveDataObject.m in Sources */,
+				03E1D7B8110F62CD003180E4 /* FileObject.m in Sources */,
 				03BD330E11120A7A00941971 /* BindingsController.m in Sources */,
 				0341DD66111B0FBE00074CED /* ObjectsController.m in Sources */,
 				0341DDDA111B21D700074CED /* ObjectController.m in Sources */,
@@ -2146,6 +2159,7 @@
 				034126E61135774100BE6819 /* Battleground.m in Sources */,
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
 				03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */,
+				03BE961A11828343004DBFBF /* FileController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

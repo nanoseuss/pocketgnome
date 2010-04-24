@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">732</string>
-		<string key="IBDocument.AppKitVersion">1038.25</string>
-		<string key="IBDocument.HIToolboxVersion">458.00</string>
+		<string key="IBDocument.SystemVersion">10D2094</string>
+		<string key="IBDocument.InterfaceBuilderVersion">762</string>
+		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.HIToolboxVersion">460.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">732</string>
+			<string key="NS.object.0">762</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5684,10 +5684,6 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>BlacklistTriggerNodeFailedToLoot</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 			<object class="NSCustomObject" id="771133398">
@@ -7140,6 +7136,9 @@
 			</object>
 			<object class="NSCustomObject" id="538288452">
 				<string key="NSClassName">PvPController</string>
+			</object>
+			<object class="NSCustomObject" id="1038624887">
+				<string key="NSClassName">FileController</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -12134,6 +12133,14 @@
 					</object>
 					<int key="connectionID">4686</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">fileController</string>
+						<reference key="source" ref="980198522"/>
+						<reference key="destination" ref="1038624887"/>
+					</object>
+					<int key="connectionID">4688</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -16332,6 +16339,11 @@
 						<reference key="object" ref="850804050"/>
 						<reference key="parent" ref="61331923"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4687</int>
+						<reference key="object" ref="1038624887"/>
+						<reference key="parent" ref="0"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -16996,6 +17008,7 @@
 					<string>4679.IBPluginDependency</string>
 					<string>4680.IBPluginDependency</string>
 					<string>4681.IBPluginDependency</string>
+					<string>4687.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -17849,6 +17862,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -17886,7 +17900,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4686</int>
+			<int key="maxID">4688</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -18610,6 +18624,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">EventController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">FileController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">FileController.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -19634,7 +19656,6 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WaypointController</string>
-					<string key="superclassName">SaveData</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -19713,6 +19734,7 @@
 							<string>combatController</string>
 							<string>controller</string>
 							<string>descriptionPanel</string>
+							<string>fileController</string>
 							<string>helpPanel</string>
 							<string>mobController</string>
 							<string>movementController</string>
@@ -19745,12 +19767,13 @@
 							<string>NSButton</string>
 							<string>RouteVisualizationView</string>
 							<string>BotController</string>
-							<string>id</string>
+							<string>CombatController</string>
 							<string>Controller</string>
 							<string>NSPanel</string>
+							<string>FileController</string>
 							<string>NSPanel</string>
-							<string>id</string>
-							<string>id</string>
+							<string>MobController</string>
+							<string>MovementController</string>
 							<string>PlayerDataController</string>
 							<string>id</string>
 							<string>NSOutlineView</string>
@@ -20568,6 +20591,7 @@
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
+		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
@@ -20583,5 +20607,60 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<string key="IBDocument.LastKnownRelativeProjectPath">Pocket Gnome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
+		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
+			<bool key="EncodedWithXMLCoder">YES</bool>
+			<object class="NSArray" key="dict.sortedKeys">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>Ability_DualWieldSpecialization</string>
+				<string>Ability_Rogue_Sprint</string>
+				<string>Ability_Warrior_Revenge</string>
+				<string>ActiveQuestIcon</string>
+				<string>BinderGossipIcon</string>
+				<string>INV_Misc_Gear_01</string>
+				<string>INV_Misc_Head_Dragon_Blue</string>
+				<string>INV_Misc_Orb_05</string>
+				<string>NSActionTemplate</string>
+				<string>NSAddTemplate</string>
+				<string>NSApplicationIcon</string>
+				<string>NSMenuCheckmark</string>
+				<string>NSMenuMixedState</string>
+				<string>NSStopProgressTemplate</string>
+				<string>NSSwitch</string>
+				<string>NSToolbarCustomizeToolbarItemImage</string>
+				<string>PVP</string>
+				<string>Spell_FireResistanceTotem_01</string>
+				<string>Spell_Holy_MindVision</string>
+				<string>Spell_Nature_PoisonCleansingTotem</string>
+				<string>Trade_Engraving</string>
+				<string>good</string>
+				<string>off</string>
+			</object>
+			<object class="NSMutableArray" key="dict.values">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>{64, 64}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{16, 16}</string>
+				<string>{16, 16}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{15, 15}</string>
+				<string>{8, 8}</string>
+				<string>{512, 512}</string>
+				<string>{9, 8}</string>
+				<string>{7, 2}</string>
+				<string>{11, 11}</string>
+				<string>{15, 15}</string>
+				<string>{32, 32}</string>
+				<string>{64, 64}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{67.7747, 67.7747}</string>
+				<string>{64, 64}</string>
+				<string>{13, 13}</string>
+				<string>{16, 16}</string>
+			</object>
+		</object>
 	</data>
 </archive>

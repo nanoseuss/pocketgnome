@@ -7,7 +7,7 @@
 //
 
 #import "RouteSet.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 #import "RouteCollection.h"
 
 @interface RouteSet ()
@@ -23,6 +23,10 @@
         self.name = nil;
         self.routes = [NSMutableDictionary dictionary];
 		self.parent = nil;
+		
+		_observers = [[NSArray arrayWithObjects: 
+					   @"parent",
+					   @"routes", nil] retain];
     }
     return self;
 }
@@ -46,9 +50,8 @@
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	self = [super initWithCoder:decoder];
+	self = [self init];
 	if ( self ) {
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSDictionary dictionary];
 		self.parent = [decoder decodeObjectForKey: @"Parent"];
         
@@ -57,18 +60,18 @@
             [self setRoute: [Route route] forKey: PrimaryRoute];
         if( ![self routeForKey: CorpseRunRoute])
             [self setRoute: [Route route] forKey: CorpseRunRoute];
-        
+		
+		[super initWithCoder:decoder];
 	}
 	return self;
 }
 
 -(void)encodeWithCoder:(NSCoder *)coder
 {
-	[super encodeWithCoder:coder];
-	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 	[coder encodeObject: self.parent forKey: @"Parent"];
+	
+	[super encodeWithCoder:coder];
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -97,7 +100,6 @@
 }
 
 @synthesize parent = _parent;
-@synthesize name = _name;
 @synthesize routes = _routes;
 
 - (void)setRoutes: (NSDictionary*)routes {
@@ -122,24 +124,9 @@
 
 
 - (void)setParent:(RouteCollection*)myParent{
-	
-	//log(LOG_GENERAL, @"SETTING PARENT OF %@ TO %@", self, myParent);
 	[_parent release];
 	_parent = [myParent retain];
 	
-}
-
-#pragma mark SaveDataObject
-
-- (void)addObservers{
-	[self addObserver: self forKeyPath: @"parent" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"routes" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
-	log(LOG_GENERAL, @"%@ changed! %@ %@", self, keyPath, change);
-	self.changed = YES;
 }
 
 @end

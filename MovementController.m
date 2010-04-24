@@ -424,13 +424,12 @@ typedef enum MovementState{
 			// we have a waypoint to move to!
 			if ( newWP ) {
 				log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
-				self.destinationWaypoint = newWP;
 				
 				[self turnTowardPosition: [newWP position]];
 
 				usleep([controller refreshDelay]*2);
 				
-				[self moveToPosition:[newWP position]];
+				[self moveToWaypoint:newWP];
 			} else {
 				log(LOG_ERROR, @"Unable to find a position to resume movement to!");
 			}
@@ -539,13 +538,12 @@ typedef enum MovementState{
 	if ( newWaypoint ) {
 
 		log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWaypoint);
-		self.destinationWaypoint = newWaypoint;
 
 		[self turnTowardPosition: [newWaypoint position]];
 
 		usleep([controller refreshDelay]*2);
 		
-		[self moveToPosition:[newWaypoint position]];
+		[self moveToWaypoint:newWaypoint];
 
 	} else {
 		log(LOG_ERROR, @"Unable to find a position to resume movement to!");
@@ -560,6 +558,9 @@ typedef enum MovementState{
 
 - (void)moveToWaypoint: (Waypoint*)waypoint {
 
+	int index = [[_currentRoute waypoints] indexOfObject: waypoint];
+	[waypointController selectCurrentWaypoint:index];
+	
 	log(LOG_WAYPOINT, @"Moving to a waypoint: %@", waypoint);
 
 	self.destinationWaypoint = waypoint;
@@ -676,9 +677,8 @@ typedef enum MovementState{
 		
 		// increment something here to keep track of how many waypoints we've moved to?
 		
-		self.destinationWaypoint = [waypoints objectAtIndex:index];
 		log(LOG_WAYPOINT, @"Moving to next waypoint of %@ with index %d", self.destinationWaypoint, index);
-		[self moveToPosition:[self.destinationWaypoint position]];
+		[self moveToWaypoint:[waypoints objectAtIndex:index]];
 	}
 	else {
 		if (self.isFollowing) {

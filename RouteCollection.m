@@ -7,7 +7,7 @@
 //
 
 #import "RouteCollection.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 #import "RouteSet.h"
 
@@ -22,10 +22,13 @@
 {
     self = [super init];
     if (self != nil) {
-        self.name = nil;
         self.routes = [NSMutableArray array];
 		self.startUUID = nil;
 		self.startRouteOnDeath = NO;
+
+		_observers = [[NSArray arrayWithObjects: 
+					   @"startRouteOnDeath",
+					   @"routes", nil] retain];
     }
     return self;
 }
@@ -45,29 +48,27 @@
 }
 
 - (id)initWithCoder:(NSCoder *)decoder{
-	self = [super initWithCoder:decoder];
+	self = [self init];
 	if ( self ) {
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.routes = [decoder decodeObjectForKey: @"Routes"] ? [decoder decodeObjectForKey: @"Routes"] : [NSArray array];
 		self.startUUID = [decoder decodeObjectForKey: @"StartUUID"];
 		self.startRouteOnDeath = [[decoder decodeObjectForKey: @"StartRouteOnDeath"] boolValue];
+		[super initWithCoder:decoder];
 	}
 	return self;
 }
 
 -(void)encodeWithCoder:(NSCoder *)coder{
-	[super encodeWithCoder:coder];
-	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.routes forKey: @"Routes"];
 	[coder encodeObject: self.startUUID forKey: @"StartUUID"];
 	[coder encodeObject: [NSNumber numberWithBool:self.startRouteOnDeath] forKey: @"StartRouteOnDeath"];
+	
+	[super encodeWithCoder:coder];
 }
 
 - (id)copyWithZone:(NSZone *)zone{
     RouteCollection *copy = [[[self class] allocWithZone: zone] initWithName: self.name];
     
-	log(LOG_GENERAL, @"copy is changed?");
 	copy.changed = YES;
 	copy.startUUID = self.startUUID;
 	copy.startRouteOnDeath = self.startRouteOnDeath;
@@ -88,7 +89,6 @@
 }
 
 @synthesize routes = _routes;
-@synthesize name = _name;
 @synthesize startUUID = _startUUID;
 @synthesize startRouteOnDeath = _startRouteOnDeath;
 
@@ -184,23 +184,31 @@
 
 #pragma mark Accessors
 
-// so we can set changed to yes!
-- (void)setStartRouteOnDeath:(BOOL)val{
-	self.changed = YES;
-	_startRouteOnDeath = val;
+- (BOOL)changed{
+	
+	if ( _changed ){
+		return YES;
+	}
+	
+	for (RouteSet *route in _routes ){
+		if ( route.changed ){
+			return YES;
+		}
+	}
+	
+	return NO;
 }
 
-#pragma mark SaveDataObject
-
-- (void)addObservers{
-	[self addObserver: self forKeyPath: @"startRouteOnDeath" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"routes" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-	[self addObserver: self forKeyPath: @"name" options: NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context: nil];
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
-	log(LOG_GENERAL, @"%@ changed! %@ %@", self, keyPath, change);
-	self.changed = YES;
+- (void)setChanged:(BOOL)val{
+	
+	// set each route set to not changed!
+	if ( val == NO ){
+		for (RouteSet *route in _routes ){
+			[route setChanged:NO];
+		}
+	}
+	
+	_changed = val;
 }
 
 @end

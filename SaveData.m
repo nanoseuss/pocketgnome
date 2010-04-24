@@ -7,7 +7,7 @@
 //
 
 #import "SaveData.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 #define APPLICATION_SUPPORT_FOLDER	@"~/Library/Application Support/PocketGnome/"
 
@@ -227,7 +227,7 @@
 				id object = [self getObjectFromDisk:fileName];
 				
 				// we JUST loaded this from the disk, we need to make sure we know it's not changed
-				[(SaveDataObject*)object setChanged:NO];
+				[(FileObject*)object setChanged:NO];
 				
 				// valid route - add it!
 				if ( object != nil ){
@@ -260,7 +260,7 @@
 				
 				NSMutableArray *objects = [NSMutableArray array];
 				
-				for ( SaveDataObject *obj in allData ){
+				for ( FileObject *obj in allData ){
 					obj.changed = YES;
 					[objects addObject:obj];
 				}
@@ -287,7 +287,7 @@
 }
 
 - (IBAction)saveAllObjects: (id)sender{
-	for ( SaveDataObject *obj in _objects ){
+	for ( FileObject *obj in _objects ){
 		[self saveObject:obj];
 	}
 }

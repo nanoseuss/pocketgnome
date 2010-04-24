@@ -7,7 +7,7 @@
 //
 
 #import "Behavior.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 @interface Behavior ()
 @property (readwrite, retain) NSDictionary *procedures;
@@ -23,7 +23,6 @@
 {
     self = [super init];
     if (self != nil) {
-        self.name = nil;
         self.procedures = [NSDictionary dictionary];
         self.meleeCombat = NO;
         self.usePet = NO;
@@ -34,7 +33,6 @@
 - (id)initWithName: (NSString*)name {
     self = [self init];
     
-    self.name = name;
     self.procedures = [NSDictionary dictionaryWithObjectsAndKeys: 
                        [Procedure procedureWithName: name], PreCombatProcedure,
                        [Procedure procedureWithName: name], CombatProcedure,
@@ -53,9 +51,8 @@
 
 - (id)initWithCoder:(NSCoder *)decoder
 {
-	self = [super initWithCoder:decoder];
+	self = [self init];
 	if ( self ) {
-        self.name = [decoder decodeObjectForKey: @"Name"];
         self.procedures = [decoder decodeObjectForKey: @"Procedures"] ? [decoder decodeObjectForKey: @"Procedures"] : [NSDictionary dictionary];
         
         // make sure we have a procedure object for every type
@@ -77,6 +74,8 @@
         if([decoder decodeObjectForKey: @"UsePet"]) {
             self.usePet = [[decoder decodeObjectForKey: @"UsePet"] boolValue];
         }
+		
+		[super initWithCoder:decoder];
 	}
 	return self;
 }
@@ -85,7 +84,6 @@
 {
 	[super encodeWithCoder:coder];
 	
-    [coder encodeObject: self.name forKey: @"Name"];
     [coder encodeObject: self.procedures forKey: @"Procedures"];
     [coder encodeObject: [NSNumber numberWithBool: self.meleeCombat] forKey: @"MeleeCombat"];
     [coder encodeObject: [NSNumber numberWithBool: self.usePet] forKey: @"UsePet"];
@@ -120,7 +118,6 @@
 @synthesize procedures = _procedures;
 @synthesize meleeCombat = _meleeCombat;
 @synthesize usePet = _usePet;
-@synthesize name = _name;
 
 - (Procedure*)procedureForKey: (NSString*)key {
     return [_procedures objectForKey: key];

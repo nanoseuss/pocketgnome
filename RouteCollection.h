@@ -7,12 +7,11 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 @class RouteSet;
 
-@interface RouteCollection : SaveDataObject {
-	NSString *_name;
+@interface RouteCollection : FileObject {
 	NSMutableArray *_routes;
 	
 	NSString *_startUUID;
@@ -23,7 +22,6 @@
 + (id)routeCollectionWithName: (NSString*)name;
 
 @property (readonly, retain) NSMutableArray *routes;
-@property (readwrite, copy) NSString *name;
 @property BOOL startRouteOnDeath;
 
 - (void)moveRouteSet:(RouteSet*)route toLocation:(int)index;

@@ -7,7 +7,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "SaveData.h"
 
 @class Route;
 @class RouteSet;
@@ -16,6 +15,10 @@
 @class Controller;
 @class PlayerDataController;
 @class BotController;
+@class FileController;
+@class MobController;
+@class MovementController;
+@class CombatController;
 
 @class BetterTableView;
 @class PTHotKey;
@@ -24,14 +27,16 @@
 @class BetterSegmentedControl;
 @class RouteVisualizationView;
 
-@interface WaypointController : SaveData {
+@interface WaypointController : NSObject {
 
-    IBOutlet Controller *controller;
-    IBOutlet PlayerDataController *playerData;
-    IBOutlet id mobController;
-    IBOutlet BotController *botController;
-    IBOutlet id movementController;
-    IBOutlet id combatController;
+    IBOutlet Controller				*controller;
+    IBOutlet PlayerDataController	*playerData;
+    IBOutlet MobController			*mobController;
+    IBOutlet BotController			*botController;
+    IBOutlet MovementController		*movementController;
+    IBOutlet CombatController		*combatController;
+	//IBOutlet ProfileController		*profileController;
+	IBOutlet FileController			*fileController;
 
     IBOutlet BetterTableView *waypointTable;
 	IBOutlet NSOutlineView *routesTable;
@@ -82,7 +87,6 @@
 	NSMutableArray *_routeCollectionList;
 	RouteCollection *_currentRouteCollection;
 	BOOL _validRouteSelection;
-	BOOL _myHackVariableToLoadOldData;	// cry
 	IBOutlet NSButton *startingRouteButton;
 	IBOutlet NSTabView *waypointTabView;
 	

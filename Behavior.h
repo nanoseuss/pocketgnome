@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "Procedure.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 #define PreCombatProcedure  @"PreCombatProcedure"
 #define CombatProcedure     @"CombatProcedure"
@@ -16,15 +16,13 @@
 #define RegenProcedure      @"RegenProcedure"
 #define PatrollingProcedure @"PatrollingProcedure"
 
-@interface Behavior : SaveDataObject {
-    NSString *_name;
+@interface Behavior : FileObject {
     BOOL _meleeCombat, _usePet;
     NSMutableDictionary *_procedures;
 }
 
 + (id)behaviorWithName: (NSString*)name;
 
-@property (readwrite, copy) NSString *name;
 @property (readonly, retain) NSDictionary *procedures;
 @property BOOL meleeCombat;
 @property BOOL usePet;

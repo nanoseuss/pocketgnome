@@ -19,36 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * $Id: Battleground.h 325 2010-04-01 22:59:14Z ootoaoo $
+ * $Id: FileObject.h 315 2010-04-23 04:12:45Z Tanaris4 $
  *
  */
 
 #import <Cocoa/Cocoa.h>
 
-@class RouteCollection;
 
-@interface Battleground : NSObject {
-	
+@interface FileObject : NSObject <NSCoding, NSCopying> {
+	NSString *_UUID;		// unique ID
 	NSString *_name;
-	int _zone;			// what zone is this BG associated with
-	int _queueID;		// what ID should we send in our queue macro!
-	BOOL _enabled;
 	
-	// we'll never actually save this to the disk (it will be part of PvPBehavior, so we have to track this)
-	BOOL _changed;
+	NSArray *_observers;
 	
-	RouteCollection *_routeCollection;	
+	BOOL _changed;			// use so we know if we should re-save or not
 }
 
-@property (readonly) int zone;
-@property (readonly) int queueID;
-@property (readonly, retain) NSString *name;
-@property (readwrite, assign) BOOL enabled;
-@property (readwrite, retain) RouteCollection *routeCollection;
 @property (readwrite, assign) BOOL changed;
+@property (readonly, retain) NSString *UUID;
+@property (readwrite, copy) NSString *name;
 
-+ (id)battlegroundWithName: (NSString*)name andZone: (int)zone andQueueID: (int)queueID;
-
-- (BOOL)isValid;
+- (void)updateUUUID;
 
 @end
