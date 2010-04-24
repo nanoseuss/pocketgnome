@@ -37,7 +37,7 @@
 		_tables = [[NSMutableDictionary dictionary] retain];
 		_dataLoaded = NO;
 		
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(offsetsLoaded:) name: OffsetsLoaded object: nil];
+//		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(offsetsLoaded:) name: OffsetsLoaded object: nil];
 	}
 	return self;
 }
