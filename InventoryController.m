@@ -595,6 +595,8 @@ static InventoryController *sharedInventory = nil;
 		// while we have items to mail!
 		while ( itemsMailed > 0 ){
 			
+/*
+ Uncommented for now so we can compile
 			// we have items to mail!
 			if ( totalAdded > 0 ){
 				log(LOG_GENERAL, @"[Mail] Sending %d items", totalAdded );
@@ -607,7 +609,8 @@ static InventoryController *sharedInventory = nil;
 				totalAdded = 0;
 				continue;
 			}
-			
+*/
+
 			int k = 0;
 			for ( ; k < MAX_BAGS; k++ ){
 				// time to mail!
