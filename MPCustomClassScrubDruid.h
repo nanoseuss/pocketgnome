@@ -21,6 +21,7 @@
 	MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
 	NSArray *listSpells, *listParty;
 	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
+	BOOL errorLOS;
 	MPCCCombatState state;
 }
 @property (retain) MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;

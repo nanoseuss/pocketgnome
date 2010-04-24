@@ -17,6 +17,29 @@
 #import "Player.h"
 #import "Unit.h"
 #import "MPTimer.h"
+#import "Errors.h"
+
+
+@interface MPCustomClassScrubDruid (Internal)
+
+// casting is straight cast
+- (BOOL) castHeal:(Unit *)unit;
+- (BOOL) castWrath:(Unit *)mob;
+
+
+// dot's only apply if unit doesn't already have debuff
+- (BOOL) dotMF:(Unit *)mob;
+
+
+// hot's only apply if unit doesn't already have buff
+- (BOOL) hotRejuv:(Unit *)unit;
+
+
+// make sure given [unit] is targeted
+- (void) targetUnit:(Unit *)unit;
+
+@end
+
 
 
 @implementation MPCustomClassScrubDruid
@@ -48,6 +71,8 @@
 		
 		self.timerSpellScan = [MPTimer timer:300000]; // 5 minutes
 		[timerSpellScan forceReady];
+		
+		errorLOS = NO;
 		
 		state = CCCombatPreCombat;
 	}
@@ -187,6 +212,8 @@
 				
 			} // end if
 			
+			
+			
 			//// check for Evading => Bugged
 			// if( ![unit isInCombat] || [unit isEvading] || ![unit isAttackable] ) {
 			if( [mob isEvading] || ![mob isAttackable] ) { 
@@ -218,10 +245,8 @@
 			
 			//// make sure we stop here!
 			
-			
-			int error = 0;
-			
-			//// do my healing checks here:
+			//// check for LOS error and then do something to adjust for it.
+			////  when adjustment complete, reset errorLOS
 			
 			
 			
@@ -229,13 +254,15 @@
 			
 			// make sure I'm targeting the target:
 //			PlayerDataController *me = [PlayerDataController sharedController];
-			if ([me targetID] != [mob GUID]) {
+/*			if ([me targetID] != [mob GUID]) {
 				PGLog(@"     --> Setting Target : myTarget[0x%X]  mob[0x%X]",[me targetID], [mob lowGUID]);
 				[me setPrimaryTarget:mob];
 			}
+*/
 			
 			PGLog(@"  Casting:");
 			
+//			if ( [spellController isGCDActive] ){
 			if ([timerGCD ready]) {
 				PGLog( @"   timerGGD ready");
 			
@@ -243,35 +270,78 @@
 					PGLog( @"   me !casting");
 					
 					
-					if ([mf canCast]) {
-						
-						if (![mf unitHasDebuff:mob]) {
-							
-							error = [mf cast];
-							if (!error) {
-								[timerGCD start];
-								return CombatStateInCombat;
-							}
-							
-						}
-					} 
-					else {
-						PGLog( @"   MF : !canCast");
-					}
 					
+					//// do my healing checks here:
 					
-					if ([wrath canCast]) {
-						PGLog(@"    Wrath: canCast");
-						
-						// cast
-						error = [wrath cast];
-						if(!error){
-							[timerGCD start];
+					////
+					//// Rejuvination Checks
+					////
+					
+					// Rejuvination myself if health < 65%
+					if ([me percentHealth] < 65) {
+						if ([self hotRejuv:(Unit *)[me player]]) {
 							return CombatStateInCombat;
 						}
-						PGLog(@"    ---> wrath cast error[%d]", error);
-						
 					}
+					
+					
+					
+					// I'm Balance Druid.  So in a party
+					// expect a party healer.  My healing 
+					// is just to assist them.
+					//
+					// Rejuvinate Party Members if health < 40%
+					for( Player *player in listParty) {
+						if ([player percentHealth] < 40) {
+							if ([self hotRejuv:player]) {
+								return CombatStateInCombat;
+							}
+						}
+					}
+					
+					
+					////
+					//// Heal Checks
+					////
+					
+					// heal myself if health < 40%
+					if ([me percentHealth] < 40) {
+						if ([self castHeal:(Unit *)[me player]]) {
+							return CombatStateInCombat;
+						}
+					}
+					
+					
+					
+					
+					
+					
+					////
+					////  Attacks here
+					////
+					
+					// MoonFire DOT
+					// if mobhealth >= 50% && myMana > 20%
+					if (([mob percentHealth] >= 50) && ([me percentMana] > 20)){
+						if ([self dotMF:mob]) {
+							return CombatStateInCombat;
+						} 
+					}
+					
+					
+
+					// Insect Swarm
+					
+					
+					
+					// Starfire
+					
+					
+					// Spam Wrath
+					if ([self castWrath:mob]){
+						return CombatStateInCombat;
+					}
+					
 				
 				}
 				
@@ -401,6 +471,133 @@
 	
 	self.listParty = [[PlayerDataController sharedController] partyMembers];
 	
+}
+
+
+
+#pragma mark -
+#pragma mark Cast Helpers
+
+
+- (BOOL) dotMF:(Unit *)mob {
+
+	int error = ErrNone;
+	
+	[self targetUnit:mob];
+	
+	if ([mf canCast]) {
+							
+		if (![mf unitHasDebuff:mob]) {
+			
+			error = [mf cast];
+			if (!error) {
+				[timerGCD start];
+				return YES;
+			} else {
+//				[self markError: error];
+				if (error == ErrTargetNotInLOS) {
+					PGLog(@" Moonfire error: Line Of Sight.  ");
+					errorLOS = YES;
+				}
+			}
+			
+		}
+	} 
+	return NO;
+}
+
+
+
+- (BOOL) hotRejuv:(Unit *)unit {
+
+	int error = ErrNone;
+	
+	[self targetUnit:unit];
+	
+	if ([rejuv canCast]) {
+PGLog(@" rejuv can cast");
+							
+		if (![rejuv unitHasBuff:unit]) {
+			
+			error = [rejuv cast];
+			if (!error) {
+				[timerGCD start];
+				return YES;
+			} else {
+//				[self markError:error];
+				if (error == ErrTargetNotInLOS) {
+					PGLog(@" Rejuvination error: Line Of Sight.  ");
+					errorLOS = YES;
+				}
+			}
+			
+} else {
+PGLog(@" unit[%@] already has Rejuv buff.",[unit name]);
+		}
+	} 
+	return NO;
+}
+
+
+
+- (BOOL) castHeal:(Unit *)unit {
+
+	int error = ErrNone;
+	
+	[self targetUnit:unit];
+	
+	if ([healingTouch canCast]) {
+							
+		error = [healingTouch cast];
+		if (!error) {
+			[timerGCD start];
+			return YES;
+		} else {
+//			[self markError:error];
+			if (error == ErrTargetNotInLOS) {
+				PGLog(@" Healing Touch error: Line Of Sight.  ");
+				errorLOS = YES;
+			}
+		}
+
+	} 
+	return NO;
+}
+
+
+
+- (BOOL) castWrath:(Unit *)mob {
+
+	int error = ErrNone;
+	
+	[self targetUnit:mob];
+	
+	if ([wrath canCast]) {
+							
+		error = [wrath cast];
+		if (!error) {
+			[timerGCD start];
+			return YES;
+		} else {
+			if (error == ErrTargetNotInLOS) {
+				PGLog(@" Wrath error: Line Of Sight.  ");
+				errorLOS = YES;
+			}
+		}
+
+	} 
+	return NO;
+}
+
+
+- (void) targetUnit: (Unit *)unit {
+
+	PlayerDataController *me = [PlayerDataController sharedController];
+	if ([me targetID] != [unit GUID]) {
+		PGLog(@"     --> Changing Target : myTarget[0x%X] -> mob[0x%X]",[me targetID], [unit lowGUID]);
+		[me setPrimaryTarget:unit];
+	}
+
 }
 
 
