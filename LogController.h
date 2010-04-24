@@ -46,7 +46,7 @@
 #define LOG_STATISTICS				"Statistics"
 #define LOG_BINDINGS				"Bindings"
 #define LOG_FOLLOW					"Follow"
-
+#define LOG_ITEM					"Item"
 
 @interface LogController : NSObject {
 		

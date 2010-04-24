@@ -31,8 +31,8 @@
 #import "BindingsController.h"
 #import "InventoryController.h"
 #import "Profile.h"
-// #import "ProfileController.h"
-// #import "MailActionProfile.h"
+#import "ProfileController.h"
+#import "MailActionProfile.h"
 
 #import "Action.h"
 #import "Rule.h"

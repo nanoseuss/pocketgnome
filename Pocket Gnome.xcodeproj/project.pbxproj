@@ -358,6 +358,12 @@
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		D02F3C561182C37E000F4037 /* DatabaseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C551182C37E000F4037 /* DatabaseManager.m */; };
+		D02F3C5D1182C497000F4037 /* MailActionProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C5C1182C497000F4037 /* MailActionProfile.m */; };
+		D02F3C601182C5AC000F4037 /* ProfileController.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C5F1182C5AC000F4037 /* ProfileController.m */; };
+		D02F3C871182C975000F4037 /* Profile.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C861182C975000F4037 /* Profile.m */; };
+		D02F3C9A1182CA28000F4037 /* SaveDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C991182CA28000F4037 /* SaveDataObject.m */; };
+		D02F3CA31182CA98000F4037 /* FileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3CA21182CA98000F4037 /* FileManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -893,6 +899,18 @@
 		83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = buildnumber.xcconfig; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D02F3C541182C37E000F4037 /* DatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseManager.h; sourceTree = "<group>"; };
+		D02F3C551182C37E000F4037 /* DatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseManager.m; sourceTree = "<group>"; };
+		D02F3C5B1182C497000F4037 /* MailActionProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailActionProfile.h; sourceTree = "<group>"; };
+		D02F3C5C1182C497000F4037 /* MailActionProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MailActionProfile.m; sourceTree = "<group>"; };
+		D02F3C5E1182C5AC000F4037 /* ProfileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProfileController.h; sourceTree = "<group>"; };
+		D02F3C5F1182C5AC000F4037 /* ProfileController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProfileController.m; sourceTree = "<group>"; };
+		D02F3C851182C975000F4037 /* Profile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Profile.h; sourceTree = "<group>"; };
+		D02F3C861182C975000F4037 /* Profile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Profile.m; sourceTree = "<group>"; };
+		D02F3C981182CA28000F4037 /* SaveDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveDataObject.h; sourceTree = "<group>"; };
+		D02F3C991182CA28000F4037 /* SaveDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SaveDataObject.m; sourceTree = "<group>"; };
+		D02F3CA11182CA98000F4037 /* FileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileManager.h; sourceTree = "<group>"; };
+		D02F3CA21182CA98000F4037 /* FileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1089,6 +1107,18 @@
 				03BD330D11120A7A00941971 /* BindingsController.m */,
 				03981F36112C819E0081835F /* LogController.h */,
 				03981F37112C819E0081835F /* LogController.m */,
+				D02F3C541182C37E000F4037 /* DatabaseManager.h */,
+				D02F3C551182C37E000F4037 /* DatabaseManager.m */,
+				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
+				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
+				D02F3C5E1182C5AC000F4037 /* ProfileController.h */,
+				D02F3C5F1182C5AC000F4037 /* ProfileController.m */,
+				D02F3C851182C975000F4037 /* Profile.h */,
+				D02F3C861182C975000F4037 /* Profile.m */,
+				D02F3C981182CA28000F4037 /* SaveDataObject.h */,
+				D02F3C991182CA28000F4037 /* SaveDataObject.m */,
+				D02F3CA11182CA98000F4037 /* FileManager.h */,
+				D02F3CA21182CA98000F4037 /* FileManager.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2160,6 +2190,12 @@
 				034126E91135774A00BE6819 /* PvPBehavior.m in Sources */,
 				03A320D5114E88A9000D23EE /* JumpToWaypointActionController.m in Sources */,
 				03BE961A11828343004DBFBF /* FileController.m in Sources */,
+				D02F3C561182C37E000F4037 /* DatabaseManager.m in Sources */,
+				D02F3C5D1182C497000F4037 /* MailActionProfile.m in Sources */,
+				D02F3C601182C5AC000F4037 /* ProfileController.m in Sources */,
+				D02F3C871182C975000F4037 /* Profile.m in Sources */,
+				D02F3C9A1182CA28000F4037 /* SaveDataObject.m in Sources */,
+				D02F3CA31182CA98000F4037 /* FileManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
