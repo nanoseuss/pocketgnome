@@ -307,11 +307,11 @@ static FileController *_sharedFileController = nil;
 
 - (IBAction)showInFinder: (id)sender {
 	
-	NSString *filePath = [NSString stringWithFormat:@"%@/", [self pathForObjectName:nil withExtension:NO]];
+	/*NSString *filePath = [NSString stringWithFormat:@"%@/", [self pathForObjectName:nil withExtension:NO]];
 	
 	// show in finder!
 	NSWorkspace *ws = [NSWorkspace sharedWorkspace];
-	[ws openFile: filePath];
+	[ws openFile: filePath];*/
 }
 
 @end

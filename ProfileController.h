@@ -27,10 +27,11 @@
 
 #define ProfilesLoaded @"ProfilesLoaded"
 
-@class FileManager;
+@class FileController;
 @class Profile;
+
 @interface ProfileController : NSObject {
-	IBOutlet FileManager *fileManager;
+	IBOutlet FileController *fileController;
 	
 	NSMutableArray *_profiles;
 }

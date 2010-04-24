@@ -362,8 +362,6 @@
 		D02F3C5D1182C497000F4037 /* MailActionProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C5C1182C497000F4037 /* MailActionProfile.m */; };
 		D02F3C601182C5AC000F4037 /* ProfileController.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C5F1182C5AC000F4037 /* ProfileController.m */; };
 		D02F3C871182C975000F4037 /* Profile.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C861182C975000F4037 /* Profile.m */; };
-		D02F3C9A1182CA28000F4037 /* SaveDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3C991182CA28000F4037 /* SaveDataObject.m */; };
-		D02F3CA31182CA98000F4037 /* FileManager.m in Sources */ = {isa = PBXBuildFile; fileRef = D02F3CA21182CA98000F4037 /* FileManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -531,6 +529,8 @@
 		03BE961811828343004DBFBF /* FileController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileController.h; sourceTree = "<group>"; };
 		03BE961911828343004DBFBF /* FileController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileController.m; sourceTree = "<group>"; };
 		03C42CC91096839E0085E888 /* Macros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Macros.plist; sourceTree = "<group>"; };
+		03CD6A67118359B100CCABFE /* Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Defines.h; sourceTree = "<group>"; };
+		03CD6A68118359BB00CCABFE /* ClientDbDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClientDbDefines.h; sourceTree = "<group>"; };
 		03CEF7840FCCD93100B47336 /* Corpse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Corpse.h; sourceTree = "<group>"; };
 		03CEF7850FCCD93100B47336 /* Corpse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Corpse.m; sourceTree = "<group>"; };
 		03CEF7860FCCD93100B47336 /* CorpseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorpseController.h; sourceTree = "<group>"; };
@@ -898,7 +898,7 @@
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = buildnumber.xcconfig; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D02F3C541182C37E000F4037 /* DatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseManager.h; sourceTree = "<group>"; };
 		D02F3C551182C37E000F4037 /* DatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseManager.m; sourceTree = "<group>"; };
 		D02F3C5B1182C497000F4037 /* MailActionProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailActionProfile.h; sourceTree = "<group>"; };
@@ -907,10 +907,6 @@
 		D02F3C5F1182C5AC000F4037 /* ProfileController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProfileController.m; sourceTree = "<group>"; };
 		D02F3C851182C975000F4037 /* Profile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Profile.h; sourceTree = "<group>"; };
 		D02F3C861182C975000F4037 /* Profile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Profile.m; sourceTree = "<group>"; };
-		D02F3C981182CA28000F4037 /* SaveDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveDataObject.h; sourceTree = "<group>"; };
-		D02F3C991182CA28000F4037 /* SaveDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SaveDataObject.m; sourceTree = "<group>"; };
-		D02F3CA11182CA98000F4037 /* FileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileManager.h; sourceTree = "<group>"; };
-		D02F3CA21182CA98000F4037 /* FileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1059,6 +1055,38 @@
 			name = "File Management";
 			sourceTree = "<group>";
 		};
+		03CD6A641183595F00CCABFE /* Profiles */ = {
+			isa = PBXGroup;
+			children = (
+				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
+				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
+				D02F3C5E1182C5AC000F4037 /* ProfileController.h */,
+				D02F3C5F1182C5AC000F4037 /* ProfileController.m */,
+				D02F3C851182C975000F4037 /* Profile.h */,
+				D02F3C861182C975000F4037 /* Profile.m */,
+			);
+			name = Profiles;
+			sourceTree = "<group>";
+		};
+		03CD6A651183596A00CCABFE /* Reversed */ = {
+			isa = PBXGroup;
+			children = (
+				03CD6A67118359B100CCABFE /* Defines.h */,
+				03CD6A68118359BB00CCABFE /* ClientDbDefines.h */,
+				03CD6A661183597C00CCABFE /* WoWDb */,
+			);
+			name = Reversed;
+			sourceTree = "<group>";
+		};
+		03CD6A661183597C00CCABFE /* WoWDb */ = {
+			isa = PBXGroup;
+			children = (
+				D02F3C541182C37E000F4037 /* DatabaseManager.h */,
+				D02F3C551182C37E000F4037 /* DatabaseManager.m */,
+			);
+			name = WoWDb;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -1107,18 +1135,6 @@
 				03BD330D11120A7A00941971 /* BindingsController.m */,
 				03981F36112C819E0081835F /* LogController.h */,
 				03981F37112C819E0081835F /* LogController.m */,
-				D02F3C541182C37E000F4037 /* DatabaseManager.h */,
-				D02F3C551182C37E000F4037 /* DatabaseManager.m */,
-				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
-				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
-				D02F3C5E1182C5AC000F4037 /* ProfileController.h */,
-				D02F3C5F1182C5AC000F4037 /* ProfileController.m */,
-				D02F3C851182C975000F4037 /* Profile.h */,
-				D02F3C861182C975000F4037 /* Profile.m */,
-				D02F3C981182CA28000F4037 /* SaveDataObject.h */,
-				D02F3C991182CA28000F4037 /* SaveDataObject.m */,
-				D02F3CA11182CA98000F4037 /* FileManager.h */,
-				D02F3CA21182CA98000F4037 /* FileManager.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1156,7 +1172,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
+				8D1107320486CEB800E47090 /* ggteabag.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1172,6 +1188,8 @@
 				7D65CA9F0D2F095F00C50DF7 /* Waypoints & Routes */,
 				034126E21135773900BE6819 /* PvP */,
 				7D72453E0D1511E20094665C /* Units */,
+				03CD6A651183596A00CCABFE /* Reversed */,
+				03CD6A641183595F00CCABFE /* Profiles */,
 				03BE9607118282E4004DBFBF /* File Management */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -1790,7 +1808,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
+			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1799,7 +1817,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				ORGANIZATIONNAME = "Savory Software, LLC\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010";
+				ORGANIZATIONNAME = "Savory Software, LLC\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010\U0010";
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Pocket Gnome" */;
 			compatibilityVersion = "Xcode 3.0";
@@ -2194,8 +2212,6 @@
 				D02F3C5D1182C497000F4037 /* MailActionProfile.m in Sources */,
 				D02F3C601182C5AC000F4037 /* ProfileController.m in Sources */,
 				D02F3C871182C975000F4037 /* Profile.m in Sources */,
-				D02F3C9A1182CA28000F4037 /* SaveDataObject.m in Sources */,
-				D02F3CA31182CA98000F4037 /* FileManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

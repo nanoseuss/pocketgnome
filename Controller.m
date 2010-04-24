@@ -303,12 +303,12 @@ static Controller* sharedController = nil;
         [mainToolbar setSelectedItemIdentifier: [pvpToolbarItem itemIdentifier]];
         return YES;
     }
-	else if ( [[filename pathExtension] isEqualToString: @"mailprofile"] ) {
+	/*else if ( [[filename pathExtension] isEqualToString: @"mailprofile"] ) {
 	        [routeController importProfileAtPath: filename];
 	        [self toolbarItemSelected: routesToolbarItem];
 	        [mainToolbar setSelectedItemIdentifier: [routesToolbarItem itemIdentifier]];
 	        return YES;
-    }
+    }*/
     
     return NO;
 }

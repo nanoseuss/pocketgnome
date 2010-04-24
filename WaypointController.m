@@ -82,7 +82,7 @@ enum AutomatorIntervalType {
 		
 		// needed since the connection hasn't been done @ this point (and we want the Bot.xib file to see the routes!)
 		if ( fileController == nil ){
-			fileController = [FileController sharedFileController]; 
+			fileController = [[FileController sharedFileController] retain]; 
 		}
 		
 		// pull data from the .plist file

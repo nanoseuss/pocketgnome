@@ -25,9 +25,9 @@
  */
 
 #import <Cocoa/Cocoa.h>
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
-@interface Profile : SaveDataObject {
+@interface Profile : FileObject {
 	
 }
 

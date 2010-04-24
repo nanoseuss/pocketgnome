@@ -24,7 +24,7 @@
  */
 
 #import "Profile.h"
-#import "SaveDataObject.h"
+#import "FileObject.h"
 
 @implementation Profile
 

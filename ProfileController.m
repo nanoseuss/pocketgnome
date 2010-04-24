@@ -26,8 +26,7 @@
 #import "ProfileController.h"
 #import "Profile.h"
 #import "MailActionProfile.h"
-
-#import "FileManager.h"
+#import "FileController.h"
 
 @implementation ProfileController
 
@@ -44,7 +43,11 @@
 
 - (void)awakeFromNib {
 	
-	NSArray *mailActionProfiles = [fileManager getObjectsWithClass:[MailActionProfile class]];
+	if ( fileController == nil ){
+		fileController = [[FileController sharedFileController] retain];
+	}
+	
+	NSArray *mailActionProfiles = [fileController getObjectsWithClass:[MailActionProfile class]];
 	[_profiles addObjectsFromArray:mailActionProfiles];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName: ProfilesLoaded object: self];
@@ -124,7 +127,7 @@
 	
 	NSLog(@" %@ %@", prof, profToDelete);
 	
-	[fileManager deleteObject:profToDelete];
+	[fileController deleteObject:profToDelete];
 	[_profiles removeObject:profToDelete];
 	
 	if ( profToDelete )
@@ -136,11 +139,11 @@
 #pragma mark Notifications
 
 - (void)applicationWillTerminate: (NSNotification*)notification {
-	NSLog(@"saving %d objects! to %@", [_profiles count], fileManager);
-	for ( SaveDataObject *obj in _profiles ){
+	NSLog(@"saving %d objects! to %@", [_profiles count], fileController);
+	for ( FileObject *obj in _profiles ){
 		NSLog(@" %@ %d", obj, [obj changed]);
 	}
-    [fileManager saveObjects:_profiles];
+    [fileController saveObjects:_profiles];
 }
 
 @end
