@@ -567,6 +567,11 @@ typedef enum MovementState{
 	[self moveToPosition:[waypoint position]];
 }
 
+- (void)moveToWaypointFromUI:(Waypoint*)wp{
+	_destinationWaypointUI = [wp retain];
+	[self moveToPosition:[wp position]];
+}
+
 - (void)startFollow {
 	
 	log(LOG_WAYPOINT, @"Starting movement controller for follow");
@@ -802,7 +807,7 @@ typedef enum MovementState{
 	log(LOG_FUNCTION, @"checkCurrentPosition");
 	
 	// stopped botting?  end!
-	if ( ![botController isBotting] ) {
+	if ( ![botController isBotting] && !_destinationWaypointUI ) {
 		log(LOG_MOVEMENT, @"We're not botting, stop the timer!");
 		[self resetMovementState];
 		return;
@@ -873,6 +878,11 @@ typedef enum MovementState{
 
 	// we've reached our position!
 	if ( distanceToDestination <= distanceToObject ) {
+		
+		// request from UI!
+		if ( _destinationWaypointUI ){
+			[_destinationWaypointUI release]; _destinationWaypointUI = nil;
+		}
 		
 		log(LOG_MOVEMENT, @"Reached our destination! %0.2f < %0.2f", distanceToDestination, distanceToObject);
 

@@ -102,6 +102,8 @@ typedef enum MovementType {
 	BOOL _lastCorrectionForward;
 	BOOL _lastCorrectionLeft;
 	BOOL isFollowing;
+	
+	Waypoint *_destinationWaypointUI;
 }
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
@@ -174,5 +176,8 @@ typedef enum MovementType {
 - (float)averageSpeed;
 - (float)averageDistance;
 - (BOOL)shouldJump;
+
+// UI
+- (void)moveToWaypointFromUI:(Waypoint*)wp;
 
 @end
