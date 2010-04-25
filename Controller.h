@@ -66,7 +66,7 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
     IBOutlet NSToolbar *mainToolbar;
     IBOutlet NSToolbarItem *botToolbarItem, *playerToolbarItem, *spellsToolbarItem;
     IBOutlet NSToolbarItem *routesToolbarItem, *behavsToolbarItem, *pvpToolbarItem;
-    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *statisticsToolbarItem, *objectsToolbarItem;
+    IBOutlet NSToolbarItem *memoryToolbarItem, *prefsToolbarItem, *chatLogToolbarItem, *statisticsToolbarItem, *objectsToolbarItem, *profilesToolbarItem;
 	
 	IBOutlet NSPopUpButton *wowInstancePopUpButton;
 	int _selectedPID;

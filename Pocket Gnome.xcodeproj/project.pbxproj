@@ -95,6 +95,7 @@
 		03BE961A11828343004DBFBF /* FileController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03BE961911828343004DBFBF /* FileController.m */; };
 		03C280CD1089178600A76249 /* ShortcutRecorder.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 030604B61088140000C57D77 /* ShortcutRecorder.framework */; };
 		03C42CCA1096839E0085E888 /* Macros.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03C42CC91096839E0085E888 /* Macros.plist */; };
+		03CD6AC41183D5AC00CCABFE /* Profiles.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03CD6AC31183D5AC00CCABFE /* Profiles.xib */; };
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
@@ -531,6 +532,7 @@
 		03C42CC91096839E0085E888 /* Macros.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Macros.plist; sourceTree = "<group>"; };
 		03CD6A67118359B100CCABFE /* Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Defines.h; sourceTree = "<group>"; };
 		03CD6A68118359BB00CCABFE /* ClientDbDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ClientDbDefines.h; sourceTree = "<group>"; };
+		03CD6AC31183D5AC00CCABFE /* Profiles.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Profiles.xib; sourceTree = "<group>"; };
 		03CEF7840FCCD93100B47336 /* Corpse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Corpse.h; sourceTree = "<group>"; };
 		03CEF7850FCCD93100B47336 /* Corpse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Corpse.m; sourceTree = "<group>"; };
 		03CEF7860FCCD93100B47336 /* CorpseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorpseController.h; sourceTree = "<group>"; };
@@ -898,7 +900,7 @@
 		7DF445540E241AE30075B96B /* TotemCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TotemCondition.xib; sourceTree = "<group>"; };
 		83A9BBF11178BA03003E3683 /* buildnumber.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = buildnumber.xcconfig; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* ggteabag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ggteabag.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Pocket Gnome.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pocket Gnome.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D02F3C541182C37E000F4037 /* DatabaseManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DatabaseManager.h; sourceTree = "<group>"; };
 		D02F3C551182C37E000F4037 /* DatabaseManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DatabaseManager.m; sourceTree = "<group>"; };
 		D02F3C5B1182C497000F4037 /* MailActionProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailActionProfile.h; sourceTree = "<group>"; };
@@ -1172,7 +1174,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* ggteabag.app */,
+				8D1107320486CEB800E47090 /* Pocket Gnome.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1256,6 +1258,7 @@
 				03A01B39109A2CFF00E6098E /* Statistics.xib */,
 				7DD8037C0D514E62005C2F01 /* Player.xib */,
 				7DD803970D515142005C2F01 /* Spells.xib */,
+				03CD6AC31183D5AC00CCABFE /* Profiles.xib */,
 				03168C8B10FE6D2000EF241B /* WaypointActionEditor.xib */,
 				0341DD5F111B0F6B00074CED /* Objects.xib */,
 				7DD803A10D5151CA005C2F01 /* Routes.xib */,
@@ -1808,7 +1811,7 @@
 			name = "Pocket Gnome";
 			productInstallPath = "$(HOME)/Applications";
 			productName = WoWWaypoint;
-			productReference = 8D1107320486CEB800E47090 /* ggteabag.app */;
+			productReference = 8D1107320486CEB800E47090 /* Pocket Gnome.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2041,6 +2044,7 @@
 				0352F46611376DA5005B28D6 /* PVP.png in Resources */,
 				03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */,
 				83A9BBF21178BA03003E3683 /* buildnumber.xcconfig in Resources */,
+				03CD6AC41183D5AC00CCABFE /* Profiles.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

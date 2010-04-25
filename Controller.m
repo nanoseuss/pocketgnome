@@ -806,6 +806,10 @@ typedef struct NameObjectStruct{
         minSize = [pvpController minSectionSize];
         maxSize = [pvpController maxSectionSize];
 	}
+	// profiles
+	if ( [sender tag] == 17 ) {
+		
+	}
 	
     if(newView) {
         [self loadView: newView withTitle: addToTitle];

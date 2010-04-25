@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2378"/>
+			<integer value="1956"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -622,6 +622,7 @@
 							<string>B63A3426-1473-4336-8F1D-5BCB25041F68</string>
 							<string>C8D3D151-66DC-4B26-9227-FD886A23058B</string>
 							<string>F6035D3E-470C-423D-A669-9427AFE6E2BB</string>
+							<string>FFFAE74F-76CD-461B-8798-3C00CA631D4A</string>
 							<string>NSToolbarCustomizeToolbarItem</string>
 							<string>NSToolbarFlexibleSpaceItem</string>
 							<string>NSToolbarSeparatorItem</string>
@@ -871,6 +872,28 @@
 								<bool key="NSToolbarIsUserRemovable">YES</bool>
 								<int key="NSToolbarItemVisibilityPriority">0</int>
 							</object>
+							<object class="NSToolbarItem" id="290200417">
+								<object class="NSMutableString" key="NSToolbarItemIdentifier">
+									<characters key="NS.bytes">FFFAE74F-76CD-461B-8798-3C00CA631D4A</characters>
+								</object>
+								<string key="NSToolbarItemLabel">Profiles</string>
+								<string key="NSToolbarItemPaletteLabel">Profiles</string>
+								<nil key="NSToolbarItemToolTip"/>
+								<nil key="NSToolbarItemView"/>
+								<object class="NSCustomResource" key="NSToolbarItemImage">
+									<string key="NSClassName">NSImage</string>
+									<string key="NSResourceName">Spell_Holy_PrayerofSpirit</string>
+								</object>
+								<nil key="NSToolbarItemTarget"/>
+								<nil key="NSToolbarItemAction"/>
+								<string key="NSToolbarItemMinSize">{0, 0}</string>
+								<string key="NSToolbarItemMaxSize">{0, 0}</string>
+								<bool key="NSToolbarItemEnabled">YES</bool>
+								<bool key="NSToolbarItemAutovalidates">YES</bool>
+								<int key="NSToolbarItemTag">17</int>
+								<bool key="NSToolbarIsUserRemovable">YES</bool>
+								<int key="NSToolbarItemVisibilityPriority">0</int>
+							</object>
 							<object class="NSToolbarItem" id="109537716">
 								<string key="NSToolbarItemIdentifier">NSToolbarCustomizeToolbarItem</string>
 								<string key="NSToolbarItemLabel">Customize</string>
@@ -978,6 +1001,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<reference ref="442076634"/>
 						<reference ref="484822692"/>
+						<reference ref="290200417"/>
 						<reference ref="778403213"/>
 						<reference ref="748084000"/>
 						<reference ref="271453216"/>
@@ -1005,6 +1029,7 @@
 						<reference ref="684506935"/>
 						<reference ref="944730264"/>
 						<reference ref="515029510"/>
+						<reference ref="290200417"/>
 						<reference ref="840386585"/>
 						<reference ref="499189514"/>
 						<reference ref="1064180091"/>
@@ -1017,7 +1042,7 @@
 				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{700, 200}</string>
 				<object class="NSView" key="NSWindowView" id="307790377">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1155,6 +1180,7 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{749, 200}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{700, 277}</string>
@@ -2426,7 +2452,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="754616829">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5680,7 +5706,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{740, 413}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
@@ -12136,6 +12161,30 @@
 					</object>
 					<int key="connectionID">4690</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toolbarItemSelected:</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="290200417"/>
+					</object>
+					<int key="connectionID">4693</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">profilesToolbarItem</string>
+						<reference key="source" ref="148782052"/>
+						<reference key="destination" ref="290200417"/>
+					</object>
+					<int key="connectionID">4694</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">profileController</string>
+						<reference key="source" ref="94147614"/>
+						<reference key="destination" ref="530236377"/>
+					</object>
+					<int key="connectionID">4695</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -12895,6 +12944,7 @@
 							<reference ref="499189514"/>
 							<reference ref="271453216"/>
 							<reference ref="684506935"/>
+							<reference ref="290200417"/>
 						</object>
 						<reference key="parent" ref="836553576"/>
 					</object>
@@ -16344,6 +16394,11 @@
 						<reference key="object" ref="530236377"/>
 						<reference key="parent" ref="0"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">4691</int>
+						<reference key="object" ref="290200417"/>
+						<reference key="parent" ref="591372859"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -17008,7 +17063,7 @@
 					<string>4679.IBPluginDependency</string>
 					<string>4680.IBPluginDependency</string>
 					<string>4681.IBPluginDependency</string>
-					<string>4689.IBPluginDependency</string>
+					<string>4691.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -17103,15 +17158,15 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{329, 483}, {749, 200}}</string>
+					<string>{{414, 787}, {749, 200}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{329, 483}, {749, 200}}</string>
+					<string>{{414, 787}, {749, 200}}</string>
 					<integer value="1"/>
 					<string>{{49, 661}, {640, 200}}</string>
 					<integer value="1"/>
 					<string>{700, 200}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{516, 683}, {617, 0}}</string>
+					<string>{{480, 987}, {617, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{57, 707}, {616, 0}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -17900,7 +17955,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4690</int>
+			<int key="maxID">4695</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -18169,6 +18224,7 @@
 							<string>playerController</string>
 							<string>playersController</string>
 							<string>procedureController</string>
+							<string>profileController</string>
 							<string>pvpBehaviorPopUp</string>
 							<string>pvpController</string>
 							<string>questController</string>
@@ -18254,6 +18310,7 @@
 							<string>PlayerDataController</string>
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
+							<string>ProfileController</string>
 							<string>NSPopUpButton</string>
 							<string>PvPController</string>
 							<string>QuestController</string>
@@ -18526,6 +18583,7 @@
 							<string>playerToolbarItem</string>
 							<string>playersController</string>
 							<string>prefsToolbarItem</string>
+							<string>profilesToolbarItem</string>
 							<string>pvpController</string>
 							<string>pvpToolbarItem</string>
 							<string>routeController</string>
@@ -18572,6 +18630,7 @@
 							<string>PlayerDataController</string>
 							<string>NSToolbarItem</string>
 							<string>PlayersController</string>
+							<string>NSToolbarItem</string>
 							<string>NSToolbarItem</string>
 							<string>PvPController</string>
 							<string>NSToolbarItem</string>
@@ -19352,8 +19411,17 @@
 					<string key="className">ProfileController</string>
 					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">fileController</string>
-						<string key="NS.object.0">FileController</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>fileController</string>
+							<string>view</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>FileController</string>
+							<string>NSView</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -20684,6 +20752,7 @@
 				<string>PVP</string>
 				<string>Spell_FireResistanceTotem_01</string>
 				<string>Spell_Holy_MindVision</string>
+				<string>Spell_Holy_PrayerofSpirit</string>
 				<string>Spell_Nature_PoisonCleansingTotem</string>
 				<string>Trade_Engraving</string>
 				<string>good</string>
@@ -20708,6 +20777,7 @@
 				<string>{15, 15}</string>
 				<string>{32, 32}</string>
 				<string>{64, 64}</string>
+				<string>{67.7747, 67.7747}</string>
 				<string>{67.7747, 67.7747}</string>
 				<string>{67.7747, 67.7747}</string>
 				<string>{67.7747, 67.7747}</string>

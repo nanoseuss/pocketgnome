@@ -33,8 +33,16 @@
 @interface ProfileController : NSObject {
 	IBOutlet FileController *fileController;
 	
+	IBOutlet NSView *view;
+	NSSize minSectionSize, maxSectionSize;
+	
 	NSMutableArray *_profiles;
 }
+
+@property (readonly) NSView *view;
+@property (readonly) NSString *sectionTitle;
+@property NSSize minSectionSize;
+@property NSSize maxSectionSize;
 
 - (NSArray*)profilesOfClass:(Class)objectClass;
 

@@ -43,6 +43,9 @@
 
 - (void)awakeFromNib {
 	
+	self.minSectionSize = [self.view frame].size;
+    self.maxSectionSize = NSZeroSize;
+	
 	if ( fileController == nil ){
 		fileController = [[FileController sharedFileController] retain];
 	}
@@ -51,6 +54,14 @@
 	[_profiles addObjectsFromArray:mailActionProfiles];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName: ProfilesLoaded object: self];
+}
+
+@synthesize view;
+@synthesize minSectionSize;
+@synthesize maxSectionSize;
+
+- (NSString*)sectionTitle {
+    return @"Profiles";
 }
 
 - (void)dealloc{
@@ -135,6 +146,34 @@
 	
 	return NO;      
 }
+
+// just return a list of profiles by class
+- (NSArray*)profilesByClass{
+	
+	NSMutableArray *list = [NSMutableArray array];
+	
+	// form a list of the unique classes
+	NSMutableArray *classList = [NSMutableArray array];
+	for ( id profile in _profiles ){
+		if ( ![classList containsObject:[profile class]] ){
+			[classList addObject:[profile class]];
+		}
+	}
+	
+	// woohoo lets set up arrays by class!
+	for ( id class in classList ){
+		NSMutableArray *profiles = [NSMutableArray array];
+		for ( Profile *profile in _profiles ){
+			if ( [profile class] == class ){
+				[profiles addObject:profile];
+			}			
+		}
+		[list addObject:profiles];
+	}
+
+	return list;	
+}
+
 
 #pragma mark Notifications
 

@@ -51,6 +51,7 @@
 #import "StatisticsController.h"
 #import "BindingsController.h"
 #import "PvPController.h"
+#import "ProfileController.h"
 
 #import "ChatLogEntry.h"
 #import "BetterSegmentedControl.h"
@@ -6702,6 +6703,8 @@ NSMutableDictionary *_diffDict = nil;
 #pragma mark Testing Shit
 
 - (IBAction)test: (id)sender{
+	
+	[profileController profilesByClass];
 	
 	log(LOG_GENERAL, @"Current Game State: %d", [controller gameState]);
 	
