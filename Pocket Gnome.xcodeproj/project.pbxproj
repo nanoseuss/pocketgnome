@@ -114,6 +114,7 @@
 		3400954A117EF71400B049A2 /* MPTaskAssist.m in Sources */ = {isa = PBXBuildFile; fileRef = 34009549117EF71400B049A2 /* MPTaskAssist.m */; };
 		34083ADC10AFC3CA00401B07 /* MPSquareTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 34083ADB10AFC3CA00401B07 /* MPSquareTree.m */; };
 		340895D311625375002A16B7 /* MPMover.m in Sources */ = {isa = PBXBuildFile; fileRef = 340895D211625375002A16B7 /* MPMover.m */; };
+		340B7D231182D6EF00C3EFF4 /* MPAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 340B7D221182D6EF00C3EFF4 /* MPAction.m */; };
 		342303B4109EF0E20046EC13 /* MPPointTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303B3109EF0E20046EC13 /* MPPointTree.m */; };
 		342303BB109F01FB0046EC13 /* MPRangedTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303BA109F01FB0046EC13 /* MPRangedTreeNode.m */; };
 		342303BE109F07720046EC13 /* MPAVLRangedTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 342303BD109F07720046EC13 /* MPAVLRangedTree.m */; };
@@ -647,6 +648,8 @@
 		34083ADB10AFC3CA00401B07 /* MPSquareTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSquareTree.m; sourceTree = "<group>"; };
 		340895D111625375002A16B7 /* MPMover.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMover.h; sourceTree = "<group>"; };
 		340895D211625375002A16B7 /* MPMover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMover.m; sourceTree = "<group>"; };
+		340B7D211182D6EF00C3EFF4 /* MPAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAction.h; sourceTree = "<group>"; };
+		340B7D221182D6EF00C3EFF4 /* MPAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAction.m; sourceTree = "<group>"; };
 		342303B2109EF0E20046EC13 /* MPPointTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPointTree.h; sourceTree = "<group>"; };
 		342303B3109EF0E20046EC13 /* MPPointTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPointTree.m; sourceTree = "<group>"; };
 		342303B9109F01FB0046EC13 /* MPRangedTreeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPRangedTreeNode.h; sourceTree = "<group>"; };
@@ -1521,8 +1524,11 @@
 				34F71FD711852913009F75C9 /* MPCustomClassScrub.m */,
 				34C356E61178BF5D002B11E5 /* MPCustomClassScrubDruid.h */,
 				34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */,
+				340B7D211182D6EF00C3EFF4 /* MPAction.h */,
+				340B7D221182D6EF00C3EFF4 /* MPAction.m */,
 				34F71FD311852634009F75C9 /* MPCustomClassScrubPriest.h */,
 				34F71FD411852634009F75C9 /* MPCustomClassScrubPriest.m */,
+		
 			);
 			name = CustomClass;
 			sourceTree = "<group>";
@@ -2721,6 +2727,7 @@
 				3400933C117C4A7A00B049A2 /* MPActivityFollow.m in Sources */,
 				3400954A117EF71400B049A2 /* MPTaskAssist.m in Sources */,
 				34324BC21182B50B00368879 /* MPItem.m in Sources */,
+				340B7D231182D6EF00C3EFF4 /* MPAction.m in Sources */,
 				34F71FD511852634009F75C9 /* MPCustomClassScrubPriest.m in Sources */,
 				34F71FD811852913009F75C9 /* MPCustomClassScrub.m in Sources */,
 			);

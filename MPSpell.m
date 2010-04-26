@@ -12,6 +12,7 @@
 #import "PatherController.h"
 #import "PlayerDataController.h"
 #import "BotController.h"
+#import "Aura.h"
 #import "AuraController.h"
 
 
@@ -174,6 +175,33 @@
 - (BOOL) unitHasDebuff: (Unit *)unit {
 	
 	return [[AuraController sharedController] unit:unit hasDebuff:spellID];
+	
+}
+
+
+- (BOOL) unitHasMyBuff: (Unit *)unit {
+
+	GUID myGUID = [[PlayerDataController sharedController] GUID];
+	
+	for(Aura *aura in [[AuraController sharedController] aurasForUnit: unit idsOnly: NO]) {
+        if((aura.entryID == spellID) && (!aura.isDebuff) && (aura.guid = myGUID))
+            return aura.stacks ? aura.stacks : YES;
+    }
+	return NO;
+	
+}
+
+
+
+- (BOOL) unitHasMyDebuff: (Unit *)unit {
+	
+	GUID myGUID = [[PlayerDataController sharedController] GUID];
+	
+	for(Aura *aura in [[AuraController sharedController] aurasForUnit: unit idsOnly: NO]) {
+        if((aura.entryID == spellID) && (aura.isDebuff) && (aura.guid = myGUID))
+            return aura.stacks ? aura.stacks : YES;
+    }
+	return NO;
 	
 }
 

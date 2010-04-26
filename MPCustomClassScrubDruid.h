@@ -14,18 +14,21 @@
 @class CombatController;
 @class BotController;
 @class MPSpell;
+@class MPItem;
 
 
 @interface MPCustomClassScrubDruid : MPCustomClass {
 
 	MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
-	NSArray *listSpells, *listParty;
+	MPItem *drink;
+	NSArray *listSpells, *listItems, *listParty;
 	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 	BOOL errorLOS;
 	MPCCCombatState state;
 }
 @property (retain) MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
-@property (retain) NSArray *listSpells, *listParty;
+@property (retain) MPItem *drink;
+@property (retain) NSArray *listSpells, *listItems, *listParty;
 @property (retain) MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 
 @end

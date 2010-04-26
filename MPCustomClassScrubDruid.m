@@ -8,16 +8,20 @@
 
 #import "MPCustomClassScrubDruid.h"
 #import "MPCustomClass.h"
+
+#import "Aura.h"
+#import "AuraController.h"
+#import "BlacklistController.h"
+#import "Errors.h"
+#import "Mob.h"
+#import "MPItem.h"
+#import "MPMover.h"
+#import "MPSpell.h"
+#import "MPTimer.h"
 #import "PatherController.h"
 #import "PlayerDataController.h"
-#import "Mob.h"
-#import "BlacklistController.h"
-#import "MPSpell.h"
-#import "MPMover.h"
 #import "Player.h"
 #import "Unit.h"
-#import "MPTimer.h"
-#import "Errors.h"
 
 
 @interface MPCustomClassScrubDruid (Internal)
@@ -43,7 +47,8 @@
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize wrath, mf, motw, rejuv, healingTouch, thorns, listSpells, listParty, timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
+@synthesize wrath, mf, motw, rejuv, healingTouch, thorns, listSpells, listItems, listParty, timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
+@synthesize drink;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
@@ -55,6 +60,9 @@
 		self.healingTouch = nil;
 		self.thorns = nil;
 
+		self.drink = nil;
+		self.listItems = nil;
+		
 		self.listSpells = nil;
 		
 		self.listParty = nil;
@@ -81,6 +89,7 @@
 
 - (void) dealloc
 {
+	[drink release];
 	[wrath release];
 	[mf release];
 	[motw release];
@@ -92,6 +101,7 @@
 	[timerBuffCheck release];
 	[timerSpellScan release];
 	[listSpells release];
+	[listItems release];
 	[listParty release];
 	
     [super dealloc];
@@ -372,6 +382,27 @@
 		if ( ([player percentHealth] <= 99 ) || ([player percentMana] <= 99) ) {
 			
 			PGLog(@"Should do something during Rest Phase");
+
+			PGLog(@"Aura List:");
+			NSArray *listAuras = [[AuraController sharedController] aurasForUnit:[player player] idsOnly:NO];
+			for( Aura *aura in listAuras){
+				PGLog(@"    - entryID[%d]", [aura entryID]);
+			}
+			if ([drink canUse]){
+				PGLog(@"   Drink: Can Use");
+				if (![drink unitHasBuff:[player player]]) {
+					PGLog(@"   Player doesn't seem to have a buff with this actionID");
+					[drink use];
+				}
+else {
+	PGLog(@"    Drink Buff already found!");
+}
+
+			}
+else {
+	PGLog(@"  Drink: Can't use!!!");
+}
+
 			
 			return NO; // must not be done yet ... 
 			
@@ -452,6 +483,9 @@
 
 - (void) setup {
 	
+	////
+	//// Spells
+	////
 	self.wrath = [MPSpell wrath];
 	self.mf    = [MPSpell moonfire];
 	self.motw  = [MPSpell motw];
@@ -469,6 +503,22 @@
 	[spells addObject:thorns];
 	self.listSpells = [spells copy];
 	
+	
+	//// 
+	//// Items
+	////
+	self.drink = [MPItem drink];
+	
+	NSMutableArray *items = [NSMutableArray array];
+	[items addObject:drink];
+	self.listItems = [items copy];
+	
+	
+	
+	
+	//// 
+	//// Party Members
+	////
 	self.listParty = [[PlayerDataController sharedController] partyMembers];
 	
 }
