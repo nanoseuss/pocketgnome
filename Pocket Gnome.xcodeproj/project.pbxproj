@@ -180,6 +180,8 @@
 		34C356E81178BF5D002B11E5 /* MPCustomClassScrubDruid.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */; };
 		34D5FC9D10685C1100712FD0 /* MPTaskRoute.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */; };
 		34D5FCFA10686F1900712FD0 /* MPActivityWalk.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D5FCF910686F1900712FD0 /* MPActivityWalk.m */; };
+		34F71FD511852634009F75C9 /* MPCustomClassScrubPriest.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F71FD411852634009F75C9 /* MPCustomClassScrubPriest.m */; };
+		34F71FD811852913009F75C9 /* MPCustomClassScrub.m in Sources */ = {isa = PBXBuildFile; fileRef = 34F71FD711852913009F75C9 /* MPCustomClassScrub.m */; };
 		614CD78A1106182100BA1B2F /* Bot.xib in Resources */ = {isa = PBXBuildFile; fileRef = 614CD7891106182100BA1B2F /* Bot.xib */; };
 		7D06F0420D23058B00DA4E99 /* AuraController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D06F0410D23058B00DA4E99 /* AuraController.m */; };
 		7D0C43D10DF2089E005F3940 /* ScanGridView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C43D00DF2089E005F3940 /* ScanGridView.m */; };
@@ -774,6 +776,10 @@
 		34D5FC9C10685C1100712FD0 /* MPTaskRoute.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskRoute.m; sourceTree = "<group>"; };
 		34D5FCF810686F1900712FD0 /* MPActivityWalk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPActivityWalk.h; sourceTree = "<group>"; };
 		34D5FCF910686F1900712FD0 /* MPActivityWalk.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPActivityWalk.m; sourceTree = "<group>"; };
+		34F71FD311852634009F75C9 /* MPCustomClassScrubPriest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomClassScrubPriest.h; sourceTree = "<group>"; };
+		34F71FD411852634009F75C9 /* MPCustomClassScrubPriest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomClassScrubPriest.m; sourceTree = "<group>"; };
+		34F71FD611852913009F75C9 /* MPCustomClassScrub.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomClassScrub.h; sourceTree = "<group>"; };
+		34F71FD711852913009F75C9 /* MPCustomClassScrub.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomClassScrub.m; sourceTree = "<group>"; };
 		614CD7891106182100BA1B2F /* Bot.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Bot.xib; sourceTree = "<group>"; };
 		7D06F0400D23058B00DA4E99 /* AuraController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AuraController.h; sourceTree = "<group>"; };
 		7D06F0410D23058B00DA4E99 /* AuraController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AuraController.m; sourceTree = "<group>"; };
@@ -1511,8 +1517,12 @@
 				34324BC11182B50B00368879 /* MPItem.m */,
 				34C35668117738B3002B11E5 /* MPSpell.h */,
 				34C35669117738B3002B11E5 /* MPSpell.m */,
+				34F71FD611852913009F75C9 /* MPCustomClassScrub.h */,
+				34F71FD711852913009F75C9 /* MPCustomClassScrub.m */,
 				34C356E61178BF5D002B11E5 /* MPCustomClassScrubDruid.h */,
 				34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */,
+				34F71FD311852634009F75C9 /* MPCustomClassScrubPriest.h */,
+				34F71FD411852634009F75C9 /* MPCustomClassScrubPriest.m */,
 			);
 			name = CustomClass;
 			sourceTree = "<group>";
@@ -2711,6 +2721,8 @@
 				3400933C117C4A7A00B049A2 /* MPActivityFollow.m in Sources */,
 				3400954A117EF71400B049A2 /* MPTaskAssist.m in Sources */,
 				34324BC21182B50B00368879 /* MPItem.m in Sources */,
+				34F71FD511852634009F75C9 /* MPCustomClassScrubPriest.m in Sources */,
+				34F71FD811852913009F75C9 /* MPCustomClassScrub.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,5 +1,5 @@
 //
-//  MPCustomClassPG.h
+//  MPCustomClassScrubDruid.h
 //  Pocket Gnome
 //
 //  Created by codingMonkey on 9/23/09.
