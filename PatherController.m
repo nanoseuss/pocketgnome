@@ -20,6 +20,7 @@
 #import "MPCustomClass.h"
 #import "MPCustomClassPG.h"
 #import "MPCustomClassScrubDruid.h"
+#import "MPCustomClassScrubPriest.h"
 #import "BotController.h"
 #import "Controller.h"
 #import "WaypointController.h"
@@ -159,6 +160,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(PatherController);
 	// Now populate the list of custom Classes here:
 	[listCustomClasses addObject:[MPCustomClassPG classWithController:self]];
 	[listCustomClasses addObject:[MPCustomClassScrubDruid classWithController:self]];
+	[listCustomClasses addObject:[MPCustomClassScrubPriest classWithController:self]];
 	[chooseCustomClass removeAllItems];
 	for( MPCustomClass *currClass in listCustomClasses) {
 		[chooseCustomClass addItemWithTitle:[currClass name]];

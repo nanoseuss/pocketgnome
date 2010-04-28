@@ -14,6 +14,7 @@
 @class CombatController;
 @class BotController;
 @class MPSpell;
+@class Unit;
 
 @interface MPCustomClassScrub : MPCustomClass {
 
@@ -31,6 +32,12 @@
 - (void) openingMoveWith: (Mob *)mob;
 
 // called repeatedly while in combat.
-- (void) combatActionsWith: (Mob *) mob; 
+- (MPCombatState) combatActionsWith: (Mob *) mob; 
+
+
+- (void) targetUnit: (Unit *)unit;
+- (BOOL) cast: (MPSpell *)spell on:(Unit *)unit;
+- (BOOL) castDOT:(MPSpell *)spell on:(Unit *)unit;
+- (BOOL) castHOT:(MPSpell *)spell on:(Unit *)unit;
 
 @end

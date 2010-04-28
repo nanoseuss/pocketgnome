@@ -1520,15 +1520,14 @@
 				34324BC11182B50B00368879 /* MPItem.m */,
 				34C35668117738B3002B11E5 /* MPSpell.h */,
 				34C35669117738B3002B11E5 /* MPSpell.m */,
+				340B7D211182D6EF00C3EFF4 /* MPAction.h */,
+				340B7D221182D6EF00C3EFF4 /* MPAction.m */,
 				34F71FD611852913009F75C9 /* MPCustomClassScrub.h */,
 				34F71FD711852913009F75C9 /* MPCustomClassScrub.m */,
 				34C356E61178BF5D002B11E5 /* MPCustomClassScrubDruid.h */,
 				34C356E71178BF5D002B11E5 /* MPCustomClassScrubDruid.m */,
-				340B7D211182D6EF00C3EFF4 /* MPAction.h */,
-				340B7D221182D6EF00C3EFF4 /* MPAction.m */,
 				34F71FD311852634009F75C9 /* MPCustomClassScrubPriest.h */,
 				34F71FD411852634009F75C9 /* MPCustomClassScrubPriest.m */,
-		
 			);
 			name = CustomClass;
 			sourceTree = "<group>";

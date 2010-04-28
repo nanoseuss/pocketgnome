@@ -46,6 +46,8 @@
 
 - (BOOL) unitHasBuff: (Unit *)unit;
 - (BOOL) unitHasDebuff: (Unit *)unit;
+- (BOOL) unitHasMyBuff: (Unit *)unit;
+- (BOOL) unitHasMyDebuff: (Unit *)unit;
 
 + (id) spell;
 + (id) healingTouch;
@@ -54,5 +56,18 @@
 + (id) rejuvenation;
 + (id) thorns;
 + (id) wrath;
+
+
+// Priest
++ (id) fade;
++ (id) flashHeal;
++ (id) heal;
++ (id) pwFort;
++ (id) pwShield;
++ (id) renew;
++ (id) resurrection;
++ (id) smite;
++ (id) swPain;
+
 
 @end

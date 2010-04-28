@@ -153,6 +153,7 @@
 				currentRank = rank;
 				break;
 			}
+			rank++;
 		}
 	}
 	
@@ -214,6 +215,40 @@
 	
 	MPSpell *newSpell = [[MPSpell alloc] init];
 	return [newSpell autorelease];
+}
+
+
+
+
+
+////
+//// Physical
+////
+
++ (id) shootWeapon {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Shoot Weapon"];
+	[newSpell addID:  3018];  
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+	
+}
+
+
+
++ (id) shootWand {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Shoot Wand"];
+	[newSpell addID:  5019];  
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+	
 }
 
 
@@ -361,6 +396,215 @@
 	
 	return newSpell;
 }
+
+
+
+
+////
+//// Priest Spells
+////
+
+
++ (id) fade {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Fade"];
+	[newSpell addID: 586];  // (only 1 rank)
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) flashHeal {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Flash Heal"];
+	[newSpell addID:   2061];  // Rank 1
+	[newSpell addID:   9472];  // Rank 2
+	[newSpell addID:   9473];  // Rank 3
+	[newSpell addID:   9474];  // Rank 4
+	[newSpell addID:  10915];  // Rank 5
+	[newSpell addID:  10916];  // Rank 6
+	[newSpell addID:  10917];  // Rank 7
+	[newSpell addID:  25233];  // Rank 8
+	[newSpell addID:  25235];  // Rank 9
+	[newSpell addID:  48070];  // Rank 10
+	[newSpell addID:  48071];  // Rank 11
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) heal {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Heal"];
+	[newSpell addID:  2050];  // Lesser Heal (Rank 1)
+	[newSpell addID:  2052];  // Lesser Heal (Rank 2)
+	[newSpell addID:  2053];  // Lesser Heal (Rank 3)
+	[newSpell addID:  2054];  // Heal (Rank 1)
+	[newSpell addID:  2055];  // Heal (Rank 2)
+	[newSpell addID:  6063];  // Heal (Rank 3)
+	[newSpell addID:  6064];  // Heal (Rank 4)
+	[newSpell addID:  2060];  // Greater Heal (Rank 1)
+	[newSpell addID: 10963];  // Greater Heal (Rank 2)
+	[newSpell addID: 10964];  // Greater Heal (Rank 3)
+	[newSpell addID: 10965];  // Greater Heal (Rank 4)
+	[newSpell addID: 25314];  // Greater Heal (Rank 5)
+	[newSpell addID: 25210];  // Greater Heal (Rank 6)
+	[newSpell addID: 25213];  // Greater Heal (Rank 7)
+	[newSpell addID: 48062];  // Greater Heal (Rank 8)
+	[newSpell addID: 48063];  // Greater Heal (Rank 9)
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) pwFort {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Power Word: Fortitude"];
+	[newSpell addID:  1243];  // Rank 1
+	[newSpell addID:  1244];  // Rank 2
+	[newSpell addID:  1245];  // Rank 3
+	[newSpell addID:  2791];  // Rank 4
+	[newSpell addID: 10937];  // Rank 5
+	[newSpell addID: 10938];  // Rank 6
+	[newSpell addID: 25389];  // Rank 7
+	[newSpell addID: 48161];  // Rank 8
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) pwShield {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Power Word: Shield"];
+	[newSpell addID:    17];  // Rank 1
+	[newSpell addID:   592];  // Rank 2
+	[newSpell addID:   600];  // Rank 3
+	[newSpell addID:  3747];  // Rank 4
+	[newSpell addID:  6065];  // Rank 5
+	[newSpell addID:  6066];  // Rank 6
+	[newSpell addID: 10898];  // Rank 7
+	[newSpell addID: 10899];  // Rank 8
+	[newSpell addID: 10900];  // Rank 9
+	[newSpell addID: 10901];  // Rank 10
+	[newSpell addID: 25217];  // Rank 11
+	[newSpell addID: 25218];  // Rank 12
+	[newSpell addID: 48065];  // Rank 13
+	[newSpell addID: 48066];  // Rank 14
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) renew {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Renew"];
+	[newSpell addID:   139];  // Rank 1
+	[newSpell addID:  6074];  // Rank 2
+	[newSpell addID:  6075];  // Rank 3
+	[newSpell addID:  6076];  // Rank 4
+	[newSpell addID:  6077];  // Rank 5
+	[newSpell addID:  6078];  // Rank 6
+	[newSpell addID: 10927];  // Rank 7
+	[newSpell addID: 10928];  // Rank 8
+	[newSpell addID: 10929];  // Rank 9
+	[newSpell addID: 25315];  // Rank 10
+	[newSpell addID: 25221];  // Rank 11
+	[newSpell addID: 25222];  // Rank 12
+	[newSpell addID: 48067];  // Rank 13
+	[newSpell addID: 48068];  // Rank 14
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) resurrection {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Resurrection"];
+	[newSpell addID:  2006];  // Rank 1
+	[newSpell addID:  2010];  // Rank 2
+	[newSpell addID: 10880];  // Rank 3
+	[newSpell addID: 10881];  // Rank 4
+	[newSpell addID: 20770];  // Rank 5
+	[newSpell addID: 25435];  // Rank 6
+	[newSpell addID: 48171];  // Rank 7
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) smite {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Smite"];
+	[newSpell addID:   585];  // Rank 1
+	[newSpell addID:   591];  // Rank 2
+	[newSpell addID:   598];  // Rank 3
+	[newSpell addID:   984];  // Rank 4
+	[newSpell addID:  1004];  // Rank 5
+	[newSpell addID:  6060];  // Rank 6
+	[newSpell addID: 10933];  // Rank 7
+	[newSpell addID: 10934];  // Rank 8
+	[newSpell addID: 25363];  // Rank 9
+	[newSpell addID: 25364];  // Rank 10
+	[newSpell addID: 48122];  // Rank 11
+	[newSpell addID: 48123];  // Rank 12
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) swPain {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Shadow Word: Pain"];
+	[newSpell addID:   589];  // Rank 1
+	[newSpell addID:   594];  // Rank 2
+	[newSpell addID:   970];  // Rank 3
+	[newSpell addID:   992];  // Rank 4
+	[newSpell addID:  2767];  // Rank 5
+	[newSpell addID: 10892];  // Rank 6
+	[newSpell addID: 10893];  // Rank 7
+	[newSpell addID: 10894];  // Rank 8
+	[newSpell addID: 25367];  // Rank 9
+	[newSpell addID: 25368];  // Rank 10
+	[newSpell addID: 48124];  // Rank 11
+	[newSpell addID: 48125];  // Rank 12
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
 
 
 @end

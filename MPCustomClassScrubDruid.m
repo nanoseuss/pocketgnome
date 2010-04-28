@@ -381,13 +381,13 @@
 		// if health < healthTrigger  || mana < manaTrigger
 		if ( ([player percentHealth] <= 99 ) || ([player percentMana] <= 99) ) {
 			
-			PGLog(@"Should do something during Rest Phase");
-
+/*
 			PGLog(@"Aura List:");
 			NSArray *listAuras = [[AuraController sharedController] aurasForUnit:[player player] idsOnly:NO];
 			for( Aura *aura in listAuras){
 				PGLog(@"    - entryID[%d]", [aura entryID]);
 			}
+*/
 			if ([drink canUse]){
 				PGLog(@"   Drink: Can Use");
 				if (![drink unitHasBuff:[player player]]) {
@@ -645,7 +645,8 @@ PGLog(@" unit[%@] already has Rejuv buff.",[unit name]);
 	PlayerDataController *me = [PlayerDataController sharedController];
 	if ([me targetID] != [unit GUID]) {
 		PGLog(@"     --> Changing Target : myTarget[0x%X] -> mob[0x%X]",[me targetID], [unit lowGUID]);
-		[me setPrimaryTarget:unit];
+		[me targetGuid:[unit GUID]];
+//		[me setPrimaryTarget:unit];
 	}
 
 }

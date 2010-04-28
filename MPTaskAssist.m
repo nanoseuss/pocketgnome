@@ -180,7 +180,14 @@ PGLog(@"description...");
 		}
 	
 	} else { 
-		PGLog( @"No Assist Names Given!  Don't know who to assist!");
+		
+		NSArray *listParty = [[PlayerDataController sharedController] partyMembers];
+		if ([listParty count] > 0) {
+			PGLog(@"No Assist Names Give.  But I'm in a party.  I'll just help them all out.");
+		} else {
+		
+			PGLog( @"No Assist Names Given!  Don't know who to assist!");
+		}
 	} 
 }
 
@@ -203,7 +210,7 @@ PGLog(@"description...");
 					
 					// if guy in combat
 					if ([guy isInCombat]) {
-						
+//PGLog(@" Assist: mobToPull: assistUnit[%@] is in combat", [guy name]);
 						// if guy has a target
 						targetID = [guy targetID];
 						if (targetID != 0) {

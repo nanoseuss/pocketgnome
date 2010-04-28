@@ -13,14 +13,17 @@
 #import "Mob.h"
 #import "BlacklistController.h"
 #import "MPSpell.h"
+#import "MPItem.h"
 #import "MPMover.h"
 #import "Player.h"
 #import "Unit.h"
 #import "MPTimer.h"
 #import "Errors.h"
+#import "SpellController.h"
 
 @implementation MPCustomClassScrubPriest
 @synthesize fade, heal, pwFort, pwShield, renew, resurrection, smite, swPain;
+@synthesize drink;
 
 
 - (id) initWithController:(PatherController*)controller {
@@ -35,6 +38,7 @@
 		self.smite = nil;
 		self.swPain = nil;
 
+		self.drink = nil;
 
 	}
 	return self;
@@ -50,6 +54,8 @@
 	[resurrection release];
 	[smite release];
 	[swPain release];
+	
+	[drink release];
 	
     [super dealloc];
 }
@@ -69,7 +75,9 @@
 	// preCombatWithMob:atDistance:  is called numerous times for 
 	// your CC to determine what to do on approaching your target (at various distances)
 	
-
+	if (distanceToMob <= 35) {
+		[self castHOT:pwShield on:(Unit *)[[PlayerDataController sharedController] player]];
+	}
 	
 	state = CCCombatPreCombat;
 }
@@ -78,15 +86,144 @@
 
 - (void) openingMoveWith: (Mob *)mob {
 
-	// this should be used by subclasses to implement an
-	// opening move
+	// open with Holy Fire
+	
+	
+	// or with Smite 
+	if ([self cast:smite on:mob]){
+		return;
+	}
 }
 
 
-- (void) combatActionsWith: (Mob *) mob {
+- (MPCombatState) combatActionsWith: (Mob *) mob {
 
-	// this should be used by subclasses to implement 
-	// their combat actions
+	PlayerDataController *me = [PlayerDataController sharedController];
+	
+	// face target
+	PGLog(@"     --> Facing Target");
+	MPMover *mover = [MPMover sharedMPMover];
+	MPLocation *targetLocation = (MPLocation *)[mob position];
+	[mover moveTowards:targetLocation within:33.0f facing:targetLocation];
+	
+	
+	
+	
+	if (! [[SpellController sharedSpells] isGCDActive] ){
+//	if ([timerGCD ready]) {
+		PGLog( @"   timerGGD ready");
+		
+		if( ![me isCasting] ) {
+			PGLog( @"   me !casting");
+			
+			
+			//// do my healing checks here:
+			
+			////
+			//// Renew Checks
+			////
+			
+			// Renew myself if health < 80%
+			if ([me percentHealth] < 80) {
+				if ([self castHOT:renew on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
+			}
+			
+			
+			
+			// Renew Party Members if health < 80%
+			for( Player *player in listParty) {
+				if ([player percentHealth] < 80) {
+					if ([self castHOT:renew on:player]) {
+						return CombatStateInCombat;
+					}
+				}
+			}
+			
+			
+			////
+			//// Heal Checks
+			////
+			
+			// heal myself if health < 65%
+			if ([me percentHealth] < 65) {
+				if ([self cast:heal on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
+			}
+			
+			// Heal Party Members if health < 65%
+			for( Player *player in listParty) {
+				if ([player percentHealth] < 65) {
+					if ([self cast:heal on:player]) {
+						return CombatStateInCombat;
+					}
+				}
+			}
+			
+			
+			
+			
+			
+			////
+			//// Shield Checks
+			////
+			
+			// shield myself if health < 65%
+			if ([me percentHealth] < 65) {
+				if ([self castHOT:pwShield on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
+			}
+			
+			// Heal Party Members if health < 65%
+			for( Player *player in listParty) {
+				if ([player percentHealth] < 65) {
+					// treat as a HOT so we don't try to cast if buff is on
+					if ([self castHOT:pwShield on:player]) {
+						return CombatStateInCombat;
+					}
+				}
+			}
+			
+			
+			
+			
+			
+			////
+			////  Attacks here
+			////
+			
+			// Shadow Word: Pain DOT
+			// if mobhealth >= 50% && myMana > 35%
+			if (([mob percentHealth] >= 50) && ([me percentMana] > 35)){
+				if ([self castDOT:swPain on:mob]) {
+					return CombatStateInCombat;
+				} 
+			}
+			
+			
+			
+			// Holy Fire
+			
+			
+			// Devouring Plague
+			
+			
+			// Spam Smite
+			// check to see if we should be adding DMG (setting) if so:
+			if ([self cast:smite on:mob]){
+				return CombatStateInCombat;
+			}
+			
+			
+			
+		}
+		
+	}
+	
+	return CombatStateInCombat;
 }
 
 
@@ -104,7 +241,12 @@
 		// if health < healthTrigger  || mana < manaTrigger
 		if ( ([player percentHealth] <= 99 ) || ([player percentMana] <= 99) ) {
 			
-			PGLog(@"Should do something during Rest Phase");
+			if ([drink canUse]){
+				if (![drink unitHasBuff:[player player]]) {
+					PGLog(@"   Drinking ...");
+					[drink use];
+				}
+			}
 			
 			return NO; // must not be done yet ... 
 			
@@ -148,6 +290,7 @@
 	self.listBuffs = [buffSpells copy];
 	
 
+	self.drink = [MPItem drink];
 }
 
 
@@ -156,24 +299,24 @@
 #pragma mark Cast Helpers
 
 /*
-- (BOOL) dotMF:(Unit *)mob {
+- (BOOL) dotPain:(Unit *)mob {
 
 	int error = ErrNone;
 	
 	[self targetUnit:mob];
 	
-	if ([mf canCast]) {
+	if ([swPain canCast]) {
 							
-		if (![mf unitHasDebuff:mob]) {
+		if (![swPain unitHasMyDebuff:mob]) {
 			
-			error = [mf cast];
+			error = [swPain cast];
 			if (!error) {
 				[timerGCD start];
 				return YES;
 			} else {
 //				[self markError: error];
 				if (error == ErrTargetNotInLOS) {
-					PGLog(@" Moonfire error: Line Of Sight.  ");
+					PGLog(@" %@ error: Line Of Sight.  ", [swPain name]);
 					errorLOS = YES;
 				}
 			}
@@ -185,64 +328,38 @@
 
 
 
-- (BOOL) hotRejuv:(Unit *)unit {
+- (BOOL) hotRenew:(Unit *)unit {
 
 	int error = ErrNone;
 	
 	[self targetUnit:unit];
 	
-	if ([rejuv canCast]) {
-PGLog(@" rejuv can cast");
+	if ([renew canCast]) {
 							
-		if (![rejuv unitHasBuff:unit]) {
+		if (![renew unitHasMyBuff:unit]) {
 			
-			error = [rejuv cast];
+			error = [renew cast];
 			if (!error) {
 				[timerGCD start];
 				return YES;
 			} else {
 //				[self markError:error];
 				if (error == ErrTargetNotInLOS) {
-					PGLog(@" Rejuvination error: Line Of Sight.  ");
+					PGLog(@" %@ error: Line Of Sight.  ", [renew name]);
 					errorLOS = YES;
 				}
 			}
-			
-} else {
-PGLog(@" unit[%@] already has Rejuv buff.",[unit name]);
 		}
 	} 
 	return NO;
 }
 
 
-
-- (BOOL) castHeal:(Unit *)unit {
-
-	int error = ErrNone;
-	
-	[self targetUnit:unit];
-	
-	if ([healingTouch canCast]) {
-							
-		error = [healingTouch cast];
-		if (!error) {
-			[timerGCD start];
-			return YES;
-		} else {
-//			[self markError:error];
-			if (error == ErrTargetNotInLOS) {
-				PGLog(@" Healing Touch error: Line Of Sight.  ");
-				errorLOS = YES;
-			}
-		}
-
-	} 
-	return NO;
-}
+*/
 
 
 
+/*
 - (BOOL) castWrath:(Unit *)mob {
 
 	int error = ErrNone;

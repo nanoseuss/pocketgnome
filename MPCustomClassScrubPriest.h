@@ -10,15 +10,19 @@
 #import "MPCustomClassScrub.h"
 
 @class MPSpell;
+@class MPItem;
 
 
 @interface MPCustomClassScrubPriest : MPCustomClassScrub {
 
 	MPSpell *fade, *heal, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
+	MPItem *drink;
+	
 }
 @property (retain) MPSpell *fade, *heal, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
+@property (retain) MPItem *drink;
 
 - (void) openingMoveWith: (Mob *)mob;
-- (void) combatActionsWith: (Mob *) mob;
+- (MPCombatState) combatActionsWith: (Mob *) mob;
 
 @end

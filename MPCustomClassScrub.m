@@ -177,10 +177,10 @@
 			////
 			
 			
-			[self combatActionsWith:mob];
+			return [self combatActionsWith:mob];
 
 
-			return CombatStateInCombat;
+			
 			break;
 		default:
 			break;
@@ -275,10 +275,11 @@
 }
 
 
-- (void) combatActionsWith: (Mob *) mob {
+- (MPCombatState) combatActionsWith: (Mob *) mob {
 
 	// this should be used by subclasses to implement 
 	// their combat actions
+	return CombatStateInCombat;
 }
 
 
@@ -290,6 +291,96 @@
 		[me setPrimaryTarget:unit];
 	}
 
+}
+
+
+
+- (BOOL) cast: (MPSpell *) spell on:(Unit *)unit {
+	
+	int error = ErrNone;
+	
+	[self targetUnit:unit];
+	
+	if ([spell canCast]) {
+PGLog(@" spell[%@] can cast", [spell name]);
+		
+		error = [spell cast];
+		if (!error) {
+PGLog(@" spell[%@] : no errors", [spell name]);
+			[timerGCD start];
+			return YES;
+		} else {
+			//			[self markError:error];
+			if (error == ErrTargetNotInLOS) {
+				PGLog(@" %@ error: Line Of Sight.  ", [spell name]);
+				errorLOS = YES;
+			}
+		}
+		
+	} 
+	return NO;
+}
+
+
+
+- (BOOL) castDOT:(MPSpell *)spell on:(Unit *)unit {
+	
+	int error = ErrNone;
+	
+	[self targetUnit:unit];
+	
+	if ([spell canCast]) {
+PGLog(@" spell[%@] can cast", [spell name]);
+		
+		if (![spell unitHasMyDebuff:unit]) {
+PGLog(@" spell[%@] : unit doesn't have my buff", [spell name]);
+			
+			error = [spell cast];
+			if (!error) {
+PGLog(@" spell[%@] no errors", [spell name]);
+				[timerGCD start];
+				return YES;
+			} else {
+				//				[self markError:error];
+				if (error == ErrTargetNotInLOS) {
+					PGLog(@" %@ error: Line Of Sight.  ", [spell name]);
+					errorLOS = YES;
+				}
+			}
+		}
+	} 
+	return NO;
+}
+
+
+
+- (BOOL) castHOT:(MPSpell *)spell on:(Unit *)unit {
+	
+	int error = ErrNone;
+	
+	[self targetUnit:unit];
+	
+	if ([spell canCast]) {
+		PGLog(@" spell[%@] can cast", [spell name]);
+		
+		if (![spell unitHasMyBuff:unit]) {
+			PGLog(@" spell[%@] : unit doesn't have my buff", [spell name]);
+			
+			error = [spell cast];
+			if (!error) {
+				PGLog(@" spell[%@] no errors", [spell name]);
+				[timerGCD start];
+				return YES;
+			} else {
+				//				[self markError:error];
+				if (error == ErrTargetNotInLOS) {
+					PGLog(@" %@ error: Line Of Sight.  ", [spell name]);
+					errorLOS = YES;
+				}
+			}
+		}
+	} 
+	return NO;
 }
 
 
