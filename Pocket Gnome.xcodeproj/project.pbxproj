@@ -124,6 +124,7 @@
 		34324BC21182B50B00368879 /* MPItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 34324BC11182B50B00368879 /* MPItem.m */; };
 		3432DA3510BBD5A400C55BEF /* MPTaskWait.m in Sources */ = {isa = PBXBuildFile; fileRef = 3432DA3410BBD5A400C55BEF /* MPTaskWait.m */; };
 		344CDBED10933852009FEEDD /* MPTreeNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 344CDBEC10933852009FEEDD /* MPTreeNode.m */; };
+		3451D3091187BBC1007C7134 /* MPTaskPartyWait.m in Sources */ = {isa = PBXBuildFile; fileRef = 3451D3081187BBC1007C7134 /* MPTaskPartyWait.m */; };
 		3459593810B4A7CD0099A1AF /* MPPathNode.m in Sources */ = {isa = PBXBuildFile; fileRef = 3459593710B4A7CD0099A1AF /* MPPathNode.m */; };
 		34595AF210B921710099A1AF /* MPLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 34595AF110B921710099A1AF /* MPLine.m */; };
 		345C41D4107EDE87008F9400 /* ParseKit.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8487443D106BC6FB00BF46A1 /* ParseKit.framework */; };
@@ -668,6 +669,8 @@
 		3432DA3410BBD5A400C55BEF /* MPTaskWait.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskWait.m; sourceTree = "<group>"; };
 		344CDBEB10933852009FEEDD /* MPTreeNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTreeNode.h; sourceTree = "<group>"; };
 		344CDBEC10933852009FEEDD /* MPTreeNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTreeNode.m; sourceTree = "<group>"; };
+		3451D3071187BBC1007C7134 /* MPTaskPartyWait.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTaskPartyWait.h; sourceTree = "<group>"; };
+		3451D3081187BBC1007C7134 /* MPTaskPartyWait.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTaskPartyWait.m; sourceTree = "<group>"; };
 		3459593610B4A7CD0099A1AF /* MPPathNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPathNode.h; sourceTree = "<group>"; };
 		3459593710B4A7CD0099A1AF /* MPPathNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPathNode.m; sourceTree = "<group>"; };
 		34595AF010B921710099A1AF /* MPLine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLine.h; sourceTree = "<group>"; };
@@ -1683,6 +1686,8 @@
 				34A3A055107239A600BC8A42 /* MPTaskLoot.m */,
 				34B094A510670BC100EC8D5A /* MPTaskPar.h */,
 				34B094A610670BC100EC8D5A /* MPTaskPar.m */,
+				3451D3071187BBC1007C7134 /* MPTaskPartyWait.h */,
+				3451D3081187BBC1007C7134 /* MPTaskPartyWait.m */,
 				34AE0B281068F6D2005F7C01 /* MPTaskPull.h */,
 				34AE0B291068F6D2005F7C01 /* MPTaskPull.m */,
 				8462E42F10798ECC00A5D217 /* MPTaskRest.h */,
@@ -2729,6 +2734,7 @@
 				340B7D231182D6EF00C3EFF4 /* MPAction.m in Sources */,
 				34F71FD511852634009F75C9 /* MPCustomClassScrubPriest.m in Sources */,
 				34F71FD811852913009F75C9 /* MPCustomClassScrub.m in Sources */,
+				3451D3091187BBC1007C7134 /* MPTaskPartyWait.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

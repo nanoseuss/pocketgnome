@@ -15,6 +15,8 @@
 #import "MPCustomClass.h"
 #import "MPMover.h"
 #import "MPNavigationController.h"
+#import "PlayerDataController.h"
+#import "Position.h"
 #import "Route.h"
 #import "Waypoint.h"
 
@@ -90,8 +92,62 @@
 	[movementController resetMovementState]; 
 
 	
-	// Do we scan the given listLocations to find the closest location?
-	// or just keep the current index?
+	///
+	/// OK, let's try to find the closest point in our list of locations
+	///
+	Position *myPosition = [[PlayerDataController sharedController] position];
+	
+	float currentDistance, minDistance;
+	int index, minIndex = 0;
+	
+	minDistance = INFINITY;
+	
+	for( Position *pos in listLocations) {
+		currentDistance = [myPosition distanceToPosition:pos];
+		if (currentDistance <= minDistance) {
+			minIndex = index;
+			minDistance = currentDistance;
+		}
+		index ++;
+	}
+	
+	currentIndex = minIndex;
+	
+	///
+	/// Now attempt to see if we are approaching currentIndex or have just
+	/// passed it:
+	///
+	
+	// find the previous location (index)
+	int prevIndx = currentIndex;
+	if (prevIndx == 0) {
+		prevIndx = [listLocations count] -1;
+	}
+	
+	float distToCurrent = INFINITY;
+	float distToMe = INFINITY;
+	
+	// get the previous and current Positions
+	Position *prevPosition = [listLocations objectAtIndex:prevIndx];
+	Position *currPosition = [listLocations objectAtIndex:currentIndex];
+	
+	// figure the distance from Previous -> Current  && Previous -> Me
+	distToCurrent = [prevPosition distanceToPosition:currPosition];
+	distToMe = [prevPosition distanceToPosition:myPosition];
+	
+	// if distance to Current is < distance to Me : then we have already run past the current pos.
+	// (or so I'm assuming ...)
+	if (distToCurrent < distToMe) {
+		
+		// so let's assume the next position is the one we should be running to.
+		currentIndex ++;
+		
+		// adjust for end of list
+		if (currentIndex >= [listLocations count]) {
+			currentIndex = 0;
+		}
+	}
+	
 	
 }
 

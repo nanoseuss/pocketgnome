@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "MPActivity.h"
 
+@class MPCustomClass;
 @class MPMover;
 @class Position;
 @class Unit;
@@ -38,10 +39,12 @@ typedef enum FollowState {
 	Position *lastPosition;
 	NSMutableArray *targetRoute;
 	
+	MPCustomClass *customClass;
 	MPMover *mover;
 	MPFollowState state;
 }
 @property (retain) Unit *followUnit;
+@property (retain) MPCustomClass *customClass;
 @property (retain) MPMover *mover;
 @property (retain) NSMutableArray *targetRoute;
 @property (retain) Position *lastPosition;
