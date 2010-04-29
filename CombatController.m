@@ -925,8 +925,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // find all units we are in combat with
 - (void)doCombatSearch{
 	
-	if (patherCCEnabled) return;  // Let Pather Handle this if not using PG custom class
-	PGLog( @"... patherCCEnabled[%d]", patherCCEnabled);
+//	if (patherCCEnabled) return;  // Let Pather Handle this if not using PG custom class
+//	PGLog( @"... patherCCEnabled[%d]", patherCCEnabled);
 	
 	if ( [[playerData player] isDead] ){
 		
@@ -966,7 +966,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ){
 				PGLog(@"[Combat] Adding mob %@", mob);
 				[_unitsAttackingMe addObject:(Unit*)mob];
-				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[mob retain] autorelease]];
+				if (!patherCCEnabled) 
+					[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[mob retain] autorelease]];
 			}
 		}
 		// remove unit
@@ -994,7 +995,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( ![_unitsAttackingMe containsObject:(Unit*)player] ){
 				PGLog(@"[Combat] Adding player %@", player);
 				[_unitsAttackingMe addObject:(Unit*)player];
-				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[player retain] autorelease]];
+				if (!patherCCEnabled)
+					[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[player retain] autorelease]];
 			}
 		}
 		// remove unit

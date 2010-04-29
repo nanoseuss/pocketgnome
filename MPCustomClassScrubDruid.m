@@ -274,10 +274,8 @@
 			
 //			if ( [spellController isGCDActive] ){
 			if ([timerGCD ready]) {
-				PGLog( @"   timerGGD ready");
 			
 				if( ![me isCasting] ) {
-					PGLog( @"   me !casting");
 					
 					
 					

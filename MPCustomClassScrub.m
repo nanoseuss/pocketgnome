@@ -288,7 +288,7 @@
 	PlayerDataController *me = [PlayerDataController sharedController];
 	if ([me targetID] != [unit GUID]) {
 		PGLog(@"     --> Changing Target : myTarget[0x%X] -> mob[0x%X]",[me targetID], [unit lowGUID]);
-		[me setPrimaryTarget:unit];
+		[me targetGuid:[unit GUID]];
 	}
 
 }
