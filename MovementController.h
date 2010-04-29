@@ -105,6 +105,7 @@ typedef enum MovementType {
 	BOOL _afkPressForward;
 	BOOL _lastCorrectionForward;
 	BOOL _lastCorrectionLeft;
+	BOOL _performingActions;
 	BOOL isFollowing;
 
 	Waypoint *_destinationWaypointUI;
@@ -112,6 +113,7 @@ typedef enum MovementType {
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
 @property (readwrite, assign) BOOL isFollowing;
+@property (readonly, assign) BOOL performingActions;
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;

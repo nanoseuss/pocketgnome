@@ -117,7 +117,7 @@
 		if ( _lastBGStatus != -1 ){
 			[[NSNotificationCenter defaultCenter] postNotificationName: EventBattlegroundStatusChange object: [NSNumber numberWithInt:bgStatus]];
 		}
-		log(LOG_GENERAL, @"[Events] BGStatus change from %d to %d", _lastBGStatus, bgStatus);
+		log(LOG_DEV, @"[Events] BGStatus change from %d to %d", _lastBGStatus, bgStatus);
 	}
 	
 	_lastBGStatus = bgStatus;

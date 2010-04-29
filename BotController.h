@@ -80,6 +80,7 @@
 #define ErrorInvalidTarget				@"ErrorInvalidTarget"
 #define ErrorTargetOutOfRange			@"ErrorTargetOutOfRange"
 #define ErrorTargetNotInFront			@"ErrorTargetNotInFront"
+#define ErrorHaveNoTarget				@"ErrorHaveNoTarget"
 #define ErrorMorePowerfullSpellActive	@"ErrorMorePowerfullSpellActive"
 
 #define BotStarted						@"BotStarted"
@@ -133,6 +134,7 @@
     //BOOL attackPlayers, attackNeutralNPCs, attackHostileNPCs, _ignoreElite;
     //int _currentAttackDistance, _minLevel, _maxLevel, _attackAnyLevel;
     
+	int _sleepTimer;
 	UInt32 _lastSpellCastGameTime;
 	UInt32 _lastSpellCast;
     BOOL _doMining, _doHerbalism, _doSkinning, _doNinjaSkin, _doLooting, _doNetherwingEgg, _doFishing;
@@ -163,6 +165,7 @@
 	Unit *_lastUnitAttemptedToHealed;
 	BOOL _includeFriendly;
 	BOOL _includeFriendlyPatrol;
+	BOOL _includeCorpsesPatrol;
 	
 	// improved loot shit
 	WoWObject *_lastAttemptedUnitToLoot;
@@ -204,13 +207,14 @@
     // pvp shit
     BOOL _isPvPing;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
-    int _pvpAntiAFKCounter;
-//    IBOutlet NSButton *pvpPlayWarningCheckbox, *pvpLeaveInactiveCheckbox;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
 	BOOL _attackingInStrand;
 	BOOL _strandDelay;
+	int _strandDelayTimer;
 	BOOL _waitingToLeaveBattleground;
+	BOOL _waitForPvP;
+
 	
 	// auto join WG options
 	NSTimer *_wgTimer;
@@ -339,23 +343,19 @@
 @property (readonly, retain) Unit *tankUnit;
 @property (readwrite, assign) BOOL followSuspended;
 @property (readonly, retain) Route *followRoute;
-
 @property (readwrite, assign) BOOL wasLootWindowOpen;
+@property (readonly, assign) BOOL includeCorpsesPatrol;
 
 - (void)testRule: (Rule*)rule;
 
-- (BOOL)performProcedureMobCheck: (Unit*)target;
+- (BOOL)performProcedureUnitCheck: (Unit*)target;
 - (BOOL)lootScan;
 - (void)resetLootScanIdleTimer;
-
-// Input from CombatController
-//- (void)addingUnit: (Unit*)unit;
 
 // Input from CombatController
 - (void)actOnUnit: (Unit*)unit;
 
 // Input from MovementController;
-//- (void)reachedUnit: (WoWObject*)unit;
 - (void)cancelCurrentEvaluation;
 - (void)cancelCurrentProcedure;
 - (BOOL)combatProcedureValidForUnit: (Unit*)unit;
@@ -397,7 +397,6 @@
 - (IBAction)stopBot: (id)sender;
 - (IBAction)startStopBot: (id)sender;
 - (IBAction)testHotkey: (id)sender;
-
 - (void)updateRunningTimer;
 
 - (IBAction)editCombatProfiles: (id)sender;
@@ -408,6 +407,10 @@
 - (IBAction)closeLootHotkeyHelp: (id)sender;
 - (IBAction)gatheringLootingOptions: (id)sender;
 - (IBAction)gatheringLootingSelectAction: (id)sender;
+
+// PVP
+- (BOOL)pvpIsBattlegroundEnding;
+- (void)stopBotActions;
 
 // test stuff
 - (IBAction)test: (id)sender;

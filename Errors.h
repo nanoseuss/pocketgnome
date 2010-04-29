@@ -48,6 +48,7 @@ typedef enum CastError {
 #define CANT_ATTACK_MOUNTED	@"Can't attack while mounted."
 #define YOU_ARE_MOUNTED		@"You are mounted."
 #define CANT_ATTACK_TARGET	@"You cannot attack that target."
+#define HAVE_NO_TARGET		@"You have no target."
 #define MORE_POWERFUL_SPELL_ACTIVE	@"A more powerful spell is already active"
 
 
