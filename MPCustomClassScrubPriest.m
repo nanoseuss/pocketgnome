@@ -23,6 +23,7 @@
 
 @implementation MPCustomClassScrubPriest
 @synthesize fade, heal, pwFort, pwShield, renew, resurrection, smite, swPain;
+@synthesize shootWand;
 @synthesize drink;
 
 
@@ -37,7 +38,10 @@
 		self.resurrection = nil;
 		self.smite = nil;
 		self.swPain = nil;
-
+		
+		self.shootWand = nil;
+		wandShooting = NO;
+		
 		self.drink = nil;
 
 	}
@@ -54,6 +58,8 @@
 	[resurrection release];
 	[smite release];
 	[swPain release];
+	
+	[shootWand release];
 	
 	[drink release];
 	
@@ -76,7 +82,9 @@
 	// your CC to determine what to do on approaching your target (at various distances)
 	
 	if (distanceToMob <= 35) {
-		[self castHOT:pwShield on:(Unit *)[[PlayerDataController sharedController] player]];
+		if ([listParty count] <1) {
+			[self castHOT:pwShield on:(Unit *)[[PlayerDataController sharedController] player]];
+		}
 	}
 	
 	state = CCCombatPreCombat;
@@ -87,11 +95,13 @@
 - (void) openingMoveWith: (Mob *)mob {
 
 	// open with Holy Fire
-	
+	wandShooting = NO;
 	
 	// or with Smite 
-	if ([self cast:smite on:mob]){
-		return;
+	if ([mob percentHealth] > 90) {
+		if ([self cast:smite on:mob]){
+			return;
+		}
 	}
 }
 
@@ -126,6 +136,7 @@
 			// Renew myself if health < 80%
 			if ([me percentHealth] < 80) {
 				if ([self castHOT:renew on:(Unit *)[me player]]) {
+					wandShooting = NO;
 					return CombatStateInCombat;
 				}
 			}
@@ -136,6 +147,7 @@
 			for( Player *player in listParty) {
 				if ([player percentHealth] < 80) {
 					if ([self castHOT:renew on:player]) {
+						wandShooting = NO;
 						return CombatStateInCombat;
 					}
 				}
@@ -149,6 +161,7 @@
 			// heal myself if health < 65%
 			if ([me percentHealth] < 65) {
 				if ([self cast:heal on:(Unit *)[me player]]) {
+					wandShooting = NO;
 					return CombatStateInCombat;
 				}
 			}
@@ -157,6 +170,7 @@
 			for( Player *player in listParty) {
 				if ([player percentHealth] < 65) {
 					if ([self cast:heal on:player]) {
+						wandShooting = NO;
 						return CombatStateInCombat;
 					}
 				}
@@ -173,6 +187,7 @@
 			// shield myself if health < 65%
 			if ([me percentHealth] < 65) {
 				if ([self castHOT:pwShield on:(Unit *)[me player]]) {
+					wandShooting = NO;
 					return CombatStateInCombat;
 				}
 			}
@@ -182,6 +197,7 @@
 				if ([player percentHealth] < 65) {
 					// treat as a HOT so we don't try to cast if buff is on
 					if ([self castHOT:pwShield on:player]) {
+						wandShooting = NO;
 						return CombatStateInCombat;
 					}
 				}
@@ -199,6 +215,7 @@
 			// if mobhealth >= 50% && myMana > 35%
 			if (([mob percentHealth] >= 50) && ([me percentMana] > 35)){
 				if ([self castDOT:swPain on:mob]) {
+					wandShooting = NO;
 					return CombatStateInCombat;
 				} 
 			}
@@ -213,10 +230,24 @@
 			
 			// Spam Smite
 			// check to see if we should be adding DMG (setting) if so:
+			if ([listParty count] == 0) {
 			if ([self cast:smite on:mob]){
+				wandShooting = NO;
 				return CombatStateInCombat;
 			}
+			} else {
+				if (!wandShooting) {
+					[self cast:shootWand on:mob];
+					wandShooting = YES;
+				}
+			}
+
 			
+			
+			if (errorLOS) {
+				errorLOS = NO;
+				return CombatStateBugged;
+			}
 			
 			
 		}
@@ -271,6 +302,7 @@
 	self.resurrection = [MPSpell resurrection];
 	self.smite     = [MPSpell smite];
 	self.swPain    = [MPSpell swPain];
+
 	
 	
 	NSMutableArray *spells = [NSMutableArray array];
@@ -290,6 +322,8 @@
 	self.listBuffs = [buffSpells copy];
 	
 
+	self.shootWand = [MPSpell shootWand];
+	
 	self.drink = [MPItem drink];
 }
 

@@ -351,6 +351,10 @@
 					}
 					
 				
+					if (errorLOS) {
+						errorLOS = NO;
+						return CombatStateBugged;
+					}
 				}
 				
 				

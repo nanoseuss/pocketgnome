@@ -49,7 +49,15 @@
 - (BOOL) unitHasMyBuff: (Unit *)unit;
 - (BOOL) unitHasMyDebuff: (Unit *)unit;
 
+
+
 + (id) spell;
+
+
++ (id) shootWand;
+
+
+// Druid
 + (id) healingTouch;
 + (id) moonfire;
 + (id) motw;
