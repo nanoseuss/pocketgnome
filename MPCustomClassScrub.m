@@ -221,31 +221,39 @@
 	PlayerDataController *me = [PlayerDataController sharedController];
 	if ([timerBuffCheck ready]) {
 		
-		//// Check if party members have buffs
-		for( Player* player in listParty) {
-
-			for (MPSpell *buff in listBuffs) {
+		Unit *myCharacter = [[PlayerDataController sharedController] player];
+		if( ![myCharacter isDead]) {
 			
-				PGLog(@"checking party member buffs [%@]", [player name]);
-				if( ![buff unitHasBuff:(Unit*)player]) {
-					[me setPrimaryTarget:player];
+			//// Check if party members have buffs
+			for( Player* player in listParty) {
+
+				if (![player isDead]) {
+					for (MPSpell *buff in listBuffs) {
+					
+						PGLog(@"checking party member buffs [%@]", [player name]);
+						if( ![buff unitHasBuff:(Unit*)player]) {
+							[me targetGuid:[player GUID]];
+							//[me setPrimaryTarget:player];
+							[buff cast];
+							[timerBuffCheck reset];
+							return;
+						}
+					}
+				}
+			}
+			
+			//// personal buffs
+		
+			for (MPSpell *buff in listBuffs) {
+				
+				PGLog(@"checking my own buffs [%@]", [myCharacter name]);
+				if( ![buff unitHasBuff:myCharacter]) {
+					//[me setPrimaryTarget:myCharacter];
+					[me targetGuid:[myCharacter GUID]];
 					[buff cast];
 					[timerBuffCheck reset];
 					return;
 				}
-			}
-		}
-		
-		//// personal buffs
-		Unit *myCharacter = [[PlayerDataController sharedController] player];
-		for (MPSpell *buff in listBuffs) {
-			
-			PGLog(@"checking my own buffs [%@]", [myCharacter name]);
-			if( ![buff unitHasBuff:myCharacter]) {
-				[me setPrimaryTarget:myCharacter];
-				[buff cast];
-				[timerBuffCheck reset];
-				return;
 			}
 		}
 	

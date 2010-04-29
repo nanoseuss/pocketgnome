@@ -19,14 +19,14 @@
 
 @interface MPCustomClassScrubDruid : MPCustomClass {
 
-	MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+	MPSpell *autoAttack, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
 	MPItem *drink;
 	NSArray *listSpells, *listItems, *listParty;
 	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 	BOOL errorLOS;
 	MPCCCombatState state;
 }
-@property (retain) MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+@property (retain) MPSpell *autoAttack, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
 @property (retain) MPItem *drink;
 @property (retain) NSArray *listSpells, *listItems, *listParty;
 @property (retain) MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;

@@ -225,6 +225,20 @@
 //// Physical
 ////
 
++ (id) autoAttack {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Auto Attack"];
+	[newSpell addID:  6603];  
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+	
+}
+
+
+
 + (id) shootWeapon {
 	
 	MPSpell *newSpell = [MPSpell spell];

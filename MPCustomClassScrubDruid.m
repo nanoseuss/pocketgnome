@@ -47,12 +47,13 @@
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize wrath, mf, motw, rejuv, healingTouch, thorns, listSpells, listItems, listParty, timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
+@synthesize autoAttack, wrath, mf, motw, rejuv, healingTouch, thorns, listSpells, listItems, listParty, timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
 @synthesize drink;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
+		self.autoAttack = nil;
 		self.wrath = nil;
 		self.mf    = nil;
 		self.motw  = nil;
@@ -90,6 +91,7 @@
 - (void) dealloc
 {
 	[drink release];
+	[autoAttack release];
 	[wrath release];
 	[mf release];
 	[motw release];
@@ -337,7 +339,6 @@
 					}
 					
 					
-
 					// Insect Swarm
 					
 					
@@ -345,10 +346,16 @@
 					// Starfire
 					
 					
+					// make sure we are swinging our weapon
+//					[autoAttack cast];
+					
+					
 					// Spam Wrath
 					if ([self castWrath:mob]){
 						return CombatStateInCombat;
 					}
+					
+					
 					
 				
 					if (errorLOS) {
@@ -488,6 +495,7 @@ else {
 	////
 	//// Spells
 	////
+	self.autoAttack = [MPSpell autoAttack];
 	self.wrath = [MPSpell wrath];
 	self.mf    = [MPSpell moonfire];
 	self.motw  = [MPSpell motw];

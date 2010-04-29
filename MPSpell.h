@@ -53,7 +53,8 @@
 
 + (id) spell;
 
-
++ (id) autoAttack;
++ (id) shootWeapon;
 + (id) shootWand;
 
 
