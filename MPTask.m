@@ -18,6 +18,7 @@
 #import "MPTaskFollow.h"
 #import "MPTaskRest.h"
 #import "MPTaskRoute.h"
+#import "MPTaskPartyWait.h"
 #import "MPTaskPull.h"
 #import "MPTaskLoot.h"
 #import "MPTaskGhostRoute.h"
@@ -664,6 +665,9 @@
 	}
 	if ([lcTaskName isEqualToString:@"loot"]) {
 		return [MPTaskLoot initWithPather:controller];
+	}
+	if ([lcTaskName isEqualToString:@"partywait"]) {
+		return [MPTaskPartyWait initWithPather:controller];
 	}
 	if ([lcTaskName isEqualToString:@"pull"]) {
 		return [MPTaskPull initWithPather:controller];

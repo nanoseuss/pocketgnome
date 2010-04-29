@@ -98,7 +98,8 @@
 	Position *myPosition = [[PlayerDataController sharedController] position];
 	
 	float currentDistance, minDistance;
-	int index, minIndex = 0;
+	int index = 0;
+	int minIndex = 0;
 	
 	minDistance = INFINITY;
 	
