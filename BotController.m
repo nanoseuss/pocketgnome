@@ -6021,6 +6021,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 * When we start the bot we actually need to set the RouteSet to the nearest route in the collection
 	 * this has yet to be done
 	 */
+	
+	// reset movement state in case we stopped earlier!
+	[self resetMovementState];
 
 	// we have a PvP behavior!
 	if ( usePvPBehavior && self.pvpBehavior ) {
