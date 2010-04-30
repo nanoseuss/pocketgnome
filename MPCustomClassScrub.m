@@ -20,11 +20,16 @@
 #import "Errors.h"
 
 @implementation MPCustomClassScrub
+@synthesize shootWand, meleeAttack;
 @synthesize listBuffs, listSpells, listParty;
 @synthesize timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
+		
+
+		self.meleeAttack = nil;
+		self.shootWand = nil;
 		
 
 		self.listBuffs = nil;
@@ -45,6 +50,8 @@
 		[timerSpellScan forceReady];
 		
 		errorLOS = NO;
+		autoShooting = NO;
+		autoAttacking = NO;
 		
 		state = CCCombatPreCombat;
 	}
@@ -53,6 +60,9 @@
 
 - (void) dealloc
 {
+	[meleeAttack release];
+	[shootWand release];
+		
 	[listBuffs release];
 	[listSpells release];
 	[listParty release];
@@ -197,6 +207,10 @@
 
 - (void) runningAction {
 	
+	// this method is called outside of combat so these should be "NO"
+	autoShooting = NO;
+	autoAttacking = NO;
+	
 	// make sure our spell list is updated
 	if ([timerSpellScan ready] ) {
 		
@@ -266,6 +280,9 @@
 
 - (void) setup {
 	
+	self.meleeAttack = [MPSpell autoAttack];
+	self.shootWand = [MPSpell shootWand];
+	
 	self.listParty = [[PlayerDataController sharedController] partyMembers];
 	
 }
@@ -310,12 +327,11 @@
 	[self targetUnit:unit];
 	
 	if ([spell canCast]) {
-PGLog(@" spell[%@] can cast", [spell name]);
 		
 		error = [spell cast];
 		if (!error) {
-PGLog(@" spell[%@] : no errors", [spell name]);
 			[timerGCD start];
+			autoShooting = NO;  // autoShooting is turned off when a cast is successful 
 			return YES;
 		} else {
 			//			[self markError:error];
@@ -338,15 +354,13 @@ PGLog(@" spell[%@] : no errors", [spell name]);
 	[self targetUnit:unit];
 	
 	if ([spell canCast]) {
-PGLog(@" spell[%@] can cast", [spell name]);
 		
 		if (![spell unitHasMyDebuff:unit]) {
-PGLog(@" spell[%@] : unit doesn't have my buff", [spell name]);
 			
 			error = [spell cast];
 			if (!error) {
-PGLog(@" spell[%@] no errors", [spell name]);
 				[timerGCD start];
+				autoShooting = NO;  // autoShooting is turned off when a cast is successful
 				return YES;
 			} else {
 				//				[self markError:error];
@@ -369,18 +383,16 @@ PGLog(@" spell[%@] no errors", [spell name]);
 	[self targetUnit:unit];
 	
 	if ([spell canCast]) {
-		PGLog(@" spell[%@] can cast", [spell name]);
 		
 		if (![spell unitHasMyBuff:unit]) {
-			PGLog(@" spell[%@] : unit doesn't have my buff", [spell name]);
 			
 			error = [spell cast];
 			if (!error) {
-				PGLog(@" spell[%@] no errors", [spell name]);
 				[timerGCD start];
+				autoShooting = NO;
 				return YES;
 			} else {
-				//				[self markError:error];
+				//	[self markError:error];
 				if (error == ErrTargetNotInLOS) {
 					PGLog(@" %@ error: Line Of Sight.  ", [spell name]);
 					errorLOS = YES;
@@ -389,6 +401,32 @@ PGLog(@" spell[%@] no errors", [spell name]);
 		}
 	} 
 	return NO;
+}
+
+
+
+- (BOOL) meleeUnit:(Unit *)unit {
+	
+	[self targetUnit:unit];
+	
+	if (!autoAttacking) {
+		[self cast:meleeAttack on:unit];
+		autoAttacking = YES;
+	}
+	return autoAttacking;
+}
+
+
+
+- (BOOL) wandUnit:(Unit *)unit {
+	
+	[self targetUnit:unit];
+	
+	if (!autoShooting) {
+		[self cast:shootWand on:unit];
+		autoShooting = YES;
+	}
+	return autoShooting;
 }
 
 

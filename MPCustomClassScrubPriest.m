@@ -23,7 +23,6 @@
 
 @implementation MPCustomClassScrubPriest
 @synthesize fade, heal, pwFort, pwShield, renew, resurrection, smite, swPain;
-@synthesize shootWand;
 @synthesize drink;
 
 
@@ -39,14 +38,16 @@
 		self.smite = nil;
 		self.swPain = nil;
 		
-		self.shootWand = nil;
-		wandShooting = NO;
+
+
 		
 		self.drink = nil;
 
 	}
 	return self;
 }
+
+
 
 - (void) dealloc
 {
@@ -58,8 +59,6 @@
 	[resurrection release];
 	[smite release];
 	[swPain release];
-	
-	[shootWand release];
 	
 	[drink release];
 	
@@ -106,6 +105,7 @@
 }
 
 
+
 - (MPCombatState) combatActionsWith: (Mob *) mob {
 
 	PlayerDataController *me = [PlayerDataController sharedController];
@@ -136,7 +136,6 @@
 			// Renew myself if health < 80%
 			if ([me percentHealth] < 80) {
 				if ([self castHOT:renew on:(Unit *)[me player]]) {
-					wandShooting = NO;
 					return CombatStateInCombat;
 				}
 			}
@@ -147,7 +146,6 @@
 			for( Player *player in listParty) {
 				if ([player percentHealth] < 80) {
 					if ([self castHOT:renew on:player]) {
-						wandShooting = NO;
 						return CombatStateInCombat;
 					}
 				}
@@ -161,7 +159,6 @@
 			// heal myself if health < 65%
 			if ([me percentHealth] < 65) {
 				if ([self cast:heal on:(Unit *)[me player]]) {
-					wandShooting = NO;
 					return CombatStateInCombat;
 				}
 			}
@@ -170,7 +167,6 @@
 			for( Player *player in listParty) {
 				if ([player percentHealth] < 65) {
 					if ([self cast:heal on:player]) {
-						wandShooting = NO;
 						return CombatStateInCombat;
 					}
 				}
@@ -187,7 +183,6 @@
 			// shield myself if health < 65%
 			if ([me percentHealth] < 65) {
 				if ([self castHOT:pwShield on:(Unit *)[me player]]) {
-					wandShooting = NO;
 					return CombatStateInCombat;
 				}
 			}
@@ -197,7 +192,6 @@
 				if ([player percentHealth] < 65) {
 					// treat as a HOT so we don't try to cast if buff is on
 					if ([self castHOT:pwShield on:player]) {
-						wandShooting = NO;
 						return CombatStateInCombat;
 					}
 				}
@@ -215,7 +209,6 @@
 			// if mobhealth >= 50% && myMana > 35%
 			if (([mob percentHealth] >= 50) && ([me percentMana] > 35)){
 				if ([self castDOT:swPain on:mob]) {
-					wandShooting = NO;
 					return CombatStateInCombat;
 				} 
 			}
@@ -231,15 +224,16 @@
 			// Spam Smite
 			// check to see if we should be adding DMG (setting) if so:
 			if ([listParty count] == 0) {
-			if ([self cast:smite on:mob]){
-				wandShooting = NO;
-				return CombatStateInCombat;
-			}
-			} else {
-				if (!wandShooting) {
-					[self cast:shootWand on:mob];
-					wandShooting = YES;
+				if ([self cast:smite on:mob]){
+					return CombatStateInCombat;
 				}
+			} else {
+				[self wandUnit:mob];
+/*				if (!autoShooting) {
+					[self cast:shootWand on:mob];
+					autoShooting = YES;
+				}
+*/
 			}
 
 			
@@ -321,8 +315,6 @@
 //	[buffSpells addObject:divineSpirit];
 	self.listBuffs = [buffSpells copy];
 	
-
-	self.shootWand = [MPSpell shootWand];
 	
 	self.drink = [MPItem drink];
 }
@@ -332,102 +324,6 @@
 #pragma mark -
 #pragma mark Cast Helpers
 
-/*
-- (BOOL) dotPain:(Unit *)mob {
-
-	int error = ErrNone;
-	
-	[self targetUnit:mob];
-	
-	if ([swPain canCast]) {
-							
-		if (![swPain unitHasMyDebuff:mob]) {
-			
-			error = [swPain cast];
-			if (!error) {
-				[timerGCD start];
-				return YES;
-			} else {
-//				[self markError: error];
-				if (error == ErrTargetNotInLOS) {
-					PGLog(@" %@ error: Line Of Sight.  ", [swPain name]);
-					errorLOS = YES;
-				}
-			}
-			
-		}
-	} 
-	return NO;
-}
-
-
-
-- (BOOL) hotRenew:(Unit *)unit {
-
-	int error = ErrNone;
-	
-	[self targetUnit:unit];
-	
-	if ([renew canCast]) {
-							
-		if (![renew unitHasMyBuff:unit]) {
-			
-			error = [renew cast];
-			if (!error) {
-				[timerGCD start];
-				return YES;
-			} else {
-//				[self markError:error];
-				if (error == ErrTargetNotInLOS) {
-					PGLog(@" %@ error: Line Of Sight.  ", [renew name]);
-					errorLOS = YES;
-				}
-			}
-		}
-	} 
-	return NO;
-}
-
-
-*/
-
-
-
-/*
-- (BOOL) castWrath:(Unit *)mob {
-
-	int error = ErrNone;
-	
-	[self targetUnit:mob];
-	
-	if ([wrath canCast]) {
-							
-		error = [wrath cast];
-		if (!error) {
-			[timerGCD start];
-			return YES;
-		} else {
-			if (error == ErrTargetNotInLOS) {
-				PGLog(@" Wrath error: Line Of Sight.  ");
-				errorLOS = YES;
-			}
-		}
-
-	} 
-	return NO;
-}
-
-
-- (void) targetUnit: (Unit *)unit {
-
-	PlayerDataController *me = [PlayerDataController sharedController];
-	if ([me targetID] != [unit GUID]) {
-		PGLog(@"     --> Changing Target : myTarget[0x%X] -> mob[0x%X]",[me targetID], [unit lowGUID]);
-		[me setPrimaryTarget:unit];
-	}
-
-}
-*/
 
 
 #pragma mark -

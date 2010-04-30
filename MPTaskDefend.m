@@ -368,7 +368,7 @@
 			
 			} else {
 				
-				PGLog( @"[Defend][mobAttackingMe] : I'm in combat, but already an Attack Activity, so let it handle it. " );
+				PGLog( @"[Defend][mobAttackingMe] : I'm in combat with an Attack Activity, so let it handle it. " );
 				
 			} // end if currentActivity || currentTask
 //		} else {

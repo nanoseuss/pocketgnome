@@ -7,28 +7,19 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "MPCustomClass.h"
+#import "MPCustomClassScrub.h"
 
-@class MPTimer;
-@class Mob;
-@class CombatController;
-@class BotController;
 @class MPSpell;
 @class MPItem;
 
 
-@interface MPCustomClassScrubDruid : MPCustomClass {
+@interface MPCustomClassScrubDruid : MPCustomClassScrub {
 
-	MPSpell *autoAttack, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+	MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+	MPSpell *autoAttack;
 	MPItem *drink;
-	NSArray *listSpells, *listItems, *listParty;
-	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
-	BOOL errorLOS;
-	MPCCCombatState state;
 }
 @property (retain) MPSpell *autoAttack, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
 @property (retain) MPItem *drink;
-@property (retain) NSArray *listSpells, *listItems, *listParty;
-@property (retain) MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 
 @end

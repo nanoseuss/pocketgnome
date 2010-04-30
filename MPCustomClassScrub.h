@@ -18,11 +18,13 @@
 
 @interface MPCustomClassScrub : MPCustomClass {
 
+	MPSpell *shootWand, *meleeAttack;
 	NSArray *listBuffs, *listSpells, *listParty;
 	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
-	BOOL errorLOS;
+	BOOL errorLOS, autoShooting, autoAttacking;
 	MPCCCombatState state;
 }
+@property (retain) MPSpell *shootWand, *meleeAttack;
 @property (retain) NSArray *listBuffs, *listSpells, *listParty;
 @property (retain) MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 
@@ -36,8 +38,11 @@
 
 
 - (void) targetUnit: (Unit *)unit;
-- (BOOL) cast: (MPSpell *)spell on:(Unit *)unit;
+- (BOOL) cast:(MPSpell *)spell on:(Unit *)unit;
 - (BOOL) castDOT:(MPSpell *)spell on:(Unit *)unit;
 - (BOOL) castHOT:(MPSpell *)spell on:(Unit *)unit;
+
+- (BOOL) meleeUnit:(Unit *)unit;
+- (BOOL) wandUnit:(Unit *)unit;
 
 @end

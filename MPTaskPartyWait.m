@@ -15,6 +15,7 @@
 #import "PatherController.h"
 #import "Player.h"
 #import "PlayerDataController.h"
+#import "PlayersController.h"
 #import "Position.h"
 
 
@@ -159,6 +160,7 @@
 
 - (NSString *) description {
 	NSMutableString *text = [NSMutableString string];
+	NSString *unitName = nil;
 	
 	[text appendFormat:@"%@\n", self.name];
 	if ([listParty count]> 0) {
@@ -170,8 +172,10 @@
 		
 			currentDistance = [myPosition distanceToPosition:[member position]];
 			if (currentDistance > maxDistance) {
+			
+				unitName = [[PlayersController sharedPlayers] playerNameWithGUID:[member GUID]];
 				
-				[text appendFormat:@"   %@ : %0.2f  / %0.2f", [member name], currentDistance, maxDistance];
+				[text appendFormat:@"   %@ : %0.2f  / %0.2f", unitName, currentDistance, maxDistance];
 				
 			}
 		}

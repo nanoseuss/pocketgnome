@@ -21,9 +21,11 @@
 #import "PatherController.h"
 #import "PlayerDataController.h"
 #import "Player.h"
+#import "SpellController.h"
 #import "Unit.h"
 
 
+/*
 @interface MPCustomClassScrubDruid (Internal)
 
 // casting is straight cast
@@ -43,17 +45,18 @@
 - (void) targetUnit:(Unit *)unit;
 
 @end
-
+*/
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize autoAttack, wrath, mf, motw, rejuv, healingTouch, thorns, listSpells, listItems, listParty, timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
+@synthesize wrath, mf, motw, rejuv, healingTouch, thorns;
+@synthesize autoAttack;
 @synthesize drink;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
-		self.autoAttack = nil;
+		
 		self.wrath = nil;
 		self.mf    = nil;
 		self.motw  = nil;
@@ -61,50 +64,28 @@
 		self.healingTouch = nil;
 		self.thorns = nil;
 
+		self.autoAttack = nil;
+		
 		self.drink = nil;
-		self.listItems = nil;
-		
-		self.listSpells = nil;
-		
-		self.listParty = nil;
-		
-		
-		self.timerGCD =  [MPTimer timer:1000]; // 1 sec cooldown
-		[timerGCD forceReady]; // start off ready
-		
-		self.timerRefreshParty = [MPTimer timer:300000];  // 5 minutes
-		[timerRefreshParty forceReady];
-		
-		self.timerBuffCheck = [MPTimer timer:3000];  // every 3 seconds
-		[timerBuffCheck forceReady];
-		
-		self.timerSpellScan = [MPTimer timer:300000]; // 5 minutes
-		[timerSpellScan forceReady];
-		
-		errorLOS = NO;
-		
-		state = CCCombatPreCombat;
+
 	}
 	return self;
 }
 
+
+
 - (void) dealloc
 {
-	[drink release];
-	[autoAttack release];
 	[wrath release];
 	[mf release];
 	[motw release];
 	[rejuv release];
 	[healingTouch release];
 	[thorns release];
-    [timerGCD release];
-	[timerRefreshParty release];
-	[timerBuffCheck release];
-	[timerSpellScan release];
-	[listSpells release];
-	[listItems release];
-	[listParty release];
+	
+	[autoAttack release];
+
+	[drink release];
 	
     [super dealloc];
 }
@@ -124,258 +105,137 @@
 	// preCombatWithMob:atDistance:  is called numerous times for 
 	// your CC to determine what to do on approaching your target (at various distances)
 	
-	//// let's make sure we have our buffs up:
-	PlayerDataController *me = [PlayerDataController sharedController];
-	Player *myToon = [me player];
-	if( ![thorns unitHasBuff:myToon]) {
-		[me setPrimaryTarget:myToon];
-		[thorns cast];
-	}
-	
-	if( ![motw unitHasBuff:myToon]) {
-		[me setPrimaryTarget:myToon];
-		[motw cast];
-	}
+	// if I had a Trinket I wanted to pop before my opening move, this would be a good
+	// place to do it (just make sure distance is pretty close to opening move)
 	
 	state = CCCombatPreCombat;
 }
 
-- (MPCombatState) killTarget: (Mob*) mob {
-	
-	
-	
-	// if player isDead
+
+
+- (void) openingMoveWith: (Mob *)mob {
+
+	// should do a SF or Wrath here
+}
+
+
+
+- (MPCombatState) combatActionsWith: (Mob *) mob {
+
 	PlayerDataController *me = [PlayerDataController sharedController];
-	if (([me isDead] ) || ([me isGhost])) {
-		return CombatStateDied;
-	} // end if
 	
+	
+	// face target
+	PGLog(@"     --> Facing Target");
+	MPMover *mover = [MPMover sharedMPMover];
+	MPLocation *targetLocation = (MPLocation *)[mob position];
+	[mover moveTowards:targetLocation within:33.0f facing:targetLocation];
 
 	
-
+	//// make sure we stop here!
+	
+	//// check for LOS error and then do something to adjust for it.
+	////  when adjustment complete, reset errorLOS
 	
 	
 	
 	
+	PGLog(@"  Casting:");
 	
+	if (! [[SpellController sharedSpells] isGCDActive] ){
+//	if ([timerGCD ready]) {
 	
-	// switch state
-	switch (state) {
-			
-		////
-		//// This is our first action in combat.  Use this for any opening moves
-		////
-		case CCCombatPreCombat:
-			currentMob = mob;
-			
-			if ([currentMob isDead] ) {
-				
-				PGLog(@" CCCombatPreCombat : given mob is already dead.... returning Mistake.");
-				return CombatStateMistake;
-			}
+		if( ![me isCasting] ) {
 			
 			
 			
-			//// Perform initial opening move here:
-			
-			
-			
-			state = CCCombatCombat;
-			return CombatStateInCombat;
-			break;
-			
-			
-			
-			
-			
-		////
-		//// We are now in combat performing "normal" combat operations  
-		////
-		case CCCombatCombat:
-
-			//// 
-			//// Check for Combat/Mob Status
-			////
-			
-			//// if [mob isDead]
-			if ([mob isDead]) {
-				
-				PGLog(@"  ccKillTarget: mob is Dead ");
-				state = CCCombatPreCombat;  // reset my combat to do initial attack.
-				
-				NSArray *mobList = [self mobsAttackingMe];
-				
-				// if attackQueue is empty then all done.
-				if ( [mobList count] < 1 ) {
-					
-					// return CombatSuccess
-					return CombatStateSuccess;
-					
-				} else {
-					// there are more to deal with:
-					
-					// currentMob = currentTarget
-					self.currentMob = [mobList objectAtIndex:0]; // <-- choose by some criteria
-
-					// return CombatSuccessWithAdd
-					return CombatStateSuccessWithAdd;
-					
-				} // end if
-				
-			} // end if
-			
-			
-			
-			//// check for Evading => Bugged
-			// if( ![unit isInCombat] || [unit isEvading] || ![unit isAttackable] ) {
-			if( [mob isEvading] || ![mob isAttackable] ) { 
-				return CombatStateBugged;
-			}
-
-			
-	
-			// if unit ended up blacklisted ... bail
-			if ([[patherController blacklistController] isBlacklisted:mob]) {
-				PGLog(@"   Mob ended up Blacklisted.  You can ask CombatController why ... ");
-				return CombatStateBugged;
-			}
-			
-			
-			
-			
+			//// do my healing checks here:
 			
 			////
-			//// all the status checks are passed, so attack!
+			//// Rejuvination Checks
 			////
 			
-			// face target
-			PGLog(@"     --> Facing Target");
-			MPMover *mover = [MPMover sharedMPMover];
-			MPLocation *targetLocation = (MPLocation *)[mob position];
-			[mover moveTowards:targetLocation within:33.0f facing:targetLocation];
-
-			
-			//// make sure we stop here!
-			
-			//// check for LOS error and then do something to adjust for it.
-			////  when adjustment complete, reset errorLOS
-			
-			
-			
-			
-			
-			// make sure I'm targeting the target:
-//			PlayerDataController *me = [PlayerDataController sharedController];
-/*			if ([me targetID] != [mob GUID]) {
-				PGLog(@"     --> Setting Target : myTarget[0x%X]  mob[0x%X]",[me targetID], [mob lowGUID]);
-				[me setPrimaryTarget:mob];
+			// Rejuvination myself if health < 65%
+			if ([me percentHealth] < 65) {
+				if ([self castHOT:rejuv on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
 			}
-*/
 			
-			PGLog(@"  Casting:");
 			
-//			if ( [spellController isGCDActive] ){
-			if ([timerGCD ready]) {
 			
-				if( ![me isCasting] ) {
-					
-					
-					
-					//// do my healing checks here:
-					
-					////
-					//// Rejuvination Checks
-					////
-					
-					// Rejuvination myself if health < 65%
-					if ([me percentHealth] < 65) {
-						if ([self hotRejuv:(Unit *)[me player]]) {
-							return CombatStateInCombat;
-						}
-					}
-					
-					
-					
-					// I'm Balance Druid.  So in a party
-					// expect a party healer.  My healing 
-					// is just to assist them.
-					//
-					// Rejuvinate Party Members if health < 40%
-					for( Player *player in listParty) {
-						if ([player percentHealth] < 40) {
-							if ([self hotRejuv:player]) {
-								return CombatStateInCombat;
-							}
-						}
-					}
-					
-					
-					////
-					//// Heal Checks
-					////
-					
-					// heal myself if health < 40%
-					if ([me percentHealth] < 40) {
-						if ([self castHeal:(Unit *)[me player]]) {
-							return CombatStateInCombat;
-						}
-					}
-					
-					
-					
-					
-					
-					
-					////
-					////  Attacks here
-					////
-					
-					// MoonFire DOT
-					// if mobhealth >= 50% && myMana > 20%
-					if (([mob percentHealth] >= 50) && ([me percentMana] > 20)){
-						if ([self dotMF:mob]) {
-							return CombatStateInCombat;
-						} 
-					}
-					
-					
-					// Insect Swarm
-					
-					
-					
-					// Starfire
-					
-					
-					// make sure we are swinging our weapon
-//					[autoAttack cast];
-					
-					
-					// Spam Wrath
-					if ([self castWrath:mob]){
+			// I'm Balance Druid.  So in a party
+			// expect a party healer.  My healing 
+			// is just to assist them.
+			//
+			// Rejuvinate Party Members if health < 40%
+			for( Player *player in listParty) {
+				if ([player percentHealth] < 40) {
+					if ([self castHOT:rejuv on:player]) {
 						return CombatStateInCombat;
 					}
-					
-					
-					
-				
-					if (errorLOS) {
-						errorLOS = NO;
-						return CombatStateBugged;
+				}
+			}
+			
+			
+			////
+			//// Heal Checks
+			////
+			
+			// heal myself if health < 40%
+			if ([me percentHealth] < 40) {
+				if ([self cast:healingTouch on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
+			}
+			
+			
+			// Heal Party Members if health < 35%
+			for( Player *player in listParty) {
+				if ([player percentHealth] < 35) {
+					if ([self cast:healingTouch on:player]) {
+						return CombatStateInCombat;
 					}
 				}
-				
-				
 			}
-
-			return CombatStateInCombat;
-			break;
-		default:
-			break;
+			
+			
+			
+			////
+			////  Attacks here
+			////
+			
+			// MoonFire DOT
+			// if mobhealth >= 50% && myMana > 20%
+			if (([mob percentHealth] >= 50) && ([me percentMana] > 20)){
+				if ([self castDOT:mf on:mob]) {
+					return CombatStateInCombat;
+				} 
+			}
+			
+			
+			// Insect Swarm
+			
+			
+			
+			// Starfire
+			
+			
+			// make sure we are swinging our weapon
+//					[autoAttack cast];
+			
+			
+			// Spam Wrath
+			if ([self cast:wrath on:mob]){
+				return CombatStateInCombat;
+			}
+			
+		}
+		
+		
 	}
 
-	
-	// shouldn't get to here!  One of the above should proc.
-	return CombatStateDied;
+	return CombatStateInCombat;
 }
 
 
@@ -398,20 +258,10 @@
 			}
 */
 			if ([drink canUse]){
-				PGLog(@"   Drink: Can Use");
 				if (![drink unitHasBuff:[player player]]) {
-					PGLog(@"   Player doesn't seem to have a buff with this actionID");
 					[drink use];
 				}
-else {
-	PGLog(@"    Drink Buff already found!");
-}
-
 			}
-else {
-	PGLog(@"  Drink: Can't use!!!");
-}
-
 			
 			return NO; // must not be done yet ... 
 			
@@ -422,80 +272,13 @@ else {
 
 
 
-- (void) runningAction {
-	
-	// make sure our spell list is updated
-	if ([timerSpellScan ready] ) {
-		
-		for(MPSpell *spell in listSpells) {
-			PGLog(@"reloading spell[%@]", [spell name]);
-			[spell loadPlayerSettings];
-		}
-		[timerSpellScan reset];
-	}
-	
-	// make sure our list of party members is updated
-	if ([timerRefreshParty ready]) {
-		
-		self.listParty = [[PlayerDataController sharedController] partyMembers];
-		
-		PGLog(@" refreshing Party Members: count[%d]", [listParty count]);
-		[timerRefreshParty reset];
-	}
-	
-	
-	// check everyone for Buffs
-	PlayerDataController *me = [PlayerDataController sharedController];
-	if ([timerBuffCheck ready]) {
-		
-		//// Check if party members have buffs
-		for( Player* player in listParty) {
-		
-			PGLog(@"checking party member buffs [%@]", [player name]);
-			if( ![thorns unitHasBuff:(Unit*)player]) {
-				[me setPrimaryTarget:player];
-				[thorns cast];
-				[timerBuffCheck reset];
-				return;
-			}
-			
-			if( ![motw unitHasBuff:(Unit *)player]) {
-				[me setPrimaryTarget:player];
-				[motw cast];
-				[timerBuffCheck reset];
-				return;
-			}
-		}
-		
-		//// personal buffs
-		Unit *myCharacter = [[PlayerDataController sharedController] player];
-		if( ![thorns unitHasBuff:myCharacter]) {
-			[me setPrimaryTarget:myCharacter];
-			[thorns cast];
-			[timerBuffCheck reset];
-			return;
-		}
-		
-		if( ![motw unitHasBuff:(Unit *)myCharacter]) {
-			[me setPrimaryTarget:myCharacter];
-			[motw cast];
-			[timerBuffCheck reset];
-			return;
-		}
-	
-		[timerBuffCheck reset];
-	}
-	
-}
-
-
-
 - (void) setup {
+
+	[super setup];
 	
 	////
 	//// Spells
 	////
-	self.autoAttack = [MPSpell autoAttack];
 	self.wrath = [MPSpell wrath];
 	self.mf    = [MPSpell moonfire];
 	self.motw  = [MPSpell motw];
@@ -514,27 +297,31 @@ else {
 	self.listSpells = [spells copy];
 	
 	
+	NSMutableArray *buffSpells = [NSMutableArray array];
+	[buffSpells addObject:motw];
+	[buffSpells addObject:thorns];
+	self.listBuffs = [buffSpells copy];
+	
+	
+	////
+	//// Physical
+	////
+	self.autoAttack = [MPSpell autoAttack];
+	
+	
 	//// 
 	//// Items
 	////
 	self.drink = [MPItem drink];
-	
+/*	
 	NSMutableArray *items = [NSMutableArray array];
 	[items addObject:drink];
 	self.listItems = [items copy];
-	
-	
-	
-	
-	//// 
-	//// Party Members
-	////
-	self.listParty = [[PlayerDataController sharedController] partyMembers];
-	
+*/
 }
 
 
-
+/*
 #pragma mark -
 #pragma mark Cast Helpers
 
@@ -661,7 +448,7 @@ PGLog(@" unit[%@] already has Rejuv buff.",[unit name]);
 
 }
 
-
+*/
 
 #pragma mark -
 
