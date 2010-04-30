@@ -106,6 +106,7 @@ typedef enum MovementType {
 	BOOL _lastCorrectionForward;
 	BOOL _lastCorrectionLeft;
 	BOOL _performingActions;
+	BOOL _checkingPosition;
 	BOOL isFollowing;
 
 	Waypoint *_destinationWaypointUI;
@@ -114,6 +115,7 @@ typedef enum MovementType {
 @property (readwrite, retain) RouteSet *currentRouteSet;
 @property (readwrite, assign) BOOL isFollowing;
 @property (readonly, assign) BOOL performingActions;
+@property (readonly, assign) BOOL checkingPosition;
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;
@@ -164,6 +166,9 @@ typedef enum MovementType {
 
 // jump
 - (void)jump;
+- (void)jumpRaw;
+- (BOOL)jumpTowardsPosition: (Position*)position;
+- (BOOL)jumpBack;
 
 // are we currently patrolling?
 - (BOOL)isPatrolling;

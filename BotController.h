@@ -149,7 +149,7 @@
     Mob *_mobToSkin;
 	Mob *_mobJustSkinned;
     Unit *preCombatUnit;
-	Unit *castingUnit;		// the unit we're casting on!
+	Unit *_castingUnit;		// the unit we're casting on!
 
     NSMutableArray *_mobsToLoot;
     int _reviveAttempt, _ghostDance, _skinAttempt;
@@ -348,7 +348,7 @@
 
 - (void)testRule: (Rule*)rule;
 
-- (BOOL)performProcedureUnitCheck: (Unit*)target;
+- (BOOL)performProcedureUnitCheck: (Unit*)target withState:(NSDictionary*)state;
 - (BOOL)lootScan;
 - (void)resetLootScanIdleTimer;
 

@@ -56,6 +56,7 @@
 	
 	NSMutableArray *_unitsAttackingMe;
 	NSMutableArray *_unitsAllCombat;		// meant for the display table ONLY!
+	NSMutableArray *_unitsDied;
 	
 	NSMutableDictionary *_unitLeftCombatCount;
 	NSMutableDictionary *_unitLeftCombatTargetCount;
@@ -66,8 +67,12 @@
 @property (readonly, retain) Unit *castingUnit;
 @property (readonly, retain) Unit *addUnit;
 @property (readonly, retain) NSMutableArray *unitsAttackingMe;
+@property (readonly, retain) NSMutableArray *unitsDied;
 
 // @property (readonly) NSString *unitHealthBar:(Unit*)unit;
+
+// Push instead of notify
+- (void)unitKilled: (Unit*)unit;
 
 // weighted units we're in combat with
 - (NSArray*)combatList;
@@ -90,6 +95,7 @@
 
 // INPUT: called when we start/stop the bot
 - (void)resetAllCombat;
+- (void)resetUnitsDied;
 
 // INPUT: from PlayerDataController when a user enters combat
 - (void)doCombatSearch;
