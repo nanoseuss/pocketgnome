@@ -249,6 +249,7 @@ PGLog( @"   state[Searching]");
 				} else {
 				
 					state = PullStateAttacking;
+					currentDistance = [self myDistanceToMob:currentMob];
 					[customClass preCombatWithMob:currentMob atDistance:currentDistance];
 
 				}
