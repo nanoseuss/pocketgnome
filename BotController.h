@@ -78,12 +78,12 @@
 #define ErrorSpellNotReady				@"ErrorSpellNotReady"
 #define ErrorTargetNotInLOS				@"ErrorTargetNotInLOS"
 #define ErrorInvalidTarget				@"ErrorInvalidTarget"
-#define ErrorTargetOutOfRange			@"ErrorTargetOutOfRange"
-#define ErrorTargetNotInFront			@"ErrorTargetNotInFront"
+#define ErrorTargetOutOfRange				@"ErrorTargetOutOfRange"
+#define ErrorTargetNotInFront				@"ErrorTargetNotInFront"
 #define ErrorHaveNoTarget				@"ErrorHaveNoTarget"
-#define ErrorMorePowerfullSpellActive	@"ErrorMorePowerfullSpellActive"
+#define ErrorMorePowerfullSpellActive			@"ErrorMorePowerfullSpellActive"
 
-#define BotStarted						@"BotStarted"
+#define BotStarted					@"BotStarted"
 
 // Hotkey set flags
 #define	HotKeyStartStop				0x1
@@ -141,6 +141,7 @@
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
+    BOOL _isEvaluating;
     BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
 	NSString *_evaluationInProgress;
@@ -325,6 +326,7 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 @property (readwrite, assign) BOOL isBotting;
+@property (readonly, assign) BOOL isEvaluating;
 @property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
 @property (retain) NSString *evaluationInProgress;

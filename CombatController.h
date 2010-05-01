@@ -57,6 +57,7 @@
 	NSMutableArray *_unitsAttackingMe;
 	NSMutableArray *_unitsAllCombat;		// meant for the display table ONLY!
 	NSMutableArray *_unitsDied;
+	NSMutableArray *_unitsMonitoring;
 	
 	NSMutableDictionary *_unitLeftCombatCount;
 	NSMutableDictionary *_unitLeftCombatTargetCount;
@@ -68,11 +69,7 @@
 @property (readonly, retain) Unit *addUnit;
 @property (readonly, retain) NSMutableArray *unitsAttackingMe;
 @property (readonly, retain) NSMutableArray *unitsDied;
-
-// @property (readonly) NSString *unitHealthBar:(Unit*)unit;
-
-// Push instead of notify
-- (void)unitKilled: (Unit*)unit;
+@property (readonly, retain) NSMutableArray *unitsMonitoring;
 
 // weighted units we're in combat with
 - (NSArray*)combatList;

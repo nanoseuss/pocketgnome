@@ -46,35 +46,37 @@
 
 - (id) init{
     self = [super init];
-    if (self != nil) {
+    if (self == nil) return self;
 
-		_attackUnit		= nil;
-		_friendUnit		= nil;
-		_addUnit		= nil;
-		_castingUnit	= nil;
+	_attackUnit		= nil;
+	_friendUnit		= nil;
+	_addUnit		= nil;
+	_castingUnit	= nil;
 
-		_enteredCombat = nil;
+	_enteredCombat = nil;
 
-		_inCombat = NO;
-		_hasStepped = NO;
+	_inCombat = NO;
+	_hasStepped = NO;
 
-		_unitsAttackingMe = [[NSMutableArray array] retain];
-		_unitsAllCombat = [[NSMutableArray array] retain];
-		_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
-		_unitLeftCombatTargetCount = [[NSMutableDictionary dictionary] retain];
-		_unitsDied = [[NSMutableArray array] retain];
+	_unitsAttackingMe = [[NSMutableArray array] retain];
+	_unitsAllCombat = [[NSMutableArray array] retain];
+	_unitLeftCombatCount = [[NSMutableDictionary dictionary] retain];
+	_unitLeftCombatTargetCount = [[NSMutableDictionary dictionary] retain];
+	_unitsDied = [[NSMutableArray array] retain];
+	_unitsMonitoring = [[NSMutableArray array] retain];
 
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
-        [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
-        [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetOutOfRange:) name: ErrorTargetOutOfRange object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInLOS:) name: ErrorTargetNotInLOS object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInFront:) name: ErrorTargetNotInFront object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(morePowerfullSpellActive:) name: ErrorMorePowerfullSpellActive object: nil];
-//		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitDied:) name: UnitDiedNotification object: nil];
-		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitTapped:) name: UnitTappedNotification object: nil];
-    }
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerEnteringCombat:) name: PlayerEnteringCombatNotification object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerLeavingCombat:) name: PlayerLeavingCombatNotification object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(haveNoTarget:) name: ErrorHaveNoTarget object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetOutOfRange:) name: ErrorTargetOutOfRange object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInLOS:) name: ErrorTargetNotInLOS object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInFront:) name: ErrorTargetNotInFront object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(morePowerfullSpellActive:) name: ErrorMorePowerfullSpellActive object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitDied:) name: UnitDiedNotification object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitTapped:) name: UnitTappedNotification object: nil];
+
     return self;
 }
 
@@ -94,6 +96,7 @@
 @synthesize inCombat = _inCombat;
 @synthesize unitsAttackingMe = _unitsAttackingMe;
 @synthesize unitsDied = _unitsDied;
+@synthesize unitsMonitoring = _unitsMonitoring;
 
 #pragma mark -
 
@@ -138,15 +141,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	return NSOrderedSame;
 }
 
-#pragma mark Notifications
+#pragma mark [Input] Notifications
 
 - (void)playerEnteringCombat: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+
     log(LOG_DEV, @"------ Player Entering Combat ------");
 	
 	_inCombat = YES;
 }
 
 - (void)playerLeavingCombat: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+
     log(LOG_DEV, @"------ Player Leaving Combat ------");
 	
 	_inCombat = NO;
@@ -155,35 +162,111 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+
 	log(LOG_COMBAT, @"Player has died!");
 	
 	[self resetAllCombat];
 }
 
-// invalid target
-- (void)invalidTarget: (NSNotification*)notification {
+- (void)unitDied: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
 
-	log(LOG_DEV, @"[Notification] %@ %@ is an Invalid Target!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+	Unit *unit = [notification object];
+	log(LOG_DEV, @"%@ died, removing from combat list!", unit);
 
-	if ( [botController castingUnit] ) {
-		log(LOG_BLACKLIST, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
-		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_InvalidTarget];
+	BOOL wasCastingUnit = NO;
+	if ( _castingUnit && [unit GUID] == [_castingUnit GUID] ) wasCastingUnit = YES;
+
+	
+	// Kill the monitoring if called from else where
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
+	if ( [_unitsMonitoring containsObject: unit] )	[_unitsMonitoring removeObject: unit];
+
+	if ( wasCastingUnit ) {
+		// Casting unit dead, reset!
+		[botController cancelCurrentProcedure];
+		[botController cancelCurrentEvaluation];
+		[movementController resetMovementState];
 	}
 
+	// If this was our attacking unit
+	if ( _attackUnit && [unit GUID] == [_attackUnit GUID] ) {
+		[_attackUnit release];
+		_attackUnit = nil;
+	}
+
+	// If this was our friend unit
+	if ( _friendUnit && [unit GUID] == [_friendUnit GUID] ) {
+		[_friendUnit release];
+		_friendUnit = nil;
+	}
+
+	// If this was our add unit
+	if ( _addUnit && [unit GUID] == [_addUnit GUID] ) {
+		// Make sure our add is on the lists
+		if ( ![_unitsAttackingMe containsObject: unit] ) [_unitsAttackingMe addObject: unit];
+		if ( ![_unitsAllCombat containsObject: unit] ) [_unitsAllCombat addObject: unit];
+		[_addUnit release]; _addUnit = nil;
+	}
+
+	if ( [_unitsAllCombat containsObject: unit] )	[_unitsAllCombat removeObject: unit];
+	if ( [_unitsAttackingMe containsObject: unit] )	[_unitsAttackingMe removeObject: unit];
+
+	// Add this to our internal list
+	[_unitsDied addObject: unit];
+
+	if ( _inCombat && ![_unitsAttackingMe count] ) _inCombat = NO;
+
+	// If this was our casting unit
+	if ( wasCastingUnit ) {
+		[_castingUnit release];
+		_castingUnit = nil;
+		[botController evaluateSituation];
+	}
+}
+
+// invalid target
+- (void)invalidTarget: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+
+	Unit *unit = [notification object];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
+	log(LOG_COMBAT, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: unit], unit);
+	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
+
+	[self cancelAllCombat];
+}
+
+// have no target
+- (void)haveNoTarget: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+	
+	Unit *unit = [notification object];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
+	log(LOG_COMBAT, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: unit], unit);
+	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
+	
 	[self cancelAllCombat];
 }
 
 // not in LoS
 - (void)targetNotInLOS: (NSNotification*)notification {
-
 	if ( !botController.isBotting ) return;
 
-	log(LOG_DEV, @"[Notification] %@ %@ is not in LoS!", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+	Unit *unit = [notification object];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
-	if ([botController castingUnit]) {
-		log(LOG_BLACKLIST, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
-		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_NotInLoS];
-	}
+
+	log(LOG_COMBAT, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: unit], unit);
+	[blacklistController blacklistObject:unit withReason:Reason_NotInLoS];
 
 	[self cancelAllCombat];
 
@@ -193,96 +276,64 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (void)targetOutOfRange: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
 
-	Unit *thisCastingUnit = _castingUnit;
-	
-	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
-	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
-	[self cancelAllCombat];
+	Unit *unit = [notification object];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+
+	[botController cancelCurrentProcedure];
+	[botController cancelCurrentEvaluation];
 
 	// if we can correct this error
-	if ( [movementController checkUnitOutOfRange: thisCastingUnit] ) {
-		[botController actOnUnit: thisCastingUnit];
+	if ( [movementController checkUnitOutOfRange: unit] ) {
+		[botController actOnUnit: unit];
 		return;
 	}
 
-	log(LOG_COMBAT, @"%@ %@ is out of range, disengaging.", [self unitHealthBar: [botController castingUnit]], [botController castingUnit]);
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+	[self cancelAllCombat];
 
-	if ( thisCastingUnit ) {
-		log(LOG_BLACKLIST, @"%@ %@ is out of range, temporarily blacklisting.", [self unitHealthBar: thisCastingUnit], thisCastingUnit);
-		[blacklistController blacklistObject:thisCastingUnit withReason:Reason_OutOfRange];
-	}
-
+	log(LOG_COMBAT, @"%@ %@ is out of range, disengaging.", [self unitHealthBar: unit], unit);
+	[blacklistController blacklistObject:unit withReason:Reason_OutOfRange];
 	[botController evaluateSituation];
 }
 
 - (void)morePowerfullSpellActive: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
 
-	log(LOG_ERROR, @"You need to adjust your behavior so the previous spell doesn't cast if the player has a more powerfull buff!");
-	
-	if ([botController castingUnit]) {
-		[blacklistController blacklistObject:[botController castingUnit] withReason:Reason_RecentlyHelpedFriend];
-	}
+	Unit *unit = [notification object];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
-	if ( botController.procedureInProgress ) [botController cancelCurrentProcedure];
-	if ( botController.evaluationInProgress ) [botController cancelCurrentEvaluation];
-
+	[blacklistController blacklistObject: unit withReason:Reason_RecentlyHelpedFriend];
 	[self cancelAllCombat];
-	[botController evaluateSituation];
-	
 }
 
 - (void)targetNotInFront: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
 
-	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: _castingUnit] ,_castingUnit);
+	Unit *unit = [notification object];
 
-	[movementController turnTowardObject:_castingUnit];
+	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: unit] , unit);
+
+	[movementController turnTowardObject:unit];
 	[movementController establishPlayerPosition];
 }
 
-- (void)unitDied: (NSNotification*)notification {
+- (void)unitTapped: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
 	Unit *unit = [notification object];
-	log(LOG_COMBAT, @"%@ died, removing from combat list!", unit);
 
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
-
-	[_addUnit release]; _addUnit = nil;
-	[_unitsAllCombat removeObject: unit];
-	[_unitsAttackingMe removeObject: unit];
-	[_unitsDied addObject: unit];
-}
-
-- (void)unitKilled: (Unit*)unit {
-
-	log(LOG_COMBAT, @"%@ killed, removing from combat list!", unit);
-
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
-	
-	
-	[_addUnit release]; _addUnit = nil;
-	[_unitsAllCombat removeObject: unit];
-	[_unitsAttackingMe removeObject: unit];
-	[_unitsDied addObject: unit];
-}
-
-- (void)unitTapped: (NSNotification*)notification{
-	Unit *unit = [notification object];
 
 	log(LOG_COMBAT, @"%@ %@ tapped by another player, disengaging!", [self unitHealthBar: unit] ,unit);
 
 	if ( unit == _castingUnit ) {
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
-		
 		[botController cancelCurrentProcedure];
 		[self cancelAllCombat];
 		[_unitsAllCombat removeObject: unit];
 		[_unitsAttackingMe removeObject: unit];
 		[botController evaluateSituation];
 	}
-	
 }
 
 #pragma mark Public
@@ -303,13 +354,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( [_unitsAttackingMe count] ) [units addObjectsFromArray:_unitsAttackingMe];
 
 	// add the other units if we need to
-	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] && ![_attackUnit isDead] ) {
+	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] && ![_attackUnit isDead] && ![_unitsDied containsObject: _attackUnit] ) {
 		[units addObject:_attackUnit];
 		log(LOG_DEV, @"Adding attack unit: %@", _attackUnit);
 	}
 
 	// add our add
-	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] && ![_addUnit isDead] ){
+	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] && ![_addUnit isDead] && ![_unitsDied containsObject: _addUnit] ) {
 		[units addObject:_addUnit];
 		log(LOG_COMBAT, @"Adding add unit: %@", _addUnit);
 	}
@@ -338,10 +389,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			targetID = [player targetID];
 
 			if (targetID <= 0x0) continue;
-			
+
 			target = [mobController mobWithGUID: targetID];
+
+			// If this is a mob we've recently killed
+			if ( target && [_unitsDied containsObject: (Unit*)target] ) continue;
+
 			if (	target && ![units containsObject: target] && [target isValid] && 
-					![target isDead] && ![_unitsDied containsObject: (Unit*)target] && 
+					![target isDead] &&
 					[target isInCombat] && 
 					[playerData isHostileWithFaction: [target factionTemplate]] 
 				) {
@@ -406,7 +461,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	Position *playerPosition = [playerData position];
 	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
-	
+
 	for ( Unit *unit in units ){
 
 		if ( [blacklistController isBlacklisted:unit] ) {
@@ -415,7 +470,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 
 		// ignore dead units
-		if ( [unit isDead] || ![_unitsDied containsObject: unit] ) continue;
+		if ( [unit isDead] || [_unitsDied containsObject: unit] ) continue;
 
 		// ignore evading/not valid units
 		if ( [unit isEvading] || ![unit isValid] ) continue;
@@ -447,18 +502,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 
-- (BOOL)combatEnabled{
+- (BOOL)combatEnabled {
 	return botController.theCombatProfile.combatEnabled;
 }
 
-// from performProcedureWithState (CombatProcedure)
+// from performProcedureWithState 
 // this will keep the unit targeted!
 - (void)stayWithUnit:(Unit*)unit withType:(int)type {
-	[NSObject cancelPreviousPerformRequestsWithTarget: self];
-	if ( [unit isDead] ) return;
-		
+
+	if ( !unit || unit == nil || [unit isDead] ) return;
+
 	Unit *oldTarget = [_castingUnit retain];
-	
+
 	[_castingUnit release]; _castingUnit = nil;
 	_castingUnit = [unit retain];
 	
@@ -467,13 +522,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		_attackUnit = [unit retain];
 	}
 	// add
-	else if ( type == TargetAdd ){
+	else if ( type == TargetAdd || type == TargetPat ) {
 		_addUnit = [unit retain];
 	}
+
 	// friendly
-	else if ( type == TargetFriend || type == TargetPet ){
+	else if ( type == TargetFriend || type == TargetFriendlies || type == TargetPet ) {
 		_friendUnit = [unit retain];
 	}
+
 	// otherwise lets clear our target (we're either targeting no one or ourself)
 	else{
 		[_castingUnit release];
@@ -488,30 +545,27 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"Facing new target! %@", unit);
 		[movementController turnTowardObject:unit];
 	}
-	
+
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
-	if ( oldTarget && [botController isPvPing] ){
+	if ( oldTarget && [botController isPvPing] ) {
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: oldTarget];
 		[oldTarget release];
 	}
-	
+
 	// we want to monitor enemies to fire off notifications if they die!
-	if ( type == TargetEnemy ){
-		// cancel a previous request if it's going on
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	if ( type == TargetEnemy || type == TargetAdd || type == TargetPat ) {
+		log(LOG_DEV, @"Now staying with %@", unit);
 
-		// monitor again!
-		[self monitorUnit:unit];
+		if ( ![_unitsMonitoring containsObject: unit] ) {
+			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+			[self monitorUnit: unit];
+		}
+
+		[self stayWithUnit];
 	}
-
-	log(LOG_DEV, @"Now staying with %@", unit);
-
-	// we don't need to monitor friendlies!
-	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] ) [self stayWithUnit];
 }
 
 - (void)stayWithUnit {
-	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 
 	log(LOG_DEV, @"Staying with %@ in procedure %@", _castingUnit, [botController procedureInProgress]);
 	// cancel other requests
@@ -543,14 +597,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_COMBAT, @"No longer in combat procedure, no longer staying with unit");
 		return;
 	}
-	
+
 	BOOL isCasting = [playerData isCasting];
 
 	// check player facing vs. unit position
 	Position *playerPosition = [playerData position];
 	float playerDirection = [playerData directionFacing];
 	float theAngle = [playerPosition angleTo: [_castingUnit position]];
-	
+
 	// compensate for the 2pi --> 0 crossover
 	if(fabsf(theAngle - playerDirection) > M_PI) {
 		if(theAngle < playerDirection)  theAngle        += (M_PI*2);
@@ -570,7 +624,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 			log(LOG_COMBAT, @"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
 			[movementController turnTowardObject: _castingUnit];
-			usleep([controller refreshDelay]*2);
+			[movementController establishPlayerPosition];
+//			usleep([controller refreshDelay]*2);
 		}
 
 		// move toward unit?
@@ -592,30 +647,122 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: 0.25];
 }
 
+- (void)monitorUnit: (Unit*)unit {
+
+	if ( ![_unitsMonitoring containsObject: unit] )	[_unitsMonitoring addObject: unit];
+
+	// invalid unit
+	if ( !unit || ![unit isValid] ) {
+		log(LOG_COMBAT, @"Unit isn't valid!?? %@", unit);
+		return;
+	}
+
+	// unit died, fire off notification
+	if ( [unit isDead] ) {
+		log(LOG_DEV, @"Firing death notification for unit %@", unit);
+		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
+		return;
+	}
+	
+	// unit has ghost aura (so is dead, fire off notification)
+	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
+	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
+		log(LOG_COMBAT, @"%@ Firing death notification for player %@", [self unitHealthBar: unit], unit);
+		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
+		return;
+	}
+	
+	// Tap check
+	if ( !botController.theCombatProfile.partyEnabled && !botController.isPvPing &&
+		[unit isTappedByOther] && [unit targetID] != [playerData GUID] ) {
+		
+		// Only do this for mobs.
+		Mob *mob = [mobController mobWithGUID:[unit GUID]];
+		if (mob && [mob isValid]) {
+			// Mob has been tapped by another player
+			log(LOG_DEV, @"Firing tapped notification for unit %@", unit);
+			[[NSNotificationCenter defaultCenter] postNotificationName: UnitTappedNotification object: [[unit retain] autorelease]];
+			return;
+		}
+	}
+	
+	// Tanaris4: I'd recommend using cachedGUID, as (in theory) an object's GUID shouldn't change + this saves memory reads
+	GUID guid = [unit cachedGUID];
+	
+	// Unit not in combat check
+	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
+	
+	if ( ![unit isInCombat] ) {
+		
+		float secondsInCombat = leftCombatCount/10;
+		
+		log(LOG_DEV, @"%@ Unit not in combat now for %0.2f seconds", [self unitHealthBar: unit], secondsInCombat);
+		leftCombatCount++;
+		
+		// If it's our target let's do some checks as we should be in combat
+		if ( unit == _attackUnit ) {
+			
+			// This is to set timer if the unit actually our target vs being an add
+			int leftCombatTargetCount = [[_unitLeftCombatTargetCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
+			
+			secondsInCombat = leftCombatTargetCount/10;
+			
+			float combatBlacklistDelay = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNotInCombat"] floatValue];
+			//			[[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNotInCombat"] floatValue];
+			
+			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
+			if ( secondsInCombat >  combatBlacklistDelay ) {
+				_hasStepped = NO;
+				log(LOG_COMBAT, @"%@ Unit not in combat after %.2f seconds, blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
+				[blacklistController blacklistObject:unit withReason:Reason_NotInCombat];
+				[self cancelAllCombat];
+				return;
+			}
+			
+			leftCombatTargetCount++;
+			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
+			//			log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
+		}
+		
+		// Unit is an add or not our primary target
+		// after a minute stop monitoring
+		if ( secondsInCombat > 60 ){
+			_hasStepped = NO;
+			log(LOG_COMBAT, @"%@ No longer monitoring %@, didn't enter combat after  %d seconds.", [self unitHealthBar: unit], unit, secondsInCombat);
+			
+			leftCombatCount = 0;
+			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
+			
+			return;
+		}
+		
+	} else {
+		//		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
+		leftCombatCount = 0;
+	}
+	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
+	
+	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
+}
+
 - (void)cancelAllCombat {
 	log(LOG_FUNCTION, @"cancelAllCombat");
 
-	// cancel all requests!
-//	[NSObject cancelPreviousPerformRequestsWithTarget: self];		// we're not calling this as it kills our monitor function + the death might not be fired!
-
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: nil];
-
 	// reset our variables
-	self.castingUnit = nil;
-	self.attackUnit = nil;
-	self.addUnit = nil;
+	[_castingUnit release]; _castingUnit = nil;
+	[_attackUnit release]; _attackUnit = nil;
+	[_addUnit release]; _addUnit = nil;
 	[_friendUnit release];	_friendUnit =  nil;
+
 }
 
-- (void)resetAllCombat{
+- (void)resetAllCombat {
 	log(LOG_FUNCTION, @"resetAllCombat");
-
-	[NSObject cancelPreviousPerformRequestsWithTarget: self];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: nil];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
 	[self cancelAllCombat];
-
-//	[_unitsAttackingMe removeAllObjects];
+	[_unitsAttackingMe removeAllObjects];
 	[_unitsAllCombat removeAllObjects];
 	[_unitLeftCombatCount removeAllObjects];
 	[_unitLeftCombatTargetCount removeAllObjects];
@@ -625,8 +772,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)resetUnitsDied {
 	log(LOG_FUNCTION, @"resetUnitsDied");
-	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 	[_unitsDied removeAllObjects];
+	log(LOG_DEV, @"unitsDied reset.");
 }
 
 // units here will meet all conditions! Combat Profile WILL be checked
@@ -1147,106 +1294,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 #pragma mark Internal
 
-// monitor unit until it dies
-- (void)monitorUnit: (Unit*)unit{
-
-	// invalid unit
-	if ( !unit || ![unit isValid] ) {
-		log(LOG_COMBAT, @"Unit isn't valid! %@", unit);
-		return;
-	}
-
-	// unit died, fire off notification
-	if ( [unit isDead] ) {
-		log(LOG_DEV, @"Firing death notification for unit %@", unit);
-		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
-		return;
-	}
-	
-	// unit has ghost aura (so is dead, fire off notification)
-	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
-	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
-		log(LOG_COMBAT, @"%@ Firing death notification for player %@", [self unitHealthBar: unit], unit);
-		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
-		return;
-	}
-	
-	// Tap check
-	if ( !botController.theCombatProfile.partyEnabled && !botController.isPvPing &&
-		[unit isTappedByOther] && [unit targetID] != [playerData GUID] ) {
-
-		// Only do this for mobs.
-		Mob *mob = [mobController mobWithGUID:[unit GUID]];
-		if (mob && [mob isValid]) {
-			// Mob has been tapped by another player
-			log(LOG_DEV, @"Firing tapped notification for unit %@", unit);
-			[[NSNotificationCenter defaultCenter] postNotificationName: UnitTappedNotification object: [[unit retain] autorelease]];
-			return;
-		}
-	}
-
-	// Tanaris4: I'd recommend using cachedGUID, as (in theory) an object's GUID shouldn't change + this saves memory reads
-	GUID guid = [unit cachedGUID];
-	
-	// Unit not in combat check
-	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
-
-	if ( ![unit isInCombat] ) {
-		
-		float secondsInCombat = leftCombatCount/10;
-	
-		log(LOG_DEV, @"%@ Unit not in combat now for %0.2f seconds", [self unitHealthBar: unit], secondsInCombat);
-		leftCombatCount++;
-
-		// If it's our target let's do some checks as we should be in combat
-		if ( unit == _attackUnit ) {
-
-			// This is to set timer if the unit actually our target vs being an add
-			int leftCombatTargetCount = [[_unitLeftCombatTargetCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
-			
-			secondsInCombat = leftCombatTargetCount/10;
-			
-			float combatBlacklistDelay = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNotInCombat"] floatValue];
-//			[[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNotInCombat"] floatValue];
-
-			// not in combat after x seconds we blacklist for the short term, long enough to target something else or move
-			if ( secondsInCombat >  combatBlacklistDelay ) {
-				_hasStepped = NO;
-				log(LOG_COMBAT, @"%@ Unit not in combat after %.2f seconds, blacklisting", [self unitHealthBar: unit], combatBlacklistDelay);
-				[blacklistController blacklistObject:unit withReason:Reason_NotInCombat];
-				[self cancelAllCombat];
-				return;
-			}
-			
-			leftCombatTargetCount++;
-			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
-//			log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
-		}
-
-		// Unit is an add or not our primary target
-		// after a minute stop monitoring
-		if ( secondsInCombat > 60 ){
-			_hasStepped = NO;
-			log(LOG_COMBAT, @"%@ No longer monitoring %@, didn't enter combat after  %d seconds.", [self unitHealthBar: unit], unit, secondsInCombat);
-
-			leftCombatCount = 0;
-			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
-
-			return;
-		}
-
-	} else {
-//		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
-		leftCombatCount = 0;
-	}
-	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
-	
-	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
-}
-
 // find all units we are in combat with
-- (void)doCombatSearch{
-
+- (void)doCombatSearch{	
 	if ( !botController.isBotting ) return;
 
 	if ( [[playerData player] isDead] ) {
@@ -1258,7 +1307,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		self.castingUnit = nil;
 		return;
 	}
-	
+
 	// add all mobs + players
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
@@ -1286,13 +1335,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			(	(unitTarget == playerGUID ||										// 7 - targetting us
 				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
 			 [mob isFleeing])													// or fleeing
-			){
+			) {
 			
 			// add mob!
-			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ){
+			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ) {
 				log(LOG_DEV, @"Adding mob %@", mob);
 				[_unitsAttackingMe addObject:(Unit*)mob];
-				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[mob retain] autorelease]];
+				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)mob retain] autorelease]];
 			}
 		}
 		// remove unit
@@ -1317,17 +1366,17 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
 			 [player isFleeing])													// or fleeing
 			){
-			
+
 			// add player
 			if ( ![_unitsAttackingMe containsObject:(Unit*)player] ) {
-				log(LOG_COMBAT, @"[Combat] Adding player %@", player);
+				log(LOG_DEV, @"[Combat] Adding player %@", player);
 				[_unitsAttackingMe addObject:(Unit*)player];
-				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[player retain] autorelease]];
+				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)player retain] autorelease]];
 			}
 		}
 		// remove unit
 		else if ( [_unitsAttackingMe containsObject:(Unit*)player] ) {
-			log(LOG_COMBAT, @"[Combat] Removing player %@", player);
+			log(LOG_DEV, @"[Combat] Removing player %@", player);
 			[_unitsAttackingMe removeObject:(Unit*)player];
 		}
 	}
@@ -1336,13 +1385,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableArray *unitsToRemove = [NSMutableArray array];
 	for ( Unit *unit in _unitsAttackingMe ){
 		if ( !unit || ![unit isValid] || [unit isDead] || ![unit isInCombat] || ![unit isSelectable] || ![unit isAttackable] ){
-			log(LOG_COMBAT, @"[Combat] Removing unit: %@", unit);
+			log(LOG_DEV, @"[Combat] Removing unit: %@", unit);
 			[unitsToRemove addObject:unit];
 		}
 	}
-	if ( [unitsToRemove count] ) {
-		[_unitsAttackingMe removeObjectsInArray:unitsToRemove];
-	}
+
+	if ( [unitsToRemove count] ) [_unitsAttackingMe removeObjectsInArray:unitsToRemove];
 
 	log(LOG_DEV, @"doCombatSearch: In combat with %d units", [_unitsAttackingMe count]);
 

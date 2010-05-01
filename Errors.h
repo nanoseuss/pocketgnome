@@ -29,6 +29,7 @@ typedef enum CastError {
 	ErrCantAttackMounted = 16,
 	ErrYouAreMounted = 17,
 	ErrMorePowerfullSpellActive = 18,
+	ErrHaveNoTarget = 19,
 } CastError;
 
 #define INV_FULL			@"Inventory is full."

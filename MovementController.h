@@ -197,4 +197,6 @@ typedef enum MovementType {
 // UI
 - (void)moveToWaypointFromUI:(Waypoint*)wp;
 
+- (void)moveUpStart;
+- (void)moveUpStop;
 @end
