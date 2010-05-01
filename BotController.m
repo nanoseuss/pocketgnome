@@ -1883,12 +1883,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// See if we need to target/face
 	//	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] || [[self procedureInProgress] isEqualToString: PreCombatProcedure]) {
-	
+
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && !_castingUnit && [playerController isHostileWithFaction: [target factionTemplate]]) {
 		log(LOG_DEV, @"Got a new hostile target in performProcedureWithState.");
+		[movementController turnTowardObject: target];
 		[movementController establishPlayerPosition];
-		//			if ( [playerController targetID] != [target GUID] ) [playerController targetGuid:[target GUID]];
-		//			_lastCombatProcedureTarget = [target GUID];
+		if ( [playerController targetID] != [target GUID] ) [playerController targetGuid:[target GUID]];
 	}
 	//	}
 
@@ -2302,7 +2302,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 					log(LOG_PROCEDURE, @"Player has mounted.");
 					// Pause a moment for good measure
-					usleep(300000);
+					usleep(500000);
 
 					// Raise up a little bit
 					if ( [[playerController player] isFlyingMounted] && ![[playerController player] isSwimming] ) [movementController jumpRaw];
@@ -2614,7 +2614,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// we're done eating/drinking! continue
 	if ( eatClear && drinkClear ) {
 		log(LOG_REGEN, @"Finished after %0.2f seconds", timeSinceStart);
-		if ([[playerController player] isSitting]) [movementController jumpRaw];
+		if ([[playerController player] isSitting]) [movementController establishPlayerPosition];
 		[self cancelCurrentProcedure];
 		[self cancelCurrentEvaluation];		
 		[self evaluateSituation];
@@ -2623,6 +2623,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// should we be done?
 		if ( timeSinceStart > 30.0f ) {
 			log(LOG_REGEN, @"Ran for 30, done, regen too long!?");
+			if ([[playerController player] isSitting]) [movementController establishPlayerPosition];
 			[self cancelCurrentProcedure];
 			[self cancelCurrentEvaluation];
 			[self evaluateSituation];
@@ -3478,9 +3479,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		_lootMacroAttempt = 0;
 	}
 	
-	float delay = 0.5f;
+	float delay = 0.3f;
 	// Allow the lute to fade
-	if ( wasNode || wasSkin ) delay = 1.5f;
+	if ( wasNode || wasSkin ) delay = 1.0f;
 
 	self.wasLootWindowOpen = NO;
 
@@ -3490,7 +3491,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self resetLootScanIdleTimer];
 
 	// Retarget ourselves
-//	[playerController targetGuid:[playerController GUID]];
+	[playerController targetGuid:[playerController GUID]];
 
 //	if ( self.evaluationInProgress != @"Fishing") [movementController establishPlayerPosition];
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
@@ -4308,7 +4309,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			BOOL nearbyCampers = [playersController playerWithinRangeOfUnit: theCombatProfile.checkForCampersRange Unit:[playerController player] includeFriendly:NO includeHostile:YES];
 			if ( nearbyCampers ) {
 				log(LOG_GHOST, @"Looks like I'm being camped, going to hold of on resurrecting.");
-				[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
+//				[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
+				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 5.0f];
 				return YES;
 			}
 			log(LOG_GHOST, @"No campers.");
@@ -4320,7 +4322,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		if ( ![mobs count]) {
 			log(LOG_GHOST, @"Cannot find the Spirit Healer, is it in range?");
-			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
+			//			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 			return YES;
 		}
 
@@ -4341,7 +4344,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 		if ( !spiritHealer ) {			
 			log(LOG_GHOST, @"Cannot find the Spirit Healer in the mobs list, is it in range?");
-			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
+//			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 			return YES;
 		} else {
 		// Found the Spirit Healer
@@ -4358,7 +4362,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				// Face the target
 				[movementController turnTowardObject: spiritHealer];
 				[movementController moveToObject: spiritHealer];
-				[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+//				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.0f];
+//				[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
 				return YES;
 			}
 
@@ -4367,7 +4372,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self interactWithMouseoverGUID:[spiritHealer GUID]];
 			usleep(10000);
 			[macroController useMacroOrSendCmd:@"ClickFirstButton"];
-			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.5f];
+//			[self performSelector: _cmd withObject: nil afterDelay: 0.5f];
 			return YES;
 		}
 	}
@@ -4386,7 +4392,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( _ghostDance == 0 && distanceToCorpse > 6.0f && distanceToCorpse <= theCombatProfile.moveToCorpseRange) {
 		[movementController moveToPosition: corpsePosition];
 		log(LOG_GHOST, @"Moving to the corpse now.");
-		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+//		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.3f];
+//		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 		return YES;
 	} else
 		
@@ -4407,7 +4414,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		BOOL nearbyCampers = [playersController playerWithinRangeOfUnit: theCombatProfile.checkForCampersRange Unit:[playerController player] includeFriendly:NO includeHostile:YES];
 		if ( nearbyCampers ) {
 			log(LOG_GHOST, @"Looks like I'm being camped, going to hold of on resurrecting.");
-			[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 5.0f];
+//			[self performSelector: _cmd withObject: nil afterDelay: 5.0f];
 			return YES;
 		}
 		log(LOG_GHOST, @"No campers.");
@@ -4433,7 +4441,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					usleep(1600000);
 					[movementController moveBackwardStop];
 					_ghostDance++;
-					[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
+					[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+//					[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
 					return YES;
 				}
 			}
@@ -4443,7 +4452,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _ghostDance > 3 && distanceToCorpse > 26.0 ) {
 			log(LOG_GHOST, @"Ghost dance didnt help, moving back to the corpse.");
 			[movementController moveToPosition: corpsePosition];
-			[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+//			[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 			return YES;
 		}
 	}
@@ -4458,7 +4467,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( _reviveAttempt > 15 ) _reviveAttempt = 15;
 
 	log(LOG_GHOST, @"Waiting %d seconds to resurrect.", _reviveAttempt);
-	[self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: _reviveAttempt];
+
+//	[self performSelector: _cmd withObject: nil afterDelay: _reviveAttempt];
 	return YES;
 }
 

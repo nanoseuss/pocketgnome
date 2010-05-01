@@ -155,10 +155,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( !botController.isBotting ) return;
 
     log(LOG_DEV, @"------ Player Leaving Combat ------");
-	
+
 	_inCombat = NO;
 
-	[self resetAllCombat];
+//	[self resetAllCombat]; // It's possible that we've left combat as we're casting on a new target so this is bad.
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
@@ -623,9 +623,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 			log(LOG_COMBAT, @"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
-			[movementController turnTowardObject: _castingUnit];
-			[movementController establishPlayerPosition];
-//			usleep([controller refreshDelay]*2);
+			if ( [movementController jumpForward] ) {
+				usleep(300000);
+				[movementController turnTowardObject: _castingUnit];
+				[movementController establishPlayerPosition];
+				usleep([controller refreshDelay]*2);
+			}
 		}
 
 		// move toward unit?

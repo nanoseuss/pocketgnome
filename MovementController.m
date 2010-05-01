@@ -2258,6 +2258,24 @@ typedef enum MovementState{
 	return YES;
 }
 
+- (BOOL)jumpForward {
+	log(LOG_MOVEMENT, @"Jumping forward.");
+	
+	// Move backward
+	[self moveForwardStart];
+	usleep(100000);
+	
+	// Jump
+	[self jumpRaw];
+	
+	// Stop
+	[self moveForwardStop];
+	usleep([controller refreshDelay]*2);
+	
+	return YES;
+	
+}
+
 - (BOOL)jumpBack {
 	log(LOG_MOVEMENT, @"Jumping back.");
 	

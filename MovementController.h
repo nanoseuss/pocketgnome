@@ -168,6 +168,7 @@ typedef enum MovementType {
 - (void)jump;
 - (void)jumpRaw;
 - (BOOL)jumpTowardsPosition: (Position*)position;
+- (BOOL)jumpForward;
 - (BOOL)jumpBack;
 
 // are we currently patrolling?
