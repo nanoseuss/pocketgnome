@@ -690,6 +690,8 @@ static PlayerDataController* sharedController = nil;
 		usleep([controller refreshDelay]*2);
 		
 		[bindingsController executeBindingForKey:BindingTargetLast];
+
+		usleep([controller refreshDelay]*2);
 		
 		log(LOG_DEV, @"[PlayerData] Targetting last target: 0x%qX", guid);
 		

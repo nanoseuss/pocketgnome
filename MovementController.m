@@ -507,8 +507,51 @@ typedef enum MovementState{
 	// find the closest waypoint in our primary route!
 	newWaypoint = [self.currentRoute waypointClosestToPosition:playerPosition];
 
-	// If the waypoint is too close, grab the next
 	float distanceToWaypoint = [[playerData position] distanceToPosition: [newWaypoint position]];
+
+	if ( distanceToWaypoint > 100.0f  && botController.theRouteCollection.routes.count > 1) {
+		log(LOG_WAYPOINT, @"Looks like the next waypoint is very far, checking to see if we have a closer route.");
+
+		float closestDistance = 0.0f;
+		Waypoint *thisWaypoint = nil;
+		Route *route = nil;
+		RouteSet *routeSetFound = [RouteSet retain];
+
+		for (RouteSet *routeSet in [botController.theRouteCollection routes] ) {
+ 
+			// Set the route to test against
+			if ( [playerData isGhost] || [playerData isDead] ) route = [routeSet routeForKey:CorpseRunRoute];
+				else route = [routeSet routeForKey:PrimaryRoute];
+
+			if ( !route || route == nil) continue;
+ 
+			if ( closestDistance == 0.0f ) {
+				thisWaypoint = [route waypointClosestToPosition:playerPosition];
+				closestDistance = [playerPosition distanceToPosition: [thisWaypoint position]];
+				routeSetFound = routeSet;
+				continue;
+			}
+ 
+			// We have one to compare
+			thisWaypoint = [route waypointClosestToPosition:playerPosition];
+			distanceToWaypoint = [playerPosition distanceToPosition: [thisWaypoint position]];
+			if (distanceToWaypoint < closestDistance) {
+				closestDistance = distanceToWaypoint;
+				routeSetFound = routeSet;
+			}
+		}
+
+		if ( routeSetFound && [routeSetFound UUID] != [self.currentRouteSet UUID]) {
+			log(LOG_WAYPOINT, @"Found a closer route, switching!");
+			[self setPatrolRouteSet: routeSetFound];
+			routeSetFound = nil;
+			[routeSetFound release];
+			[self performSelector: _cmd withObject: nil afterDelay:0.3f];
+			return;
+		}
+	}
+
+	// If the waypoint is too close, grab the next
 	if (![newWaypoint actions] && distanceToWaypoint < ( [playerData speedMax] / 2.0f) ) {
 		int index = [waypoints indexOfObject: newWaypoint];
 		index++;
@@ -1023,7 +1066,7 @@ typedef enum MovementState{
 
 	// should we jump?
 	if (	[self isMoving] && distanceToDestination > ([playerData speedMax]/1.1f) &&
-			playerSpeed > ([playerData speedMax]/2.0f) && 
+			playerSpeed >= ([playerData speedMax]/1.1f) && 
 			[[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] &&
 			![[playerData player] isFlyingMounted]
 		) {

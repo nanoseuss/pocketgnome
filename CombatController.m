@@ -181,12 +181,17 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	// Kill the monitoring if called from else where
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
 	if ( [_unitsMonitoring containsObject: unit] )	[_unitsMonitoring removeObject: unit];
 
 	if ( wasCastingUnit ) {
+		[_castingUnit release];
+		_castingUnit = nil;
+
 		// Casting unit dead, reset!
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit:) object: unit];
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit:) object: nil];
 		[botController cancelCurrentProcedure];
 		[botController cancelCurrentEvaluation];
 		[movementController resetMovementState];
@@ -221,11 +226,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( _inCombat && ![_unitsAttackingMe count] ) _inCombat = NO;
 
 	// If this was our casting unit
-	if ( wasCastingUnit ) {
-		[_castingUnit release];
-		_castingUnit = nil;
-		[botController evaluateSituation];
-	}
+	if ( wasCastingUnit ) [botController evaluateSituation];
+
 }
 
 // invalid target
@@ -509,7 +511,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // from performProcedureWithState 
 // this will keep the unit targeted!
 - (void)stayWithUnit:(Unit*)unit withType:(int)type {
-
 	if ( !unit || unit == nil || [unit isDead] ) return;
 
 	Unit *oldTarget = [_castingUnit retain];
@@ -560,7 +561,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 			[self monitorUnit: unit];
 		}
-
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 		[self stayWithUnit];
 	}
 }
@@ -591,7 +592,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_COMBAT, @"You died, stopping attack.");
 		return;
 	}
-	
+
 	// no longer in combat procedure
 	if ( botController.procedureInProgress != @"CombatProcedure" && botController.procedureInProgress != @"PreCombatProcedure" ) {
 		log(LOG_COMBAT, @"No longer in combat procedure, no longer staying with unit");
@@ -622,7 +623,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
-			log(LOG_COMBAT, @"[Combat] Unit is behind us (%.2f). Repositioning.", angleTo);
+			log(LOG_COMBAT, @"%@ is behind us (%.2f). Repositioning.", _castingUnit, angleTo);
 			if ( [movementController jumpForward] ) {
 				usleep(300000);
 				[movementController turnTowardObject: _castingUnit];
