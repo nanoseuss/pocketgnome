@@ -214,7 +214,8 @@
 	BOOL _strandDelay;
 	int _strandDelayTimer;
 	BOOL _waitingToLeaveBattleground;
-	BOOL _waitForPvP;
+	BOOL _waitForPvPQueue;
+	BOOL _waitForPvPPreparation;
 
 	
 	// auto join WG options

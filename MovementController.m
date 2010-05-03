@@ -1469,6 +1469,7 @@ typedef enum MovementState{
 	_checkingPosition = NO;
 	_unstickifyTry = 0;
 	_stuckCounter = 0;
+	_performingActions = NO;
 
 	if (self.isFollowing && self.currentRouteHoldForFollow) {
 		// Switch back to what ever was the old route
@@ -2344,7 +2345,8 @@ typedef enum MovementState{
 - (void)performActions:(NSDictionary*)dict{
 	
 	// player cast?  try again shortly
-	if ( [playerData isCasting] ){
+	if ( [playerData isCasting] ) {
+		_performingActions = NO;
 		float delayTime = [playerData castTimeRemaining];
         if ( delayTime < 0.2f) delayTime = 0.2f;
         log(LOG_WAYPOINT, @"Player casting. Waiting %.2f to perform next action.", delayTime);
@@ -2353,7 +2355,6 @@ typedef enum MovementState{
                    withObject: dict 
                    afterDelay: delayTime];
 
-		_performingActions = NO;
 		return;
 	}
 

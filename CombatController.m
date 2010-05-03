@@ -190,8 +190,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		// Casting unit dead, reset!
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit:) object: unit];
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit:) object: nil];
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 		[botController cancelCurrentProcedure];
 		[botController cancelCurrentEvaluation];
 		[movementController resetMovementState];
@@ -544,7 +543,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// lets face our new unit!
 	if ( unit != oldTarget ) {
 		log(LOG_DEV, @"Facing new target! %@", unit);
-		[movementController turnTowardObject:unit];
+		if ( [playerData isHostileWithFaction: [unit factionTemplate]] ) [movementController turnTowardObject:unit];
 	}
 
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
@@ -561,6 +560,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 			[self monitorUnit: unit];
 		}
+
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 		[self stayWithUnit];
 	}
@@ -604,6 +604,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// check player facing vs. unit position
 	Position *playerPosition = [playerData position];
 	float playerDirection = [playerData directionFacing];
+	float distanceToCastingUnit = [[playerData position] distanceToPosition: [_castingUnit position]];
 	float theAngle = [playerPosition angleTo: [_castingUnit position]];
 
 	// compensate for the 2pi --> 0 crossover
@@ -624,12 +625,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 			log(LOG_COMBAT, @"%@ is behind us (%.2f). Repositioning.", _castingUnit, angleTo);
-			if ( [movementController jumpForward] ) {
-				usleep(300000);
-				[movementController turnTowardObject: _castingUnit];
-				[movementController establishPlayerPosition];
-				usleep([controller refreshDelay]*2);
-			}
+
+			if ( distanceToCastingUnit < 10.0f ) if ( [movementController jumpForward] ) usleep(300000);
+			[movementController turnTowardObject: _castingUnit];
+			[movementController establishPlayerPosition];
+			usleep([controller refreshDelay]*2);
 		}
 
 		// move toward unit?
@@ -661,6 +661,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 
+	if ( [playerData isDead] ){
+		log(LOG_DEV, @"You died, stopping monitoring.");
+		return;
+	}
+	
 	// unit died, fire off notification
 	if ( [unit isDead] ) {
 		log(LOG_DEV, @"Firing death notification for unit %@", unit);
@@ -1190,9 +1195,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (NSArray*)friendlyUnits{
-	
+
 	// get list of all targets
     NSMutableArray *friendliesWithinRange = [NSMutableArray array];
+	NSMutableArray *friendliesNotInRange = [NSMutableArray array];
 	NSMutableArray *friendlyTargets = [NSMutableArray array];
 	
 	// If we're in party mode and only supposed to help party members
@@ -1222,23 +1228,40 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	}
 
+	// Parse the list to remove out of range units
+	// if we have some targets
+	float range = (botController.theCombatProfile.healingRange > botController.theCombatProfile.attackRange) ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange;
+	Position *playerPosition = [playerData position];
+
+    if ( [friendliesWithinRange count] ) 
+        for ( Unit *unit in friendliesWithinRange ) 
+			if ( [playerPosition distanceToPosition: [unit position]] > range ) [friendliesNotInRange addObject: unit];
+
+
+	// Remove out of range units before we sort this list in case it's massive
+	if ( [friendliesNotInRange count] ) 
+		for ( Unit *unit in friendliesNotInRange ) 
+			[friendliesWithinRange removeObject: unit];
+
 	// sort by range
-    Position *playerPosition = [playerData position];
     [friendliesWithinRange sortUsingFunction: DistFromPositionCompare context: playerPosition];
 
 	// if we have some targets
     if ( [friendliesWithinRange count] ) {
         for ( Unit *unit in friendliesWithinRange ) {
+			// Skip if the target is ourself
+			if ( [unit GUID] == [playerData GUID] ) continue;
+
 //			log(LOG_DEV, @"Friendly - Checking %@", unit);
 			if ( [self validFriendlyUnit:unit] ) {
-				log(LOG_DEV, @"Valid friendly");
+				log(LOG_DEV, @"Valid friendly %@", unit);
 				[friendlyTargets addObject: unit];
 			}
         }
     }
-	
-//	log(LOG_DEV, @"Total friendlies: %d", [friendlyTargets count]);
-	
+
+	log(LOG_DEV, @"Total friendlies: %d", [friendlyTargets count]);
+
 	return friendlyTargets;
 }
 
