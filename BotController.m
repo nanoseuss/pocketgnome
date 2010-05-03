@@ -3052,7 +3052,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Range Checks
 	float distanceToTarget = [[playerController position] distanceToPosition: [unit position]];
 	float range = 0.0f;
-	
+
 	// Friendly
 	if ( [playerController isFriendlyWithFaction: [unit factionTemplate]] ) {
 			
@@ -4130,10 +4130,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark -
 #pragma mark Evaluation Tasks
 - (BOOL)evaluateForPVP {
+	log(LOG_FUNCTION, @"evaluateForPVP");
 
 	if ( !self.isPvPing ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for PvP");
+
+	if ( movementController.moveToObject ) return NO;
+
+	if ( _waitForPvPQueue ) {
+		log(LOG_EVALUATE, @"Already in Queue, skipping PvP Evaluation.");		
+		if ( ![[controller currentStatus] isEqualToString: @"PvP: Waiting in queue for Battleground."] ) 
+			[controller setCurrentStatus: @"PvP: Waiting in queue for Battleground."];
+		return NO;
+	}
 
 	// Battleground has ended, we've been waiting to leave
 	if ( _waitingToLeaveBattleground ) {
@@ -4149,7 +4159,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Is the BG is over?
 	if ( [self pvpIsBattlegroundEnding] ) {
 
-
 		log(LOG_PVP, @"Battleground ending.");
 
 		// All of the resets go here
@@ -4159,7 +4168,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.theRouteSet = nil;
 		self.pvpLeaveInactive = NO;
 		self.pvpPlayWarning = NO;
-
+		_waitForPvPQueue = NO;
+		_waitForPvPPreparation = NO;
+		
 		// Wait if we need to...
 		if ( [self.pvpBehavior waitToLeave] && [self.pvpBehavior waitTime] >= 0.0f ) {
 			float delay = [self.pvpBehavior waitTime];
@@ -4228,11 +4239,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[controller setCurrentStatus: @"PvP: Waiting in queue for Battleground."];
 				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 				return YES;
-			} else {
-				// Update the status if we need to
-				if ( ![[controller currentStatus] isEqualToString: @"PvP: Waiting in queue for Battleground."] ) 
-					[controller setCurrentStatus: @"PvP: Waiting in queue for Battleground."];
-				return NO;
 			}
 		}
 
@@ -4240,7 +4246,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[controller setCurrentStatus: @"PvP: Waiting in queue for Battleground."];
 			log(LOG_PVP,  @"Queued for BG!");
 			_waitForPvPQueue = YES;
-			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.5f];
 			return YES;
 		} else {
 			[controller setCurrentStatus: @"PvP: Battleground queue failed, waiting for retry."];
@@ -4254,26 +4260,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 * After this point we're in the BG
 	 */
 
-	if ( _waitForPvPQueue ) _waitForPvPQueue = NO;
-
-	if ( _waitForPvPPreparation ) {
-		// Check for preparation buff
-		if ( ![auraController unit: [playerController player] hasAura: PreparationSpellID] ) {
-			_waitForPvPPreparation = NO;
-			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-			return YES;
-		} else {
-			if ( ![[controller currentStatus] isEqualToString: @"PvP: Waiting for preparation buff to fade."] ) 
-				[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade."];
-			return NO;
-		}
-	}
-
 	// Check for preparation buff
 	if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ) {
 		if ( ![[controller currentStatus] isEqualToString: @"PvP: Waiting for preparation buff to fade."] ) 
 			[controller setCurrentStatus: @"PvP: Waiting for preparation buff to fade."];
-		_waitForPvPPreparation = YES;
+
+		if ( !_waitForPvPPreparation ) {
+			_waitForPvPPreparation = YES;
+			[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+			return YES;
+		}
+
+	} else 
+	if ( _waitForPvPPreparation ) {
+		_waitForPvPPreparation = NO;
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 		return YES;
 	}
@@ -4283,6 +4283,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( _strandDelay ) {
 			if ( _strandDelayTimer++ < 100 ) {
 				if ( [controller currentStatus] != @"PvP: Waiting for boat to arrive." ) [controller setCurrentStatus: @"PvP: Waiting for boat to arrive."];
+				_waitForPvPQueue = NO;
 				_waitForPvPPreparation = YES;
 				return NO;
 			}
@@ -4330,6 +4331,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( !self.isBotting ) return NO;
 
+	if ( movementController.moveToObject ) return NO;
+	
 	log(LOG_EVALUATE, @"Evaluating for Ghost");
 
 	if ( !self.evaluationInProgress ) {
@@ -4565,7 +4568,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForFollow {
-	
+
 	if ( [playerController isDead] ) return NO;
 
 	log(LOG_FUNCTION, @"evaluateForFollow");
@@ -4691,16 +4694,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [playerController isDead] ) return NO;
 
-	if ( _waitForPvPQueue || _waitForPvPPreparation ) return NO;
+	if ( _waitForPvPQueue || _waitForPvPPreparation ) {
+		log(LOG_EVALUATE, @"[CombatStart] skipping since we're in queue(%d) or in preparation(%d).", _waitForPvPQueue, _waitForPvPPreparation);
+		return NO;
+	}
 
 	log(LOG_FUNCTION, @"evaluateForCombatContinuation");
 
 	if (self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted]) return NO;
-	
+
 	// Skip this if we're doing something already
 	if ( self.evaluationInProgress ) return NO;
 
-	if ( !self.isPvPing && !theCombatProfile.partyEnabled && ![playerController isInCombat] && ![combatController inCombat] ) return NO;
+	if ( !theCombatProfile.partyEnabled && ![playerController isInCombat] && ![combatController inCombat] ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Combat Continuation");
 
@@ -4727,20 +4733,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForCombatStart {
+	log(LOG_FUNCTION, @"evaluateForCombatStart");
 
 	if ( [playerController isDead] ) return NO;
 
-	if ( _waitForPvPQueue || _waitForPvPPreparation ) return NO;
-
+	if ( _waitForPvPQueue || _waitForPvPPreparation ) {
+		log(LOG_EVALUATE, @"[CombatStart] skipping since we're in queue(%d) or in preparation(%d).", _waitForPvPQueue, _waitForPvPPreparation);
+		return NO;
+	}
 	
-	log(LOG_FUNCTION, @"evaluateForCombatStart");
 
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress ) return NO;
 
 	// If combat isn't enabled
 	if ( !theCombatProfile.combatEnabled && !theCombatProfile.healingEnabled ) return NO;
-		
+
 	// If we're supposed to ignore combat while flying
 	if ( self.theCombatProfile.ignoreFlying && [[playerController player] isFlyingMounted] ) return NO;
 	
@@ -4753,7 +4761,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Look for a new target
 	if ( theCombatProfile.combatEnabled ) {
-		Unit *unitToActOn  = [combatController findUnitWithFriendly:_includeFriendly onlyHostilesInCombat:NO];
+		Unit *unitToActOn  = [combatController findUnitWithFriendlyToEngage:_includeFriendly onlyHostilesInCombat:NO];
 
 		if ( unitToActOn && [unitToActOn isValid] ) {
 			float unitToActOnDist  = unitToActOn ? [[unitToActOn position] distanceToPosition: playerPosition] : INFINITY;
@@ -4827,6 +4835,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return NO;
 		}
 	}
+
+	if ( movementController.moveToObject ) return NO;
 
 	log(LOG_EVALUATE, @"Evaluating for Regen");
 
@@ -4940,7 +4950,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( !self.doLooting ) return NO;
 
-//	if ( _waitForPvP ) return NO;
+	if ( movementController.moveToObject ) return NO;
 
 	if ( [playerController isDead] ) {
 		log(LOG_EVALUATE, @"Skipping Loot Evaluation since playerController.isDead");		
@@ -5111,7 +5121,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
 
-//	if ( _waitForPvP ) return NO;
+	if ( [movementController moveToObject] ) return NO;
 
 	if ( [playerController isDead] ) return NO;
 
@@ -5322,9 +5332,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Fishing" ) return NO;
 
-//	if ( _waitForPvP ) return NO;
-	
-	if ( [movementController moveToObject] ) return NO;
+	if ( movementController.moveToObject ) return NO;
+
 	if ( !_doFishing ) return NO;
 
 	if ( [playerController isDead] ) return NO;
@@ -5422,6 +5431,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (BOOL)evaluateForPatrol {
 
 	if ( [playerController isDead] ) return NO;
+
+	if ( movementController.moveToObject ) return NO;
 
 	// If we have looting to do we skip this
 	if ( self.doLooting && [_mobsToLoot count] ) {
@@ -5773,8 +5784,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_EVALUATE, @"Waiting for PvP Preparation, looping.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
 		return NO;
+	} else
+	// If we're waiting for PvP Preparation in Strand
+	if ( _waitForPvPPreparation && _attackingInStrand ) {
+		log(LOG_EVALUATE, @"Waiting for PvP Preparation in strand, looping.");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.1f];
+		return NO;
 	}
-
+	
+	
 	// If we're just performing a check while we're in route we can return here
 	if ( movementController.performingActions ) {
 		log(LOG_EVALUATE, @"Evaluation was called from the movemetController while performing a delay action, looping evaluation.");
@@ -5788,6 +5806,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 
+	if ( movementController.moveToObject ) {
+		log(LOG_EVALUATE, @"Moving to an object so we're not processing movement.");
+		return NO;
+	}
+	
 	// If we're just performing a check while we're in route we can return here
 	if ( [movementController isPatrolling] ) {
 		log(LOG_EVALUATE, @"Evaluation was called while patrolling, nothing to do.");
@@ -5802,12 +5825,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 
+
 	if ( [movementController isMoving] ) {
 		log(LOG_EVALUATE, @"Player is moving so we're not processing movement.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 		return NO;
 	}
-
+	
 	// If we have looting to do we loop
 	if ( [_mobsToLoot count] ) {
 		log(LOG_EVALUATE, @"We have looting to do so we're looping evaluation.");
@@ -5932,7 +5956,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 - (IBAction)startBot: (id)sender {
 
 //	BOOL useRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue];
-//  BOOL usePvPBehavior = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UsePvPBehavior"] boolValue];
+//	BOOL usePvPBehavior = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UsePvPBehavior"] boolValue];
 
 	BOOL useRoute = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoute"] boolValue];
 	BOOL usePvPBehavior = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UsePvPBehavior"] boolValue];
@@ -6342,6 +6366,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_followUnit = nil;
 	_tankUnit = nil;
 	_mountAttempt = 0;
+	_isPvPing = NO;
+	_waitForPvPQueue = NO;
+	_waitForPvPPreparation = NO;
 
 	// stop our log out timer
 	[_logOutTimer invalidate];_logOutTimer=nil;
@@ -6682,16 +6709,15 @@ NSMutableDictionary *_diffDict = nil;
 	
     if ( self.isPvPing ) {
 		UInt32 spellID = [[(Spell*)[[notification userInfo] objectForKey: @"Spell"] ID] unsignedIntValue];
-		
+
 		// if we are waiting to rez, pause the bot (incase it is not)
-		if( spellID == WaitingToRezSpellID ) {
-			[movementController resetMovementState];
-		}
+		if( spellID == WaitingToRezSpellID ) [movementController resetMovementState];
 
 		// Just got preparation?  Lets check to see if we're in strand + should be attacking/defending
 		if ( spellID == PreparationSpellID ) {
 			[self cancelCurrentProcedure];
 			[self cancelCurrentEvaluation];
+			_waitForPvPQueue = NO;
 			_waitForPvPPreparation = YES;
 
 			log(LOG_PVP, @"We have preparation, checking BG info!");
@@ -6794,19 +6820,19 @@ NSMutableDictionary *_diffDict = nil;
 		// execute the macro
 		NSString *fullMacro = [NSString stringWithFormat:@"/run a,b={%d},{}; %@", 32, macroEnd];
 		[macroController useMacroOrSendCmd:fullMacro];
-		sleep(1);
+//		sleep(1);
 	} else {
 		log(LOG_PVP, @"Queueing up.");
 		// we have some checked!
 		
 		NSString *fullMacro = [NSString stringWithFormat:@"/run a,b={%@},{}; %@", [self.pvpBehavior formattedForJoinMacro], macroEnd];
 		[macroController useMacroOrSendCmd:fullMacro];
-		sleep(1);
+//		sleep(1);
 	}
 
 	// actually join
 	[macroController useMacroOrSendCmd:@"JoinBattlefield"];
-	sleep(1);
+//	sleep(1);
 
 	if ( [playerController battlegroundStatus] != BGQueued ) {
 		log(LOG_ERROR,  @"[PvP] We just queued for the BG, but we're not queued? hmmm");

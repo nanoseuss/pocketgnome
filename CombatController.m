@@ -626,7 +626,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 			log(LOG_COMBAT, @"%@ is behind us (%.2f). Repositioning.", _castingUnit, angleTo);
 
-			if ( distanceToCastingUnit < 10.0f ) if ( [movementController jumpForward] ) usleep(300000);
+			if ( distanceToCastingUnit < 5.0f ) if ( [movementController jumpForward] ) usleep(300000);
 			[movementController turnTowardObject: _castingUnit];
 			[movementController establishPlayerPosition];
 			usleep([controller refreshDelay]*2);
@@ -964,6 +964,47 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		int weight = [self weight:unit PlayerPosition:playerPosition];
 		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
 
+		// best weight
+		if ( weight > highestWeight ) {
+			highestWeight = weight;
+			bestUnit = unit;
+		}
+	}
+	return bestUnit;	
+}
+
+// find a unit to attack, CC, or heal (this one is for engage range only... combat start vs combat continuation)
+- (Unit*)findUnitWithFriendlyToEngage:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat {
+	
+	log(LOG_FUNCTION, @"findCombatTarget called");
+	
+	// flying check?
+	if ( botController.theCombatProfile.ignoreFlying ) if ( ![playerData isOnGround] ) return nil;
+	
+	// no combat or healing?
+	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ) return nil;
+	
+	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
+	Position *playerPosition = [playerData position];
+	
+	if ( ![validUnits count] ) return nil;
+	
+	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
+	int highestWeight = -500;
+	
+	Unit *bestUnit = nil;
+	for ( Unit *unit in validUnits ) {
+
+		// Make sure it's within our Engage range
+		if ( [playerPosition distanceToPosition: [unit position]] > botController.theCombatProfile.engageRange ) continue;
+
+		// Let's make sure we can even act on this unit before we consider it
+		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
+		
+		// begin weight calculation
+		int weight = [self weight:unit PlayerPosition:playerPosition];
+		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
+		
 		// best weight
 		if ( weight > highestWeight ) {
 			highestWeight = weight;

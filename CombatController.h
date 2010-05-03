@@ -83,6 +83,7 @@
 
 // OUTPUT: find a unit to attack, or heal
 -(Unit*)findUnitWithFriendly:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat;
+-(Unit*)findUnitWithFriendlyToEngage:(BOOL)includeFriendly onlyHostilesInCombat:(BOOL)onlyHostilesInCombat;
 
 // INPUT: from CombatProcedure within PerformProcedureWithState
 - (void)stayWithUnit:(Unit*)unit withType:(int)type;

@@ -1057,7 +1057,8 @@ typedef enum MovementState{
 	}
 
 	// Check evaluation to see if we need to do anything
-	if ( !self.moveToObject && [botController evaluateSituation] ) {
+//	if ( !self.moveToObject && [botController evaluateSituation] ) {
+	if ( [botController evaluateSituation] ) {
 		log(LOG_DEV, @"Action taken, not checking movement, checking evaluation.");
 //		if ( [self isMoving] ) [self stopMovement];
 //		[botController evaluateSituation];
