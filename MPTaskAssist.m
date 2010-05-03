@@ -215,8 +215,11 @@ PGLog(@"description...");
 						targetID = [guy targetID];
 						if (targetID != 0) {
 							// selectedMob = guy.target
-							self.selectedMob = [[MobController sharedController] mobWithGUID: targetID];
-							break;
+							Mob *guyTarget = [[MobController sharedController] mobWithGUID: targetID];
+							if ([guyTarget isAttackable]) {
+								self.selectedMob = guyTarget;
+								break;
+							}
 						} // end if
 					} // end if
 				}
@@ -235,8 +238,11 @@ PGLog(@"description...");
 						if([player isInCombat]) {
 							targetID = [player targetID];
 							if (targetID != 0) {
-								self.selectedMob = [[MobController sharedController] mobWithGUID: targetID];
-								break;
+								Mob *playerTarget = [[MobController sharedController] mobWithGUID: targetID];
+								if ([playerTarget isAttackable]) {
+									self.selectedMob = playerTarget;
+									break;
+								}
 							}
 						}
 					}

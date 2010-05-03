@@ -349,19 +349,21 @@
 				
 				for(Mob *mob in listMobs) {
 					
-					if ([mob currentHealth] >= 1) {
-						float currentDistance = [self myDistanceToMob:mob];
+					if ([mob isAttackable]) {
+						if ([mob currentHealth] >= 1) {
+							float currentDistance = [self myDistanceToMob:mob];
+							
+							PGLog(@" mobAttackingMe(): mob[%@] isDead[%d] distance[%0.2f]", [mob name], [mob isDead], currentDistance);
+							if (currentDistance < selectedDistance) {
+								PGLog (@"  ---> selected ");
+								selectedDistance = currentDistance;
+								self.selectedMob = mob;
+							}
+							
+						} else {
 						
-						PGLog(@" mobAttackingMe(): mob[%@] isDead[%d] distance[%0.2f]", [mob name], [mob isDead], currentDistance);
-						if (currentDistance < selectedDistance) {
-							PGLog (@"  ---> selected ");
-							selectedDistance = currentDistance;
-							self.selectedMob = mob;
+							PGLog(@"[Defend][mobAttackingMe] : uh ... list of units attacking me includes a DEAD mob ... why?!?");
 						}
-						
-					} else {
-					
-						PGLog(@"[Defend][mobAttackingMe] : uh ... list of units attacking me includes a DEAD mob ... why?!?");
 					}
 					
 				}
