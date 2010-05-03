@@ -153,6 +153,12 @@
 			
 			
 			////
+			//// Flash Heal
+			////
+			
+			
+			
+			////
 			//// Heal Checks
 			////
 			
@@ -187,7 +193,7 @@
 				}
 			}
 			
-			// Heal Party Members if health < 65%
+			// Shield Party Members if health < 65%
 			for( Player *player in listParty) {
 				if ([player percentHealth] < 65) {
 					// treat as a HOT so we don't try to cast if buff is on
@@ -198,6 +204,14 @@
 			}
 			
 			
+			
+			////
+			////  Debuffs
+			////
+			
+			// dispell magic
+			
+			// cure disease
 			
 			
 			

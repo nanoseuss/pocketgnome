@@ -274,6 +274,18 @@
 
 
 
++ (id) faerieFire {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Faerie Fire"];
+	[newSpell addID:  770];  // only 1 rank
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
 + (id) healingTouch {
 	
 	MPSpell *newSpell = [MPSpell spell];
@@ -345,6 +357,29 @@
 
 
 
++ (id) regrowth {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Regrowth"];
+	[newSpell addID:  8936];  // Rank 1
+	[newSpell addID:  8938];  // Rank 2
+	[newSpell addID:  8939];  // Rank 3
+	[newSpell addID:  8940];  // Rank 4
+	[newSpell addID:  8941];  // Rank 5
+	[newSpell addID:  9750];  // Rank 6
+	[newSpell addID:  9856];  // Rank 7
+	[newSpell addID:  9857];  // Rank 8
+	[newSpell addID:  9858];  // Rank 9
+	[newSpell addID: 26980];  // Rank 10
+	[newSpell addID: 48442];  // Rank 11
+	[newSpell addID: 48443];  // Rank 12
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
 + (id) rejuvenation {
 	
 	MPSpell *newSpell = [MPSpell spell];
@@ -364,6 +399,27 @@
 	[newSpell addID:26982];  // Rank 13
 	[newSpell addID:48440];  // Rank 14
 	[newSpell addID:48441];  // Rank 15
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) starfire {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Starfire"];
+	[newSpell addID:  2912];  // Rank 1
+	[newSpell addID:  8949];  // Rank 2
+	[newSpell addID:  8950];  // Rank 3
+	[newSpell addID:  8951];  // Rank 4
+	[newSpell addID:  9875];  // Rank 5
+	[newSpell addID:  9876];  // Rank 6
+	[newSpell addID: 25298];  // Rank 7
+	[newSpell addID: 26986];  // Rank 8
+	[newSpell addID: 48464];  // Rank 9
+	[newSpell addID: 48465];  // Rank 10
 	[newSpell loadPlayerSettings];
 	
 	return newSpell;
@@ -417,6 +473,54 @@
 ////
 //// Priest Spells
 ////
+
+
++ (id) cureDisease {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Cure Disease"];
+	[newSpell addID:  528];  // Rank 1
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) devouringPlague {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Devouring Plague"];
+	[newSpell addID:  2944];  // Rank 1
+	[newSpell addID: 19276];  // Rank 2
+	[newSpell addID: 19277];  // Rank 3
+	[newSpell addID: 19278];  // Rank 4
+	[newSpell addID: 19279];  // Rank 5
+	[newSpell addID: 19280];  // Rank 6
+	[newSpell addID: 25467];  // Rank 7
+	[newSpell addID: 48299];  // Rank 8
+	[newSpell addID: 48300];  // Rank 9
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) dispelMagic {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Dispel Magic"];
+	[newSpell addID:  527];  // Rank 1
+	[newSpell addID:  988];  // Rank 2
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
 
 
 + (id) fade {
@@ -474,6 +578,29 @@
 	[newSpell addID: 25213];  // Greater Heal (Rank 7)
 	[newSpell addID: 48062];  // Greater Heal (Rank 8)
 	[newSpell addID: 48063];  // Greater Heal (Rank 9)
+	
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) holyFire {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Holy Fire"];
+	[newSpell addID:  14914];  // Rank 1
+	[newSpell addID:  15262];  // Rank 2
+	[newSpell addID:  15263];  // Rank 3
+	[newSpell addID:  15264];  // Rank 4
+	[newSpell addID:  15265];  // Rank 5
+	[newSpell addID:  15266];  // Rank 6
+	[newSpell addID:  15267];  // Rank 7
+	[newSpell addID:  15261];  // Rank 8
+	[newSpell addID:  25384];  // Rank 9
+	[newSpell addID:  48134];  // Rank 10
+	[newSpell addID:  48135];  // Rank 11
 	
 	[newSpell loadPlayerSettings];
 	

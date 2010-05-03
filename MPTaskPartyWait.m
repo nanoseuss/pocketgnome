@@ -39,6 +39,9 @@
 		name = @"PartyWait";
 		
 		maxDistance = 20.0f;
+		minStart = 15.0f;
+		
+		state = PartyWaitStateRunning;
 		
 		self.activityWait = nil;
 		self.listParty = nil;
@@ -54,6 +57,7 @@
 - (void) setup {
 	
 	maxDistance = [[self stringFromVariable:@"maxdistance" orReturnDefault:@"20.0"] floatValue];
+	minStart = [[self stringFromVariable:@"minstart" orReturnDefault:@"15.0"] floatValue];
 
 }
 
@@ -115,18 +119,38 @@
 		return NO;
 	}
 	
-	
 	// find the farthest member away
 	Position *myPosition = [me position];
 	
 	float distance = 0.0f;
 	float currentDistance = 0.0f;
 	for( Player *member in listParty) {
-	
+		
 		currentDistance = [myPosition distanceToPosition:[member position]];
 		if (currentDistance > distance) {
 			distance = currentDistance;
 		}
+	}
+	
+	switch (state) {
+			
+			
+		case PartyWaitStateRunning:
+			
+			if (distance >= maxDistance) {
+				state = PartyWaitStateWaiting;
+				return YES;
+			}
+			return NO;
+			break;
+			
+		case PartyWaitStateWaiting:
+			if (distance <= minStart) {
+				state = PartyWaitStateRunning;
+				return NO;
+			}
+			return YES;
+			break;
 	}
 	
 	

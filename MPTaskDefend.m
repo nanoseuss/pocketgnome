@@ -133,13 +133,13 @@
 
 
 - (BOOL) wantToDoSomething {
-	
+	PGLog(@"[Defend wtds]");
 	Mob *currentMob = [self mobAttackingMe];
 	float currentDistance;
 	
 	// if mob not found
 	if (currentMob == nil) {
-		//PGLog (@" no PUll Mob found ... ");
+		PGLog (@" no Defend Mob found ... ");
 		
 		state = PullStateSearching;
 	}
@@ -328,7 +328,7 @@
 	MPActivity *currentActivity;
 	MPTask *currentTask;
 	
-	if (self.selectedMob == nil) {
+	if (selectedMob == nil) {
 //		if ([playerData isInCombat] ) {
 			
 			// if currentActivity != ActivityAttack ||  currentTask == Defend 

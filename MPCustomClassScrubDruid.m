@@ -52,6 +52,7 @@
 @synthesize wrath, mf, motw, rejuv, healingTouch, thorns;
 @synthesize autoAttack;
 @synthesize drink;
+@synthesize waitDrink;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
@@ -67,7 +68,10 @@
 		self.autoAttack = nil;
 		
 		self.drink = nil;
-
+		
+		self.waitDrink = [MPTimer timer:1000]; // 1s delay in between spamming drink
+		[waitDrink forceReady];
+		
 	}
 	return self;
 }
@@ -86,6 +90,8 @@
 	[autoAttack release];
 
 	[drink release];
+	
+	[waitDrink release];
 	
     [super dealloc];
 }
@@ -222,7 +228,7 @@
 			
 			
 			// make sure we are swinging our weapon
-//					[autoAttack cast];
+			[self meleeUnit:mob];
 			
 			
 			// Spam Wrath
@@ -257,9 +263,12 @@
 				PGLog(@"    - entryID[%d]", [aura entryID]);
 			}
 */
-			if ([drink canUse]){
-				if (![drink unitHasBuff:[player player]]) {
-					[drink use];
+			if ([waitDrink ready]) {
+				if ([drink canUse]){
+					if (![drink unitHasBuff:[player player]]) {
+						[drink use];
+						[waitDrink start];
+					}
 				}
 			}
 			

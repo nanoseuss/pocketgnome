@@ -13,6 +13,12 @@
 @class MPTimer;
 
 
+
+typedef enum PartyWaitState { 
+    PartyWaitStateRunning	= 1,	// Everyone withing range: no wait
+	PartyWaitStateWaiting	= 2		// Someone has fallen behind: wait
+} MPPartyWaitState; 
+
 /*!
  * @class      MPTaskPartyWait
  * @abstract   Wait for party members to arrive before moving too far away.
@@ -29,17 +35,20 @@
  *	 {
  *		$Prio  = 3;
  *		$MaxDistance = 20; // When party members gets this far away, stop and wait
+ *      $MinStart = 15; // when all members withing this range, start again 
  *	 }
  * </code>
  *		
  */
 
 @interface MPTaskPartyWait : MPTask {
-	float maxDistance;
+	float maxDistance, minStart;
 	
 	NSArray *listParty;
 	MPActivityWait *activityWait;
 	MPTimer *timerRefreshListParty;
+	
+	MPPartyWaitState state;
 }
 @property (retain) NSArray *listParty;
 @property (retain) MPActivityWait *activityWait;

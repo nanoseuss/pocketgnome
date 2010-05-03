@@ -11,6 +11,7 @@
 
 @class MPSpell;
 @class MPItem;
+@class MPTimer;
 
 
 @interface MPCustomClassScrubDruid : MPCustomClassScrub {
@@ -18,8 +19,10 @@
 	MPSpell *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
 	MPSpell *autoAttack;
 	MPItem *drink;
+	MPTimer *waitDrink;
 }
 @property (retain) MPSpell *autoAttack, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
 @property (retain) MPItem *drink;
+@property (retain) MPTimer *waitDrink;
 
 @end
