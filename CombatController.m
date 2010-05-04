@@ -510,7 +510,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // from performProcedureWithState 
 // this will keep the unit targeted!
 - (void)stayWithUnit:(Unit*)unit withType:(int)type {
-	if ( !unit || unit == nil || [unit isDead] ) return;
+	// Stop movement on our current castingUnit if need be
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
+	if ( !unit || unit == nil ) return;
+
+	if ( [unit isDead] ) return;
 
 	Unit *oldTarget = [_castingUnit retain];
 
@@ -532,10 +537,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// otherwise lets clear our target (we're either targeting no one or ourself)
-	else{
+	else {
 		[_castingUnit release];
 		_castingUnit = nil;
 	}
+
+	// If we don't need to monitor or stay with this unit
+	if ( type == TargetFriend || type == TargetFriendlies || type == TargetPet || type == TargetSelf || type == TargetNone) return;
 
 	// remember when we started w/this unit
 	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
@@ -543,7 +551,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// lets face our new unit!
 	if ( unit != oldTarget ) {
 		log(LOG_DEV, @"Facing new target! %@", unit);
-		if ( [playerData isHostileWithFaction: [unit factionTemplate]] ) [movementController turnTowardObject:unit];
+		[movementController turnTowardObject:unit];
+		[movementController establishPlayerPosition];
 	}
 
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
@@ -553,17 +562,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// we want to monitor enemies to fire off notifications if they die!
-	if ( type == TargetEnemy || type == TargetAdd || type == TargetPat ) {
-		log(LOG_DEV, @"Now staying with %@", unit);
+//	if ( type == TargetEnemy || type == TargetAdd || type == TargetPat ) {
 
-		if ( ![_unitsMonitoring containsObject: unit] ) {
-			[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
-			[self monitorUnit: unit];
-		}
-
-		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
-		[self stayWithUnit];
+	log(LOG_DEV, @"Now staying with %@", unit);
+	if ( ![_unitsMonitoring containsObject: unit] ) {
+		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+		[self monitorUnit: unit];
 	}
+
+	[self stayWithUnit];
+//	}
 }
 
 - (void)stayWithUnit {
@@ -628,7 +636,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 			if ( distanceToCastingUnit < 5.0f ) if ( [movementController jumpForward] ) usleep(300000);
 			[movementController turnTowardObject: _castingUnit];
-			[movementController establishPlayerPosition];
+//			[movementController establishPlayerPosition];
 			usleep([controller refreshDelay]*2);
 		}
 

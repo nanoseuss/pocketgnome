@@ -1472,16 +1472,14 @@ typedef enum MovementState{
 	_stuckCounter = 0;
 	_performingActions = NO;
 
-	if (self.isFollowing && self.currentRouteHoldForFollow) {
+	if ( self.isFollowing && self.currentRouteHoldForFollow ) {
 		// Switch back to what ever was the old route
 		self.currentRoute =	self.currentRouteHoldForFollow;
 		self.currentRouteHoldForFollow =  nil;
 	}
 
 	self.isFollowing = NO;
-
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
-	
 }
 
 #pragma mark -
@@ -2147,7 +2145,7 @@ typedef enum MovementState{
 			// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 			if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 				[self correctDirectionByTurning];
-				[self establishPlayerPosition];
+//				[self establishPlayerPosition];
 			}
 			
 			if ( printTurnInfo ) log(LOG_MOVEMENT, @"Doing sharp turn to %.2f", theAngle );
