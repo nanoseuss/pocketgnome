@@ -23,7 +23,7 @@
 
 @implementation MPCustomClassScrub
 @synthesize shootWand, meleeAttack;
-@synthesize dispellPoison, dispellCurse;
+@synthesize dispellPoison, dispellCurse, dispellMagic, dispellDisease;
 @synthesize listBuffs, listSpells, listParty;
 @synthesize timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
 
@@ -36,6 +36,8 @@
 		
 		self.dispellPoison = nil;
 		self.dispellCurse = nil;
+		self.dispellMagic = nil;
+		self.dispellDisease = nil;
 		
 
 		self.listBuffs = nil;
@@ -100,7 +102,7 @@
 	
 	// if player isDead
 	PlayerDataController *me = [PlayerDataController sharedController];
-	if (([me isDead] ) || ([me isGhost])) {
+	if (([me isDead] ) || ([[me player] currentHealth] < 2) || ([me isGhost])) {
 		return CombatStateDied;
 	} // end if
 	
@@ -246,30 +248,39 @@
 		
 		PlayerDataController *me = [PlayerDataController sharedController];
 		Unit *myCharacter = [me player];
-		if( ![myCharacter isDead]) {
+		if( (![myCharacter isDead]) && ([myCharacter currentHealth] > 1)) {
 			
 			//// Check if party members have buffs
 			for( Player* player in listParty) {
 
-				if (![player isDead]) {
-					for (MPSpell *buff in listBuffs) {
+				if ([player isValid]) {
 					
-						PGLog(@"checking party member buffs [%@]", [player name]);
-						if( ![buff unitHasBuff:(Unit*)player]) {
-							[me targetGuid:[player GUID]];
-							//[me setPrimaryTarget:player];
-							[buff cast];
-							[timerBuffCheck reset];
-							return;
+					if ((![player isDead]) && ([player currentHealth] > 1)) {
+					
+						if ([self player:player inRange:30]) {
+						
+							for (MPSpell *buff in listBuffs) {
+							
+								PGLog(@"checking party member buffs [%@]", [player name]);
+								if( ![buff unitHasBuff:(Unit*)player]) {
+									[me targetGuid:[player GUID]];
+									//[me setPrimaryTarget:player];
+									[buff cast];
+									[timerBuffCheck reset];
+									return;
+								}
+							}
+							
+							
+							// decurse any curses/poisons/magic/disease
+							if ([self decursePlayer:player]) {
+								[timerBuffCheck reset];
+								return;
+							}
+							
 						}
-					}
-					
-					
-					// decurse any curses/poisons/magic/disease
-					if ([self decursePlayer:player]) {
-						[timerBuffCheck reset];
-						return;
-					}
+						
+					} // if player isValid
 					
 				} // if !player->isDead
 			}
@@ -295,7 +306,7 @@
 				[timerBuffCheck reset];
 				return;
 			}
-		}
+		} // if !me->isDead
 	
 		[timerBuffCheck reset];
 	}
@@ -456,10 +467,23 @@
 	
 	
 	//// check for magic
+	if (dispellMagic != nil) {
+		if ([auraController unit: player hasDebuffType: DispelTypeMagic]) {
+			if ([self cast:dispellMagic on:player]) {
+				return YES;
+			}
+		}	
+	}
 	
 	
 	//// check for disease
-	
+	if (dispellDisease != nil) {
+		if ([auraController unit: player hasDebuffType: DispelTypeDisease]) {
+			if ([self cast:dispellDisease on:player]) {
+				return YES;
+			}
+		}	
+	}
 	
 	
 	return NO;
@@ -478,6 +502,18 @@
 	return autoAttacking;
 }
 
+
+
+- (BOOL) player: (Player *)player inRange:(float)distance {
+	
+
+	Position *playerPosition = [player position];
+	PlayerDataController *me = [PlayerDataController sharedController];
+	if ([playerPosition distanceToPosition:[me position]]<= distance) {
+		return YES;
+	}
+	return NO;
+}
 
 
 - (BOOL) wandUnit:(Unit *)unit {

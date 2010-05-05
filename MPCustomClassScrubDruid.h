@@ -16,12 +16,12 @@
 
 @interface MPCustomClassScrubDruid : MPCustomClassScrub {
 
-	MPSpell *abolishPoison, *curePoison, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+	MPSpell *abolishPoison, *curePoison, *wrath, *mf, *motw, *rejuv, *healingTouch, *starfire, *thorns;
 	MPSpell *autoAttack;
 	MPItem *drink;
 	MPTimer *waitDrink;
 }
-@property (retain) MPSpell *autoAttack, *abolishPoison, *curePoison, *wrath, *mf, *motw, *rejuv, *healingTouch, *thorns;
+@property (retain) MPSpell *autoAttack, *abolishPoison, *curePoison, *wrath, *mf, *motw, *rejuv, *healingTouch, *starfire, *thorns;
 @property (retain) MPItem *drink;
 @property (retain) MPTimer *waitDrink;
 

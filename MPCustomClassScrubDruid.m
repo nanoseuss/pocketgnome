@@ -49,7 +49,7 @@
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize abolishPoison, curePoison, wrath, mf, motw, rejuv, healingTouch, thorns;
+@synthesize abolishPoison, curePoison, wrath, mf, motw, rejuv, healingTouch, starfire, thorns;
 @synthesize autoAttack;
 @synthesize drink;
 @synthesize waitDrink;
@@ -64,6 +64,7 @@
 		self.motw  = nil;
 		self.rejuv = nil;
 		self.healingTouch = nil;
+		self.starfire = nil;
 		self.thorns = nil;
 
 		self.autoAttack = nil;
@@ -88,6 +89,7 @@
 	[motw release];
 	[rejuv release];
 	[healingTouch release];
+	[starfire release];
 	[thorns release];
 	
 	[autoAttack release];
@@ -125,6 +127,13 @@
 - (void) openingMoveWith: (Mob *)mob {
 
 	// should do a SF or Wrath here
+	if([starfire canCast]) {
+		[self cast:starfire on:mob];
+	} else {
+		[self cast:wrath on:mob];
+	}
+
+	
 }
 
 
@@ -179,12 +188,36 @@
 			//
 			// Rejuvinate Party Members if health < 40%
 			for( Player *player in listParty) {
-				if ([player percentHealth] < 40) {
-					if ([self castHOT:rejuv on:player]) {
-						return CombatStateInCombat;
+				if (([player percentHealth] < 40) && ([player currentHealth] > 1)) {
+					if ([self player:player inRange:35]) {
+						if ([self castHOT:rejuv on:player]) {
+							return CombatStateInCombat;
+						}
 					}
 				}
 			}
+			
+			
+			
+			////
+			//// Remove Poison
+			////
+			
+			AuraController *auraController = [AuraController sharedController];
+			
+			// Cure Party Members if health <= 35%
+			for( Player *player in listParty) {
+				if ([player percentHealth] <= 35) {
+					
+					if ([auraController unit: player hasDebuffType: DispelTypePoison]) {
+						if ([self cast:dispellPoison on:player]) {
+							return CombatStateInCombat;
+						}
+					}
+					
+				}
+			}
+			
 			
 			
 			////
@@ -201,40 +234,15 @@
 			
 			// Heal Party Members if health < 35%
 			for( Player *player in listParty) {
-				if ([player percentHealth] < 35) {
-					if ([self cast:healingTouch on:player]) {
-						return CombatStateInCombat;
+				if (([player percentHealth] < 35) && ([player currentHealth] > 1)) {
+					if ([self player:player inRange:35]){
+						if ([self cast:healingTouch on:player]) {
+							return CombatStateInCombat;
+						}
 					}
 				}
 			}
 			
-			
-			
-			////
-			//// Remove Poison
-			////
-			
-			// DispelTypeMagic
-			// DispelTypeCurse
-			// DispelTypePoison
-			// DispelTypeDisease
-			/*
-			for (Player *player in listParty) {
-				if ([auraController unit: player hasDebuffType: DispelTypePoison]) {
-					if ([self cast:dispellPoison on player]) {
-						return CombatStateInCombat;
-					}
-				}
-			}
-			 */
-			// Heal Party Members if health < 35%
-			for( Player *player in listParty) {
-				if ([player percentHealth] < 35) {
-					if ([self cast:healingTouch on:player]) {
-						return CombatStateInCombat;
-					}
-				}
-			}
 			
 			
 			////
@@ -254,17 +262,19 @@
 			
 			
 			
-			// Starfire
-			
-			
 			// make sure we are swinging our weapon
 			[self meleeUnit:mob];
 			
 			
-			// Spam Wrath
+			// Standard Attack
+			if ([self cast:starfire on:mob]){
+				return CombatStateInCombat;
+			}
+
 			if ([self cast:wrath on:mob]){
 				return CombatStateInCombat;
 			}
+			
 			
 		}
 		
@@ -325,6 +335,7 @@
 	self.motw  = [MPSpell motw];
 	self.rejuv = [MPSpell rejuvenation];
 	self.healingTouch = [MPSpell healingTouch];
+	self.starfire = [MPSpell starfire];
 	self.thorns = [MPSpell thorns];
 	
 	
@@ -336,6 +347,7 @@
 	[spells addObject:motw];
 	[spells addObject:rejuv];
 	[spells addObject:healingTouch];
+	[spells addObject:starfire];
 	[spells addObject:thorns];
 	self.listSpells = [spells copy];
 	

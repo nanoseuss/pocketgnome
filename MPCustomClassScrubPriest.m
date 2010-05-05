@@ -22,15 +22,20 @@
 #import "SpellController.h"
 
 @implementation MPCustomClassScrubPriest
-@synthesize fade, heal, pwFort, pwShield, renew, resurrection, smite, swPain;
+@synthesize cureDisease, devouringPlague, dispelMagic, fade, flashHeal, heal, holyFire, pwFort, pwShield, renew, resurrection, smite, swPain;
 @synthesize drink;
 
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
+		self.cureDisease = nil;
+		self.devouringPlague = nil;
+		self.dispelMagic = nil;
 		self.fade = nil;
+		self.flashHeal = nil;
 		self.heal    = nil;
+		self.holyFire = nil;
 		self.pwShield  = nil;
 		self.pwFort = nil;
 		self.renew = nil;
@@ -51,8 +56,13 @@
 
 - (void) dealloc
 {
+	[cureDisease release];
+	[devouringPlague release];
+	[dispelMagic release];
 	[fade release];
+	[flashHeal release];
 	[heal release];
+	[holyFire release];
 	[pwShield release];
 	[pwFort release];
 	[renew release];
@@ -144,41 +154,14 @@
 			
 			// Renew Party Members if health < 80%
 			for( Player *player in listParty) {
-				if ([player percentHealth] < 80) {
-					if ([self castHOT:renew on:player]) {
-						return CombatStateInCombat;
+				if (([player percentHealth] < 80) && ([player currentHealth] > 1)) {
+					if ([self player:player inRange:40]){
+						if ([self castHOT:renew on:player]) {
+							return CombatStateInCombat;
+						}
 					}
 				}
 			}
-			
-			
-			////
-			//// Flash Heal
-			////
-			
-			
-			
-			////
-			//// Heal Checks
-			////
-			
-			// heal myself if health < 65%
-			if ([me percentHealth] < 65) {
-				if ([self cast:heal on:(Unit *)[me player]]) {
-					return CombatStateInCombat;
-				}
-			}
-			
-			// Heal Party Members if health < 65%
-			for( Player *player in listParty) {
-				if ([player percentHealth] < 65) {
-					if ([self cast:heal on:player]) {
-						return CombatStateInCombat;
-					}
-				}
-			}
-			
-			
 			
 			
 			
@@ -195,10 +178,61 @@
 			
 			// Shield Party Members if health < 65%
 			for( Player *player in listParty) {
-				if ([player percentHealth] < 65) {
-					// treat as a HOT so we don't try to cast if buff is on
-					if ([self castHOT:pwShield on:player]) {
-						return CombatStateInCombat;
+				if (([player percentHealth] < 65) && ([player currentHealth] > 1)) {
+					
+					if ([self player:player inRange:35]) {
+						
+						// treat as a HOT so we don't try to cast if buff is on
+						if ([self castHOT:pwShield on:player]) {
+							return CombatStateInCombat;
+						}
+					}
+				}
+			}
+			
+			
+			
+			////
+			//// Flash Heal
+			////
+			// heal myself if health < 35%
+			if ([me percentHealth] < 35) {
+				if ([self cast:flashHeal on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
+			}
+			
+			// Heal Party Members if health < 35%
+			for( Player *player in listParty) {
+				if (([player percentHealth] < 35) && ([player currentHealth] > 1)) {
+					if ([self player:player inRange:35]) {
+						if ([self cast:flashHeal on:player]) {
+							return CombatStateInCombat;
+						}
+					}
+				}
+			}
+			
+			
+			
+			////
+			//// Heal Checks
+			////
+			
+			// heal myself if health < 65%
+			if ([me percentHealth] < 65) {
+				if ([self cast:heal on:(Unit *)[me player]]) {
+					return CombatStateInCombat;
+				}
+			}
+			
+			// Heal Party Members if health < 65%
+			for( Player *player in listParty) {
+				if (([player percentHealth] < 65) && ([player currentHealth] > 1)) {
+					if ([self player:player inRange:35]) {
+						if ([self cast:heal on:player]) {
+							return CombatStateInCombat;
+						}
 					}
 				}
 			}
@@ -228,11 +262,23 @@
 			}
 			
 			
-			
 			// Holy Fire
+			// if mobhealth >= 50% && myMana > 35%
+			if (([mob percentHealth] >= 40) && ([me percentMana] > 35)){
+				if ([self castDOT:holyFire on:mob]) {
+					return CombatStateInCombat;
+				}
+			}
 			
 			
 			// Devouring Plague
+			// if mobhealth >= 50% && myMana > 35%
+			if (([mob percentHealth] >= 50) && ([me percentMana] > 35)){
+				if ([self castDOT:devouringPlague on:mob]) {
+					return CombatStateInCombat;
+				}
+			}
+					
 			
 			
 			// Spam Smite
@@ -301,9 +347,13 @@
 	
 	[super setup];
 	
-	
+	self.cureDisease = [MPSpell cureDisease];
+	self.devouringPlague = [MPSpell devouringPlague];
+	self.dispelMagic = [MPSpell dispelMagic];
 	self.fade	   = [MPSpell fade];
+	self.flashHeal = [MPSpell flashHeal];
 	self.heal      = [MPSpell heal];
+	self.holyFire  = [MPSpell holyFire];
 	self.pwShield  = [MPSpell pwShield];
 	self.pwFort	   = [MPSpell pwFort];
 	self.renew     = [MPSpell renew];
@@ -314,8 +364,13 @@
 	
 	
 	NSMutableArray *spells = [NSMutableArray array];
+	[spells addObject:cureDisease];
+	[spells addObject:devouringPlague];
+	[spells addObject:dispelMagic];
 	[spells addObject:fade];
+	[spells addObject:flashHeal];
 	[spells addObject:heal];
+	[spells addObject:holyFire];
 	[spells addObject:pwShield];
 	[spells addObject:pwFort];
 	[spells addObject:renew];
@@ -329,6 +384,8 @@
 //	[buffSpells addObject:divineSpirit];
 	self.listBuffs = [buffSpells copy];
 	
+	self.dispellDisease = cureDisease;
+	self.dispellMagic = dispelMagic;
 	
 	self.drink = [MPItem drink];
 }

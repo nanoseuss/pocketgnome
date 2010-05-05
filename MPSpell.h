@@ -65,14 +65,19 @@
 + (id) moonfire;
 + (id) motw;
 + (id) rejuvenation;
++ (id) starfire;
 + (id) thorns;
 + (id) wrath;
 
 
 // Priest
++ (id) cureDisease;
++ (id) devouringPlague;
++ (id) dispelMagic;
 + (id) fade;
 + (id) flashHeal;
 + (id) heal;
++ (id) holyFire;
 + (id) pwFort;
 + (id) pwShield;
 + (id) renew;

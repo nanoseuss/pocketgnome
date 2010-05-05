@@ -15,12 +15,12 @@
 
 @interface MPCustomClassScrubPriest : MPCustomClassScrub {
 
-	MPSpell *fade, *heal, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
+	MPSpell *cureDisease, *devouringPlague, *dispelMagic, *fade, *flashHeal, *heal, *holyFire, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
 	MPItem *drink;
 	BOOL wandShooting;
 	
 }
-@property (retain) MPSpell *fade, *heal, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
+@property (retain) MPSpell *cureDisease, *devouringPlague, *dispelMagic, *fade, *flashHeal, *heal, *holyFire, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
 @property (retain) MPItem *drink;
 
 - (void) openingMoveWith: (Mob *)mob;
