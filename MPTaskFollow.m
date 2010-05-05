@@ -68,6 +68,7 @@
 		
 		approachTo = 10.0f;
 		maxDistance = 15.0f;
+		shouldMount = YES;
 		
 		self.activityFollow = nil;
 		self.listNames = nil;
@@ -82,7 +83,7 @@
 	self.listNames = [self arrayStringsFromVariable:@"names" ];
 	approachTo = [[self stringFromVariable:@"approachto" orReturnDefault:@"10.0"] floatValue];
 	maxDistance = [[self stringFromVariable:@"maxdistance" orReturnDefault:@"15.0"] floatValue];
-
+	shouldMount = [self boolFromVariable:@"shouldmount" orReturnDefault:YES];
 }
 
 
@@ -154,7 +155,7 @@
 	if (activityFollow == nil) {
 		
 		// create follow activity
-		self.activityFollow = [MPActivityFollow follow:followTarget howClose:approachTo howFar:maxDistance forTask:self];
+		self.activityFollow = [MPActivityFollow follow:followTarget howClose:approachTo howFar:maxDistance shouldMount:shouldMount forTask:self];
 	}
 	
 	

@@ -11,6 +11,7 @@
 
 @class MPCustomClass;
 @class MPMover;
+@class MPTimer;
 @class Position;
 @class Unit;
 
@@ -34,6 +35,7 @@ typedef enum FollowState {
 
 	Unit *followUnit;
 	float approachTo, maxDistance;
+	BOOL shouldMount;
 	
 	float lastHeading;
 	Position *lastPosition;
@@ -41,16 +43,18 @@ typedef enum FollowState {
 	
 	MPCustomClass *customClass;
 	MPMover *mover;
+	MPTimer *timerMountDelay;
 	MPFollowState state;
 }
 @property (retain) Unit *followUnit;
 @property (retain) MPCustomClass *customClass;
 @property (retain) MPMover *mover;
+@property (retain) MPTimer *timerMountDelay;
 @property (retain) NSMutableArray *targetRoute;
 @property (retain) Position *lastPosition;
 
 
 
-+ (id) follow:(Unit *) unit howClose:(float)howClose howFar:(float) howFar forTask:(MPTask *) task ; 
++ (id) follow:(Unit *) unit howClose:(float)howClose howFar:(float) howFar shouldMount:(BOOL) mount forTask:(MPTask *) task ; 
 
 @end

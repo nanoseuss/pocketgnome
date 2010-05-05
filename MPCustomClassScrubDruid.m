@@ -49,7 +49,7 @@
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize wrath, mf, motw, rejuv, healingTouch, thorns;
+@synthesize abolishPoison, curePoison, wrath, mf, motw, rejuv, healingTouch, thorns;
 @synthesize autoAttack;
 @synthesize drink;
 @synthesize waitDrink;
@@ -57,7 +57,8 @@
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
-		
+		self.abolishPoison = nil;
+		self.curePoison = nil;
 		self.wrath = nil;
 		self.mf    = nil;
 		self.motw  = nil;
@@ -80,6 +81,8 @@
 
 - (void) dealloc
 {
+	[abolishPoison release];
+	[curePoison release];
 	[wrath release];
 	[mf release];
 	[motw release];
@@ -208,6 +211,33 @@
 			
 			
 			////
+			//// Remove Poison
+			////
+			
+			// DispelTypeMagic
+			// DispelTypeCurse
+			// DispelTypePoison
+			// DispelTypeDisease
+			/*
+			for (Player *player in listParty) {
+				if ([auraController unit: player hasDebuffType: DispelTypePoison]) {
+					if ([self cast:dispellPoison on player]) {
+						return CombatStateInCombat;
+					}
+				}
+			}
+			 */
+			// Heal Party Members if health < 35%
+			for( Player *player in listParty) {
+				if ([player percentHealth] < 35) {
+					if ([self cast:healingTouch on:player]) {
+						return CombatStateInCombat;
+					}
+				}
+			}
+			
+			
+			////
 			////  Attacks here
 			////
 			
@@ -288,6 +318,8 @@
 	////
 	//// Spells
 	////
+	self.abolishPoison = [MPSpell abolishPoison];
+	self.curePoison = [MPSpell curePoison];
 	self.wrath = [MPSpell wrath];
 	self.mf    = [MPSpell moonfire];
 	self.motw  = [MPSpell motw];
@@ -297,6 +329,8 @@
 	
 	
 	NSMutableArray *spells = [NSMutableArray array];
+	[spells addObject:abolishPoison];
+	[spells addObject:curePoison];
 	[spells addObject:wrath];
 	[spells addObject:mf];
 	[spells addObject:motw];
@@ -310,6 +344,16 @@
 	[buffSpells addObject:motw];
 	[buffSpells addObject:thorns];
 	self.listBuffs = [buffSpells copy];
+	
+	
+	if ([abolishPoison canCast]) {
+		self.dispellPoison = abolishPoison;
+	} else {
+		if ([curePoison canCast]) {
+			self.dispellPoison = curePoison;
+		}
+	}
+	
 	
 	
 	////

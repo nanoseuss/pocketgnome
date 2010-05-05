@@ -171,7 +171,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 	
 	self.facingLocation = nil;
 	self.facingLocation = location;
-	PGLog (@" facingLocation: %@", facingLocation );
+//	PGLog (@" facingLocation: %@", facingLocation );
 	
 }
 

@@ -274,6 +274,30 @@
 
 
 
++ (id) abolishPoison {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Abolish Poison"];
+	[newSpell addID:  2893];  // only 1 rank
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) curePoison {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Cure Poison"];
+	[newSpell addID:  8946];  // only 1 rank
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
 + (id) faerieFire {
 	
 	MPSpell *newSpell = [MPSpell spell];

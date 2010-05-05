@@ -14,17 +14,20 @@
 @class CombatController;
 @class BotController;
 @class MPSpell;
+@class Player;
 @class Unit;
 
 @interface MPCustomClassScrub : MPCustomClass {
 
 	MPSpell *shootWand, *meleeAttack;
+	MPSpell *dispellPoison, *dispellCurse;
 	NSArray *listBuffs, *listSpells, *listParty;
 	MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 	BOOL errorLOS, autoShooting, autoAttacking;
 	MPCCCombatState state;
 }
 @property (retain) MPSpell *shootWand, *meleeAttack;
+@property (retain) MPSpell *dispellPoison, *dispellCurse;
 @property (retain) NSArray *listBuffs, *listSpells, *listParty;
 @property (retain) MPTimer *timerGCD, *timerRefreshParty, *timerBuffCheck, *timerSpellScan;
 
@@ -41,6 +44,8 @@
 - (BOOL) cast:(MPSpell *)spell on:(Unit *)unit;
 - (BOOL) castDOT:(MPSpell *)spell on:(Unit *)unit;
 - (BOOL) castHOT:(MPSpell *)spell on:(Unit *)unit;
+
+- (BOOL) decursePlayer: (Player *)player;
 
 - (BOOL) meleeUnit:(Unit *)unit;
 - (BOOL) wandUnit:(Unit *)unit;

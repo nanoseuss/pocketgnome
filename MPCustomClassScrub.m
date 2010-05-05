@@ -8,6 +8,8 @@
 
 #import "MPCustomClassScrub.h"
 #import "MPCustomClass.h"
+
+#import "AuraController.h"
 #import "PatherController.h"
 #import "PlayerDataController.h"
 #import "Mob.h"
@@ -21,6 +23,7 @@
 
 @implementation MPCustomClassScrub
 @synthesize shootWand, meleeAttack;
+@synthesize dispellPoison, dispellCurse;
 @synthesize listBuffs, listSpells, listParty;
 @synthesize timerGCD, timerRefreshParty, timerBuffCheck, timerSpellScan;
 
@@ -30,6 +33,9 @@
 
 		self.meleeAttack = nil;
 		self.shootWand = nil;
+		
+		self.dispellPoison = nil;
+		self.dispellCurse = nil;
 		
 
 		self.listBuffs = nil;
@@ -62,6 +68,9 @@
 {
 	[meleeAttack release];
 	[shootWand release];
+	
+	[dispellPoison release];
+	[dispellCurse release];
 		
 	[listBuffs release];
 	[listSpells release];
@@ -232,10 +241,11 @@
 	
 	
 	// check everyone for Buffs
-	PlayerDataController *me = [PlayerDataController sharedController];
+	
 	if ([timerBuffCheck ready]) {
 		
-		Unit *myCharacter = [[PlayerDataController sharedController] player];
+		PlayerDataController *me = [PlayerDataController sharedController];
+		Unit *myCharacter = [me player];
 		if( ![myCharacter isDead]) {
 			
 			//// Check if party members have buffs
@@ -253,8 +263,18 @@
 							return;
 						}
 					}
-				}
+					
+					
+					// decurse any curses/poisons/magic/disease
+					if ([self decursePlayer:player]) {
+						[timerBuffCheck reset];
+						return;
+					}
+					
+				} // if !player->isDead
 			}
+			
+			
 			
 			//// personal buffs
 		
@@ -268,6 +288,12 @@
 					[timerBuffCheck reset];
 					return;
 				}
+			}
+			
+			// decurse any curses/poisons/magic/disease
+			if ([self decursePlayer:(Player *)myCharacter]) {
+				[timerBuffCheck reset];
+				return;
 			}
 		}
 	
@@ -400,6 +426,42 @@
 			}
 		}
 	} 
+	return NO;
+}
+
+
+
+- (BOOL) decursePlayer: (Player *)player {
+	
+	AuraController *auraController = [AuraController sharedController];
+	
+	//// check for poison debuff
+	if (dispellPoison != nil) {
+		if ([auraController unit: player hasDebuffType: DispelTypePoison]) {
+			if ([self cast:dispellPoison on:player]) {
+				return YES;
+			}
+		}	
+	}
+	
+	
+	//// check for curse
+	if (dispellCurse != nil) {
+		if ([auraController unit: player hasDebuffType: DispelTypeCurse]) {
+			if ([self cast:dispellCurse on:player]) {
+				return YES;
+			}
+		}	
+	}
+	
+	
+	//// check for magic
+	
+	
+	//// check for disease
+	
+	
+	
 	return NO;
 }
 

@@ -8,11 +8,17 @@
 
 #import "MPActivityFollow.h"
 
+#import "BotController.h"
 #import "Mob.h"
+#import "MovementController.h"
 #import "MPCustomClass.h"
 #import "MPMover.h"
+#import "MPTimer.h"
+#import "PatherController.h"
 #import "PlayerDataController.h"
 #import "Position.h"
+#import "SpellController.h"
+#import "Spell.h"
 #import "Unit.h"
 
 
@@ -36,16 +42,18 @@
 @implementation MPActivityFollow
 
 @synthesize followUnit, lastPosition, mover, targetRoute, customClass;
+@synthesize timerMountDelay;
 
 
 
-- (id) initWithUnit: (Unit*)aUnit approachTo: (float) howClose maxDistance:(float) howFar andTask:(MPTask*)aTask {
+- (id) initWithUnit: (Unit*)aUnit approachTo: (float) howClose maxDistance:(float) howFar shouldMount:(BOOL) mount andTask:(MPTask*)aTask {
 	
 	if ((self = [super initWithName:@"Follow" andTask:aTask])) {
 		
 		self.followUnit = aUnit	;
 		approachTo = howClose;
 		maxDistance = howFar;
+		shouldMount = mount;
 		
 		lastHeading = 0;
 		self.lastPosition = nil;
@@ -54,6 +62,9 @@
 		self.targetRoute = [NSMutableArray array];
 		
 		self.customClass = [[task patherController] customClass];
+		
+		self.timerMountDelay = [MPTimer timer:2500]; // 2.5s
+		[timerMountDelay forceReady];
 		
 		state = FollowStateInRange;
 	}
@@ -68,6 +79,8 @@
 	[mover release];
 	[targetRoute release];
 	[customClass release];
+	
+	[timerMountDelay release];
 	
     [super dealloc];
 }
@@ -126,128 +139,223 @@
 	if (![followUnit isValid]) {
 		state = FollowStateLastKnownPosition;
 	}
-		
 	
 	
-	switch (state) {
+	if (shouldMount) {
+	
+		PlayerDataController *me = [PlayerDataController sharedController];
+		Player *myPlayer = [me player];
+		if ([followUnit isMounted]) {
 			
-			
-		default:
-		case FollowStateInRange:
-			///
-			/// We are in an acceptable range, so wait until followTarget
-			/// gets > $MaxDistance away from me.
-			///
-			
-			
-			// our routines always expect at least 1 entry in TargetRoute
-			if ([targetRoute count] == 0) {
-				[targetRoute addObject:[followUnit position]];
+			// If I'm not mounted, then mount
+			if ((![myPlayer isMounted]) 
+				&& (![me isCasting]) 
+				&& (![me isInCombat]) 
+				&& (![myPlayer isSwimming]) ) {
+				
+				int theMountType = 1;	// ground
+				
+				// air
+				if ( ![followUnit isOnGround] ){
+					theMountType = 2;
+				}
+				
+				// time to mount!
+				SpellController *spellController = [SpellController sharedSpells];
+				Spell *mount = [spellController mountSpell:theMountType andFast:YES];
+				if ( mount != nil ){
+					PGLog(@"[Follow] Mounting...");
+					
+					if ([timerMountDelay ready]) { // timer to prevent recasting (and dismounting)
+						
+						[[[task patherController] botController] performAction:[[mount ID] intValue]];
+						[timerMountDelay start];
+					}
+//					return NO;
+				} else {
+					PGLog(@"[Follow] couldn't find mount spell...");
+				}
 			}
 			
+		} else {
 			
-			// if (shouldmove) 
-			if ([self myDistanceToUnit:followUnit] > maxDistance) {
-				
-				///
-				/// oops, time to move
-				///
-				
-				nextStep = (MPLocation *) [targetRoute objectAtIndex:0];
-				// move to
-				[mover moveTowards:nextStep  within:1.0f facing:nextStep];
-				
-				// state == approaching
-				state = FollowStateApproaching;
-				
-			} else {
-				
-				///
-				/// it's all good. Hang here and face our followTarget
-				///
-				
-				[mover faceLocation: (MPLocation *)[followUnit position]];
-			}// end if
-			break;
-		
-			
-			
-		case FollowStateApproaching:
-			
-			///
-			/// Trying to catch up to followTarget.
-			///
-			
-			
-			// if !shouldMove to Unit
-			if ([self myDistanceToUnit:followUnit] <= approachTo) {
-				
-				///
-				/// close enough, so take a rest.
-				///
-			
-				// stop move
-				[mover stopAllMovement];
-				
-				// state == InRange
-				state = FollowStateInRange;
-				
+			// if I'm mounted then unmount
+			if ([myPlayer isMounted]) {
+				[[[task patherController] movementController] dismount];
 				return NO;
-			} // end if
-			
-			
-			// remove any unneeded positions
-			[self removeClosePositions];
-			
-			
-			// make sure we at least have 1 entry in our targetRoute array
-			if ([targetRoute count] == 0) {
-				[targetRoute addObject:[followUnit position]];
 			}
-			
-			
-			// do move
-			nextStep = (MPLocation *)[targetRoute objectAtIndex:0];
-			[mover moveTowards:nextStep within:1.0f facing:nextStep];
-			break;
-			
-			
-			
-		case FollowStateLastKnownPosition:
-			
-			///
-			/// Yikes!  FollowTarget has dissappeared. (entered instance?)
-			/// we need to try to head to their last know location.
-			/// 
-			
-			
-			if ([followUnit isValid]) {
-				
-				///
-				/// He's back.  Follow as normal.
-				///
-				
-				state = FollowStateInRange;
-				return [self work];
-			}
-			
-			
-			// remove any unneeded positions
-			[self removeClosePositions];
-			
-			
-			// if we still have a route to follow, finish it before moving
-			// to last known location.
-			nextStep = nil;
-			if ([targetRoute count] > 0) {
-				nextStep = (MPLocation *) [targetRoute objectAtIndex:0];
-			} else {
-				nextStep = (MPLocation *) lastPosition;
-			}
-			
-			[mover moveTowards:nextStep within:1.0f facing:nextStep];
-			break;
+		}
 
+	}
+	/*
+	 [aUnit isMounted]
+	 
+	 //if followUnit is !mounted but we are:
+	 
+	 if ( [[playerController player] isMounted] )
+		 [movementController dismount];
+	 
+	 
+	 
+	 // mount?
+	 if ( theCombatProfile.mountEnabled && [followTarget isMounted] && ![[playerController player] isMounted] && ![playerController isCasting] && ![[playerController player] isSwimming] && ![playerController isInCombat] ){
+	 
+	 int theMountType = 1;	// ground
+	 
+	 // air
+	 if ( ![followTarget isOnGround] ){
+	 theMountType = 2;
+	 }
+	 
+	 // time to mount!
+	 Spell *mount = [spellController mountSpell:theMountType andFast:YES];
+	 if ( mount != nil ){
+	 PGLog(@"[Follow] Mounting...");
+	 
+	 [self performAction:[[mount ID] intValue]];
+	 
+	 // Check our position again shortly!
+	 [self performSelector: _cmd withObject: nil afterDelay: 2.0f];
+	 return YES;
+	 }
+	 else{
+	 // does this player have any mounts?
+	 if ( [playerController mounts] > 0 && [spellController mountsLoaded] == 0 ){
+	 PGLog(@"[Bot] Attempting to load mounts...");
+	 
+	 }					
+	 }
+	 }
+	 
+	 
+	 */
+		
+	
+	// if we are not mounting ... 
+	if ([timerMountDelay ready]) {
+		
+		switch (state) {
+				
+				
+			default:
+			case FollowStateInRange:
+				///
+				/// We are in an acceptable range, so wait until followTarget
+				/// gets > $MaxDistance away from me.
+				///
+				
+				
+				// our routines always expect at least 1 entry in TargetRoute
+				if ([targetRoute count] == 0) {
+					[targetRoute addObject:[followUnit position]];
+				}
+				
+				
+				// if (shouldmove) 
+				if ([self myDistanceToUnit:followUnit] > maxDistance) {
+					
+					///
+					/// oops, time to move
+					///
+					
+					nextStep = (MPLocation *) [targetRoute objectAtIndex:0];
+					// move to
+					[mover moveTowards:nextStep  within:1.0f facing:nextStep];
+					
+					// state == approaching
+					state = FollowStateApproaching;
+					
+				} else {
+					
+					///
+					/// it's all good. Hang here and face our followTarget
+					///
+					
+					[mover faceLocation: (MPLocation *)[followUnit position]];
+				}// end if
+				break;
+			
+				
+				
+			case FollowStateApproaching:
+				
+				///
+				/// Trying to catch up to followTarget.
+				///
+				
+				
+				// if !shouldMove to Unit
+				if ([self myDistanceToUnit:followUnit] <= approachTo) {
+					
+					///
+					/// close enough, so take a rest.
+					///
+				
+					// stop move
+					[mover stopAllMovement];
+					
+					// state == InRange
+					state = FollowStateInRange;
+					
+					return NO;
+				} // end if
+				
+				
+				// remove any unneeded positions
+				[self removeClosePositions];
+				
+				
+				// make sure we at least have 1 entry in our targetRoute array
+				if ([targetRoute count] == 0) {
+					[targetRoute addObject:[followUnit position]];
+				}
+				
+				
+				// do move
+				nextStep = (MPLocation *)[targetRoute objectAtIndex:0];
+				[mover moveTowards:nextStep within:1.0f facing:nextStep];
+				break;
+				
+				
+				
+			case FollowStateLastKnownPosition:
+				
+				///
+				/// Yikes!  FollowTarget has dissappeared. (entered instance?)
+				/// we need to try to head to their last know location.
+				/// 
+				
+				
+				if ([followUnit isValid]) {
+					
+					///
+					/// He's back.  Follow as normal.
+					///
+					
+					state = FollowStateInRange;
+					return [self work];
+				}
+				
+				
+				// remove any unneeded positions
+				[self removeClosePositions];
+				
+				
+				// if we still have a route to follow, finish it before moving
+				// to last known location.
+				nextStep = nil;
+				if ([targetRoute count] > 0) {
+					nextStep = (MPLocation *) [targetRoute objectAtIndex:0];
+				} else {
+					nextStep = (MPLocation *) lastPosition;
+				}
+				
+				[mover moveTowards:nextStep within:1.0f facing:nextStep];
+				break;
+
+		}
+	
+	
 	}
 	
 	
@@ -350,9 +458,9 @@
 
 #pragma mark -
 
-+ (id) follow:(Unit *) unit howClose:(float)howClose howFar:(float) howFar forTask:(MPTask *) task {
++ (id) follow:(Unit *) unit howClose:(float)howClose howFar:(float) howFar shouldMount:(BOOL)mount forTask:(MPTask *) task {
 	
-	return [[[MPActivityFollow alloc] initWithUnit:unit approachTo:howClose maxDistance:howFar andTask:task] autorelease];
+	return [[[MPActivityFollow alloc] initWithUnit:unit approachTo:howClose maxDistance:howFar shouldMount:mount andTask:task] autorelease];
 }
 
 @end

@@ -209,7 +209,7 @@ PGLog(@"description...");
 				if ([guy isValid]) {
 					
 					// if guy in combat
-					if ([guy isInCombat]) {
+					if (([guy isInCombat]) || ([guy isCasting])) {
 //PGLog(@" Assist: mobToPull: assistUnit[%@] is in combat", [guy name]);
 						// if guy has a target
 						targetID = [guy targetID];
@@ -221,6 +221,8 @@ PGLog(@"description...");
 								break;
 							}
 						} // end if
+//}	else {
+//PGLog(@" Assist: mobToPull: assistUnit[%@] isInCombat[%d] isCasting[%d]", [guy name], [guy isInCombat], [guy isCasting]);
 					} // end if
 				}
 			} // next

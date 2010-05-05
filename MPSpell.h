@@ -59,6 +59,8 @@
 
 
 // Druid
++ (id) abolishPoison;
++ (id) curePoison;
 + (id) healingTouch;
 + (id) moonfire;
 + (id) motw;

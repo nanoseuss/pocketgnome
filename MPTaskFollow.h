@@ -68,6 +68,7 @@ typedef enum PullState {
 @interface MPTaskFollow : MPTask {
 	
 	float approachTo, maxDistance;
+	BOOL shouldMount;
 	
 	MPActivityFollow *activityFollow;
 	NSArray *listNames;
