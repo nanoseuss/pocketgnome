@@ -966,10 +966,21 @@ typedef enum MovementState{
 
 	Position *playerPosition = [playerData position];
 	float playerSpeed = [playerData speed];
-	BOOL isNode = [_moveToObject isKindOfClass: [Node class]];
+    Position *destPosition;
+	BOOL isNode = NO;
 
-    Position *destPosition = ( _moveToObject ) ? [_moveToObject position] : [_destinationWaypoint position];
-	if (isNode) destPosition = 	_moveToPosition;	// Pass it our overshoot position instead of the real object position
+	// Set our Destination Position
+	if (_moveToObject) {
+		if ( [_moveToObject isKindOfClass: [Node class]] ) isNode = YES;
+		destPosition = [_moveToObject position];
+	} else
+	if ( self.destinationWaypoint ) {
+		destPosition = [_destinationWaypoint position];
+	} else
+	if ( self.lastAttemptedPosition ) {
+		// If it's not moveToObject and no destination waypoint then we must have called moveToPosition by it's self
+		destPosition = self.lastAttemptedPosition;
+	}
 
 	float distanceToDestination = [playerPosition distanceToPosition: destPosition];
 
@@ -984,14 +995,12 @@ typedef enum MovementState{
     }
 
 	// check to see if we're near our target
-	float stopingDistance = ([playerData speedMax]/2.5f);
+	float stopingDistance = ([playerData speedMax]/2.0f);
 	if ( stopingDistance < 5.0f) stopingDistance = 5.0f;
+	if ( isNode && [[playerData player] isFlyingMounted] ) stopingDistance = DistanceUntilDismountByNode;
 //	float distanceToObject = 5.0f;			// this used to be (playerSpeed/2.0)
 											//	when on mount:	7.0
 											//  when on ground: 3.78
-
-	// If this is a node that we're flying to we'll adjust the distance value
-	if ( isNode && [[playerData player] isFlyingMounted] ) stopingDistance = DistanceUntilDismountByNode;
 
 	// we've reached our position!
 	if ( distanceToDestination <= stopingDistance ) {
@@ -1050,7 +1059,18 @@ typedef enum MovementState{
 				[self moveToNextWaypoint];
 				return;
 			}
+		} else
 
+		// moving to a position
+		if ( self.lastAttemptedPosition ) {				
+			// stop this timer
+			[self resetMovementTimer];
+			// stop movement
+			[self stopMovement];
+
+			// we've reached our position, send a notification
+			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: nil];
+			return;
 		} else {
 			log(LOG_ERROR, @"Somehow we're not able to get to our waypoint!?");
 		}
@@ -1066,8 +1086,8 @@ typedef enum MovementState{
 	}
 
 	// should we jump?
-	if (	[self isMoving] && distanceToDestination > ([playerData speedMax]/1.1f) &&
-			playerSpeed >= ([playerData speedMax]/1.1f) && 
+	if (	[self isMoving] && distanceToDestination > ([playerData speedMax]/1.1f)  &&
+			playerSpeed >= [playerData speedMax] && 
 			[[[NSUserDefaults standardUserDefaults] objectForKey: @"MovementShouldJump"] boolValue] &&
 			![[playerData player] isFlyingMounted]
 		) {

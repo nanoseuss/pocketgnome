@@ -119,8 +119,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	
 	NSDictionary *dict = (NSDictionary*)context;
 
-	NSNumber *w1 = [dict objectForKey:[NSNumber numberWithLongLong:[unit1 GUID]]];
-	NSNumber *w2 = [dict objectForKey:[NSNumber numberWithLongLong:[unit2 GUID]]];
+	NSNumber *w1 = [dict objectForKey:[NSNumber numberWithLongLong:[unit1 cachedGUID]]];
+	NSNumber *w2 = [dict objectForKey:[NSNumber numberWithLongLong:[unit2 cachedGUID]]];
 	
 	int weight1=0, weight2=0;
 	
@@ -176,7 +176,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	log(LOG_DEV, @"%@ died, removing from combat list!", unit);
 
 	BOOL wasCastingUnit = NO;
-	if ( _castingUnit && [unit GUID] == [_castingUnit GUID] ) wasCastingUnit = YES;
+	if ( _castingUnit && [unit cachedGUID] == [_castingUnit cachedGUID] ) wasCastingUnit = YES;
 
 	
 	// Kill the monitoring if called from else where
@@ -197,19 +197,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// If this was our attacking unit
-	if ( _attackUnit && [unit GUID] == [_attackUnit GUID] ) {
+	if ( _attackUnit && [unit cachedGUID] == [_attackUnit cachedGUID] ) {
 		[_attackUnit release];
 		_attackUnit = nil;
 	}
 
 	// If this was our friend unit
-	if ( _friendUnit && [unit GUID] == [_friendUnit GUID] ) {
+	if ( _friendUnit && [unit cachedGUID] == [_friendUnit cachedGUID] ) {
 		[_friendUnit release];
 		_friendUnit = nil;
 	}
 
 	// If this was our add unit
-	if ( _addUnit && [unit GUID] == [_addUnit GUID] ) {
+	if ( _addUnit && [unit cachedGUID] == [_addUnit cachedGUID] ) {
 		// Make sure our add is on the lists
 		if ( ![_unitsAttackingMe containsObject: unit] ) [_unitsAttackingMe addObject: unit];
 		if ( ![_unitsAllCombat containsObject: unit] ) [_unitsAllCombat addObject: unit];
@@ -222,7 +222,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// Add this to our internal list
 	[_unitsDied addObject: unit];
 
-	if ( _inCombat && ![_unitsAttackingMe count] ) _inCombat = NO;
+	if ( _inCombat && [_unitsAttackingMe count] == 0 ) _inCombat = NO;
 
 	// If this was our casting unit
 	if ( wasCastingUnit ) [botController evaluateSituation];
@@ -279,6 +279,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	Unit *unit = [notification object];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
 	[botController cancelCurrentProcedure];
 	[botController cancelCurrentEvaluation];
@@ -310,13 +311,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)targetNotInFront: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
 	Unit *unit = [notification object];
 
 	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: unit] , unit);
 
+	[botController cancelCurrentProcedure];
+	[botController cancelCurrentEvaluation];
+
 	[movementController turnTowardObject:unit];
 	[movementController establishPlayerPosition];
+	[botController actOnUnit: unit];
+
+//	[movementController correctDirectionByTurning];
+
 }
 
 - (void)unitTapped: (NSNotification*)notification {
@@ -444,7 +453,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 	Position *playerPosition = [playerData position];
 	for ( Unit *unit in units ) {
-		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
+		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit cachedGUID]]];
 	}
 
 	[units sortUsingFunction: WeightCompare context: dictOfWeights];
@@ -471,7 +480,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 
 		// ignore dead units
-		if ( [unit isDead] || [_unitsDied containsObject: unit] ) continue;
+		if ( [unit isDead] || [unit percentHealth] <= 0 || [_unitsDied containsObject: unit] ) continue;
 
 		// ignore evading/not valid units
 		if ( [unit isEvading] || ![unit isValid] ) continue;
@@ -494,11 +503,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 
 	for ( Unit *unit in validUnits )
-		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
+		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit cachedGUID]]];
 
 	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];
 
 	log(LOG_DEV, @"combatListValidated has %d units.", [validUnits count]);
+	
+	if ( _inCombat && [validUnits count] == 0 ) _inCombat = NO;
+
 	return [[validUnits retain] autorelease];
 }
 
@@ -547,12 +559,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	// remember when we started w/this unit
 	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
+	if ( !self.inCombat ) _inCombat = YES;
 
 	// lets face our new unit!
 	if ( unit != oldTarget ) {
 		log(LOG_DEV, @"Facing new target! %@", unit);
 		[movementController turnTowardObject:unit];
 		[movementController establishPlayerPosition];
+//		[movementController correctDirectionByTurning];
 	}
 
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
@@ -561,9 +575,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[oldTarget release];
 	}
 
-	// we want to monitor enemies to fire off notifications if they die!
-//	if ( type == TargetEnemy || type == TargetAdd || type == TargetPat ) {
-
 	log(LOG_DEV, @"Now staying with %@", unit);
 	if ( ![_unitsMonitoring containsObject: unit] ) {
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
@@ -571,7 +582,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	[self stayWithUnit];
-//	}
 }
 
 - (void)stayWithUnit {
@@ -585,11 +595,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// dead
-	if ( [_castingUnit isDead] ){
+	if ( [_castingUnit isDead] || [_castingUnit percentHealth] <= 0 ) {
 		log(LOG_COMBAT, @"Unit is dead! %@", _castingUnit);
 		return;
 	}
-	
+
 	// sanity checks
 	if ( ![_castingUnit isValid] || [_castingUnit isEvading] || [blacklistController isBlacklisted:_castingUnit] ) {
 		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Evading? (%d)  Blacklisted? (%d)", ![_castingUnit isValid], [_castingUnit isEvading], [blacklistController isBlacklisted:_castingUnit]);
@@ -625,7 +635,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	float angleTo = fabsf(theAngle - playerDirection);
 
 	// ensure unit is our target
-	UInt64 unitGUID = [_castingUnit GUID];
+	UInt64 unitGUID = [_castingUnit cachedGUID];
 	if ( ( [playerData targetID] != unitGUID) || [_castingUnit isFeignDeath] ) [playerData targetGuid:unitGUID];
 
 	if( !isCasting ) {
@@ -636,8 +646,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 			if ( distanceToCastingUnit < 5.0f ) if ( [movementController jumpForward] ) usleep(300000);
 			[movementController turnTowardObject: _castingUnit];
-//			[movementController establishPlayerPosition];
-			usleep([controller refreshDelay]*2);
+			usleep([controller refreshDelay]);
 		}
 
 		// move toward unit?
@@ -669,18 +678,23 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 
-	if ( [playerData isDead] ){
-		log(LOG_DEV, @"You died, stopping monitoring.");
+	if ( [playerData isDead] ) {
+		log(LOG_DEV, @"Player died, stopping monitoring.");
 		return;
 	}
-	
+
+//	if ( !self.inCombat ) {
+//		log(LOG_COMBAT, @"%@ %@: player is no longer in combat, canceling monitor.", [self unitHealthBar: unit], unit);
+//		return;
+//	}
+
 	// unit died, fire off notification
-	if ( [unit isDead] ) {
+	if ( [unit isDead] || [unit percentHealth] <= 0 ) {
 		log(LOG_DEV, @"Firing death notification for unit %@", unit);
 		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
 		return;
 	}
-	
+
 	// unit has ghost aura (so is dead, fire off notification)
 	NSArray *auras = [[AuraController sharedController] aurasForUnit: unit idsOnly: YES];
 	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] ){
@@ -688,13 +702,13 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[[NSNotificationCenter defaultCenter] postNotificationName: UnitDiedNotification object: [[unit retain] autorelease]];
 		return;
 	}
-	
+
 	// Tap check
 	if ( !botController.theCombatProfile.partyEnabled && !botController.isPvPing &&
-		[unit isTappedByOther] && [unit targetID] != [playerData GUID] ) {
+		[unit isTappedByOther] && [unit targetID] != [[playerData player] cachedGUID] ) {
 		
 		// Only do this for mobs.
-		Mob *mob = [mobController mobWithGUID:[unit GUID]];
+		Mob *mob = [mobController mobWithGUID:[unit cachedGUID]];
 		if (mob && [mob isValid]) {
 			// Mob has been tapped by another player
 			log(LOG_DEV, @"Firing tapped notification for unit %@", unit);
@@ -702,28 +716,25 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			return;
 		}
 	}
-	
-	// Tanaris4: I'd recommend using cachedGUID, as (in theory) an object's GUID shouldn't change + this saves memory reads
-	GUID guid = [unit cachedGUID];
-	
+
 	// Unit not in combat check
-	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
-	
+	int leftCombatCount = [[_unitLeftCombatCount objectForKey:[NSNumber numberWithLongLong:[unit cachedGUID]]] intValue];
+
 	if ( ![unit isInCombat] ) {
-		
+
 		float secondsInCombat = leftCombatCount/10;
-		
-		log(LOG_DEV, @"%@ Unit not in combat now for %0.2f seconds", [self unitHealthBar: unit], secondsInCombat);
+
+		log(LOG_DEV, @"%@ %@ not in combat now for %0.2f seconds", [self unitHealthBar: unit], unit, secondsInCombat);
 		leftCombatCount++;
-		
+
 		// If it's our target let's do some checks as we should be in combat
-		if ( unit == _attackUnit ) {
-			
+		if ( [unit cachedGUID] == [_castingUnit cachedGUID] ) {
+
 			// This is to set timer if the unit actually our target vs being an add
-			int leftCombatTargetCount = [[_unitLeftCombatTargetCount objectForKey:[NSNumber numberWithLongLong:guid]] intValue];
-			
+			int leftCombatTargetCount = [[_unitLeftCombatTargetCount objectForKey:[NSNumber numberWithLongLong:[unit cachedGUID]]] intValue];
+
 			secondsInCombat = leftCombatTargetCount/10;
-			
+
 			float combatBlacklistDelay = [[[NSUserDefaults standardUserDefaults] objectForKey: @"BlacklistTriggerNotInCombat"] floatValue];
 			//			[[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistTriggerNotInCombat"] floatValue];
 			
@@ -737,7 +748,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			}
 			
 			leftCombatTargetCount++;
-			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:guid]];
+			[_unitLeftCombatTargetCount setObject:[NSNumber numberWithInt:leftCombatTargetCount] forKey:[NSNumber numberWithLongLong:[unit cachedGUID]]];
 			//			log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		}
 		
@@ -748,7 +759,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			log(LOG_COMBAT, @"%@ No longer monitoring %@, didn't enter combat after  %d seconds.", [self unitHealthBar: unit], unit, secondsInCombat);
 			
 			leftCombatCount = 0;
-			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
+			[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit cachedGUID]]];
 			
 			return;
 		}
@@ -757,7 +768,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		//		log(LOG_DEV, @"%@ Monitoring %@", [self unitHealthBar: unit], unit);
 		leftCombatCount = 0;
 	}
-	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:guid]];
+
+	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit cachedGUID]]];
 	
 	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
 }
@@ -771,6 +783,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[_addUnit release]; _addUnit = nil;
 	[_friendUnit release];	_friendUnit =  nil;
 
+	[_unitLeftCombatCount removeAllObjects];
+	[_unitLeftCombatTargetCount removeAllObjects];
 }
 
 - (void)resetAllCombat {
@@ -779,10 +793,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
 	[self cancelAllCombat];
-	[_unitsAttackingMe removeAllObjects];
-	[_unitsAllCombat removeAllObjects];
-	[_unitLeftCombatCount removeAllObjects];
-	[_unitLeftCombatTargetCount removeAllObjects];
 	_inCombat = NO;
 
 }
@@ -937,7 +947,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// sort
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 	for ( Unit *unit in validUnits ) {
-		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit GUID]]];
+		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit cachedGUID]]];
 	}
 	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];	
 	return [[validUnits retain] autorelease];
@@ -1078,7 +1088,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		
 		// current target
-		if ( [playerData targetID] == [unit GUID] ) weight += 30;
+		if ( [playerData targetID] == [unit cachedGUID] ) weight += 30;
 		
 		// Hostile Players get even more weight
 		if ([unit isPlayer]) weight += 25;
@@ -1104,7 +1114,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	} else {	
 	// friendly?
 		// tank gets a pretty big weight @ all times
-		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit GUID] )
+		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit cachedGUID] )
 			weight += healthLeft;
 
 		weight *= 1.5;
@@ -1120,7 +1130,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	} else {
 		unitPercentHealth = [[playerData player] percentHealth];
 	}
-	if ([[playerData player] GUID] == [unit GUID] || !unit) {
+	if ( [[playerData player] cachedGUID] == [unit cachedGUID] || !unit) {
 		// Ourselves
 		if (unitPercentHealth == 100)		logPrefix = @"[OOOOOOOOOOO]";
 		else if (unitPercentHealth >= 90)	logPrefix = @"[OOOOOOOOOO ]";
@@ -1299,7 +1309,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
     if ( [friendliesWithinRange count] ) {
         for ( Unit *unit in friendliesWithinRange ) {
 			// Skip if the target is ourself
-			if ( [unit GUID] == [playerData GUID] ) continue;
+			if ( [unit cachedGUID] == [[playerData player] cachedGUID] ) continue;
 
 //			log(LOG_DEV, @"Friendly - Checking %@", unit);
 			if ( [self validFriendlyUnit:unit] ) {
@@ -1388,16 +1398,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
 	
-	UInt64 playerGUID = [[playerData player] GUID];
+	UInt64 playerGUID = [[playerData player] cachedGUID];
 	UInt64 unitTarget = 0;
 	BOOL playerHasPet = [[playerData player] hasPet];
-	BOOL tapCheckPassed = YES;
+	BOOL tapCheckPassed;
 	
 	for ( Mob *mob in mobs ){
 		tapCheckPassed = YES;
 		unitTarget = [mob targetID];
 		
 		if ([mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
+		
+		if ( botController.theCombatProfile.ignoreLevelOne && [mob level] == 1 ) continue;
 		
 		if (
 			![_unitsDied containsObject: (Unit*)mob] &&
@@ -1409,19 +1421,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			tapCheckPassed &&	// lets give this one a go
 			[mob isValid] &&		// 6 - valid mob
 			(	(unitTarget == playerGUID ||										// 7 - targetting us
-				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
+				 (playerHasPet && unitTarget == [[playerData pet] GUID]) ) ||	// or targetting our pet
 			 [mob isFleeing])													// or fleeing
-			) {
-			
+		) {
 			// add mob!
 			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ) {
 				log(LOG_DEV, @"Adding mob %@", mob);
 				[_unitsAttackingMe addObject:(Unit*)mob];
 				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)mob retain] autorelease]];
 			}
-		}
+		} else
 		// remove unit
-		else if ( [_unitsAttackingMe containsObject:(Unit*)mob] ) {
+		if ( [_unitsAttackingMe containsObject:(Unit*)mob] ) {
 			log(LOG_DEV, @"Removing mob %@", mob);
 			[_unitsAttackingMe removeObject:(Unit*)mob];
 		}
@@ -1539,10 +1550,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			NSString *name = [unit name];
 			if ( (name == nil || [name length] == 0) && ![unit isNPC] ){
 				[name release]; name = nil;
-				name = [playersController playerNameWithGUID:[unit GUID]];
+				name = [playersController playerNameWithGUID:[unit cachedGUID]];
 			}
 			
-			if ( [unit GUID] == [[playerData player] GUID] ){
+			if ( [unit cachedGUID] == [[playerData player] cachedGUID] ){
 				weight = 0;
 			}
 			
@@ -1632,7 +1643,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 		// all others
 		else{
-			if ( [playerData isFriendlyWithFaction:[unit factionTemplate]] || [unit GUID] == [[playerData player] GUID] ){
+			if ( [playerData isFriendlyWithFaction:[unit factionTemplate]] || [unit cachedGUID] == [[playerData player] cachedGUID] ){
 				[aCell setTextColor: [NSColor greenColor]];
 			}
 			else{

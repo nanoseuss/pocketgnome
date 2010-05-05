@@ -243,7 +243,7 @@
 	Unit *_followUnit;
 	
 	int _lootScanIdleTimer;
-	int _lootScanCycles;
+//	int _lootScanCycles;
 
 	int _partyEmoteIdleTimer;
 	int _partyEmoteTimeSince;

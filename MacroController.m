@@ -104,7 +104,7 @@
 		log(LOG_MACRO, @"Using the key as a command!");
 		macroCommand = key;
 	}
-	
+
 	BOOL macroExecuted = [self overwriteMacro:macroCommand];
 	
 	// if we didn't find a macro, lets send the command!
