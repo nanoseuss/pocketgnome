@@ -976,7 +976,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	for ( Unit *unit in validUnits ) {
 
 		// Let's make sure we can even act on this unit before we consider it
-		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
+//		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
+		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
 
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];
@@ -1017,7 +1018,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ( [playerPosition distanceToPosition: [unit position]] > botController.theCombatProfile.engageRange ) continue;
 
 		// Let's make sure we can even act on this unit before we consider it
-		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
+//		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
+		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
 		
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];

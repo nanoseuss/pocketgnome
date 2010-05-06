@@ -141,7 +141,6 @@
     int _miningLevel, _herbLevel, _skinLevel;
     float _gatherDist;
     BOOL _isBotting;
-    BOOL _isEvaluating;
     BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
 	NSString *_evaluationInProgress;
@@ -327,7 +326,6 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 @property (readwrite, assign) BOOL isBotting;
-@property (readonly, assign) BOOL isEvaluating;
 @property (assign) BOOL isPvPing;
 @property (retain) NSString *procedureInProgress;
 @property (retain) NSString *evaluationInProgress;

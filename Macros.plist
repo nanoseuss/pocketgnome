@@ -275,5 +275,12 @@
 		<key>Description</key>
 		<string>This will click a dialogue box. (useful for auto-joining WG or accepting a BoP button)</string>
 	</dict>
+	<key>PetFollow</key>
+	<dict>
+		<key>Macro</key>
+		<string>/petfollow</string>
+		<key>Description</key>
+		<string>This will make your pet follow or stop attack.</string>
+	</dict>
 </dict>
 </plist>
