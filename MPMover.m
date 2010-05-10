@@ -11,6 +11,7 @@
 
 #import "MPLocation.h"
 #import "MPMover.h"
+#import "MPTimer.h"
 #import "PatherController.h"
 #import "Controller.h"
 #import "Position.h"
@@ -27,6 +28,9 @@
 - (void) calculateMovementTowards: (MPLocation *)locationTo;
 - (void) pressAndReleaseKeys;
 
+- (BOOL) stuck;
+- (void) attemptUnstick;
+
 @end
 
 
@@ -34,6 +38,7 @@
 
 @implementation MPMover
 @synthesize destinationLocation, facingLocation, patherController;
+@synthesize timerStuckCheck, referencePosition;
 
 SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 
@@ -51,6 +56,16 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 		[self resetMovementState];
 		self.patherController = controller;
 		
+		
+		//// stuck Checking 
+		self.timerStuckCheck = [MPTimer timer:333];
+		[timerStuckCheck forceReady];
+		
+		self.referencePosition = nil;
+		thinkStuck = NO;
+		isStuck = NO;
+		unstickAttempt = 0;
+		
 		closeEnough = INFINITY;
 		angleTolerance = MP_PI_8;
 		
@@ -64,7 +79,9 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 	[destinationLocation release];
 	[facingLocation release];
     [patherController release];
-
+	[timerStuckCheck release];
+	[referencePosition release];
+	
     [super dealloc];
 }
 
@@ -84,6 +101,10 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 	
 	closeEnough = INFINITY;
 	angleTolerance = MP_PI_8;
+	
+	referencePosition = nil;
+	thinkStuck = NO;
+	isStuck = NO;
 }
 
 #pragma mark -
@@ -444,10 +465,13 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	//PGLog(@" -- Action -- " );
 	[self calculateMovementTowards:destinationLocation];
 	[self calculateFacingTowards:facingLocation];
+	
+	if ([self stuck]) {
+		[self attemptUnstick];
+	}
+	
 	[self pressAndReleaseKeys];
-	
-	// To Do: stuck detection here
-	
+
 }
 
 
@@ -572,6 +596,178 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	}
 }
 
+
+
+#pragma mark -
+#pragma mark Stuck Detection Helpers
+
+
+- (BOOL) stuck {
+	
+	// if timerStuckCheck ready
+	if ([timerStuckCheck ready] ) {
+		
+		[timerStuckCheck start];
+		
+		// if moving
+		if ([self isMoving]) {
+			
+			Position *currentPosition = [[PlayerDataController sharedController] position];
+			
+			// if referencePoint != nil
+			if (referencePosition != nil) {
+				
+				// if I'm not debuffed 
+					// if distanceTo CurrentPosition > 2
+					float distance = [referencePosition distanceToPosition:currentPosition];
+					PGLog(@" ========> distance from reference is [%0.4f]", distance);
+					// TO DO: should choose different values here based on 
+					//   if mounted , value = a
+					//	 if fast mounted, value = b
+					//   if swimming, value = c
+					//   if stealthed value = d
+					//   ....
+					// for now, pick a small enough value to catch bad stucks, but not 
+					// trigger if stealthed: ~ 0.65?  
+					if (distance > 0.65f) {  
+						
+						// all good so update reference
+						self.referencePosition = currentPosition;
+						thinkStuck = NO;
+						
+					} else {
+						
+						// didn't move very much so:
+						thinkStuck = YES;
+						unstickAttempt ++;
+						if (unstickAttempt >= 8) {
+							isStuck = YES;
+						}
+						
+					} // end if
+				// end if
+			} else { 
+				
+				self.referencePosition = currentPosition;
+				thinkStuck = NO;
+				
+			} // end if
+			
+		} else {
+			
+			self.referencePosition = nil;
+			thinkStuck = NO;
+			
+		} // end if
+		
+	} // end if timerStuckCheck ready
+	
+	
+	if (!thinkStuck) {
+//		unstickAttempt = 0;
+		isStuck = NO;
+	}
+	
+	return thinkStuck;
+}
+
+
+
+- (void) attemptUnstick  {
+	
+	
+	
+	switch (unstickAttempt) {
+		case 1:
+			// try jumping
+			[self swimUp:YES];
+			break;
+			
+		case 2:
+			[self stopMove];
+			
+			// switch forwards/backward movement & strafe left
+			if (runForwards) {
+				[self backwards:YES];
+			}else {
+				[self forwards:YES];
+			}
+			[self strafeLeft:YES];
+			break;
+			
+		case 3:
+			// adds jumping to case 2
+			[self stopMove];
+			
+			// switch forwards/backward movement & strafe left
+			if (runForwards) {
+				[self backwards:YES];
+			}else {
+				[self forwards:YES];
+			}
+			[self strafeLeft:YES];
+			[self swimUp:YES];
+			break;
+			
+		case 4:
+			[self stopMove];
+			
+			// switch forwards/backwards movenet & strafe right
+			if (runForwards) {
+				[self backwards:YES];
+			}else {
+				[self forwards:YES];
+			}
+			[self strafeRight:YES];
+			break;
+			
+		case 5:
+			//// Add Jumping to Case 4
+			[self stopMove];
+			
+			// switch forwards/backwards movenet & strafe right
+			if (runForwards) {
+				[self backwards:YES];
+			}else {
+				[self forwards:YES];
+			}
+			[self strafeRight:YES];
+			[self swimUp:YES];
+			break;
+			
+		case 6:
+		default:
+			[self stopMove];
+			
+			// moveRandom
+			int r = arc4random() % 4;
+			switch( r) {
+				case 0:
+					// forwards
+					[self forwards:YES];
+					break;
+				case 1:
+					// strafe left	
+					[self strafeLeft:YES];
+					break;
+				case 2:
+					// backwards
+					[self backwards:YES];
+					break;
+				case 3:
+					// strafe Right
+					[self strafeRight:YES];
+					break;
+			}
+			
+			// reset unstickAttempt
+			unstickAttempt = 0;
+			break;
+
+	}
+
+	
+}
 
 
 #pragma mark -

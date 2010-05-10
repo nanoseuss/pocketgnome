@@ -311,6 +311,14 @@
 		[timerBuffCheck reset];
 	}
 	
+	[self runningActionSpecial];
+	
+}
+
+
+
+- (void) runningActionSpecial {
+	// this should be overridden by subclasses if they need it.
 }
 
 

@@ -49,21 +49,23 @@
 
 
 @implementation MPCustomClassScrubDruid
-@synthesize abolishPoison, curePoison, wrath, mf, motw, rejuv, healingTouch, starfire, thorns;
+@synthesize abolishPoison, curePoison, insectSwarm, wrath, mf, motw, rejuv, healingTouch, removeCurse, starfire, thorns;
 @synthesize autoAttack;
 @synthesize drink;
-@synthesize waitDrink;
+@synthesize waitDrink, timerRunningAction;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
 		
 		self.abolishPoison = nil;
 		self.curePoison = nil;
+		self.insectSwarm = nil;
 		self.wrath = nil;
 		self.mf    = nil;
 		self.motw  = nil;
 		self.rejuv = nil;
 		self.healingTouch = nil;
+		self.removeCurse = nil;
 		self.starfire = nil;
 		self.thorns = nil;
 
@@ -73,6 +75,9 @@
 		
 		self.waitDrink = [MPTimer timer:1000]; // 1s delay in between spamming drink
 		[waitDrink forceReady];
+		
+		self.timerRunningAction = [MPTimer timer:1000];
+		[timerRunningAction forceReady];
 		
 	}
 	return self;
@@ -84,11 +89,13 @@
 {
 	[abolishPoison release];
 	[curePoison release];
+	[insectSwarm release];
 	[wrath release];
 	[mf release];
 	[motw release];
 	[rejuv release];
 	[healingTouch release];
+	[removeCurse release];
 	[starfire release];
 	[thorns release];
 	
@@ -97,6 +104,7 @@
 	[drink release];
 	
 	[waitDrink release];
+	[timerRunningAction release];
 	
     [super dealloc];
 }
@@ -267,8 +275,10 @@
 			
 			
 			// Standard Attack
-			if ([self cast:starfire on:mob]){
-				return CombatStateInCombat;
+			if (([mob isElite]) || ([mob percentHealth] >=20)) { // only nuke when health is high
+				if ([self cast:starfire on:mob]){
+					return CombatStateInCombat;
+				}
 			}
 
 			if ([self cast:wrath on:mob]){
@@ -306,8 +316,10 @@
 			if ([waitDrink ready]) {
 				if ([drink canUse]){
 					if (![drink unitHasBuff:[player player]]) {
-						[drink use];
-						[waitDrink start];
+						if ([player percentMana] <= 90) {
+							[drink use];
+							[waitDrink start];
+						}
 					}
 				}
 			}
@@ -321,6 +333,31 @@
 
 
 
+- (void) runningActionSpecial {
+	
+	
+	if ([timerRunningAction ready]) {
+		
+		
+		// Rejuv Party Members if health < 70%
+		for( Player *player in listParty) {
+			if (([player percentHealth] < 70) && ([player currentHealth] > 1)) {
+				if ([self player:player inRange:40]){
+					if ([self castHOT:rejuv on:player]) {
+						return;
+					}
+				}
+			}
+		}
+		
+		
+		[timerRunningAction reset];
+	}
+	
+	
+}
+
+
 - (void) setup {
 
 	[super setup];
@@ -330,11 +367,13 @@
 	////
 	self.abolishPoison = [MPSpell abolishPoison];
 	self.curePoison = [MPSpell curePoison];
+	self.insectSwarm = [MPSpell insectSwarm];
 	self.wrath = [MPSpell wrath];
 	self.mf    = [MPSpell moonfire];
 	self.motw  = [MPSpell motw];
 	self.rejuv = [MPSpell rejuvenation];
 	self.healingTouch = [MPSpell healingTouch];
+	self.removeCurse = [MPSpell removeCurseDruid];
 	self.starfire = [MPSpell starfire];
 	self.thorns = [MPSpell thorns];
 	
@@ -342,11 +381,13 @@
 	NSMutableArray *spells = [NSMutableArray array];
 	[spells addObject:abolishPoison];
 	[spells addObject:curePoison];
+	[spells addObject:insectSwarm];
 	[spells addObject:wrath];
 	[spells addObject:mf];
 	[spells addObject:motw];
 	[spells addObject:rejuv];
 	[spells addObject:healingTouch];
+	[spells addObject:removeCurse];
 	[spells addObject:starfire];
 	[spells addObject:thorns];
 	self.listSpells = [spells copy];
@@ -365,6 +406,8 @@
 			self.dispellPoison = curePoison;
 		}
 	}
+	
+	self.dispellCurse = removeCurse;
 	
 	
 	

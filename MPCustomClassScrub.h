@@ -40,6 +40,10 @@
 - (MPCombatState) combatActionsWith: (Mob *) mob; 
 
 
+// called repeatedly while "running"(Walking,Following, etc...)
+- (void) runningActionSpecial;
+
+
 - (void) targetUnit: (Unit *)unit;
 - (BOOL) cast:(MPSpell *)spell on:(Unit *)unit;
 - (BOOL) castDOT:(MPSpell *)spell on:(Unit *)unit;

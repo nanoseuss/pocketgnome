@@ -24,7 +24,7 @@
 @implementation MPCustomClassScrubPriest
 @synthesize cureDisease, devouringPlague, dispelMagic, fade, flashHeal, heal, holyFire, pwFort, pwShield, renew, resurrection, smite, swPain;
 @synthesize drink;
-
+@synthesize timerRunningAction;
 
 - (id) initWithController:(PatherController*)controller {
 	if ((self = [super initWithController:controller])) {
@@ -43,8 +43,8 @@
 		self.smite = nil;
 		self.swPain = nil;
 		
-
-
+		self.timerRunningAction = [MPTimer timer:1000];  // 1sec
+		[timerRunningAction forceReady];
 		
 		self.drink = nil;
 
@@ -326,10 +326,13 @@
 		// if health < healthTrigger  || mana < manaTrigger
 		if ( ([player percentHealth] <= 99 ) || ([player percentMana] <= 99) ) {
 			
-			if ([drink canUse]){
-				if (![drink unitHasBuff:[player player]]) {
-					PGLog(@"   Drinking ...");
-					[drink use];
+			if ([player percentMana] <= 85) {
+				
+				if ([drink canUse]){
+					if (![drink unitHasBuff:[player player]]) {
+						PGLog(@"   Drinking ...");
+						[drink use];
+					}
 				}
 			}
 			
@@ -338,6 +341,33 @@
 		} // end if
 	}
 	return YES;
+}
+
+
+
+
+- (void) runningActionSpecial {
+	
+	
+	if ([timerRunningAction ready]) {
+		
+		
+		// Renew Party Members if health < 80%
+		for( Player *player in listParty) {
+			if (([player percentHealth] < 80) && ([player currentHealth] > 1)) {
+				if ([self player:player inRange:40]){
+					if ([self castHOT:renew on:player]) {
+						return;
+					}
+				}
+			}
+		}
+		
+		
+		[timerRunningAction reset];
+	}
+	
+	
 }
 
 

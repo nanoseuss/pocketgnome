@@ -11,6 +11,7 @@
 
 @class MPSpell;
 @class MPItem;
+@class MPTimer;
 
 
 @interface MPCustomClassScrubPriest : MPCustomClassScrub {
@@ -19,9 +20,12 @@
 	MPItem *drink;
 	BOOL wandShooting;
 	
+	MPTimer *timerRunningAction;
+	
 }
 @property (retain) MPSpell *cureDisease, *devouringPlague, *dispelMagic, *fade, *flashHeal, *heal, *holyFire, *pwShield, *pwFort, *renew, *resurrection, *smite, *swPain;
 @property (retain) MPItem *drink;
+@property (retain) MPTimer *timerRunningAction;
 
 - (void) openingMoveWith: (Mob *)mob;
 - (MPCombatState) combatActionsWith: (Mob *) mob;

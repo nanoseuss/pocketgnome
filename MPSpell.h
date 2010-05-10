@@ -62,9 +62,11 @@
 + (id) abolishPoison;
 + (id) curePoison;
 + (id) healingTouch;
++ (id) insectSwarm;
 + (id) moonfire;
 + (id) motw;
 + (id) rejuvenation;
++ (id) removeCurseDruid;
 + (id) starfire;
 + (id) thorns;
 + (id) wrath;

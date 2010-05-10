@@ -30,6 +30,17 @@
 
 @interface MPTaskPull (Internal)
 
+/*!
+ * @function approachToDistance
+ * @abstract Compute the current distance to approach to the target.
+ * @discussion
+ * The Pull task will attempt to approach the target to within attackDistance before attempting
+ * to attack.  On occassion the mob will move outside of range and the pull task will then 
+ * reapproach the target but attempt to move closer than before.  This task handles computing the 
+ * current approachTo distance.
+ */
+- (float) approachToDistance;
+
 
 /*!
  * @function mobToPull
@@ -131,6 +142,8 @@
 		
 		attackDistance = [[[controller botController] theCombatProfile] engageRange];
 		mobDistance = 30.0;
+		
+		approachAttempt = 0;
 		
 		self.selectedMob = nil;
 		
@@ -235,12 +248,14 @@ PGLog(@"switching to PullStateSearching!!!");
 		case PullStateSearching:
 PGLog( @"   state[Searching]");
 			
+			approachAttempt = 0;
+			
 			[taskController setInCombat:NO];
 			
 			// if currentMob found
 			if (currentMob != nil) {
 			
-				BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[currentMob position] within:attackDistance facing:(MPLocation *)[currentMob position]];
+				BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[currentMob position] within:[self approachToDistance] facing:(MPLocation *)[currentMob position]];
 				
 				if (wantToApproach) {
 					
@@ -253,26 +268,7 @@ PGLog( @"   state[Searching]");
 					[customClass preCombatWithMob:currentMob atDistance:currentDistance];
 
 				}
-				/*
-				currentDistance = [self myDistanceToMob:currentMob];
-				
-				// if distance to mob > combatDist
-				if ( currentDistance > attackDistance) {
-PGLog( @"      mob [%@] found at distance %f : ==> Approaching", currentMob, currentDistance);
-					// phase = approaching
-					state = PullStateApproaching;
-					
-				} else {
-PGLog( @"      mob [%@] found at distance %f : ==> ATTACK!!!", currentMob, currentDistance);
-					// phase = attack
-					state = PullStateAttacking;
-					
-					// Make sure we fire off a preCombat before hand:
-					[customClass preCombatWithMob:currentMob atDistance:currentDistance];
-					
-				} // end if
-				 
-				 */
+
 				
 			} // end if
 			break;
@@ -282,7 +278,7 @@ PGLog( @"      mob [%@] found at distance %f : ==> ATTACK!!!", currentMob, curre
 PGLog( @"   state[Approaching]");	
 
 
-				BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[currentMob position] within:attackDistance facing:(MPLocation *)[currentMob position]];
+				BOOL wantToApproach = [[MPMover sharedMPMover] shouldMoveTowards:(MPLocation *)[currentMob position] within:[self approachToDistance] facing:(MPLocation *)[currentMob position]];
 				if (!wantToApproach) {
 				
 					state = PullStateAttacking;
@@ -291,15 +287,6 @@ PGLog( @"   state[Approaching]");
 
 		
 			currentDistance = [self myDistanceToMob:currentMob];
-/*
-PGLog( @"      mob [%@] at distance %f ", currentMob, currentDistance);
-			// if distance to mob < combatDist
-			if (currentDistance <= attackDistance ) {  // now use Engage Range in combat profile
-PGLog( @"         close enough!!! ===> ATTACK!!! ");
-				// phase = attack
-				state = PullStateAttacking;
-			} // end if
-*/
 			
 			[customClass preCombatWithMob:currentMob atDistance:currentDistance];
 			break;
@@ -334,6 +321,7 @@ PGLog( @"         mob finished: ===> Wait for Loot ");
 			currentDistance = [self myDistanceToMob:currentMob];
 			if (currentDistance > attackDistance+ 3.0f ) { 
 				state = PullStateApproaching;
+				approachAttempt ++;
 			} // end if
 			
 			
@@ -410,8 +398,7 @@ PGLog( @"   state[Waiting]");
 			if (approachActivity == nil) {
 			
 				// create approachTask
-				float howClose = (attackDistance  > 5.0f) ? (attackDistance -1.5f): 4.0f;
-				self.approachActivity = [MPActivityApproach approachUnit:currentMob withinDistance:howClose forTask:self];
+				self.approachActivity = [MPActivityApproach approachUnit:currentMob withinDistance:[self approachToDistance] forTask:self];
 				
 			}
 			return (MPActivity *)approachActivity;
@@ -491,6 +478,19 @@ PGLog( @"   state[Waiting]");
 
 #pragma mark -
 #pragma mark Helper Functions
+
+
+
+- (float) approachToDistance {
+	
+	float modifiedDistance = attackDistance - (approachAttempt * 1.0f);
+	if (modifiedDistance > 2.0f) {
+		return modifiedDistance;
+	} else {
+		return 2.0f;
+	}
+
+}
 
 
 

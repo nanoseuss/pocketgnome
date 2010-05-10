@@ -336,6 +336,25 @@
 
 
 
++ (id) insectSwarm {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Insect Swarm"];
+	[newSpell addID:  5570];  // Rank 1
+	[newSpell addID: 24974];  // Rank 2
+	[newSpell addID: 24975];  // Rank 3
+	[newSpell addID: 24976];  // Rank 4
+	[newSpell addID: 24977];  // Rank 5
+	[newSpell addID: 27013];  // Rank 6
+	[newSpell addID: 48468];  // Rank 7
+
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
 + (id) moonfire {
 	
 	MPSpell *newSpell = [MPSpell spell];
@@ -423,6 +442,19 @@
 	[newSpell addID:26982];  // Rank 13
 	[newSpell addID:48440];  // Rank 14
 	[newSpell addID:48441];  // Rank 15
+	[newSpell loadPlayerSettings];
+	
+	return newSpell;
+}
+
+
+
++ (id) removeCurseDruid {
+	
+	MPSpell *newSpell = [MPSpell spell];
+	[newSpell setName:@"Remove Curse"];
+	[newSpell addID:  2782];  // only 1 Rank
+
 	[newSpell loadPlayerSettings];
 	
 	return newSpell;

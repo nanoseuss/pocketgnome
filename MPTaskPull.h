@@ -78,6 +78,8 @@ typedef enum PullState {
 	MPValue *minLevel, *maxLevel;
 	float mobDistance, attackDistance;
 	
+	int approachAttempt;
+	
 	BOOL skipMobsWithAdds;
 	NSInteger addDistance, addCount;
 	

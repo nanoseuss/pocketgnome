@@ -16,6 +16,7 @@
 
 #import <Cocoa/Cocoa.h>
 @class MPLocation;
+@class MPTimer;
 @class PatherController;
 @class Position;
 
@@ -36,9 +37,17 @@
 	float closeEnough, angleTolerance;
 	MPLocation *destinationLocation, *facingLocation;
 	
+	// Stuck Checking
+	MPTimer *timerStuckCheck;
+	Position *referencePosition;
+	BOOL thinkStuck, isStuck;
+	int unstickAttempt;
+	
 	PatherController *patherController;
 }
 @property (retain) PatherController *patherController;
+@property (retain) MPTimer *timerStuckCheck;
+@property (retain) Position *referencePosition;
 @property (retain) MPLocation *destinationLocation, *facingLocation;
 
 // Reset all movement states.  (should stop)
