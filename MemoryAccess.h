@@ -67,6 +67,9 @@
 // save record to application addresses
 - (BOOL)saveDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
 
+// force a save
+- (BOOL)saveDataForAddressForce:(UInt32)Address Buffer:(Byte *)DataBuffer BufLength:(vm_size_t)Bytes;
+
 // load record from application addresses
 - (BOOL)loadDataForObject: (id)object atAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;
 //- (BOOL)loadDataForAddress: (UInt32)address Buffer: (Byte *)DataBuffer BufLength: (vm_size_t)Bytes;

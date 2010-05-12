@@ -102,7 +102,6 @@ static MemoryAccess *sharedMemoryAccess = nil;
     return readsProcessed;
 }
 
-
 - (BOOL)saveDataForAddress:(UInt32)Address Buffer:(Byte *)DataBuffer BufLength:(vm_size_t)Bytes
 {
     if(![self isValid])                 return NO;
@@ -119,9 +118,41 @@ static MemoryAccess *sharedMemoryAccess = nil;
         NS_HANDLER
         retVal = false;
         NS_ENDHANDLER
+
+        return retVal;
+    }
+}
+
+- (BOOL)saveDataForAddressForce:(UInt32)Address Buffer:(Byte *)DataBuffer BufLength:(vm_size_t)Bytes
+{
+    if(![self isValid])                 return NO;
+    if(Address == 0)                    return NO;
+    if(DataBuffer == NULL)              return NO;
+    if(Bytes <= 0)                      return NO;
+	
+	_totalWritesProcessed++;
+    
+    if(MEMORY_GOD_MODE) {
+		
+		// make the location writable!
+		vm_protect( MySlaveTask,
+						 (vm_address_t) Address,
+						 Bytes, false, (VM_PROT_ALL | VM_PROT_COPY) );
+		
+        bool retVal;
+        NS_DURING
+		int val = vm_write(MySlaveTask,Address,(vm_offset_t)DataBuffer,Bytes);
+        retVal = (KERN_SUCCESS == val);
+        NS_HANDLER
+        retVal = false;
+        NS_ENDHANDLER
+		
+		// set it back!
+		vm_protect( MySlaveTask,
+						 (vm_address_t) Address, Bytes, false,
+						 (VM_PROT_DEFAULT | VM_PROT_COPY) );
         
         return retVal;
-        
     }
 }
 
