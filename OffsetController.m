@@ -42,7 +42,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 - (NSDictionary*) findPattern: (unsigned char*)bMask 
 			   withStringMask:(char*)szMask 
 					 withData:(Byte*)dw_Address 
-					  withLen:(unsigned long)dw_Len ;
+					  withLen:(unsigned long)dw_Len
+			 withStartAddress:(unsigned long)startAddress;
 @end
 
 @implementation OffsetController
@@ -161,7 +162,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 				offsetDict = [self findPattern:bytes
 								withStringMask:szMask 
 									  withData:data
-									   withLen:len];
+									   withLen:len
+							  withStartAddress:startAddress];
 			}
 			
 			// we have results! yay!
@@ -177,7 +179,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 					if ( count == i ){
 						// we are looking for the ADDRESS at which this sig was found (good for identifying the start of a function!)
 						if ( useAddress ){
-							[offsets setObject: address forKey:key];
+							[offsets setObject: [NSNumber numberWithUnsignedLong:([address unsignedLongValue] + additionalOffset - subtractOffset)] forKey:key];
 							break;
 						}
 						// the offset we wanted that is in the signature
@@ -189,22 +191,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 					i++;
 				}
 			}
-			
-			NSNumber *offset = [offsets objectForKey:key];
-			if ( offset ){
-				PGLog(@"%@: 0x%X", key, [offset unsignedIntValue]);
-			}
-			else{
-				PGLog(@"[Offset] Error! No offset found for key %@", key);
-			}
 		}
-		
-		PGLog(@"[Offset] Loaded %d offsets!", [offsets count]);
-		
-		// can hard code some here
-		
-        _offsetsLoaded = YES;
-		[[NSNotificationCenter defaultCenter] postNotificationName: OffsetsLoaded object: nil];
 	}
 	// technically should never be here
 	else{
@@ -242,8 +229,17 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
             
             while(KERN_SUCCESS == (KernelResult = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName))) {
 				
+				// don't read too much!
+				if ( SourceAddress + SourceSize > TEXT_SEGMENT_MAX_ADDRESS ){
+					
+					// we're just too far
+					if ( SourceAddress >= TEXT_SEGMENT_MAX_ADDRESS ){
+						//PGLog(@"0x%X > 0x%X Breaking!", SourceAddress, TEXT_SEGMENT_MAX_ADDRESS);
+						break;
+					}
+				}
 				
-				//PGLog(@"[Offset] Success for reading from 0x%X to 0x%X  SourceInfo: 0x%X 0x%X", SourceAddress, SourceSize, SourceInfo, SourceInfoSize);
+				//PGLog(@"[Offset] Success for reading from 0x%X to 0x%X  Protection: 0x%X", SourceAddress, SourceAddress + SourceSize, SourceInfo.protection);
                 // ensure we have access to this block
                 if ((SourceInfo.protection & VM_PROT_READ)) {
                     NS_DURING {
@@ -253,11 +249,7 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
                             (ReturnedBufferContentSize > 0) )
                         {
 							
-							if ( ReturnedBufferContentSize > TEXT_SEGMENT_MAX_ADDRESS ){
-								ReturnedBufferContentSize = TEXT_SEGMENT_MAX_ADDRESS;
-							}
-							
-							//PGLog(@"Reading from %d to %d", SourceAddress, SourceAddress + SourceSize);
+							//PGLog(@"Reading from 0x%X to 0x%X", SourceAddress, SourceAddress + SourceSize);
 							
 							// Lets grab all our offsets!
 							[self findOffsets: ReturnedBuffer Len:SourceSize StartAddress: SourceAddress];
@@ -270,17 +262,35 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
                         ReturnedBuffer = nil;
                     }
                 }
-				
+
                 // reset some values to search some more
                 SourceAddress += SourceSize;
-				
-				// If it's past the .text segment
-				if ( SourceAddress > TEXT_SEGMENT_MAX_ADDRESS ){
-					break;
-				}
             }
         }
     }
+	
+	// print out the offsets we have!
+	for ( NSString *key in [_offsetDictionary allKeys] ){
+		UInt32 offset = [self offset:key];
+		if ( offset > 0 ){
+			PGLog(@"%@: 0x%X", key, offset);
+		}
+	}
+	
+	// print out ones we didn't find
+	for ( NSString *key in [_offsetDictionary allKeys] ){
+	
+		if ( [self offset:key] == 0 ){
+			PGLog(@"[Offset] Error! No offset found for key %@", key);
+		}
+	}
+	
+	PGLog(@"[Offset] Loaded %d offsets!", [offsets count]);
+
+	// can hard code some here
+
+	_offsetsLoaded = YES;
+	[[NSNotificationCenter defaultCenter] postNotificationName: OffsetsLoaded object: nil];
 }
 
 BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const char* szMask){
@@ -406,7 +416,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			offsetDict = [self findPattern:bytes
 							withStringMask:szMask 
 								  withData:byteData
-								   withLen:len];
+								   withLen:len
+						  withStartAddress:TEXT_SEGMENT_START];
 			
 		}
 	}
@@ -424,7 +435,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 - (NSDictionary*) findPattern: (unsigned char*)bMask 
 			   withStringMask:(char*)szMask 
 					 withData:(Byte*)dw_Address 
-					  withLen:(unsigned long)dw_Len 
+					  withLen:(unsigned long)dw_Len
+			 withStartAddress:(unsigned long)startAddress		// this is based on the START of the address chunk we're looking at
 {
 	unsigned long i;
 	NSMutableDictionary *list = [NSMutableDictionary dictionary];
@@ -452,8 +464,8 @@ BOOL bDataCompare(const unsigned char* pData, const unsigned char* bMask, const 
 			}
 			
 			if ( offset > 0x0 ){
-				//PGLog(@" [Offset] Found 0x%X, adding to dictionary at 0x%X", offset, i+TEXT_SEGMENT_START);
-				[list setObject:[NSNumber numberWithUnsignedInt:offset] forKey:[NSNumber numberWithUnsignedInt:i+TEXT_SEGMENT_START]];
+				//PGLog(@" [Offset] Found 0x%X, adding to dictionary at 0x%X", offset, i+startAddress);
+				[list setObject:[NSNumber numberWithUnsignedInt:offset] forKey:[NSNumber numberWithUnsignedInt:i+startAddress]];
 			}
 		}
 	}
