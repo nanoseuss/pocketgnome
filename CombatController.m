@@ -375,6 +375,27 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_COMBAT, @"Adding add unit: %@", _addUnit);
 	}
 
+	
+	// Add our pets target
+	if ( [botController.theBehavior usePet] && [playerData pet] && ![[playerData pet] isDead] && [[playerData pet] isInCombat] ) {
+
+		UInt64 targetGUID = [[playerData pet] targetID];
+		if ( targetGUID > 0x0) {
+			log(LOG_DEV, @"Pet has a target.");
+			Mob *mob = [mobController mobWithGUID:targetGUID];
+			if ( mob && ![mob isDead] && ![_unitsDied containsObject: (Unit*)mob] && [mob isInCombat] ) {
+				[units addObject:mob];
+				log(LOG_COMBAT, @"%@ Adding Pet's mob: %@", [self unitHealthBar: mob], mob);
+			} else {
+				Player *player = [playersController playerWithGUID: targetGUID];
+				if ( player && ![player isDead] && ![_unitsDied containsObject: (Unit*)player] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
+					log(LOG_DEV, @"Adding Pet's PvP target: %@", player);
+					[units addObject: player];
+				}
+			}
+		}
+	}
+	
 	// If we're in party mode we'll add the units our party members are in combat with
 	if ( botController.theCombatProfile.partyEnabled && ![botController isOnAssist] ) {
 
@@ -1441,7 +1462,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			tapCheckPassed &&	// lets give this one a go
 			[mob isValid] &&		// 6 - valid mob
 			(	(unitTarget == playerGUID ||										// 7 - targetting us
-				 (playerHasPet && unitTarget == [[playerData pet] GUID]) ) ||	// or targetting our pet
+				 (playerHasPet && unitTarget == [[playerData pet] cachedGUID]) ) ||	// or targetting our pet
 			 [mob isFleeing])													// or fleeing
 		) {
 			// add mob!

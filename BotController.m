@@ -1903,6 +1903,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 
 		[movementController establishPlayerPosition];	// This helps up refresh
+	} else {
+		usleep( [controller refreshDelay] );
 	}
 
 	/*
@@ -4859,15 +4861,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [[playerController player] isMounted] ) return NO;
 
 	if (  [playerController isInCombat] || [combatController inCombat] ) {
-		log(LOG_EVALUATE, @"Skipping Regen since we have more combat to do.");
-
-		if ( self.evaluationInProgress ) {
-			self.evaluationInProgress = nil;
-			[self evaluateSituation];
-			return YES;
-		} else {
-			return NO;
-		}
+		log(LOG_EVALUATE, @"Skipping Regen since we're still in combat.");
+		if ( self.evaluationInProgress ) self.evaluationInProgress = nil;
+		[self evaluateSituation];
+		return YES;
 	}
 
 	log(LOG_EVALUATE, @"Evaluating for Regen");
@@ -5756,10 +5753,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [self evaluateForPVP] ) return YES;
 
-	if ( [self evaluateForRegen] ) return YES;
-
 	if ( [self evaluateForCombatContinuation] ) return YES;
 
+	if ( [self evaluateForRegen] ) return YES;
+	
 	if ( [self evaluateForLoot] ) return YES;
 
 	// Increment the loot scan idle timer if it's not already past it's cut off
@@ -6616,6 +6613,14 @@ NSMutableDictionary *_diffDict = nil;
 	if ( !self.isBotting ) return;
 
 	int status = [[notification object] intValue];
+
+	usleep(800000);
+
+	// Check for Preparation buff
+	if ( !_waitForPvPPreparation && [auraController unit: [playerController player] hasAura: PreparationSpellID] ) {
+		_waitingToLeaveBattleground = NO;
+		_waitForPvPPreparation = YES;
+	} else
 
 	// Lets join the BG!
 	if ( status == BGWaiting ) {
