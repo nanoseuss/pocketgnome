@@ -35,20 +35,21 @@
 	BOOL swimUp, oldSwimUp;
 	
 	float closeEnough, angleTolerance;
-	MPLocation *destinationLocation, *facingLocation;
+	MPLocation *destinationLocation, *facingLocation, *lastFacingLocation;
 	
 	// Stuck Checking
 	MPTimer *timerStuckCheck;
 	Position *referencePosition;
 	BOOL thinkStuck, isStuck;
 	int unstickAttempt;
+	float verticleAdj;
 	
 	PatherController *patherController;
 }
 @property (retain) PatherController *patherController;
 @property (retain) MPTimer *timerStuckCheck;
 @property (retain) Position *referencePosition;
-@property (retain) MPLocation *destinationLocation, *facingLocation;
+@property (retain) MPLocation *destinationLocation, *facingLocation, *lastFacingLocation;
 
 // Reset all movement states.  (should stop)
 - (void) resetMovementState;

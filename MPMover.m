@@ -17,6 +17,7 @@
 #import "Position.h"
 #import "PlayerDataController.h"
 #import "SynthesizeSingleton.h"
+#import "Unit.h"
 
 @interface MPMover (Internal)
 
@@ -27,6 +28,7 @@
 - (void) calculateFacingTowards: (MPLocation *) locationFacing;
 - (void) calculateMovementTowards: (MPLocation *)locationTo;
 - (void) pressAndReleaseKeys;
+- (void)setVerticalDirectionFacing: (float)direction;
 
 - (BOOL) stuck;
 - (void) attemptUnstick;
@@ -39,6 +41,7 @@
 @implementation MPMover
 @synthesize destinationLocation, facingLocation, patherController;
 @synthesize timerStuckCheck, referencePosition;
+@synthesize lastFacingLocation;
 
 SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 
@@ -52,6 +55,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 		
 		self.destinationLocation = nil;
 		self.facingLocation = nil;
+		self.lastFacingLocation = nil;
 		
 		[self resetMovementState];
 		self.patherController = controller;
@@ -65,6 +69,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 		thinkStuck = NO;
 		isStuck = NO;
 		unstickAttempt = 0;
+		verticleAdj = 0;
 		
 		closeEnough = INFINITY;
 		angleTolerance = MP_PI_8;
@@ -81,6 +86,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
     [patherController release];
 	[timerStuckCheck release];
 	[referencePosition release];
+	
+	[lastFacingLocation release];
 	
     [super dealloc];
 }
@@ -105,6 +112,7 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 	referencePosition = nil;
 	thinkStuck = NO;
 	isStuck = NO;
+	verticleAdj = 0;
 }
 
 #pragma mark -
@@ -246,6 +254,8 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(MPMover);
 	} else {
 		PGLog(@"  Don't think I should move, so [stopMove]");
 		[self stopMove];
+		
+		verticleAdj = 0;
 /*		self.destinationLocation = nil;
 		self.facingLocation = nil;
 		closeEnough = 4.5f;
@@ -471,6 +481,28 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 	}
 	
 	[self pressAndReleaseKeys];
+	
+/*	if (facingLocation != nil) {
+		PlayerDataController *me = [PlayerDataController sharedController];
+		Position *ourPosition = [me position];
+		[self setVerticalDirectionFacing:[ourPosition verticalAngleTo:facingLocation]];
+	}
+*/
+	
+	if (facingLocation != nil) {
+		if (lastFacingLocation != facingLocation) {
+			PlayerDataController *me = [PlayerDataController sharedController];
+
+//			Position *adjustedLocation = [Position positionWithX:facingLocation.xPosition Y:facingLocation.yPosition Z:(facingLocation.zPosition - verticleAdj)];
+
+//			[me faceToward:adjustedLocation];
+//PGLog(@"+++ Facing Location +++  me:%@   floc:%@", [me position], adjustedLocation);
+PGLog(@"+++ Facing Location +++  me:%@   floc:%@", [me position], facingLocation);
+			[me faceToward:facingLocation];
+			self.lastFacingLocation = facingLocation;
+		}
+	}
+ 
 
 }
 
@@ -598,6 +630,13 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 
 
 
+// 1 write
+- (void)setVerticalDirectionFacing: (float)direction {
+    [[[Controller sharedController] wowMemoryAccess] saveDataForAddress: ([[PlayerDataController sharedController] baselineAddress] + BaseField_Facing_Vertical) Buffer: (Byte *)&direction BufLength: sizeof(direction)];
+}
+
+
+
 #pragma mark -
 #pragma mark Stuck Detection Helpers
 
@@ -620,7 +659,7 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 				// if I'm not debuffed 
 					// if distanceTo CurrentPosition > 2
 					float distance = [referencePosition distanceToPosition:currentPosition];
-					PGLog(@" ========> distance from reference is [%0.4f]", distance);
+					
 					// TO DO: should choose different values here based on 
 					//   if mounted , value = a
 					//	 if fast mounted, value = b
@@ -675,12 +714,21 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 
 - (void) attemptUnstick  {
 	
-	
+	if (facingLocation) {
+		if ([facingLocation zPosition] < [[[PlayerDataController sharedController] position] zPosition]) {
+			verticleAdj += 1.0f;
+			if (verticleAdj > 50.0f) verticleAdj = 50.0f;
+			
+			self.lastFacingLocation = nil;
+			PGLog(@"verticleAdj[%0.4f]  %@   %@", verticleAdj, facingLocation, [[PlayerDataController sharedController] position]);
+		}
+	}
 	
 	switch (unstickAttempt) {
 		case 1:
 			// try jumping
-			[self swimUp:YES];
+//			[self swimUp:YES];
+			
 			break;
 			
 		case 2:
@@ -706,7 +754,7 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 				[self forwards:YES];
 			}
 			[self strafeLeft:YES];
-			[self swimUp:YES];
+//			[self swimUp:YES];
 			break;
 			
 		case 4:
@@ -732,7 +780,7 @@ PGLog(@" distanceTo[%0.4f] / cutoff[%0.4f] ", distanceToLocation, cutoff);
 				[self forwards:YES];
 			}
 			[self strafeRight:YES];
-			[self swimUp:YES];
+//			[self swimUp:YES];
 			break;
 			
 		case 6:
