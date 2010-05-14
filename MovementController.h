@@ -35,7 +35,7 @@
 #define ReachedFollowUnitNotification      @"ReachedFollowUnitNotification"
 
 // How close do we need to be to a node before we dismount?
-#define DistanceUntilDismountByNode	1.5f
+#define DistanceUntilDismountByNode	2.0f
 
 // how close do we need to be to a school to fish?
 #define NODE_DISTANCE_UNTIL_FISH		17.0f

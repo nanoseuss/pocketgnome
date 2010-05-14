@@ -44,6 +44,7 @@
 		self.yardsBehindTargetStart = 10.0f;
 		self.yardsBehindTargetStop = 15.0f;
 		self.followDistanceToMove = 20.0f;
+
 		self.disableRelease = NO;
 
 		// New additions
@@ -206,8 +207,9 @@
 		self.checkForCampersRange = [[decoder decodeObjectForKey: @"CheckForCampersRange"] floatValue];
 		self.avoidMobsWhenResurrecting = [[decoder decodeObjectForKey: @"AvoidMobsWhenResurrecting"] boolValue];
 		self.moveToCorpseRange = [[decoder decodeObjectForKey: @"MoveToCorpseRange"] floatValue];
-		self.partyLeaderWait = [[decoder decodeObjectForKey: @"partyLeaderWait"] boolValue];
-		self.partyLeaderWaitRange = [[decoder decodeObjectForKey: @"partyLeaderWait"] floatValue];
+
+		self.partyLeaderWait = [[decoder decodeObjectForKey: @"PartyLeaderWait"] boolValue];
+		self.partyLeaderWaitRange = [[decoder decodeObjectForKey: @"PartyLeaderWaitRange"] floatValue];
 		
 		[super initWithCoder:decoder];
 	}
@@ -266,8 +268,8 @@
 	[coder encodeObject: [NSNumber numberWithBool: self.avoidMobsWhenResurrecting] forKey: @"AvoidMobsWhenResurrecting"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.moveToCorpseRange] forKey: @"MoveToCorpseRange"];
 
-	[coder encodeObject: [NSNumber numberWithBool: self.partyLeaderWait] forKey: @"partyLeaderWait"];
-	[coder encodeObject: [NSNumber numberWithFloat: self.partyLeaderWaitRange] forKey: @"partyLeaderWaitRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.partyLeaderWait] forKey: @"PartyLeaderWait"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.partyLeaderWaitRange] forKey: @"PartyLeaderWaitRange"];
 
     [coder encodeObject: self.entries forKey: @"IgnoreList"];
 }

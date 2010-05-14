@@ -89,6 +89,7 @@
 - (void)stayWithUnit:(Unit*)unit withType:(int)type;
 
 // INPUT: called when combat should be over
+- (void)cancelCombatAction;
 - (void)cancelAllCombat;
 
 // INPUT: called when we start/stop the bot

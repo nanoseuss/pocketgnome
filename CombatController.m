@@ -683,6 +683,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		return;
 	}
 
+	if ( !botController.isBotting ) {
+		log(LOG_DEV, @"Bot no longer running, stopping monitoring.");
+		return;
+	}
+	
 //	if ( !self.inCombat ) {
 //		log(LOG_COMBAT, @"%@ %@: player is no longer in combat, canceling monitor.", [self unitHealthBar: unit], unit);
 //		return;
@@ -772,6 +777,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[_unitLeftCombatCount setObject:[NSNumber numberWithInt:leftCombatCount] forKey:[NSNumber numberWithLongLong:[unit cachedGUID]]];
 	
 	[self performSelector:@selector(monitorUnit:) withObject:unit afterDelay:0.1f];
+}
+
+- (void)cancelCombatAction {
+	log(LOG_FUNCTION, @"cancelCombatAction");
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
+	// reset our variables
+	[_castingUnit release]; _castingUnit = nil;
+	[_attackUnit release]; _attackUnit = nil;
+	[_addUnit release]; _addUnit = nil;
+	[_friendUnit release];	_friendUnit =  nil;
+	
+	
+	[self performSelector:@selector(doCombatSearch) withObject:nil afterDelay:0.1f];
 }
 
 - (void)cancelAllCombat {
@@ -1399,7 +1418,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// add all mobs + players
 	NSArray *mobs = [mobController allMobs];
 	NSArray *players = [playersController allPlayers];
-	
+
 	UInt64 playerGUID = [[playerData player] cachedGUID];
 	UInt64 unitTarget = 0;
 	BOOL playerHasPet = [[playerData player] hasPet];
@@ -1412,11 +1431,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		if ([mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
 		
 		if ( botController.theCombatProfile.ignoreLevelOne && [mob level] == 1 ) continue;
-		
-		if (
-			![_unitsDied containsObject: (Unit*)mob] &&
-			![mob isDead]	&&		// 1 - living units only
-			[mob isInCombat] &&		// 2 - in Combat
+
+		if ( [_unitsDied containsObject: (Unit*)mob] || [mob isDead] || [mob percentHealth] == 0 ) continue;
+
+		if ( [mob isInCombat] &&		// 2 - in Combat
 			[mob isSelectable] &&	// 3 - can select this target
 			[mob isAttackable] &&	// 4 - attackable
 			//[mob isTapped] &&		// 5 - tapped - in theory someone could tap a target while you're casting, and you get agg - so still kill (removed as a unit @ 100% could attack us and not be tapped)
@@ -1440,11 +1458,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 	}
 
-	for ( Player *player in players ){
+	for ( Player *player in players ) {
 		unitTarget = [player targetID];
+
+		if ( [_unitsDied containsObject: (Unit*)player] || [player isDead] || [player percentHealth] == 0 ) continue;
+
 		if (
-			![_unitsDied containsObject: (Unit*)player] &&
-			![player isDead] &&										// 1 - living units only
 			[playerData isHostileWithFaction: [player factionTemplate]] &&	// Must be hostile players!
 			[player currentHealth] != 1 &&							// 2 - this should be a ghost check, being lazy for now
 			[player isInCombat] &&									// 3 - in combat
@@ -1473,7 +1492,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// double check to see if we should remove any!
 	NSMutableArray *unitsToRemove = [NSMutableArray array];
 	for ( Unit *unit in _unitsAttackingMe ){
-		if ( !unit || ![unit isValid] || [unit isDead] || ![unit isInCombat] || ![unit isSelectable] || ![unit isAttackable] ){
+		if ( !unit || ![unit isValid] || [unit isDead]  || [unit percentHealth] == 0 || ![unit isInCombat] || ![unit isSelectable] || ![unit isAttackable] ) {
 			log(LOG_DEV, @"[Combat] Removing unit: %@", unit);
 			[unitsToRemove addObject:unit];
 		}
