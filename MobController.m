@@ -201,12 +201,12 @@ static MobController* sharedController = nil;
 			}
 		}
 		else{
-			for ( NSNumber *entryID in mobIDs ){
+			for ( NSNumber *entryID in mobIDs ) {
 				if ( [mob entryID] == [entryID intValue] ){
 					float distance = [position distanceToPosition: [mob position]];
 					if((distance != INFINITY) && (distance <= mobDistance)) {
-						if ([mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
-						
+						if ( [mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.pvpIsInBG ) tapCheckPassed = NO;
+
 						// Living check?
 						if ( !aliveOnly || (aliveOnly && ![mob isDead]) ) {
 							if (tapCheckPassed) {
@@ -234,6 +234,7 @@ static MobController* sharedController = nil;
     
     NSMutableArray *withinRangeMobs = [NSMutableArray array];
     
+	BOOL tapCheckPassed;
     BOOL ignoreLevelOne = ([playerData level] > 10) ? YES : NO;
     Position *playerPosition = [(PlayerDataController*)playerData position];
 	
@@ -256,6 +257,9 @@ static MobController* sharedController = nil;
 			continue;
 		}
         
+		tapCheckPassed = YES;
+		if ( [mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.pvpIsInBG ) tapCheckPassed = NO;
+		
         float distance = [playerPosition distanceToPosition: [mob position]];
                 
         if((distance != INFINITY) && (distance <= mobDistance)) {
@@ -280,10 +284,10 @@ static MobController* sharedController = nil;
                    || (neutral && isNeutral)								//    neutral as specified
                    || (hostile && isHostile) )                              //    hostile as specified
                && ((mobLevel >= lowLevel) && (mobLevel <= highLevel))       // 4) mobs within the level range
-               //&& ![mob isPet]                                              // 5) mobs that are not player pets
+               //&& ![mob isPet]											// 5) mobs that are not player pets
                && [mob isSelectable]                                        // 6) mobs that are selectable
                && [mob isAttackable]                                        // 7) mobs that are attackable
-               && ![mob isTappedByOther] )                                  // 8) mobs that are not tapped by someone else
+               && tapCheckPassed )											// 8) mobs that are not tapped by someone else
                 [withinRangeMobs addObject: mob];
         }
     }

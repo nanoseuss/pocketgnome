@@ -41,10 +41,12 @@
 		self.tankUnitGUID = 0x0;
 		self.followUnitGUID = 0x0;
 		self.followUnit = NO;
-		self.yardsBehindTargetStart = 10.0f;
-		self.yardsBehindTargetStop = 15.0f;
-		self.followDistanceToMove = 20.0f;
-
+		self.yardsBehindTargetStart = 10.0;
+		self.yardsBehindTargetStop = 15.0;
+		self.followDistanceToMove = 20.0;
+		self.followEnemyFlagCarriers = NO;
+		self.followFriendlyFlagCarriers = NO;
+		
 		self.disableRelease = NO;
 
 		// New additions
@@ -56,6 +58,9 @@
 		self.followEnabled = NO;
 		self.followStopFollowingOOR = NO;
 		self.followStopFollowingRange = 50.0f;
+		self.followDoNotAssignLeader = NO;
+		self.followDoNotAssignLeaderRange = 50.0f;
+
 		self.resurrectWithSpiritHealer = NO;
 		self.checkForCampers = NO;
 		self.checkForCampersRange = 50.0f;
@@ -141,6 +146,12 @@
 	copy.followEnabled = self.followEnabled;
 	copy.followStopFollowingOOR = self.followStopFollowingOOR;
 	copy.followStopFollowingRange = self.followStopFollowingRange;
+	copy.followDoNotAssignLeader = self.followDoNotAssignLeader;
+	copy.followDoNotAssignLeaderRange = self.followDoNotAssignLeaderRange;
+
+	copy.followEnemyFlagCarriers = self.followEnemyFlagCarriers;
+	copy.followFriendlyFlagCarriers = self.followFriendlyFlagCarriers;
+	
 	copy.resurrectWithSpiritHealer = self.resurrectWithSpiritHealer;
 	copy.checkForCampers = self.checkForCampers;
 	copy.checkForCampersRange = self.checkForCampersRange;
@@ -202,6 +213,11 @@
 		self.followEnabled = [[decoder decodeObjectForKey: @"FollowEnabled"] boolValue];
 		self.followStopFollowingOOR = [[decoder decodeObjectForKey: @"FollowStopFollowingOOR"] boolValue];
 		self.followStopFollowingRange = [[decoder decodeObjectForKey: @"FollowStopFollowingRange"] floatValue];
+		self.followDoNotAssignLeader = [[decoder decodeObjectForKey: @"FollowDoNotAssignLeader"] boolValue];
+		self.followDoNotAssignLeaderRange = [[decoder decodeObjectForKey: @"FollowDoNotAssignLeaderRange"] floatValue];
+		self.followEnemyFlagCarriers = [[decoder decodeObjectForKey: @"FollowEnemyFlagCarriers"] boolValue];
+		self.followFriendlyFlagCarriers = [[decoder decodeObjectForKey: @"FollowFriendlyFlagCarriers"] boolValue];
+
 		self.resurrectWithSpiritHealer = [[decoder decodeObjectForKey: @"ResurrectWithSpiritHealer"] boolValue];
 		self.checkForCampers = [[decoder decodeObjectForKey: @"CheckForCampers"] boolValue];
 		self.checkForCampersRange = [[decoder decodeObjectForKey: @"CheckForCampersRange"] floatValue];
@@ -262,6 +278,10 @@
 	[coder encodeObject: [NSNumber numberWithBool: self.followEnabled] forKey: @"FollowEnabled"];
 	[coder encodeObject: [NSNumber numberWithBool: self.followStopFollowingOOR] forKey: @"FollowStopFollowingOOR"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.followStopFollowingRange] forKey: @"FollowStopFollowingRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followDoNotAssignLeader] forKey: @"FollowDoNotAssignLeader"];
+	[coder encodeObject: [NSNumber numberWithFloat: self.followDoNotAssignLeaderRange] forKey: @"FollowDoNotAssignLeaderRange"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followEnemyFlagCarriers] forKey: @"FollowEnemyFlagCarriers"];
+	[coder encodeObject: [NSNumber numberWithBool: self.followFriendlyFlagCarriers] forKey: @"FollowFriendlyFlagCarriers"];	
 	[coder encodeObject: [NSNumber numberWithBool: self.resurrectWithSpiritHealer] forKey: @"ResurrectWithSpiritHealer"];
 	[coder encodeObject: [NSNumber numberWithBool: self.checkForCampers] forKey: @"CheckForCampers"];
 	[coder encodeObject: [NSNumber numberWithFloat: self.checkForCampersRange] forKey: @"CheckForCampersRange"];
@@ -325,6 +345,12 @@
 @synthesize followEnabled;
 @synthesize followStopFollowingOOR;
 @synthesize followStopFollowingRange;
+@synthesize followDoNotAssignLeader;
+@synthesize followDoNotAssignLeaderRange;
+
+@synthesize followFriendlyFlagCarriers;
+@synthesize followEnemyFlagCarriers;
+
 @synthesize resurrectWithSpiritHealer;
 @synthesize checkForCampers;
 @synthesize checkForCampersRange;

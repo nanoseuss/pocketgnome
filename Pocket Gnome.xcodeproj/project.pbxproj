@@ -1637,8 +1637,6 @@
 				7D65CC1B0D2F69BB00C50DF7 /* Behavior.h */,
 				7D65CC1C0D2F69BB00C50DF7 /* Behavior.m */,
 				7D65C8F50D2EE06200C50DF7 /* Conditions */,
-				7DE53DD60E32B48500C59033 /* CombatProfile.h */,
-				7DE53DD70E32B48500C59033 /* CombatProfile.m */,
 				7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */,
 				7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */,
 				7D1B39400F896A96005CA0CD /* ChatAction.h */,
@@ -1666,6 +1664,8 @@
 				7DD03DE10D160075000CC1A6 /* MemoryViewController.m */,
 				7DE53E690E32BEDD00C59033 /* CombatProfileEditor.h */,
 				7DE53E6A0E32BEDD00C59033 /* CombatProfileEditor.m */,
+				7DE53DD60E32B48500C59033 /* CombatProfile.h */,
+				7DE53DD70E32B48500C59033 /* CombatProfile.m */,
 			);
 			name = "GUI Controllers";
 			sourceTree = "<group>";

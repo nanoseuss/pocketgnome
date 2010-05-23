@@ -153,14 +153,20 @@ typedef enum MovementState{
 		_lastCorrectionForward = NO;
 		_lastCorrectionLeft = NO;
 		_performingActions = NO;
-		_checkingPosition = NO;
-
+		_isActive = NO;
 		self.isFollowing = NO;
-		
+
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasDied:) name: PlayerHasDiedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(playerHasRevived:) name: PlayerHasRevivedNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
+
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(targetNotInLOS:) name: ErrorTargetNotInLOS object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(invalidTarget:) name: ErrorInvalidTarget object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(haveNoTarget:) name: ErrorHaveNoTarget object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(cantDoThatWhileStunned:) name: ErrorCantDoThatWhileStunned object: nil];
+
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachedFollowUnit:) name: ReachedFollowUnitNotification object: nil];
+		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reachedObject:) name: ReachedObjectNotification object: nil];
 
     }
     return self;
@@ -192,8 +198,8 @@ typedef enum MovementState{
 @synthesize jumpCooldown = _jumpCooldown;
 @synthesize lastJumpTime = _lastJumpTime;
 @synthesize performingActions = _performingActions;
-@synthesize checkingPosition = _checkingPosition;
-@synthesize isFollowing;
+@synthesize isFollowing = _isFollowing;
+@synthesize isActive = _isActive;
 
 // checks to see if the player is moving - duh!
 - (BOOL)isMoving{
@@ -240,7 +246,7 @@ typedef enum MovementState{
 		_moveToObject = nil;
 		return NO;
 	}
-
+	
 	// reset our timer
 	[self resetMovementTimer];
 	
@@ -289,7 +295,8 @@ typedef enum MovementState{
 
 // in case the object moves
 - (void)stayWithObject:(WoWObject*)obj{
-	
+
+	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 	if ( !botController.isBotting ) {
 		[self resetMovementState];
 		return;
@@ -324,24 +331,24 @@ typedef enum MovementState{
 // set our patrolling routeset
 - (void)setPatrolRouteSet: (RouteSet*)route{
 	log(LOG_MOVEMENT, @"Switching from route %@ to %@", _currentRouteSet, route);
-	
+
 	self.currentRouteSet = route;
-	
-	// player is dead
-	if ( ( [playerData isGhost] || [playerData isDead] ) && ![botController isPvPing] ){
+
+	if ( ( [playerData isGhost] || [playerData isDead] ) && !botController.pvpIsInBG ) {
+		// player is dead
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
-	}
-	// normal route
-	else{
+
+	} else {
+
+		// normal route
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
-		
 	}
 
 	// reset destination waypoint to make sure we re-evaluate where to go
 	self.destinationWaypoint = nil;
-	
+
 	// set our jump time
 	self.lastJumpTime = [NSDate date];
 }
@@ -355,10 +362,8 @@ typedef enum MovementState{
 	// check to make sure we are even moving!
 	UInt32 movementFlags = [playerData movementFlags];
 
-	
-
 	// player is moving
-	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ){
+	if ( movementFlags & MovementFlag_Forward || movementFlags & MovementFlag_Backward ) {
 		log(LOG_MOVEMENT, @"Player is moving, stopping movement");
 		[self moveForwardStop];
 	} else 
@@ -369,11 +374,12 @@ typedef enum MovementState{
 	} else {
 		log(LOG_MOVEMENT, @"Player is not moving! No reason to stop!? Flags: 0x%X", movementFlags);
 	}
+	_isActive = NO;
 
 }
 
 - (void)resumeMovement{
-		
+
 	if ( !botController.isBotting ) {
 		[self resetMovementState];
 		return;
@@ -381,6 +387,9 @@ typedef enum MovementState{
 
 	log(LOG_MOVEMENT, @"resumeMovement:");
 
+	// reset our timer
+	[self resetMovementTimer];
+	
 //	[self stopMovement];
 
 	// we're moving!
@@ -449,6 +458,29 @@ typedef enum MovementState{
 				newWP = [self.currentRoute waypointClosestToPosition:playerPosition];
 			}
 			
+			// Check to see if we're ion BG and this is the last waypoint
+			if ( botController.pvpIsInBG && !self.isFollowing ) {
+				NSArray *waypoints = [self.currentRoute waypoints];
+				int index = [waypoints indexOfObject: newWP];
+				
+				// at the end of the route
+				if ( index == [waypoints count] - 1 ) {
+					log(LOG_WAYPOINT, @"Last waypoint on a PvP route so we're not resuming to it!");
+					[botController evaluateSituation];
+					return;
+					/*				
+					 actions = [newWaypoint actions];
+					 // If there are no actions
+					 if ( !actions || [actions count] <= 0 ) {
+					 log(LOG_WAYPOINT, @"Last waypoint on a PvP route so we're not resuming to it!");
+					 [botController evaluateSituation];
+					 return;
+					 } else {
+					 }
+					 */
+				}
+			}
+			
 			// we have a waypoint to move to!
 			if ( newWP ) {
 				log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWP);
@@ -473,9 +505,9 @@ typedef enum MovementState{
 		[self resetMovementState];
 		return;
 	}
-	
+
 	log(LOG_MOVEMENT, @"resumeMovementToClosestWaypoint:");
-	
+
 	// reset our timer
 	[self resetMovementTimer];
 /*
@@ -488,9 +520,7 @@ typedef enum MovementState{
 
 		usleep( [controller refreshDelay] );
 	}
-	[self establishPlayerPosition];
- */
-
+*/
 	if ( !_currentRouteSet ) {
 		log(LOG_ERROR, @"We have no route or unit to move to!");
 		return;
@@ -506,9 +536,11 @@ typedef enum MovementState{
 	NSArray *waypoints = [self.currentRoute waypoints];
 
 	// find the closest waypoint in our primary route!
-	newWaypoint = [self.currentRoute waypointClosestToPosition:playerPosition];
+	newWaypoint = [self.currentRoute waypointClosestToPosition: playerPosition];
 
-	float distanceToWaypoint = [[playerData position] distanceToPosition: [newWaypoint position]];
+	log(LOG_DEV, @"Initial closest waypoint is %@", newWaypoint);
+
+	float distanceToWaypoint = [playerPosition distanceToPosition: [newWaypoint position]];
 
 	if ( distanceToWaypoint > 100.0f  && botController.theRouteCollection.routes.count > 1) {
 		log(LOG_WAYPOINT, @"Looks like the next waypoint is very far, checking to see if we have a closer route.");
@@ -553,7 +585,7 @@ typedef enum MovementState{
 	}
 
 	// If the waypoint is too close, grab the next
-	if (![newWaypoint actions] && distanceToWaypoint < ( [playerData speedMax] / 2.0f) ) {
+	if ( ![newWaypoint actions] && distanceToWaypoint < ( [playerData speedMax] / 2.0f) ) {
 		int index = [waypoints indexOfObject: newWaypoint];
 		index++;
 		newWaypoint = [waypoints objectAtIndex: index];
@@ -561,7 +593,6 @@ typedef enum MovementState{
 
 	// If we already have a waypoint we check it
 	if ( self.destinationWaypoint ) {
-
 
 		int indexNext = [waypoints indexOfObject:self.destinationWaypoint];
 		int indexClosest = [waypoints indexOfObject: newWaypoint];
@@ -581,10 +612,11 @@ typedef enum MovementState{
 			int i;
 
 			for ( i=indexNext; i<indexClosest; i++ ) {
+				actions = nil;
 
 				thisWaypoint = [[self.currentRoute waypoints] objectAtIndex: i];
 
-				actions = [thisWaypoint actions];
+				if ( [thisWaypoint actions] ) actions = [thisWaypoint actions];
 
 				// If there are no actions
 				if ( !actions || [actions count] <= 0 ) continue;
@@ -596,13 +628,13 @@ typedef enum MovementState{
 	}
 
 	// Check to see if we're air mounted and this is a long distance waypoint.  If so we wait to start our descent.
-	if ( ![playerData isOnGround] && [[playerData player] isMounted] ) {
+	if ( !botController.pvpIsInBG && ![playerData isOnGround] && [[playerData player] isMounted] ) {
 
 		distanceToWaypoint = [[playerData position] distanceToPosition: [newWaypoint position]];
 
 		float horizontalDistanceToWaypoint = [[playerData position] distanceToPosition2D: [newWaypoint position]];
 		float verticalDistanceToWaypoint = [[playerData position] zPosition]-[[newWaypoint position] zPosition];
-		Position *positionAboveWaypoint = [[Position alloc] initWithX:[[newWaypoint position] xPosition] Y:[[newWaypoint position] yPosition] Z:[[playerData position] zPosition]];
+		Position *positionAboveWaypoint = [[Position alloc] initWithX:[[newWaypoint position] xPosition] Y:[[newWaypoint position] yPosition] Z:[playerPosition zPosition]];
 
 		// Only consider this if it's a far off distance
 		if ( distanceToWaypoint > 100.0f && 
@@ -613,7 +645,8 @@ typedef enum MovementState{
 
 			log(LOG_MOVEMENT, @"Waypoint is far off so we won't descend until we're closer. hDist: %0.2f, vDist: %0.2f", horizontalDistanceToWaypoint, verticalDistanceToWaypoint);
 
-			Position *positionToDescend = [[playerData position] positionAtDistance:verticalDistanceToWaypoint withDestination:positionAboveWaypoint];
+			Position *positionToDescend = [playerPosition positionAtDistance:verticalDistanceToWaypoint withDestination:positionAboveWaypoint];
+			log(LOG_DEV, @"playerPosition: %@, positionAboveWaypoint: %@, positionToDescend: %@", playerPosition, positionAboveWaypoint, positionToDescend);
 			
 			[self turnTowardPosition: positionToDescend];
 
@@ -626,6 +659,29 @@ typedef enum MovementState{
 
 	// we have a waypoint to move to!
 	if ( newWaypoint ) {
+		
+		// Check to see if we're ion BG and this is the last waypoint
+		if ( botController.pvpIsInBG ) {
+			waypoints = [self.currentRoute waypoints];
+			int index = [waypoints indexOfObject: newWaypoint];
+
+			// at the end of the route
+			if ( index == [waypoints count] - 1 ) {
+				log(LOG_WAYPOINT, @"Last waypoint on a PvP route so we're not resuming to it!");
+				[botController evaluateSituation];
+				return;
+/*				
+				actions = [newWaypoint actions];
+				// If there are no actions
+				if ( !actions || [actions count] <= 0 ) {
+					log(LOG_WAYPOINT, @"Last waypoint on a PvP route so we're not resuming to it!");
+					[botController evaluateSituation];
+					return;
+				} else {
+				}
+ */
+			}
+		}
 
 		log(LOG_MOVEMENT, @"Found waypoint %@ to move to", newWaypoint);
 
@@ -674,10 +730,13 @@ typedef enum MovementState{
 	
 	log(LOG_WAYPOINT, @"Starting movement controller for follow");
 	
-	if ( [playerData targetID] != [[botController followUnit] GUID]) {
-		log(LOG_DEV, @"Targeting follow unit.");
-		[playerData targetGuid:[[botController followUnit] GUID]];
-	}
+	// reset our timer
+	[self resetMovementTimer];
+
+//	if ( [playerData targetID] != [[botController followUnit] GUID]) {
+//		log(LOG_DEV, @"Targeting follow unit.");
+//		[playerData targetGuid:[[botController followUnit] GUID]];
+//	}
 
 	// Check to see if we need to mount or dismount
 	if ( [botController followMountCheck] ) {
@@ -685,16 +744,14 @@ typedef enum MovementState{
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
 	}
-	
+
 	self.isFollowing = YES;
 	self.currentRouteHoldForFollow = self.currentRoute;
 	self.currentRoute = botController.followRoute;
-	
 
-	// Set us to the 1st waypoint!
-	NSArray *waypoints = [self.currentRoute waypoints];
-	self.destinationWaypoint = [waypoints objectAtIndex:0];
-	
+	// find the closest waypoint in our route
+	self.destinationWaypoint = [self.currentRoute waypointClosestToPosition: [playerData position]];
+
 	[self resumeMovement];
 }
 
@@ -762,6 +819,9 @@ typedef enum MovementState{
 	}
 
 	log(LOG_WAYPOINT, @"Moving to the next waypoint!");
+
+	// reset our timer
+	[self resetMovementTimer];
 	
 	NSArray *waypoints = [self.currentRoute waypoints];
 	int index = [waypoints indexOfObject:self.destinationWaypoint];
@@ -800,23 +860,34 @@ typedef enum MovementState{
 
 - (void)routeEnded{
 	
+	// reset our timer
+	[self resetMovementTimer];
+
 	// Pop the notification if we're following
-	if (self.isFollowing) {
+	if ( self.isFollowing ) {
 		log(LOG_WAYPOINT, @"Ending follow with notification.");
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
 	}
 
 	// player is currently on the primary route and is dead, if they've finished, then we ran the entire route and didn't find our body :(
-	if ( self.currentRouteKey == PrimaryRoute && [playerData isGhost] ){
+	if ( self.currentRouteKey == PrimaryRoute && [playerData isGhost] ) {
 		[botController stopBot:nil];
 		[controller setCurrentStatus:@"Bot: Unable to find body, stopping bot"];
 		log(LOG_GHOST, @"Unable to find your body after running the full route, stopping bot");
 		return;
 	}
-	
+
+	// In PvP we stay where we went unless the waypoint tells us to switch routes.
+	if ( botController.pvpIsInBG ) {
+		log(LOG_DEV, @"End of Route, stoping movement.");
+		[self resetMovementState];
+		[botController evaluateSituation];
+		return;
+	}
+
 	// we've reached the end of our corpse route, lets switch to our main route
-	if ( self.currentRouteKey == CorpseRunRoute ){
+	if ( self.currentRouteKey == CorpseRunRoute ) {
 		
 		log(LOG_GHOST, @"Switching from corpse to primary route!");
 		
@@ -914,8 +985,8 @@ typedef enum MovementState{
 		log(LOG_MOVEMENT, @"moveToPosition: with CTM");
 		[self setClickToMove:position andType:ctmWalkTo andGUID:0];
 	}
-
-	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.1f target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
+	_isActive = YES;
+	_movementTimer = [NSTimer scheduledTimerWithTimeInterval: 0.3f target: self selector: @selector(checkCurrentPosition:) userInfo: nil repeats: YES];
 }
 
 - (void)checkCurrentPosition: (NSTimer*)timer {
@@ -956,7 +1027,6 @@ typedef enum MovementState{
 			log(LOG_DEV, @"Need to mount in follow mode from checkCurrentPosition.");
 			// Just kill the follow and mounts will be checked before follow begins again
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
-			_checkingPosition = NO;
 			return;
 		}
 	}
@@ -991,7 +1061,6 @@ typedef enum MovementState{
 		self.isFollowing = NO;
 		[self resetMovementTimer];
 		[botController evaluateSituation];
-		_checkingPosition = NO;
         return;
     }
 
@@ -1021,7 +1090,6 @@ typedef enum MovementState{
 		if ( self.isFollowing ) {
 			log(LOG_MOVEMENT, @"Reached follow waypoint.");
 			[self moveToNextWaypoint];
-			_checkingPosition = NO;
 			return;
 		} else
 
@@ -1029,18 +1097,12 @@ typedef enum MovementState{
 		if ( self.moveToObject ) {
 			id object = [self.moveToObject retain];
 	
-			// get rid of our move to object!
-			self.moveToObject = nil;
-			// stop this timer
-			[self resetMovementTimer];
-			// stop movement
-			[self stopMovement];
-
 			if ( isNode ) { 
 				log(LOG_MOVEMENT, @"Reached our node hover spot %@", object);
 			} else {
 				log(LOG_MOVEMENT, @"Reached our object %@", object);
 			}
+
 			// we've reached the unit! Send a notification
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: object];
 			return;
@@ -1063,12 +1125,7 @@ typedef enum MovementState{
 		} else
 
 		// moving to a position
-		if ( self.lastAttemptedPosition ) {				
-			// stop this timer
-			[self resetMovementTimer];
-			// stop movement
-			[self stopMovement];
-
+		if ( self.lastAttemptedPosition ) {
 			// we've reached our position, send a notification
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedObjectNotification object: nil];
 			return;
@@ -1081,10 +1138,11 @@ typedef enum MovementState{
 //	if ( !self.moveToObject && [botController evaluateSituation] ) {
 	if ( [botController evaluateSituation] ) {
 		log(LOG_DEV, @"Action taken, not checking movement, checking evaluation.");
-//		if ( [self isMoving] ) [self stopMovement];
-//		[botController evaluateSituation];
+//		[self resetMovementState];
 		return;
 	}
+	// Evaluation will need to stop movement if it needs to do so (some things we can do while moving)
+//	[botController evaluateSituation];
 
 	// should we jump?
 	if (	[self isMoving] && distanceToDestination > ([playerData speedMax]/1.1f)  &&
@@ -1124,7 +1182,6 @@ typedef enum MovementState{
 		[controller setCurrentStatus: @"Bot: Stuck, entering anti-stuck routine"];
 		log(LOG_MOVEMENT, @"Player is stuck, trying anti-stuck routine.");
 		[self unStickify];
-		_checkingPosition = NO;
 		return;
 	}
 
@@ -1153,9 +1210,7 @@ typedef enum MovementState{
 	if ( movementFlags & MovementFlag_FlyUp && !_movingUp ){
 		log(LOG_MOVEMENT, @"We're stuck moving up! Fixing!");
 		[self moveUpStop];
-
 		[self resumeMovement];
-		_checkingPosition = NO;
 		return;
 	}
 
@@ -1165,7 +1220,6 @@ typedef enum MovementState{
 		else [controller setCurrentStatus: @"Bot: Patrolling"];
 	}
 
-	_checkingPosition = NO;
 	// TO DO: moving in the wrong direction check? (can sometimes happen when doing mouse movements based on the speed of the machine)
 }
 
@@ -1380,7 +1434,6 @@ typedef enum MovementState{
 		else if ( _unstickifyTry > 10 ) {
 			// Move to the closest waypoint
 			self.destinationWaypoint = [self.currentRoute waypointClosestToPosition:[playerData position]];
-			
 		}
 
 		log(LOG_MOVEMENT, @"Stuck moving to waypoint, trying to jump over object.");
@@ -1472,6 +1525,8 @@ typedef enum MovementState{
 - (void)resetMovementState {
 
 	log(LOG_MOVEMENT, @"Resetting movement state");
+
+	// reset our timer
 	[self resetMovementTimer];
 
 	if ( [self isMoving] ) {
@@ -1487,8 +1542,7 @@ typedef enum MovementState{
 	self.lastPlayerPosition			= nil;
 	_isMovingFromKeyboard			= NO;
 	[_stuckDictionary removeAllObjects];
-	
-	_checkingPosition = NO;
+
 	_unstickifyTry = 0;
 	_stuckCounter = 0;
 	_performingActions = NO;
@@ -1499,15 +1553,18 @@ typedef enum MovementState{
 		self.currentRouteHoldForFollow =  nil;
 	}
 
+	_isActive = NO;
+
 	self.isFollowing = NO;
 	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 }
 
 #pragma mark -
 
-- (void)resetMovementTimer{
-
-	//[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(realMoveToNextWaypoint) object: nil];
+- (void)resetMovementTimer{	
+	
+//	if ( !_movementTimer ) return;
+	
     [_movementTimer invalidate]; _movementTimer = nil;
 }
 
@@ -1666,8 +1723,6 @@ typedef enum MovementState{
 - (void)reachedFollowUnit: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
 	
-	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
-
 	log(LOG_FUNCTION, @"Reached Follow Unit called in the movementController.");
 	
 	// Reset the movement controller.
@@ -1675,7 +1730,16 @@ typedef enum MovementState{
 
 }
 
-- (void)playerHasDied:(NSNotification *)aNotification {
+- (void)reachedObject: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+		
+	log(LOG_FUNCTION, @"Reached Follow Unit called in the movementController.");
+	
+	// Reset the movement controller.
+	[self resetMovementState];
+	
+}
+- (void)playerHasDied:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
 
 	// reset our movement state!
@@ -1684,8 +1748,18 @@ typedef enum MovementState{
 	// We're not set to use a route so do nothing
 	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ) return;
 
-	// do nothing if PvPing and in a BG
-	if ( botController.isPvPing && [playerData isInBG:[playerData zone]] ) {
+	// do nothing if in a BG
+	if ( botController.pvpIsInBG ) {
+
+		// normal route if PvPing -- not sure if this is needed, but I left it in here.
+		if ( botController.isPvPing ) {
+			self.currentRouteKey = PrimaryRoute;
+			self.currentRouteSet = [botController.theRouteCollection startingRoute];
+	
+			if ( !self.currentRouteSet ) self.currentRouteSet = [[botController.theRouteCollection routes] objectAtIndex:0];
+			
+			self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+		}
 		log(LOG_MOVEMENT, @"Ignoring corpse route because we're PvPing!");
 		return;
 	}
@@ -1693,17 +1767,10 @@ typedef enum MovementState{
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ) {
 
-		// normal route if PvPing
-		if ( [botController isPvPing] ){
-			self.currentRouteKey = PrimaryRoute;
-			self.currentRouteSet = [botController.theRouteCollection startingRoute];
-			self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
-		}
-		else{
-			self.currentRouteKey = CorpseRunRoute;
-			self.currentRouteSet = [botController.theRouteCollection startingRoute];
-			self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
-		}
+		self.currentRouteKey = CorpseRunRoute;
+		self.currentRouteSet = [botController.theRouteCollection startingRoute];
+		if ( !self.currentRouteSet ) self.currentRouteSet = [[botController.theRouteCollection routes] objectAtIndex:0];
+		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 		log(LOG_MOVEMENT, @"Player Died, switching to main starting route! %@", self.currentRoute);
 	}
 	// be normal!
@@ -1719,21 +1786,60 @@ typedef enum MovementState{
 	}
 }
 
-- (void)playerHasRevived:(NSNotification *)aNotification {
+- (void)playerHasRevived:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
 
-	// reset movement state
-	[self resetMovementState];
+	if ( botController.isPvPing ) {
+		log(LOG_WAYPOINT, @"Finding the nearest route since we died in PvP.");
+	
+		float closestDistance = 0.0f;
+		Waypoint *thisWaypoint = nil;
+		Route *route = nil;
+		RouteSet *routeSetFound = [RouteSet retain];
+		Position *playerPosition = [playerData position];
+		float distanceToWaypoint;
+
+		for (RouteSet *routeSet in [botController.theRouteCollection routes] ) {
+
+			// Set the route to test against
+			route = [routeSet routeForKey:PrimaryRoute];
+		
+			if ( !route || route == nil ) continue;
+		
+			if ( closestDistance == 0.0f ) {
+				thisWaypoint = [route waypointClosestToPosition:playerPosition];
+				closestDistance = [playerPosition distanceToPosition: [thisWaypoint position]];
+				routeSetFound = routeSet;
+				continue;
+			}
+
+			// We have one to compare
+			thisWaypoint = [route waypointClosestToPosition:playerPosition];
+			distanceToWaypoint = [playerPosition distanceToPosition: [thisWaypoint position]];
+			if (distanceToWaypoint < closestDistance) {
+				closestDistance = distanceToWaypoint;
+				routeSetFound = routeSet;
+			}
+		}
+
+		if ( routeSetFound && [routeSetFound UUID] != [self.currentRouteSet UUID]) {
+			log(LOG_WAYPOINT, @"Found a closer route, switching!");
+			[self setPatrolRouteSet: routeSetFound];
+			routeSetFound = nil;
+			[routeSetFound release];
+			return;
+		}
+	}
+
+	// do nothing if PvPing or in a BG
+	if ( botController.pvpIsInBG ) return;
 
 	// We're not set to use a route so do nothing
 	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ) return;
 
-	// do nothing if PvPing and in a BG
-	if ( botController.isPvPing && [playerData isInBG:[playerData zone]] ) {
-		log(LOG_MOVEMENT, @"Ignoring corpse route because we're PvPing!");
-		return;
-	}
-	
+	// reset movement state
+	[self resetMovementState];
+
 	// switch our route!
 	self.currentRouteKey = PrimaryRoute;
 	self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
@@ -1742,10 +1848,54 @@ typedef enum MovementState{
 
 }
 
-- (void)applicationWillTerminate:(NSNotification *)aNotification{
+- (void)applicationWillTerminate:(NSNotification *)notification{
     /*if( [playerData playerIsValid:self] ) {
         [self resetMovementState];
     }*/
+}
+
+// have no target
+- (void)haveNoTarget: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+	Unit *unit = [notification object];
+
+	log(LOG_DEV, @"[Notification] No Target (movementController): %@", unit);
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithObject:) object: (WoWObject*)unit];
+	if ( [self moveToObject] ) [self stopMovement];
+}
+
+
+// invalid target
+- (void)invalidTarget: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+	Unit *unit = [notification object];
+
+	log(LOG_DEV, @"[Notification] No Target (movementController): %@", unit);
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithObject:) object: (WoWObject*)unit];
+	if ( [self moveToObject] ) {
+		[self stopMovement];
+	}
+}
+
+// not in LoS
+- (void)targetNotInLOS: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+	Unit *unit = [notification object];
+
+	log(LOG_DEV, @"[Notification] Not in LoS (movementController): %@", unit);
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithObject:) object: (WoWObject*)unit];
+	if ( [self moveToObject] ) {
+		[self stopMovement];
+	}
+}
+
+- (void)cantDoThatWhileStunned: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+	Unit *unit = [notification object];
+
+	log(LOG_DEV, @"[Notification] Cant do that while stunned (movementController): %@", unit);
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithObject:) object: (WoWObject*)unit];
+	if ( [self isMoving] ) [self stopMovement];
 }
 
 #pragma mark Keyboard Movements
@@ -2605,7 +2755,7 @@ typedef enum MovementState{
 				log(LOG_WAYPOINT, @"Unable to repair, no repair NPC found!");
 			}
 		}
-		
+
 		// switch combat profile
 		else if ( [action type] == ActionType_CombatProfile ) {
 			log(LOG_WAYPOINT, @"Switching from combat profile %@", botController.theCombatProfile);

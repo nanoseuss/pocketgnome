@@ -43,6 +43,11 @@
 	BOOL followEnabled;
 	BOOL followStopFollowingOOR;
 	float followStopFollowingRange;
+	BOOL followDoNotAssignLeader;
+	float followDoNotAssignLeaderRange;
+	BOOL followEnemyFlagCarriers;
+	BOOL followFriendlyFlagCarriers;
+	
 	BOOL resurrectWithSpiritHealer;
 	BOOL checkForCampers;
 	float checkForCampersRange;
@@ -108,6 +113,12 @@
 @property (readwrite, assign) BOOL followEnabled;
 @property (readwrite, assign) BOOL followStopFollowingOOR;
 @property (readwrite, assign) float followStopFollowingRange;
+@property (readwrite, assign) BOOL followDoNotAssignLeader;
+@property (readwrite, assign) float followDoNotAssignLeaderRange;
+
+@property (readwrite, assign) BOOL followEnemyFlagCarriers;
+@property (readwrite, assign) BOOL followFriendlyFlagCarriers;
+
 @property (readwrite, assign) BOOL resurrectWithSpiritHealer;
 @property (readwrite, assign) float checkForCampersRange;
 @property (readwrite, assign) BOOL avoidMobsWhenResurrecting;

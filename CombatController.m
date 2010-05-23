@@ -76,6 +76,7 @@
 	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(morePowerfullSpellActive:) name: ErrorMorePowerfullSpellActive object: nil];
 	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitDied:) name: UnitDiedNotification object: nil];
 	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(unitTapped:) name: UnitTappedNotification object: nil];
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(cantDoThatWhileStunned:) name: ErrorCantDoThatWhileStunned object: nil];
 
     return self;
 }
@@ -165,8 +166,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( !botController.isBotting ) return;
 
 	log(LOG_COMBAT, @"Player has died!");
-	
+
 	[self resetAllCombat];
+	_inCombat = NO;
 }
 
 - (void)unitDied: (NSNotification*)notification {
@@ -177,7 +179,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	BOOL wasCastingUnit = NO;
 	if ( _castingUnit && [unit cachedGUID] == [_castingUnit cachedGUID] ) wasCastingUnit = YES;
-
 	
 	// Kill the monitoring if called from else where
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
@@ -278,6 +279,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( !botController.isBotting ) return;
 
 	Unit *unit = [notification object];
+
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
@@ -285,10 +287,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[botController cancelCurrentEvaluation];
 
 	// if we can correct this error
-	if ( [movementController checkUnitOutOfRange: unit] ) {
-		[botController actOnUnit: unit];
-		return;
-	}
+//	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] && [movementController checkUnitOutOfRange: unit] ) {
+//		[botController actOnUnit: unit];
+//		return;
+//	}
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 	[self cancelAllCombat];
@@ -309,6 +311,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[self cancelAllCombat];
 }
 
+- (void)cantDoThatWhileStunned: (NSNotification*)notification {
+	if ( !botController.isBotting ) return;
+	
+	Unit *unit = [notification object];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
+	[self cancelAllCombat];
+}
+
 - (void)targetNotInFront: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
@@ -319,17 +331,18 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	[botController cancelCurrentProcedure];
 	[botController cancelCurrentEvaluation];
+	[movementController resetMovementState];
 
 	[movementController turnTowardObject:unit];
 	[movementController establishPlayerPosition];
 	[botController actOnUnit: unit];
 
-//	[movementController correctDirectionByTurning];
-
 }
 
 - (void)unitTapped: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
+	if ( botController.pvpIsInBG ) return;
+
 	Unit *unit = [notification object];
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
@@ -355,9 +368,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// Looks like this is called from the PlayerConroller even the bot is off
 	if ( !botController.isBotting ) return nil;
 
-	if ( [[playerData player] isDead] ) return nil;
+	if ( [playerData isDead] || [playerData percentHealth] == 0 ) return nil;
 
 	log(LOG_FUNCTION, @"combatList");
+
+	// Seems this isn't upating so I'll stick it here for now?
+	[self doCombatSearch];
 
 	NSMutableArray *units = [NSMutableArray array];
 
@@ -365,114 +381,129 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	// add the other units if we need to
 	if ( _attackUnit!= nil && ![units containsObject:_attackUnit] && ![blacklistController isBlacklisted:_attackUnit] && ![_attackUnit isDead] && ![_unitsDied containsObject: _attackUnit] ) {
-		[units addObject:_attackUnit];
+		[units addObject:(Unit*)_attackUnit];
 		log(LOG_DEV, @"Adding attack unit: %@", _attackUnit);
 	}
 
 	// add our add
 	if ( _addUnit != nil && ![units containsObject:_addUnit] && ![blacklistController isBlacklisted:_addUnit] && ![_addUnit isDead] && ![_unitsDied containsObject: _addUnit] ) {
-		[units addObject:_addUnit];
+		[units addObject:(Unit*)_addUnit];
 		log(LOG_COMBAT, @"Adding add unit: %@", _addUnit);
 	}
 
+	float attackRange = [botController.theCombatProfile engageRange];
+	if ( [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] )
+		attackRange = [botController.theCombatProfile attackRange];
+
+	UInt64 playerID;
+	Player *player;	
+	UInt64 targetID;
+	Mob *targetMob;
+	Player *targetPlayer;
 	
+	Position *playerPosition = [playerData position];
+	float distanceToTarget = 0.0f;
+
 	// Add our pets target
 	if ( [botController.theBehavior usePet] && [playerData pet] && ![[playerData pet] isDead] && [[playerData pet] isInCombat] ) {
 
-		UInt64 targetGUID = [[playerData pet] targetID];
-		if ( targetGUID > 0x0) {
+		targetID = [[playerData pet] targetID];
+		if ( targetID > 0x0) {
 			log(LOG_DEV, @"Pet has a target.");
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob && ![mob isDead] && ![_unitsDied containsObject: (Unit*)mob] && [mob isInCombat] ) {
-				[units addObject:mob];
-				log(LOG_COMBAT, @"%@ Adding Pet's mob: %@", [self unitHealthBar: mob], mob);
+			Mob *targetMob = [mobController mobWithGUID:targetID];
+			if ( targetMob && ![targetMob isDead] && ![targetMob percentHealth] == 0 && ![_unitsDied containsObject: (Unit*)targetMob] && [targetMob isInCombat] ) {
+				[units addObject:targetMob];
+				log(LOG_DEV, @"Adding Pet's mob: %@", targetMob);
 			} else {
-				Player *player = [playersController playerWithGUID: targetGUID];
-				if ( player && ![player isDead] && ![_unitsDied containsObject: (Unit*)player] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
-					log(LOG_DEV, @"Adding Pet's PvP target: %@", player);
-					[units addObject: player];
+				targetPlayer = [playersController playerWithGUID: targetID];
+				if ( targetPlayer && ![targetPlayer isDead] && ![targetPlayer percentHealth] == 0 && ![_unitsDied containsObject: (Unit*)targetPlayer] && [targetPlayer isInCombat] && ![playerData isFriendlyWithFaction: [targetPlayer factionTemplate]] ) {
+					log(LOG_DEV, @"Adding Pet's PvP target: %@", targetPlayer);
+					[units addObject: (Unit*)targetPlayer];
 				}
 			}
 		}
 	}
-	
+
 	// If we're in party mode we'll add the units our party members are in combat with
-	if ( botController.theCombatProfile.partyEnabled && ![botController isOnAssist] ) {
-
-		UInt64 playerID;
-		Player *player;
-
-		UInt64 targetID;
-		Mob *target;
-		Player *targetPlayer;
+	if ( botController.theCombatProfile.partyEnabled ) {
 
 		// Check only party members
 		int i;
-		for (i=1;i<=6;i++) {
+		for (i=1;i<6;i++) {
 
 			// If there are no more party members
 			playerID = [playerData PartyMember: i];
 			if ( playerID <= 0x0) break;
 
 			player = [playersController playerWithGUID: playerID];
-			if ( !player || ![player isValid] || ![player isInCombat] ) continue;
+			if ( !player || ![player isValid] || [player isDead] || [player percentHealth] == 0  || ![player isInCombat] ) continue;
 
 			targetID = [player targetID];
 
-			if (targetID <= 0x0) continue;
+			if ( !targetID || targetID <= 0x0) continue;
 
-			target = [mobController mobWithGUID: targetID];
-
-			// If this is a mob we've recently killed
-			if ( target && [_unitsDied containsObject: (Unit*)target] ) continue;
-
-			if (	target && ![units containsObject: target] && [target isValid] && 
-					![target isDead] &&
-					[target isInCombat] && 
-					[playerData isHostileWithFaction: [target factionTemplate]] 
-				) {
-				log(LOG_DEV, @"Adding Party mob: %@", target);
-				[units addObject: target];
+			// Try player targets
+			targetPlayer = [playersController playerWithGUID: targetID];
+			if ( targetPlayer ) {
+				if ( ![targetPlayer isValid] || [_unitsDied containsObject: (Unit*)targetPlayer] || [targetPlayer isDead] || [targetPlayer percentHealth] == 0 ) continue;
+				if ( [units containsObject: (Unit*)targetPlayer] ) continue;
+				if ( ![targetPlayer isInCombat] ) continue;
+				if ( [playerData isFriendlyWithFaction: [targetPlayer factionTemplate]] ) continue;
+				distanceToTarget = [playerPosition distanceToPosition:[(Unit*)targetPlayer position]];
+				if ( distanceToTarget > attackRange ) continue;
+				log(LOG_DEV, @"Adding Party members PvP target: %@ for %@", targetPlayer, player);
+				[units addObject: (Unit*)targetPlayer];
+				targetPlayer = nil;
 				continue;
 			}
 
-			targetPlayer = [playersController playerWithGUID: targetID];
-			if (	targetPlayer && ![units containsObject:targetPlayer] && 
-					[targetPlayer isValid] && ![targetPlayer isDead] && 
-					![_unitsDied containsObject: (Unit*)targetPlayer] && 
-					[targetPlayer isInCombat] && 
-					[playerData isHostileWithFaction: [targetPlayer factionTemplate]] 
-				) {
-				log(LOG_DEV, @"Adding Party PvP target: %@", targetPlayer);
-				[units addObject: targetPlayer];
+			// Try mob targets
+			targetMob = [mobController mobWithGUID: targetID];
+			if ( targetMob ) {
+				if ( ![targetMob isValid] || [_unitsDied containsObject: (Unit*)targetMob] || [targetMob isDead] || [targetMob percentHealth] == 0 ) continue;
+				if ( [units containsObject: targetMob] ) continue;
+				if ( ![targetMob isInCombat] ) continue;
+				if ( [playerData isFriendlyWithFaction: [targetMob factionTemplate]] ) continue;
+
+				distanceToTarget = [playerPosition distanceToPosition:[targetMob position]];
+				if ( distanceToTarget > attackRange ) continue;
+				log(LOG_DEV, @"Adding Party mob: %@ for %@", targetMob, player);
+				[units addObject: targetMob];
+				targetMob = nil;
 				continue;
 			}
 		}
+
 	} else
 
 	// Get the assist players target
-	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat] ) {
-		
-		UInt64 targetGUID = [[botController assistUnit] targetID];
-		if ( targetGUID > 0x0) {
+	if ( botController.assistUnit && [[botController assistUnit] isValid] && [[botController assistUnit] isInCombat] ) {
+
+		targetID = [[botController assistUnit] targetID];
+		if ( targetID > 0x0) {
 			log(LOG_DEV, @"Assist has a target.");
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob && ![mob isDead] && ![_unitsDied containsObject: (Unit*)mob] && [mob isInCombat] ) {
-				[units addObject:mob];
-				log(LOG_COMBAT, @"%@ Adding Assit's mob: %@", [self unitHealthBar: mob], mob);
+			targetMob = [mobController mobWithGUID:targetID];
+			if ( targetMob && ![targetMob isDead] && [targetMob percentHealth] != 0 && ![_unitsDied containsObject: (Unit*)targetMob] && [targetMob isInCombat] ) {
+				distanceToTarget = [playerPosition distanceToPosition:[targetMob position]];
+				if ( distanceToTarget <= attackRange ) {				
+					[units addObject:targetMob];
+					log(LOG_DEV, @"Adding Assit's mob: %@", targetMob);
+				}
 			}
 
-			Player *player = [playersController playerWithGUID: targetGUID];
-			if ( player && ![player isDead] && ![_unitsDied containsObject: (Unit*)player] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
-				log(LOG_DEV, @"Adding Assist's PvP target: %@", player);
-				[units addObject: player];
+			targetPlayer = [playersController playerWithGUID: targetID];
+			if ( targetPlayer && ![targetPlayer isDead] && ![_unitsDied containsObject: (Unit*)targetPlayer] && [targetPlayer isInCombat] && ![playerData isFriendlyWithFaction: [targetPlayer factionTemplate]] ) {
+				distanceToTarget = [playerPosition distanceToPosition:[(Unit*)targetPlayer position]];
+				if ( distanceToTarget <= attackRange ) {				
+					log(LOG_DEV, @"Adding Assist's PvP target: %@", player);
+					[units addObject: (Unit*)targetPlayer];
+				}
 			}
 		}
 	}
 
 	// sort
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
-	Position *playerPosition = [playerData position];
 	for ( Unit *unit in units ) {
 		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit cachedGUID]]];
 	}
@@ -493,6 +524,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	Position *playerPosition = [playerData position];
 	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 
+	// range changes if the unit is friendly or not
+//	float distanceToTarget;
+//	float attackRange = ( botController.theCombatProfile.attackRange > botController.theCombatProfile.engageRange ) ? botController.theCombatProfile.attackRange : botController.theCombatProfile.engageRange;
+//	float range = ([playerData isFriendlyWithFaction: [unit factionTemplate]] ? botController.theCombatProfile.healingRange : attackRange);
+
 	for ( Unit *unit in units ){
 
 		if ( [blacklistController isBlacklisted:unit] ) {
@@ -501,21 +537,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 
 		// ignore dead units
-		if ( [unit isDead] || [unit percentHealth] <= 0 || [_unitsDied containsObject: unit] ) continue;
+		if ( [unit isDead] || [unit percentHealth] == 0 || [_unitsDied containsObject: unit] ) continue;
 
-		// ignore evading/not valid units
-		if ( [unit isEvading] || ![unit isValid] ) continue;
+		// Ignore not valid units
+		if ( ![unit isValid] ) continue;
 
-		// ignore if vertical distance is too great
+		// Ignore evading units
+		if ( ![unit isPlayer] && [unit isEvading] ) continue;
+
+		// Ignore if vertical distance is too great
 		if ( [[unit position] verticalDistanceToPosition: playerPosition] > vertOffset ) continue;
-		
-		// range changes if the unit is friendly or not
-		float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
-		float attackRange = ( botController.theCombatProfile.attackRange > botController.theCombatProfile.engageRange ) ? botController.theCombatProfile.attackRange : botController.theCombatProfile.engageRange;
-		float range = ([playerData isFriendlyWithFaction: [unit factionTemplate]] ? botController.theCombatProfile.healingRange : attackRange);
-		if ( distanceToTarget > range ) continue;
 
-//		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
+//		distanceToTarget = [playerPosition distanceToPosition:[(Unit*)unit position]];
+		
+//		if ( distanceToTarget > range ) continue;
 
 		[validUnits addObject:unit];		
 	}	
@@ -554,11 +589,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	[_castingUnit release]; _castingUnit = nil;
 	_castingUnit = [unit retain];
-	
+
 	// enemy
 	if ( type == TargetEnemy ){
 		_attackUnit = [unit retain];
 	}
+
 	// add
 	else if ( type == TargetAdd || type == TargetPat ) {
 		_addUnit = [unit retain];
@@ -576,7 +612,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// If we don't need to monitor or stay with this unit
-	if ( type == TargetFriend || type == TargetFriendlies || type == TargetPet || type == TargetSelf || type == TargetNone) return;
+	if ( type == TargetFriend || type == TargetFriendlies || type == TargetPet || type == TargetSelf || type == TargetNone || [playerData isFriendlyWithFaction: [unit factionTemplate]] ) return;
 
 	// remember when we started w/this unit
 	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
@@ -586,12 +622,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( unit != oldTarget ) {
 		log(LOG_DEV, @"Facing new target! %@", unit);
 		[movementController turnTowardObject:unit];
-		[movementController establishPlayerPosition];
-//		[movementController correctDirectionByTurning];
+//		[movementController establishPlayerPosition];	// already in botController 
+		[movementController correctDirectionByTurning];
 	}
 
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
-	if ( oldTarget && [botController isPvPing] ) {
+	if ( oldTarget && ( botController.pvpIsInBG || ![playerData isFriendlyWithFaction: [unit factionTemplate]] ) ) {
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: oldTarget];
 		[oldTarget release];
 	}
@@ -606,9 +642,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 }
 
 - (void)stayWithUnit {
+	// cancel other requests
+	[NSObject cancelPreviousPerformRequestsWithTarget: self];
 
 	log(LOG_DEV, @"Staying with %@ in procedure %@", _castingUnit, [botController procedureInProgress]);
-	// cancel other requests
 
 	if ( _castingUnit == nil ) {
 		log(LOG_COMBAT, @"No longer staying w/the unit");
@@ -622,8 +659,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// sanity checks
-	if ( ![_castingUnit isValid] || [_castingUnit isEvading] || [blacklistController isBlacklisted:_castingUnit] ) {
-		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d)  Evading? (%d)  Blacklisted? (%d)", ![_castingUnit isValid], [_castingUnit isEvading], [blacklistController isBlacklisted:_castingUnit]);
+	if ( ![_castingUnit isValid] || [blacklistController isBlacklisted:_castingUnit] ) {
+		log(LOG_COMBAT, @"STOP ATTACK: Invalid? (%d) Blacklisted? (%d)", ![_castingUnit isValid], [blacklistController isBlacklisted:_castingUnit]);
+		return;
+	}
+
+	// sanity checks
+	if ( ![_castingUnit isPlayer] && [_castingUnit isEvading] ) {
+		log(LOG_COMBAT, @"STOP ATTACK: Evading? (%d)", [_castingUnit isEvading]);
 		return;
 	}
 	
@@ -635,6 +678,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// no longer in combat procedure
 	if ( botController.procedureInProgress != @"CombatProcedure" && botController.procedureInProgress != @"PreCombatProcedure" ) {
 		log(LOG_COMBAT, @"No longer in combat procedure, no longer staying with unit");
+		return;
+	}
+
+	float delay = 0.25f;
+
+	// Let's not interfere if we're already moving
+	if ( [movementController isMoving] ) {
+		[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: delay];
 		return;
 	}
 
@@ -658,23 +709,26 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// ensure unit is our target
 	UInt64 unitGUID = [_castingUnit cachedGUID];
 	if ( ( [playerData targetID] != unitGUID) || [_castingUnit isFeignDeath] ) [playerData targetGuid:unitGUID];
-
+	
 	if( !isCasting ) {
 
 		// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 			log(LOG_COMBAT, @"%@ is behind us (%.2f). Repositioning.", _castingUnit, angleTo);
 
-			if ( distanceToCastingUnit < 5.0f ) if ( [movementController jumpForward] ) usleep(300000);
+			if ( !botController.theBehavior.meleeCombat && distanceToCastingUnit < 5.0f ) if ( [movementController jumpForward] ) usleep(300000);
 			[movementController turnTowardObject: _castingUnit];
-			usleep([controller refreshDelay]);
+			delay = 0.5f;
 		}
 
 		// move toward unit?
-		if ( [botController.theBehavior meleeCombat] ) {
+		if ( botController.theBehavior.meleeCombat ) {
 			if ( [playerPosition distanceToPosition: [_castingUnit position]] > 5.0f ) {
 				log(LOG_COMBAT, @"[Combat] Moving to %@", _castingUnit);
-				[movementController moveToObject:_castingUnit];
+				if ( [movementController moveToObject:_castingUnit] ) {
+					[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: delay];
+					return;
+				}
 			}
 		}
 	} else {
@@ -686,7 +740,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		}
 	}
 
-	[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: 0.25];
+	[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: delay];
 }
 
 - (void)monitorUnit: (Unit*)unit {
@@ -730,7 +784,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	}
 
 	// Tap check
-	if ( !botController.theCombatProfile.partyEnabled && !botController.isPvPing &&
+	if ( !botController.theCombatProfile.partyEnabled && !botController.isPvPing && !botController.pvpIsInBG &&
 		[unit isTappedByOther] && [unit targetID] != [[playerData player] cachedGUID] ) {
 		
 		// Only do this for mobs.
@@ -855,7 +909,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// *************************************************
 
 	NSMutableArray *allPotentialUnits = [NSMutableArray array];
-	BOOL needToAssist = NO;
 
 	// add friendly units w/in range
 	if ( ( botController.theCombatProfile.healingEnabled || includeFriendly ) ) {
@@ -863,66 +916,126 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		[allPotentialUnits addObjectsFromArray:[self friendlyUnits]];
 	}
 
+	float attackRange = botController.theCombatProfile.engageRange;
+	if ( ( botController.isPvPing || botController.pvpIsInBG ) && botController.theCombatProfile.attackRange > botController.theCombatProfile.engageRange )
+		attackRange = botController.theCombatProfile.attackRange;
+
+	UInt64 targetID;
+	Mob *targetMob;
+	Player *targetPlayer;
+
+	Position *playerPosition = [playerData position];
+	float distanceToTarget = 0.0f;
+
 	// Get the assist players target
-	if ( [botController isOnAssist] && [[botController assistUnit] isInCombat] ) {
+	if ( botController.theCombatProfile.partyEnabled && botController.assistUnit && [[botController assistUnit] isValid] 
+		&& ![[botController assistUnit] isDead] && [[botController assistUnit] percentHealth] != 0 
+		&& [[botController assistUnit] isInCombat] ) {
 
-		UInt64 targetGUID = [[botController assistUnit] targetID];
-		log(LOG_DEV, @"On assist, checking to see if I need to assist.");
-
-		if ( targetGUID > 0x0) {
+		targetID = [[botController assistUnit] targetID];
+		if ( targetID && targetID > 0x0) {
 			log(LOG_DEV, @"Assist has a target.");
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob && ![mob isDead]) {
-				[allPotentialUnits addObject:mob];
-				log(LOG_DEV, @"Adding my assist's target to list of valid units");
-				needToAssist = YES;
-			}
-			
-			Player *player = [playersController playerWithGUID: targetGUID];
-			if ( player && ![player isDead] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
-				log(LOG_DEV, @"Adding my assists PvP target: %@", player);
-				[allPotentialUnits addObject: player];
-				needToAssist = YES;
+
+			// Check for PvP target
+			targetPlayer = [playersController playerWithGUID: targetID];
+			if ( targetPlayer ) {
+				if ( ![targetPlayer isDead] && [targetPlayer percentHealth] != 0 && ![playerData isFriendlyWithFaction: [targetPlayer factionTemplate]] && [targetPlayer isInCombat] ) {
+					distanceToTarget = [playerPosition distanceToPosition:[(Unit*)targetPlayer position]];
+					if ( distanceToTarget <= attackRange ) {
+						log(LOG_DEV, @"Adding my Assist's PvP target to the list of valid units: %@", targetPlayer);
+						[allPotentialUnits addObject: (Unit*)targetPlayer];
+					}
+				}
+			} else {
+			// Check for mob target
+				targetMob = [mobController mobWithGUID:targetID];
+				if ( targetMob && ![targetMob isDead] && [targetMob percentHealth] != 0 && [targetMob isInCombat] ) {
+						
+					distanceToTarget = [playerPosition distanceToPosition:[targetMob position]];
+					if ( distanceToTarget <= attackRange ) {
+						[allPotentialUnits addObject:targetMob];
+						log(LOG_DEV, @"Adding my Assist's target to list of valid units");
+					}
+				}
 			}
 		}
 	}
 
 	// Get the tanks target
-	if ( [botController tankUnit] && [[botController tankUnit] isInCombat] ) {
+	if ( botController.theCombatProfile.partyEnabled && botController.tankUnit && [[botController tankUnit] isValid] 
+		&& ![[botController tankUnit] isDead] && [[botController tankUnit] percentHealth] != 0 
+		&& [[botController tankUnit] isInCombat] ) {
 
-		UInt64 targetGUID = [[botController tankUnit] targetID];
-		log(LOG_DEV, @"In a party, checking to see if I need to assist the tank.");
-
-		if ( targetGUID > 0x0) {
+		targetID = [[botController tankUnit] targetID];
+		if ( targetID && targetID > 0x0) {
 			log(LOG_DEV, @"Tank has a target.");
-			Mob *mob = [mobController mobWithGUID:targetGUID];
-			if ( mob && ![mob isDead]) {
-				[allPotentialUnits addObject:mob];
-				log(LOG_DEV, @"Adding my tank's target to list of valid units");
-			}
 			
-			Player *player = [playersController playerWithGUID: targetGUID];
-			if ( player && ![player isDead] && [player isInCombat] && [playerData isHostileWithFaction: [player factionTemplate]] ) {
-				log(LOG_DEV, @"Adding my tanks PvP target: %@", player);
-				[allPotentialUnits addObject: player];
+			// Check for PvP target
+			targetPlayer = [playersController playerWithGUID: targetID];
+			if ( targetPlayer) {
+				if ( ![targetPlayer isDead] && [targetPlayer percentHealth] != 0 && ![playerData isFriendlyWithFaction: [targetPlayer factionTemplate]] && [targetPlayer isInCombat] ) {
+					distanceToTarget = [playerPosition distanceToPosition:[(Unit*)targetPlayer position]];
+					if ( distanceToTarget <= attackRange ) {
+						log(LOG_DEV, @"Adding Tank's PvP target to the list of valid units: %@", targetPlayer);
+						[allPotentialUnits addObject: (Unit*)targetPlayer];
+					}
+				}
+			} else {
+				targetMob = [mobController mobWithGUID:targetID];
+				if ( targetMob && ![targetMob isDead] && [targetMob percentHealth] != 0 && [targetMob isInCombat] ) {
+					
+					distanceToTarget = [playerPosition distanceToPosition:[targetMob position]];
+					if ( distanceToTarget <= attackRange ) {
+						[allPotentialUnits addObject:targetMob];
+						log(LOG_DEV, @"Adding Tank's target to list of valid units");
+					}
+				}
+			}
+		}
+	}
+
+	// Get the leaders target
+	if ( botController.theCombatProfile.followEnabled && botController.followUnit && [[botController followUnit] isValid] 
+		&& ![[botController followUnit] isDead] && [[botController followUnit] percentHealth] != 0 
+		&& [[botController followUnit] isInCombat] ) {
+		
+		targetID = [[botController followUnit] targetID];
+		if ( targetID && targetID > 0x0) {
+			log(LOG_DEV, @"Leader has a target.");
+
+			// Check for PvP target
+			targetPlayer = [playersController playerWithGUID: targetID];
+			if ( targetPlayer) {
+				if ( ![targetPlayer isDead] && [targetPlayer percentHealth] != 0 && ![playerData isFriendlyWithFaction: [targetPlayer factionTemplate]] && [targetPlayer isInCombat] ) {
+					distanceToTarget = [playerPosition distanceToPosition:[(Unit*)targetPlayer position]];
+					if ( distanceToTarget <= attackRange ) {
+						log(LOG_DEV, @"Adding Leaders's PvP target to the list of valid units: %@", targetPlayer);
+						[allPotentialUnits addObject: (Unit*)targetPlayer];
+					}
+				}
+			} else {
+				targetMob = [mobController mobWithGUID:targetID];
+				if ( targetMob && ![targetMob isDead] && [targetMob percentHealth] != 0 && [targetMob isInCombat] ) {
+					
+					distanceToTarget = [playerPosition distanceToPosition:[targetMob position]];
+					if ( distanceToTarget <= attackRange ) {
+						[allPotentialUnits addObject:targetMob];
+						log(LOG_DEV, @"Adding Leader's target to list of valid units");
+					}
+				}
 			}
 		}
 	}
 
 	// add new units w/in range if we're not on assist
-	if ( botController.theCombatProfile.combatEnabled && !botController.theCombatProfile.onlyRespond && !onlyHostilesInCombat && ![botController isOnAssist] ) {
+	if ( botController.theCombatProfile.combatEnabled && !botController.theCombatProfile.onlyRespond && !onlyHostilesInCombat ) {
 		log(LOG_DEV, @"Adding ALL available combat units");
 
-		// determine attack range
-		float attackRange = [botController.theCombatProfile engageRange];
-		if ( botController.isPvPing && [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] )
-			attackRange = [botController.theCombatProfile attackRange];
-		
 		[allPotentialUnits addObjectsFromArray:[self enemiesWithinRange:attackRange]];
 	}
-	
+
 	// remove units attacking us from the list
-	if ( [_unitsAttackingMe count] && !needToAssist) [allPotentialUnits removeObjectsInArray:_unitsAttackingMe];
+	if ( [_unitsAttackingMe count] ) [allPotentialUnits removeObjectsInArray:_unitsAttackingMe];
 
 	// add combat units that have been validated! (includes attack unit + add)
 	NSArray *inCombatUnits = [self combatListValidated];
@@ -930,9 +1043,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		log(LOG_DEV, @"Adding %d validated in combat units to list", [inCombatUnits count]);
 		for ( Unit *unit in inCombatUnits ) if ( ![allPotentialUnits containsObject:unit] ) [allPotentialUnits addObject:unit];
 	}
-	
+
 	log(LOG_DEV, @"Found %d potential units to validate", [allPotentialUnits count]);
-	
+
 	// *************************************************
 	//	Validate all potential units - check for:
 	//		Blacklisted
@@ -942,13 +1055,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	//		Ghost
 	// *************************************************
 
-	Position *playerPosition = [playerData position];
 	NSMutableArray *validUnits = [NSMutableArray array];
 	
 	if ( [allPotentialUnits count] ){
 		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
-		float distanceToTarget = 0.0f, range = 0.0f;
-		BOOL isFriendly = NO;
+//		float range = 0.0f;
+//		BOOL isFriendly = NO;
 		
 		for ( Unit *unit in allPotentialUnits ){
 
@@ -957,18 +1069,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 				continue;
 			}
 
-			if ( [unit isDead] || [unit isEvading] || ![unit isValid] ) continue;
+			if ( [unit isDead] || ![unit isValid] ) continue;
+
+			if ( ![unit isPlayer] && [unit isEvading] ) continue;
 
 			if ( [[unit position] verticalDistanceToPosition: playerPosition] > vertOffset ) continue;
 
-			if ( !includeFriendly && [playerData isFriendlyWithFaction: [unit factionTemplate]] ) continue;
-
-//			if ( !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) return NO;
-
+//			if ( [playerData isFriendlyWithFaction: [unit factionTemplate]] ) isFriendly = YES;
+//				else isFriendly = NO;
+					
 			// range changes if the unit is friendly or not
-			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
-			range = (self.inCombat ? (isFriendly ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange) : botController.theCombatProfile.engageRange);
-			if ( distanceToTarget > range ) continue;
+//			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
+//			range = (self.inCombat ? (isFriendly ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange) : botController.theCombatProfile.engageRange);
+//			if ( distanceToTarget > range ) continue;
 			
 			// player: make sure they're not a ghost
 			if ( [unit isPlayer] ) {
@@ -1010,7 +1123,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( ![validUnits count] ) return nil;
 
 	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
-	int highestWeight = -500;
+	int highestWeight = -1000;
 
 	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
@@ -1018,6 +1131,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		// Let's make sure we can even act on this unit before we consider it
 //		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
 		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
+		if ( !bestUnit ) bestUnit = unit;
 
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];
@@ -1029,7 +1143,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			bestUnit = unit;
 		}
 	}
-	return bestUnit;	
+	log(LOG_DEV, @"Best unit %@ found.", bestUnit);
+	return bestUnit;
 }
 
 // find a unit to attack, CC, or heal (this one is for engage range only... combat start vs combat continuation)
@@ -1047,38 +1162,43 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	Position *playerPosition = [playerData position];
 	
 	if ( ![validUnits count] ) return nil;
-	
+
 	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
-	int highestWeight = -500;
-	
+	int highestWeight = -1000;
+
 	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
 
 		// Make sure it's within our Engage range
-		if ( [playerPosition distanceToPosition: [unit position]] > botController.theCombatProfile.engageRange ) continue;
-
+		if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] || !botController.theCombatProfile.healingEnabled ) {
+			if ( [playerPosition distanceToPosition: [unit position]] > botController.theCombatProfile.engageRange ) continue;
+		} else {
+			if ( [playerPosition distanceToPosition: [unit position]] > botController.theCombatProfile.healingRange ) continue;
+		}
 		// Let's make sure we can even act on this unit before we consider it
 //		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
 		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
+		if ( !bestUnit ) bestUnit = unit;
 		
 		// begin weight calculation
 		int weight = [self weight:unit PlayerPosition:playerPosition];
 		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
-		
+
 		// best weight
 		if ( weight > highestWeight ) {
 			highestWeight = weight;
 			bestUnit = unit;
 		}
 	}
-	return bestUnit;	
+	log(LOG_DEV, @"Best unit %@ found with weight.", bestUnit);
+	return bestUnit;
 }
 
 - (NSArray*)allAdds {	
 	NSMutableArray *allAdds = [NSMutableArray array];
 	
 	// loop through units that are attacking us!
-	for ( Unit *unit in _unitsAttackingMe ) if ( unit != _attackUnit && ![unit isDead] ) [allAdds addObject:unit];
+	for ( Unit *unit in _unitsAttackingMe ) if ( unit != _attackUnit && ![unit isDead] && [unit percentHealth] != 0 ) [allAdds addObject:unit];
 	
 	return [[allAdds retain] autorelease];
 }
@@ -1097,72 +1217,146 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // hostile? +100, neutral? +100
 // health: +(100-percentHealth)
 // distance: 100*(attackRange - distance)/attackRange
-- (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition{
+
+#define SilverwingFlagSpellID	23335
+#define WarsongFlagSpellID		23333
+#define NetherstormFlagSpellID	34976
+
+- (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition {
 
 	float attackRange = (botController.theCombatProfile.engageRange > botController.theCombatProfile.attackRange) ? botController.theCombatProfile.engageRange : botController.theCombatProfile.attackRange;
+//	float healingRange = ( botController.theCombatProfile.healingRange > attackRange ) ? botController.theCombatProfile.healingRange : attackRange;
 
 	float distanceToTarget = [playerPosition distanceToPosition:[unit position]];
 
 	BOOL isFriendly = [playerData isFriendlyWithFaction: [unit factionTemplate]];
-	
+
 	// begin weight calculation
 	int weight = 0;
-	
+
 	// player or pet?
-	if ([unit isPlayer]) weight += 100;
-	
+	if ( [unit isPlayer] ) weight += 50;
+
 	if ( [unit isPet] ) {
-		weight -= 25;
-		// we hate pets!
-		if ( !botController.theCombatProfile.attackPets ) weight -= 300;
+		// we kill pets!
+		if ( botController.theCombatProfile.attackPets ) weight += 25;
+			else weight -= 50;
 	}
 
 	// health left
-	int healthLeft = (100-[unit percentHealth]);
-	weight += healthLeft;
-	
+	int healthLeft = [unit percentHealth];
+	int healthWeight = 100-healthLeft;
+	weight += healthWeight;
+
 	// our add?
-	if ( unit == _addUnit ) weight -= 50;
-	
+	if ( unit == _addUnit ) weight -= 25;
+
+	int unitLevel = [unit level];
+
+	// Give higher weight to the flag carrier if in a BG
+	if ( botController.pvpIsInBG )
+		if( [auraController unit: unit hasAura: SilverwingFlagSpellID] || [auraController unit: unit hasAura: WarsongFlagSpellID] || [auraController unit: unit hasAura: NetherstormFlagSpellID] ) 
+			weight +=50;
+
 	// non-friendly checks only
 	if ( !isFriendly ) {
-		if ( attackRange > 0 ) weight += ( 100 * ((attackRange-distanceToTarget)/attackRange));
 
+		if ( attackRange > 0 ) weight += ( 50 * ((attackRange-distanceToTarget)/attackRange));
+
+		// The lower the enemy level the higher the weight
+		int lvlWeight = ((100-unitLevel)/10);
+		weight += lvlWeight;
 		
 		// current target
-		if ( [playerData targetID] == [unit cachedGUID] ) weight += 30;
-		
-		// Hostile Players get even more weight
-		if ([unit isPlayer]) weight += 25;
+		if ( [playerData targetID] == [unit cachedGUID] ) weight += 25;
 
-		// Assist mode - assists target
-		if ( [botController isOnAssist] && [[botController assistUnit] isInCombat]) {
-			UInt64 targetGUID = [[botController assistUnit] targetID];
-			if ( targetGUID > 0x0) {
-				Mob *assistMob = [mobController mobWithGUID:targetGUID];
-				if ( unit == assistMob ) weight += 200;
+		// Hostile Players
+		if ( [unit isPlayer] ) {
+
+			// Assist mode - assists target
+			if ( botController.theCombatProfile.partyEnabled && botController.assistUnit && [[botController assistUnit] isValid] ) {
+				UInt64 targetGUID = [[botController assistUnit] targetID];
+				if ( targetGUID > 0x0) {
+					Player *assistsPlayer = [playersController playerWithGUID: targetGUID];
+					if ( unit == (Unit*)assistsPlayer ) weight += 50;
+				}
+			}
+			
+			// Tanks target
+			if ( botController.theCombatProfile.partyEnabled && botController.tankUnit && [[botController tankUnit] isValid] ) {
+				UInt64 targetGUID = [[botController tankUnit] targetID];
+				if ( targetGUID > 0x0) {
+					Player *tanksPlayer = [playersController playerWithGUID: targetGUID];
+					if ( unit == (Unit*)tanksPlayer ) weight += 50;
+				}
+			}
+			
+			// Leaders target
+			if ( botController.theCombatProfile.followEnabled && botController.followUnit && [[botController followUnit] isValid] ) {
+				UInt64 targetGUID = [[botController followUnit] targetID];
+				if ( targetGUID > 0x0) {
+					Player *leadersPlayer = [playersController playerWithGUID: targetGUID];
+					if ( unit == (Unit*)leadersPlayer ) weight += 50;
+				}
+			}
+
+		} else {
+		// Mobs
+
+			// Assist mode - assists target
+			if ( botController.theCombatProfile.partyEnabled && botController.assistUnit && [[botController assistUnit] isValid] ) {
+				UInt64 targetGUID = [[botController assistUnit] targetID];
+				if ( targetGUID > 0x0) {
+					Mob *assistMob = [mobController mobWithGUID:targetGUID];
+					if ( unit == assistMob ) weight += 50;
+				}
+			}
+
+			// Tanks target
+			if ( botController.theCombatProfile.partyEnabled && botController.tankUnit && [[botController tankUnit] isValid] ) {
+				UInt64 targetGUID = [[botController tankUnit] targetID];
+				if ( targetGUID > 0x0) {
+					Mob *tankMob = [mobController mobWithGUID:targetGUID];
+					if ( unit == tankMob ) weight += 50;	// Still less than the assist just in case
+				}
+			}
+
+			// Leaders target
+			if ( botController.theCombatProfile.followEnabled && botController.followUnit && [[botController followUnit] isValid] ) {
+				UInt64 targetGUID = [[botController followUnit] targetID];
+				if ( targetGUID > 0x0) {
+					Mob *leaderMob = [mobController mobWithGUID:targetGUID];
+					if ( unit == leaderMob ) weight += 50;
+				}
 			}
 		}
-		
-		// Tanks target
-		if ( botController.tankUnit && [[botController tankUnit] isInCombat]) {
-			UInt64 targetGUID = [[botController tankUnit] targetID];
-			if ( targetGUID > 0x0) {
-				Mob *tankMob = [mobController mobWithGUID:targetGUID];
-				if ( unit == tankMob ) weight += 100;	// Still less than the assist just in case
-			}
-		}
-		
+
 	} else {	
 	// friendly?
-		// tank gets a pretty big weight @ all times
-		if ( botController.theCombatProfile.partyEnabled && botController.theCombatProfile.tankUnit && botController.theCombatProfile.tankUnitGUID == [unit cachedGUID] )
-			weight += healthLeft;
 
-		weight *= 1.5;
+		// The higher the friend level the higher the weight
+		int lvlWeight = (unitLevel/10);
+		weight += lvlWeight;
+
+		// Friends come first when we're not being targeted
+		if ( ![_unitsAttackingMe count] ) weight *= 1.5;
+
+		// tank gets a pretty big weight @ all times
+		if ( botController.theCombatProfile.partyEnabled && botController.tankUnit && [[botController tankUnit] cachedGUID] == [unit cachedGUID] )
+			weight += healthWeight*2;
+
+		// assist gets a pretty big weight @ all times
+		if ( botController.theCombatProfile.partyEnabled && botController.assistUnit && [[botController assistUnit] cachedGUID] == [unit cachedGUID] )
+			weight += healthWeight*2;
+
+		// leader gets a pretty big weight @ all times
+		if ( botController.theCombatProfile.followEnabled && botController.followUnit && [[botController followUnit] cachedGUID] == [unit cachedGUID] )
+			weight += healthWeight*2;
+
 	}
 	return weight;
 }
+
 - (NSString*)unitHealthBar: (Unit*)unit {
 	// lets build a log prefix that reflects units health
 	NSString *logPrefix = nil;
@@ -1278,7 +1472,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 - (BOOL)validFriendlyUnit: (Unit*)unit{
 
 	if ( !unit ) return NO;
-	
+
 	NSArray *auras = [auraController aurasForUnit: unit idsOnly: YES];
 	// regular dead - night elf ghost
 	if ( [auras containsObject: [NSNumber numberWithUnsignedInt: 8326]] || [auras containsObject: [NSNumber numberWithUnsignedInt: 20584]] )
@@ -1288,9 +1482,20 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	//	Not dead
 	//	Friendly
 	//	Could check position + health threshold + if they are moving away!
-	if ( [unit isDead] ) return NO;
+	if ( [unit isDead] || [unit percentHealth] == 0 ) return NO;
+
 	if ( ![unit isValid] ) return NO;
-	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] ) return NO;
+
+	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] ) {
+		log(LOG_DEV, @"validFriendlyUnit: %@ is not Friendly with Faction!", unit);
+		return NO;
+	}
+
+	if ( !botController.theCombatProfile.attackAnyLevel ) {
+		int unitLevel = [unit level];
+		if ( unitLevel < botController.theCombatProfile.attackLevelMin ) return NO;
+		if ( unitLevel > botController.theCombatProfile.attackLevelMax ) return NO;
+	}
 
 	return YES;
 }
@@ -1325,7 +1530,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	} else {
 
 		// Check all friendlies
-		[friendliesWithinRange addObjectsFromArray: [playersController allPlayers]];
+		if ( !botController.waitForPvPQueue ) [friendliesWithinRange addObjectsFromArray: [playersController allPlayers]];
 
 	}
 
@@ -1337,7 +1542,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
     if ( [friendliesWithinRange count] ) 
         for ( Unit *unit in friendliesWithinRange ) 
 			if ( [playerPosition distanceToPosition: [unit position]] > range ) [friendliesNotInRange addObject: unit];
-
 
 	// Remove out of range units before we sort this list in case it's massive
 	if ( [friendliesNotInRange count] ) 
@@ -1423,98 +1627,122 @@ int WeightCompare(id unit1, id unit2, void *context) {
 #pragma mark Internal
 
 // find all units we are in combat with
-- (void)doCombatSearch{	
+- (void)doCombatSearch {
+
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
+
 	if ( !botController.isBotting ) return;
 
-	if ( [[playerData player] isDead] ) {
-		log(LOG_COMBAT, @"Dead, removing all objects!");
+	if ( [[playerData player] isDead] || [[playerData player] percentHealth] == 0 ) {
+		log(LOG_DEV, @"Dead, removing all objects!");
 
 		[_unitsAttackingMe removeAllObjects];
 		self.attackUnit = nil;
 		self.addUnit = nil;
 		self.castingUnit = nil;
+		_inCombat = NO;
+		return;
+	}
+
+	// If we're not in combat then lets skip this altogether
+	if ( ![[playerData player] isInCombat] ) {
+
+		if ( [_unitsAttackingMe count] ) [_unitsAttackingMe removeAllObjects];
+		self.addUnit = nil;
+		if ( botController.procedureInProgress != @"CombatProcedure") {
+			self.attackUnit = nil;
+			self.castingUnit = nil;
+			_inCombat = NO;
+		}
 		return;
 	}
 
 	// add all mobs + players
 	NSArray *mobs = [mobController allMobs];
-	NSArray *players = [playersController allPlayers];
 
 	UInt64 playerGUID = [[playerData player] cachedGUID];
 	UInt64 unitTarget = 0;
 	BOOL playerHasPet = [[playerData player] hasPet];
-	BOOL tapCheckPassed;
-	
-	for ( Mob *mob in mobs ){
-		tapCheckPassed = YES;
+	UInt64 petGUID;
+	if (playerHasPet) petGUID = [[playerData pet] cachedGUID];
+
+	BOOL addMob;
+	for ( Mob *mob in mobs ) {
 		unitTarget = [mob targetID];
-		
-		if ([mob isTappedByOther] && !botController.theCombatProfile.partyEnabled && !botController.isPvPing) tapCheckPassed = NO;
-		
-		if ( botController.theCombatProfile.ignoreLevelOne && [mob level] == 1 ) continue;
+		addMob = YES;
 
-		if ( [_unitsDied containsObject: (Unit*)mob] || [mob isDead] || [mob percentHealth] == 0 ) continue;
-
-		if ( [mob isInCombat] &&		// 2 - in Combat
-			[mob isSelectable] &&	// 3 - can select this target
-			[mob isAttackable] &&	// 4 - attackable
-			//[mob isTapped] &&		// 5 - tapped - in theory someone could tap a target while you're casting, and you get agg - so still kill (removed as a unit @ 100% could attack us and not be tapped)
-			tapCheckPassed &&	// lets give this one a go
-			[mob isValid] &&		// 6 - valid mob
-			(	(unitTarget == playerGUID ||										// 7 - targetting us
-				 (playerHasPet && unitTarget == [[playerData pet] cachedGUID]) ) ||	// or targetting our pet
-			 [mob isFleeing])													// or fleeing
-		) {
-			// add mob!
-			if ( ![_unitsAttackingMe containsObject:(Unit*)mob] ) {
-				log(LOG_DEV, @"Adding mob %@", mob);
-				[_unitsAttackingMe addObject:(Unit*)mob];
-				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)mob retain] autorelease]];
+		if ( addMob && ( ![mob isValid] || [_unitsDied containsObject: (Unit*)mob] || [mob isDead] || [mob percentHealth] == 0 ) ) addMob = NO;
+		if ( addMob && ![mob isInCombat] ) addMob = NO;
+		if ( addMob && ( ![mob isSelectable] || ![mob isAttackable] ) ) addMob = NO;
+		if ( addMob && !botController.isPvPing && !botController.pvpIsInBG && !botController.theCombatProfile.partyEnabled && [mob isTappedByOther] ) addMob = NO;
+		if ( addMob &&  botController.theCombatProfile.ignoreLevelOne && [mob level] == 1 ) addMob = NO;
+		if ( addMob && unitTarget != playerGUID ) {
+			if ( playerHasPet ) {
+				if ( unitTarget != petGUID ) addMob = NO;
+			} else {
+				addMob = NO;
 			}
-		} else
-		// remove unit
-		if ( [_unitsAttackingMe containsObject:(Unit*)mob] ) {
+		}
+
+		// add mob!
+		if ( addMob && ![_unitsAttackingMe containsObject:(Unit*)mob] ) {
+			log(LOG_DEV, @"Adding mob %@", mob);
+			[_unitsAttackingMe addObject:(Unit*)mob];
+			[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)mob retain] autorelease]];
+		}
+
+		if ( !addMob && [_unitsAttackingMe containsObject:(Unit*)mob] && ![mob isFleeing] ) {
 			log(LOG_DEV, @"Removing mob %@", mob);
 			[_unitsAttackingMe removeObject:(Unit*)mob];
 		}
 	}
 
+	NSArray *players = [playersController allPlayers];
+	BOOL addPlayer;
 	for ( Player *player in players ) {
+
+		if ( [playerData isFriendlyWithFaction: [player factionTemplate]] ) continue;
+
 		unitTarget = [player targetID];
+		addPlayer = YES;
 
-		if ( [_unitsDied containsObject: (Unit*)player] || [player isDead] || [player percentHealth] == 0 ) continue;
+		if ( addPlayer && ( ![player isValid] || [_unitsDied containsObject: (Unit*)player] || [player isDead] || [player percentHealth] == 0 ) ) addPlayer = NO;
+		if ( addPlayer && ![player isInCombat] ) addPlayer = NO;
+		if ( addPlayer && ( ![player isSelectable] || ![player isAttackable] ) ) addPlayer = NO;
+		if ( addPlayer && unitTarget != playerGUID ) {
 
-		if (
-			[playerData isHostileWithFaction: [player factionTemplate]] &&	// Must be hostile players!
-			[player currentHealth] != 1 &&							// 2 - this should be a ghost check, being lazy for now
-			[player isInCombat] &&									// 3 - in combat
-			[player isSelectable] &&								// 4 - can select this target
-			([player isAttackable] || [player isFeignDeath] ) &&	// 5 - attackable or feigned
-			[player isValid] &&										// 6 - valid
-			(	(unitTarget == playerGUID ||										// 7 - targetting us
-				 (playerHasPet && unitTarget == [[playerData player] petGUID]) ) ||	// or targetting our pet
-			 [player isFleeing])													// or fleeing
-			){
-
-			// add player
-			if ( ![_unitsAttackingMe containsObject:(Unit*)player] ) {
-				log(LOG_DEV, @"[Combat] Adding player %@", player);
-				[_unitsAttackingMe addObject:(Unit*)player];
-				[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)player retain] autorelease]];
+			if ( playerHasPet ) {
+				if ( unitTarget != petGUID ) addPlayer = NO;
+			} else {
+				addPlayer = NO;
 			}
 		}
-		// remove unit
-		else if ( [_unitsAttackingMe containsObject:(Unit*)player] ) {
-			log(LOG_DEV, @"[Combat] Removing player %@", player);
+
+		// add player!
+		if ( addPlayer && ![_unitsAttackingMe containsObject:(Unit*)player] ) {
+			log(LOG_DEV, @"Adding Player %@", player);
+			[_unitsAttackingMe addObject:(Unit*)player];
+			[[NSNotificationCenter defaultCenter] postNotificationName: UnitEnteredCombat object: [[(Unit*)player retain] autorelease]];
+		}
+
+		if ( !addPlayer && [_unitsAttackingMe containsObject:(Unit*)player] && ![player isFleeing] && ![player isEvading] && ![player isFeignDeath] ) {
+			log(LOG_DEV, @"Removing player %@", player);
 			[_unitsAttackingMe removeObject:(Unit*)player];
 		}
 	}
+
+	Position *playerPosition = [playerData position];
 
 	// double check to see if we should remove any!
 	NSMutableArray *unitsToRemove = [NSMutableArray array];
 	for ( Unit *unit in _unitsAttackingMe ){
 		if ( !unit || ![unit isValid] || [unit isDead]  || [unit percentHealth] == 0 || ![unit isInCombat] || ![unit isSelectable] || ![unit isAttackable] ) {
 			log(LOG_DEV, @"[Combat] Removing unit: %@", unit);
+			[unitsToRemove addObject:unit];
+		} else 
+		// Just a safety check
+		if ( [playerPosition distanceToPosition: [unit position]] > 45.0f ) {
+			log(LOG_DEV, @"[Combat] Removing out of range unit: %@", unit);
 			[unitsToRemove addObject:unit];
 		}
 	}
@@ -1523,12 +1751,16 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	log(LOG_DEV, @"doCombatSearch: In combat with %d units", [_unitsAttackingMe count]);
 
-	if ( [_unitsAttackingMe count] ) _inCombat = YES;
-		else _inCombat = NO;
-
-	//	for ( Unit *unit in _unitsAttackingMe ) {
-//		log(LOG_DEV, @"	%@", unit);
-//	}
+	if ( [_unitsAttackingMe count] ) {
+		_inCombat = YES;
+	} else {
+		self.addUnit = nil;
+		if ( botController.procedureInProgress != @"CombatProcedure") {
+			self.attackUnit = nil;
+			self.castingUnit = nil;
+			_inCombat = NO;
+		}
+	}
 }
 
 // this will return the level range of mobs we are attacking!

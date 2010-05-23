@@ -208,7 +208,7 @@
         return YES;
 	if ( _notInObjectListCounter >= MAX_NOT_IN_LIST_UNTIL_STALE )
 		return YES;
-	
+
     return NO;
 }
 

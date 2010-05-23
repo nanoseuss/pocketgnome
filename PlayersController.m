@@ -45,7 +45,7 @@ static PlayersController *sharedPlayers = nil;
         [[NSUserDefaults standardUserDefaults] registerDefaults: [NSDictionary dictionaryWithObject: @"0.5" forKey: @"PlayersControllerUpdateFrequency"]];
 		_playerNameList = [[NSMutableDictionary dictionary] retain];
     }
-
+	
     return self;
 }
 
@@ -120,7 +120,7 @@ static PlayersController *sharedPlayers = nil;
 }
 
 - (unsigned int)objectCount {
-	return [_objectList count];	
+	return [_objectList count];     
 }
 
 - (unsigned)playerCount {
@@ -146,10 +146,10 @@ static PlayersController *sharedPlayers = nil;
 	for(Unit *unit in _objectList) {
 		int faction = [unit factionTemplate];
 		BOOL isFriendly = [playerData isFriendlyWithFaction: faction];
-
+		
 		if ( isFriendly){
 			[friendlyUnits addObject: unit];
-		}	
+		}       
 	}
 	
 	return friendlyUnits;
@@ -183,23 +183,23 @@ static PlayersController *sharedPlayers = nil;
 			BOOL isNeutral = (!isHostile && ![playerData isFriendlyWithFaction: faction]);
 			
 			//log(LOG_GENERAL, @"%d %d (%d || %d || %d) %d %d %d %d %@", [unit isValid], ![unit isDead], (friendly && isFriendly), (neutral && isNeutral), (hostile && isHostile), ((unitLevel >= lowLevel) && (unitLevel <= highLevel)), [unit isSelectable], 
-			//	  [unit isAttackable],  [unit isPVP], unit);
+			//        [unit isAttackable],  [unit isPVP], unit);
 			
             // only include:
             if(   [unit isValid]                                                // 1) valid units
                && ![unit isDead]                                                // 2) units that aren't dead
                && ((friendly && isFriendly)                                     // 3) friendly as specified
-                   || (neutral && isNeutral)									//    neutral as specified
+                   || (neutral && isNeutral)                                                                    //    neutral as specified
                    || (hostile && isHostile))                                   //    hostile as specified
                && (unitLevel >= lowLevel) && unitLevel <= highLevel             // 4) units within the level range
                && [unit isSelectable]                                           // 5) units that are selectable
                && [unit isAttackable]/*                                           // 6) units that are attackable
-               && [unit isPVP]*/ ){                                                // 7) units that are PVP
-                //log(LOG_GENERAL, @"[PlayersController] Adding player %@", unit);
-				
-				[unitsWithinRange addObject: unit];
-				
-			}
+									  && [unit isPVP]*/ ){                                                // 7) units that are PVP
+										  //log(LOG_GENERAL, @"[PlayersController] Adding player %@", unit);
+										  
+										  [unitsWithinRange addObject: unit];
+										  
+									  }
         }
     }
 	
@@ -221,9 +221,9 @@ static PlayersController *sharedPlayers = nil;
 		float range = [position distanceToPosition: [player position]];
 		
 		if (
-			range <= distance &&						// 1 - in range
-			(!friendly || (friendly && !isHostile)) &&	// 2 - friendly
-			(!hostile || (hostile && isHostile))		// 3 - hostile
+			range <= distance &&                                            // 1 - in range
+			(!friendly || (friendly && !isHostile)) &&      // 2 - friendly
+			(!hostile || (hostile && isHostile))            // 3 - hostile
 			){
 			log(LOG_GENERAL, @"[Loot] Player %@ found %0.2f yards away! I scared! Friendly?(%d)  Hostile?(%d)", player, range, friendly, hostile);
 			return YES;
@@ -255,8 +255,8 @@ static PlayersController *sharedPlayers = nil;
             shouldTrack = YES;
         }
         
-        if ( shouldTrack )	[unit trackUnit];
-        else				[unit untrackUnit];
+        if ( shouldTrack )      [unit trackUnit];
+        else                            [unit untrackUnit];
     }
 }
 
@@ -274,13 +274,13 @@ static PlayersController *sharedPlayers = nil;
 	
 	// remove old objects
 	[_objectDataList removeAllObjects];
-
+	
     if ( ![playerData playerIsValid:self] ) return;
 	
 	// is tab viewable?
 	if ( ![objectsController isTabVisible:Tab_Players] )
 		return;
-
+	
 	cachedPlayerLevel = [playerData level];
 	
 	for ( Player *player in _objectList ) {
@@ -299,7 +299,7 @@ static PlayersController *sharedPlayers = nil;
 		[_objectDataList addObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 									 player,                                                                @"Player",
 									 [NSString stringWithFormat: @"0x%X", [player lowGUID]],                @"ID",
-									 [self playerNameWithGUID:[player GUID]],								@"Name",
+									 [self playerNameWithGUID:[player GUID]],                                                               @"Name",
 									 ([player isGM] ? @"GM" : [Unit stringForClass: [player unitClass]]),   @"Class",
 									 [Unit stringForRace: [player race]],                                   @"Race",
 									 [Unit stringForGender: [player gender]],                               @"Gender",

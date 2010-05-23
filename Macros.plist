@@ -282,5 +282,26 @@
 		<key>Description</key>
 		<string>This will make your pet follow or stop attack.</string>
 	</dict>
+	<key>Follow</key>
+	<dict>
+		<key>Macro</key>
+		<string>/follow</string>
+		<key>Description</key>
+		<string>This will make you follow the selected target.</string>
+	</dict>
+	<key>ReplyKK</key>
+	<dict>
+		<key>Macro</key>
+		<string>/r kk</string>
+		<key>Description</key>
+		<string>This will reply to the previous whisper with kk.</string>
+	</dict>
+	<key>ReplyOMW</key>
+	<dict>
+		<key>Macro</key>
+		<string>/r omw</string>
+		<key>Description</key>
+		<string>This will reply to the previous whisper with omw.</string>
+	</dict>
 </dict>
 </plist>

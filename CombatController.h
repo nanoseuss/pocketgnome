@@ -107,6 +107,7 @@
 
 // OUPUT: returns the weight of a unit
 - (int)weight: (Unit*)unit;
+- (int)weight: (Unit*)unit PlayerPosition:(Position*)playerPosition;
 
 // OUTPUT: valid targets in range based on combat profile
 - (NSArray*)enemiesWithinRange:(float)range;

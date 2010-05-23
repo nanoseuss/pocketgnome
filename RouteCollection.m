@@ -151,13 +151,11 @@
 #pragma mark Starting Route stuff
 
 - (RouteSet*)startingRoute{
-	
-	for ( RouteSet *route in _routes ){
-		if ( [self.startUUID isEqualToString:[route UUID]] ){
-			return route;
-		}
+
+	for ( RouteSet *route in _routes ) {
+		if ( [self.startUUID isEqualToString:[route UUID]] ) return route;
 	}
-	
+
 	return nil;
 }
 

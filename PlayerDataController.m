@@ -1229,12 +1229,12 @@ static PlayerDataController* sharedController = nil;
             [[NSNotificationCenter defaultCenter] postNotificationName: PlayerLeavingCombatNotification object: nil];
         }
         _lastCombatState = combatState;
-		
+
 		// Lets see which mobs are attacking us!
-		if ( combatState || [[combatController combatList] count] > 0 ){
+		if ( combatState || [[combatController combatList] count] > 0 ) {
 			[combatController doCombatSearch];
 		}
-		
+	
 		[combatController updateCombatTable];
 		
 		[_combatDataList removeAllObjects];

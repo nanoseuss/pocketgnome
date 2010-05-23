@@ -106,16 +106,16 @@ typedef enum MovementType {
 	BOOL _lastCorrectionForward;
 	BOOL _lastCorrectionLeft;
 	BOOL _performingActions;
-	BOOL _checkingPosition;
-	BOOL isFollowing;
+	BOOL _isFollowing;
+	BOOL _isActive;
 
 	Waypoint *_destinationWaypointUI;
 }
 
 @property (readwrite, retain) RouteSet *currentRouteSet;
 @property (readwrite, assign) BOOL isFollowing;
+@property (readwrite, assign) BOOL isActive;
 @property (readonly, assign) BOOL performingActions;
-@property (readonly, assign) BOOL checkingPosition;
 
 - (void)moveForwardStart;
 - (void)moveForwardStop;

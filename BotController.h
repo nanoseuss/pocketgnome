@@ -78,10 +78,11 @@
 #define ErrorSpellNotReady				@"ErrorSpellNotReady"
 #define ErrorTargetNotInLOS				@"ErrorTargetNotInLOS"
 #define ErrorInvalidTarget				@"ErrorInvalidTarget"
-#define ErrorTargetOutOfRange				@"ErrorTargetOutOfRange"
-#define ErrorTargetNotInFront				@"ErrorTargetNotInFront"
+#define ErrorTargetOutOfRange			@"ErrorTargetOutOfRange"
+#define ErrorTargetNotInFront			@"ErrorTargetNotInFront"
 #define ErrorHaveNoTarget				@"ErrorHaveNoTarget"
-#define ErrorMorePowerfullSpellActive			@"ErrorMorePowerfullSpellActive"
+#define ErrorMorePowerfullSpellActive	@"ErrorMorePowerfullSpellActive"
+#define ErrorCantDoThatWhileStunned		@"ErrorCantDoThatWhileStunned"
 
 #define BotStarted					@"BotStarted"
 
@@ -206,6 +207,8 @@
 	
     // pvp shit
     BOOL _isPvPing;
+	BOOL _isPvpMonitoring;
+    BOOL _isInBattleground;
     BOOL _pvpPlayWarning, _pvpLeaveInactive;
 	BOOL _pvpIsInBG;
 	NSTimer *_pvpTimer;
@@ -239,6 +242,7 @@
 	Route *followRoute;
 	BOOL _followSuspended;
 	BOOL _followLastSeenPosition;
+	BOOL _followingFlagCarrier;
 	Unit *_followUnit;
 	
 	int _lootScanIdleTimer;
@@ -327,6 +331,7 @@
 @property NSSize maxSectionSize;
 @property (readwrite, assign) BOOL isBotting;
 @property (assign) BOOL isPvPing;
+@property (assign) BOOL pvpIsInBG;
 @property (retain) NSString *procedureInProgress;
 @property (retain) NSString *evaluationInProgress;
 
@@ -347,6 +352,8 @@
 @property (readwrite, assign) BOOL wasLootWindowOpen;
 @property (readonly, assign) BOOL includeCorpsesPatrol;
 
+@property BOOL waitForPvPQueue;
+
 - (void)testRule: (Rule*)rule;
 
 - (BOOL)performProcedureUnitCheck: (Unit*)target withState:(NSDictionary*)state;
@@ -364,7 +371,8 @@
 - (BOOL)evaluateConditionEnemies: (Condition*)condition;
 - (void)finishedRoute: (Route*)route;
 - (BOOL)evaluateSituation;
-- (BOOL)evaluateForPVP;
+- (BOOL)evaluateForPVPQueue;
+- (BOOL)evaluateForPVPBattleGround;
 - (BOOL)evaluateForGhost;
 - (BOOL)evaluateForParty;
 - (BOOL)evaluateForFollow;
@@ -377,11 +385,10 @@
 - (BOOL)evaluateForPatrol;
 
 // Party stuff
-- (BOOL)isOnAssist;
 - (BOOL)establishTankUnit;
+- (BOOL)establishAssistUnit;
 - (BOOL)isTank:(Unit*)unit;
 - (BOOL)leaderWait;
-- (void)followRouteClear;
 - (void)jumpIfAirMountOnGround;
 - (NSString*)randomEmote: (Unit*)emoteUnit;
 - (NSString*)emoteGeneral;
@@ -392,6 +399,7 @@
 - (void)followRouteClear;
 - (BOOL)followMountNow;
 - (BOOL)followMountCheck;
+- (Unit*)whisperCommandUnit:(ChatLogEntry*)entry;
 - (BOOL)whisperCommandAllowed: (ChatLogEntry*)entry;
 
 - (IBAction)startBot: (id)sender;
@@ -428,7 +436,7 @@
 - (void)logOut;
 
 - (void)logOutWithMessage:(NSString*)message;
-	
+
 // for new action/conditions
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
 

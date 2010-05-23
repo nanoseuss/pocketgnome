@@ -30,6 +30,10 @@ typedef enum CastError {
 	ErrYouAreMounted = 17,
 	ErrMorePowerfullSpellActive = 18,
 	ErrHaveNoTarget = 19,
+	ErrCantDoThatWhileStunned = 20,
+	ErrCantDoThatWhileSilenced = 21,
+	ErrCantDoThatWhileIncapacitated= 22,
+
 } CastError;
 
 #define INV_FULL			@"Inventory is full."
@@ -51,11 +55,10 @@ typedef enum CastError {
 #define CANT_ATTACK_TARGET	@"You cannot attack that target."
 #define HAVE_NO_TARGET		@"You have no target."
 #define MORE_POWERFUL_SPELL_ACTIVE	@"A more powerful spell is already active"
-
+#define CANT_DO_THAT_WHILE_STUNNED 	@"Can't do that while stunned"
+#define CANT_DO_THAT_WHILE_SILENCED 	@"Can't do that while silenced"
+#define CANT_DO_THAT_WHILE_INCAPACITATED 	@"Can't do that while incapacitated"
 
 //Must have a Fishing Pole equipped
-//Can't do that while silenced
-//Can't do that while stunned
 //Not enough mana
-//Can't do that while incapacitated
 //Not enough energy
