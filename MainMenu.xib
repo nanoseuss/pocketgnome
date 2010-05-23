@@ -12182,6 +12182,46 @@
 					</object>
 					<int key="connectionID">4704</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offsetController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="133192392"/>
+					</object>
+					<int key="connectionID">4705</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">nodeController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="275065446"/>
+					</object>
+					<int key="connectionID">4706</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">macroController</string>
+						<reference key="source" ref="201772977"/>
+						<reference key="destination" ref="305775892"/>
+					</object>
+					<int key="connectionID">4707</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">playerController</string>
+						<reference key="source" ref="531846807"/>
+						<reference key="destination" ref="1002180867"/>
+					</object>
+					<int key="connectionID">4708</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">botController</string>
+						<reference key="source" ref="963237447"/>
+						<reference key="destination" ref="94147614"/>
+					</object>
+					<int key="connectionID">4709</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -17947,7 +17987,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4704</int>
+			<int key="maxID">4709</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -18689,6 +18729,7 @@
 							<string>memoryViewController</string>
 							<string>nodeController</string>
 							<string>objectsController</string>
+							<string>offsetController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -18697,6 +18738,7 @@
 							<string>MemoryViewController</string>
 							<string>NodeController</string>
 							<string>ObjectsController</string>
+							<string>OffsetController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -19281,8 +19323,8 @@
 							<string>removeBehavior:</string>
 							<string>renameBehavior:</string>
 							<string>setBehaviorEvent:</string>
+							<string>showInFinder:</string>
 							<string>tableRowDoubleClicked:</string>
-							<string>updateOptions:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -19767,6 +19809,7 @@
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
+							<string>showInFinder:</string>
 							<string>startStopAutomator:</string>
 							<string>startingRouteClicked:</string>
 							<string>stopMovement:</string>
@@ -19776,6 +19819,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

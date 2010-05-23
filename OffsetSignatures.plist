@@ -2,6 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BagListOffset</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x55\x89\xE5\x8B\x4D\x08\x83\xF9\x0A\x77\x25\x83\xF9\x03\x7F\x10\x8B\x04\xCD\x60\x26\xD9\x00\x8B\x14\xCD\x64\x26\xD9\x00\xC9\xC3</string>
+			<key>Mask</key>
+			<string>xxxxxxxxxxxxxxxxxxx????xxx%%%%xx</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: sub_4D0B10</string>
+		</dict>
+	</dict>
 	<key>WallWalkAngle</key>
 	<dict>
 		<key>Intel</key>

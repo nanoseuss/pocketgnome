@@ -35,10 +35,12 @@
 @class BotController;
 @class MacroController;
 @class NodeController;
+@class OffsetController;
 
 @interface InventoryController : ObjectController {
     IBOutlet MemoryViewController       *memoryViewController;
-	IBOutlet ObjectsController              *objectsController;
+	IBOutlet ObjectsController          *objectsController;
+	IBOutlet OffsetController			*offsetController;
 	
 	// only used for mailing
 	IBOutlet BotController                  *botController;

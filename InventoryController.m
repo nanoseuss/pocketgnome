@@ -32,6 +32,7 @@
 #import "InventoryController.h"
 #import "Controller.h"
 #import "MemoryViewController.h"
+#import "OffsetController.h"
 
 #import "Offsets.h"
 
@@ -493,7 +494,7 @@ static InventoryController *sharedInventory = nil;
 	}
 	
 	// now for bags!
-	UInt32 bagListOffset = 0xD92660;
+	UInt32 bagListOffset = [offsetController offset:@"BagListOffset"];
 	MemoryAccess *memory = [controller wowMemoryAccess];
 	
 	if ( memory && [memory isValid] ){
