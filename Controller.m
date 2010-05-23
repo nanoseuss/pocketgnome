@@ -125,7 +125,8 @@ typedef enum {
 								   [NSNumber numberWithInt: 1],			@"MountType",
                                    
                                    nil];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey: @"SUFeedURL"];
+	[[NSUserDefaults standardUserDefaults] setObject: @"http://pg.savorydeviate.com/appcast.xml" forKey: @"SUFeedURL"];
+    //[[NSUserDefaults standardUserDefaults] removeObjectForKey: @"SUFeedURL"];
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
 }
@@ -1583,6 +1584,16 @@ typedef struct NameObjectStruct{
 }
 
 #pragma mark Sparkle - Auto Updater
+
+// Sent when a valid update is found by the update driver.		
+- (void)updater:(SUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {		
+	PGLog(@"[Update] didFindValidUpdate: %@", [update fileURL]);		
+}		
+	
+- (void)updater:(SUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {		
+	PGLog(@"[Update] willInstallUpdate: %@", [update fileURL]);		
+}
+
 
 - (BOOL)updater: (SUUpdater *)updater shouldPostponeRelaunchForUpdate: (SUAppcastItem *)update untilInvoking: (NSInvocation *)invocation {
 	

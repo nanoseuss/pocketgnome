@@ -1138,6 +1138,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				03981D8D112AEC860081835F /* Sparkle.framework */,
 				0393F412110A205800296CF8 /* libcrypto.dylib */,
 				0322D72E110744D500EF3EEF /* CoreData.framework */,
 				7D1B3A210F89860D005CA0CD /* ScriptingBridge.framework */,
@@ -1157,7 +1158,6 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				03981D8D112AEC860081835F /* Sparkle.framework */,
 				030604B61088140000C57D77 /* ShortcutRecorder.framework */,
 				7DBF31C50E94679500A592BD /* Growl.framework */,
 				7DB260D40DB30922007DB867 /* libz.1.2.3.dylib */,
