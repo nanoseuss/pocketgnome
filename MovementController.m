@@ -733,10 +733,10 @@ typedef enum MovementState{
 	// reset our timer
 	[self resetMovementTimer];
 
-//	if ( [playerData targetID] != [[botController followUnit] GUID]) {
-//		log(LOG_DEV, @"Targeting follow unit.");
-//		[playerData targetGuid:[[botController followUnit] GUID]];
-//	}
+	if ( [playerData targetID] != [[botController followUnit] GUID]) {
+		log(LOG_DEV, @"Targeting follow unit.");
+		[playerData targetGuid:[[botController followUnit] GUID]];
+	}
 
 	// Check to see if we need to mount or dismount
 	if ( [botController followMountCheck] ) {
@@ -751,6 +751,8 @@ typedef enum MovementState{
 
 	// find the closest waypoint in our route
 	self.destinationWaypoint = [self.currentRoute waypointClosestToPosition: [playerData position]];
+
+	log(LOG_WAYPOINT, @"Starting movement controller for follow with waypoint: %@", self.destinationWaypoint);
 
 	[self resumeMovement];
 }

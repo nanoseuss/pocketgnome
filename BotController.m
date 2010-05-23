@@ -264,17 +264,17 @@
 	_movingTowardNodeCount = 0;
 	_lootDismountCount = [[NSMutableDictionary dictionary] retain];
 	_mountLastAttempt = nil;
-//	_castingUnit	= [Unit retain];
-//	_followUnit	= [Unit retain];
-//	_assistUnit	= [Unit retain];
-//	_tankUnit = [Unit retain];
+	_castingUnit = [Unit retain];
+	_followUnit	= [Unit retain];
+	_assistUnit	= [Unit retain];
+	_tankUnit = [Unit retain];
 
-	_castingUnit = nil;
-	_followUnit	= nil;
-	_assistUnit	= nil;
-	_tankUnit = nil;
+//	_castingUnit = nil;
+//	_followUnit	= nil;
+//	_assistUnit	= nil;
+//	_tankUnit = nil;
 	
-	followRoute = [[Route route]  retain];
+	followRoute = [[Route route] retain];
 	_followingFlagCarrier = NO;
 	_followSuspended = NO;
 	_followLastSeenPosition = NO;
@@ -3806,18 +3806,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	Position *positionFollowUnit = [_followUnit position];
 	float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
-
-	log(LOG_DEV, @"Checking to see if the follow unit is out of range.");
 	
 	// If we're not out of range then let's reset the route
 	if ( distanceToFollowUnit <=  theCombatProfile.followDistanceToMove ) {
+		log(LOG_DEV, @"Follow unit is not out of range.");
 		if ( [followRoute waypointCount] ) [self followRouteClear];
 		return;
 	}
 
 	if ( theCombatProfile.followStopFollowingOOR && distanceToFollowUnit > theCombatProfile.followStopFollowingRange ) {
 		log(LOG_FOLLOW, @"Leader is out of range and stop following is enabled, disengaging follow.");
-		[_followUnit release]; _followUnit = nil;
+		 self.followUnit = nil;
 		[self followRouteClear];
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
@@ -3849,10 +3848,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_DEV, @"Need a new route!");
 		// No Route so start it
 		Waypoint *newWaypoint = [Waypoint waypointWithPosition: positionFollowUnit];
-		
+
 		[followRoute addWaypoint: newWaypoint];
-		
-		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, [followRoute waypointCount]);
+
+		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, [[followRoute waypoints] count] );
 
 	}
 	
@@ -3865,12 +3864,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !theCombatProfile.followEnabled ) return;
 
 	// If we can't see the follow unit then reset that too
-	if ( !self.pvpIsInBG && self.followUnit && ![_followUnit isValid] ) [_followUnit release]; _followUnit = nil;
+//	if ( !self.pvpIsInBG && _followUnit && _followUnit != nil && ![_followUnit isValid] ) [_followUnit release]; _followUnit = nil;
 
 	log(LOG_DEV, @"Clearing the follow route.");
 
 	_followLastSeenPosition = NO;
-	[followRoute removeAllWaypoints];
+	
+	[followRoute release];
+	followRoute = [[Route route] retain];
+//	[followRoute removeAllWaypoints];
 
 	log(LOG_DEV, @"[Follow] Route cleared with count: %d waypoints in array.", [followRoute waypointCount]);
 
@@ -4031,8 +4033,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				} else
 
 				if (distance < INFINITY) {
-					self.followUnit = [followTarget retain];
-					log(LOG_FOLLOW, @"Leader found: %@", followTarget);
+					_followUnit = (Unit*)followTarget;
+					log(LOG_FOLLOW, @"Leader found: %@", _followUnit);
 					[self followRouteRecord];
 					return YES;
 				}
@@ -4053,7 +4055,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			} else
 
 			if (distance < INFINITY) {
-				self.followUnit = [_tankUnit retain];
+				_followUnit = _tankUnit;
 				log(LOG_FOLLOW, @"Leader found (following tank): %@", _tankUnit);
 				[self followRouteRecord];
 				return YES;
@@ -4074,7 +4076,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			} else
 
 			if (distance < INFINITY) {
-				self.followUnit = [_assistUnit retain];
+				_followUnit = _assistUnit;
 				log(LOG_FOLLOW, @"Leader found (following assist): %@", _assistUnit);
 				[self followRouteRecord];
 				return YES;
@@ -4100,14 +4102,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					
 				if ( [playerController isFriendlyWithFaction: [player factionTemplate]] ) {
 					if ( theCombatProfile.followFriendlyFlagCarriers ) {
-						self.followUnit = [(Unit*)player retain];
+						self.followUnit = (Unit*)player;
 						log(LOG_FOLLOW, @"Leader found (following friendly flag carrier): %@", player);
 						_followingFlagCarrier = YES;
 						return YES;
 					}
 				} else {
 					if ( theCombatProfile.followEnemyFlagCarriers ) {
-						self.followUnit = [(Unit*)player retain];
+						self.followUnit = (Unit*)player;
 						log(LOG_FOLLOW, @"Leader found (following enemy flag carrier): %@", player);
 						_followingFlagCarrier = YES;
 						[self followRouteRecord];
@@ -4137,7 +4139,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [playerController isDead] ) return NO;
 
 	if ( !theCombatProfile.partyEnabled || !theCombatProfile.tankUnit || theCombatProfile.tankUnitGUID <= 0x0 ) {
-		if ( _tankUnit ) [_followUnit release]; _followUnit = nil;
+		if ( _tankUnit ) [_tankUnit release]; _tankUnit = nil;
 		return NO;
 	}
 
@@ -4645,7 +4647,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	if ( [playerController battlegroundStatus] == BGNone && [self pvpIsBattlegroundEnding] ) {
-		[movementController resetMovementState];
+//		[movementController resetMovementState];
 
 		log(LOG_DEV, @"Battleground is over, stalling evaluation.");
 		return YES;
@@ -4845,18 +4847,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 	}
 
+	// isValid causes a crash when the unit is no longer in the same zone!
+	// perhaps instead of using Unit for follow I should try using GUID hmm.
+
+	log(LOG_DEV, @"Checking to see if we're not following the primary follow unit.");
 	// If we're following the tank lets see if our primary follow unit is in range
-	if ( theCombatProfile.followUnit && theCombatProfile.followUnitGUID > 0x0 && _followUnit && [_followUnit cachedGUID] != theCombatProfile.followUnitGUID ) {
+	if ( theCombatProfile.followUnit && theCombatProfile.followUnitGUID > 0x0 && _followUnit && [_followUnit isValid] && [_followUnit cachedGUID] != theCombatProfile.followUnitGUID ) {
 		log(LOG_DEV, @"Following the tank unit, calling for findFollowUnit");
 		if ( ![self findFollowUnit] ) return NO;
 	}
 
 	// Find someone to follow if we've lost our target.
-	if ( !_followUnit ) {
+	if ( !self.followUnit ) {
 		log(LOG_DEV, @"No follow unit, calling for findFollowUnit");
 		if ( ![self findFollowUnit] ) return NO;
 	}
-
+	
 	// If we're doing something, lets record the route of our follow target
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Follow") {
 
@@ -4897,13 +4903,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 	}
 
-	log(LOG_DEV, @"Checking to make sure we've got a route");
 	// If we've recorded no route yet
 	if ( [followRoute waypointCount] == 0 ) {
+		log(LOG_DEV, @"No follow route yet, skipping follow.");
 		
 		if ( self.evaluationInProgress ) {
-//			[movementController resetMovementState];
-
+			[movementController resetMovementState];
 			self.evaluationInProgress = nil;
 			[self evaluateSituation];
 			return YES;
@@ -4913,8 +4918,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	float distanceToLeader = [[playerController position] distanceToPosition: [_followUnit position]];
-
 	if ( distanceToLeader <= theCombatProfile.followDistanceToMove ) {
+		log(LOG_DEV, @"Leader is not out of range.");
 		// If we're in range don't worry about it, make sure the route had been cleared
 		[self followRouteClear];
 		if ( self.evaluationInProgress ) {
@@ -4927,8 +4932,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return NO;
 		}
 	}
-	
-	
+
 	// If we're mounted and so is the leader we're going to use our mount speed to adjust this value.
 	// Following right on top of each other screws up zone changes when flying, this is meant to solve that
 	BOOL increasedDueToMount = NO;
@@ -4937,21 +4941,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( distanceToLeader <= theCombatProfile.followDistanceToMove && [[playerController player] isMounted] && [_followUnit isMounted] ) {
 		increasedDueToMount = YES;
 		distanceToLeader = distanceToLeader + distanceIncrease;
-	}
-	
-	if ( distanceToLeader <= theCombatProfile.followDistanceToMove ) {
-		// If we're in range don't worry about it, make sure the route had been cleared
-		[self followRouteClear];
-
-		if ( self.evaluationInProgress ) {
-			[movementController resetMovementState];
-
-			self.evaluationInProgress = nil;
-			[self evaluateSituation];
-			return YES;
-		} else {
-			return NO;
-		}
 	}
 
 	if ( increasedDueToMount ) {
@@ -4962,7 +4951,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	[controller setCurrentStatus: @"Bot: Following"];
 	self.evaluationInProgress = @"Follow";
-	[movementController resetMovementState];
+//	[movementController resetMovementState];
 
 	[movementController startFollow];
 	return YES;
@@ -6009,7 +5998,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		log(LOG_EVALUATE, @"Evaluating Situation");
 	}
-
+	
     if ( ![playerController playerIsValid:self] ) {
 		log(LOG_GENERAL, @"Player is invalid, waiting...");
 		[self performSelector: _cmd withObject: nil afterDelay: 1.0];
@@ -6075,6 +6064,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( [self evaluateForCombatStart] ) return YES;
 
+	
 	// Just in case we end up AFK
 	if ( [antiAFKButton state] ) {
 		// Catch all just in case
@@ -6513,10 +6503,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			return;
 		}
 	}*/
-	
-	
-	// Testing
-//	return;
 
 	// TO DO: verify starting routes for ALL PvP routes
 
@@ -6566,10 +6552,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_movingTowardMobCount = 0;
 	
 	// Party resets
-	[self followRouteClear];
-	if ( _followUnit ) [_followUnit release]; _followUnit = nil;
-	if ( _tankUnit ) [_tankUnit release]; _tankUnit = nil;
-	if ( _assistUnit ) [_assistUnit release]; _assistUnit = nil;
+//	[self followRouteClear];
+	[followRoute release];
+	followRoute = [[Route route] retain];
+	_followUnit = nil;
+	_tankUnit = nil;
+	_assistUnit = nil;
 
 	// friendly shit
 	_includeFriendly = [self includeFriendlyInCombat];
@@ -6582,6 +6570,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	_waitForPvPQueue = NO;
 	_waitForPvPPreparation = NO;
+	_isPvpMonitoring = NO;
 
 	// reset statistics
 	[statisticsController resetQuestMobCount];
@@ -6700,9 +6689,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Party resets
 	[self followRouteClear];
-	if ( _followUnit ) [_followUnit release]; _followUnit = nil;
-	if ( _tankUnit ) [_tankUnit release]; _tankUnit = nil;
-	if ( _assistUnit ) [_assistUnit release]; _assistUnit = nil;
+	_followUnit = nil;
+	_tankUnit = nil;
+	_assistUnit = nil;
 //	followRoute = [[Route route]  retain];
 	followRoute = nil;
 	_followingFlagCarrier = NO;
@@ -6943,7 +6932,7 @@ NSMutableDictionary *_diffDict = nil;
 
 	if ( [self pvpIsBattlegroundEnding] ) {
 		log(LOG_PVP, @"Battleground is over, Resetting!");
-		
+	
 		// PvP Resets
 		[self cancelCurrentProcedure];
 		[combatController resetAllCombat];
@@ -6987,7 +6976,8 @@ NSMutableDictionary *_diffDict = nil;
 		log(LOG_PVP, @"Starting monitor.");
 		_isPvpMonitoring = YES;
 	}
-	[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+
+	[self performSelector: @selector(pvpMonitor) withObject: nil afterDelay: 0.3f];
 }
 
 - (void)eventBattlegroundStatusChange: (NSNotification*)notification {
@@ -7355,7 +7345,7 @@ NSMutableDictionary *_diffDict = nil;
 - (BOOL)pvpIsBattlegroundEnding {
 
 	// If we're not in a zone
-	if ( ![playerController isInBG:[playerController zone]] ) return NO;
+//	if ( ![playerController isInBG:[playerController zone]] ) return NO;
 
 	// Check this so we don't fail if we're entering a BG
 //	if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ) return NO;
