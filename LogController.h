@@ -47,6 +47,8 @@
 #define LOG_BINDINGS				"Bindings"
 #define LOG_FOLLOW					"Follow"
 #define LOG_ITEM					"Item"
+#define LOG_PROFILE					"Profile"
+#define LOG_FILEMANAGER				"FileManager"
 
 @interface LogController : NSObject {
 		

@@ -29,7 +29,7 @@
 // types of files we're saving
 #import "RouteCollection.h"
 #import "CombatProfile.h"
-//#import "MailActionProfile.h"
+#import "MailActionProfile.h"
 #import "Behavior.h"
 #import "PvPBehavior.h"
 #import "RouteSet.h"
@@ -138,6 +138,8 @@ static FileController *_sharedFileController = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSString *filePath = [self pathWithFilename:filename];
 	
+	log(LOG_FILEMANAGER, @"deleting %@", filePath);
+	
 	if ( [fileManager fileExistsAtPath: filePath] ){
 		NSError *error = nil;
 		if ( ![fileManager removeItemAtPath:filePath error:&error] ){
@@ -192,6 +194,7 @@ static FileController *_sharedFileController = nil;
 	
 	PGLog(@"[FileManager] Saving %@ to %@", obj, filePath);
 	[NSKeyedArchiver archiveRootObject: obj toFile: filePath];
+	[obj setChanged:NO];
 	return YES;	
 }
 
@@ -271,9 +274,9 @@ static FileController *_sharedFileController = nil;
 	else if ( class == [PvPBehavior class] ){
 		return @"pvpbehavior";
 	}
-	/*else if ( class == [MailActionProfile class] ){
+	else if ( class == [MailActionProfile class] ){
 		return @"mailprofile";
-	}*/
+	}
 	
 	return nil;
 }
@@ -305,13 +308,13 @@ static FileController *_sharedFileController = nil;
 
 #pragma mark UI Options (optional)
 
-- (IBAction)showInFinder: (id)sender {
+- (void)showInFinder: (id)object{
 	
-	/*NSString *filePath = [NSString stringWithFormat:@"%@/", [self pathForObjectName:nil withExtension:NO]];
+	NSString *filePath = [self applicationSupportFolder];
 	
 	// show in finder!
 	NSWorkspace *ws = [NSWorkspace sharedWorkspace];
-	[ws openFile: filePath];*/
+	[ws openFile: filePath];
 }
 
 @end

@@ -22,9 +22,9 @@
 #import "CorpseController.h"
 #import "OffsetController.h"
 #import "StatisticsController.h"
-#import "CombatProfileEditor.h"
 #import "ObjectsController.h"
 #import "PvPController.h"
+#import "ProfileController.h"
 
 #import "CGSPrivate.h"
 
@@ -285,30 +285,19 @@ static Controller* sharedController = nil;
         [mainToolbar setSelectedItemIdentifier: [behavsToolbarItem itemIdentifier]];
         return YES;
     }
-	else if ( [[filename pathExtension] isEqualToString: @"combatprofile"] || [[filename pathExtension] isEqualToString: @"combatProfile"] ) {
-        id combatProfile = [combatProfileEditor importCombatProfileAtPath: filename];
-		
-		if ( combatProfile ){
-			[self toolbarItemSelected: botToolbarItem];
-			[mainToolbar setSelectedItemIdentifier: [botToolbarItem itemIdentifier]];
-			
-			[[CombatProfileEditor sharedEditor] showEditorOnWindow: [[botController view] window] 
-												   forProfileNamed: [(CombatProfile*)combatProfile name]];
-		}
-        return YES;
-    }
 	else if ( [[filename pathExtension] isEqualToString: @"pvpbehavior"] ) {
         [pvpController importBehaviorAtPath: filename];
         [self toolbarItemSelected: pvpToolbarItem];
         [mainToolbar setSelectedItemIdentifier: [pvpToolbarItem itemIdentifier]];
         return YES;
     }
-	/*else if ( [[filename pathExtension] isEqualToString: @"mailprofile"] ) {
-	        [routeController importProfileAtPath: filename];
-	        [self toolbarItemSelected: routesToolbarItem];
-	        [mainToolbar setSelectedItemIdentifier: [routesToolbarItem itemIdentifier]];
+	// mail action profile or combat profile
+	else if ( [[filename pathExtension] isEqualToString: @"mailprofile"] || [[filename pathExtension] isEqualToString: @"combatprofile"] || [[filename pathExtension] isEqualToString: @"combatProfile"] ) {
+	        [self toolbarItemSelected: profilesToolbarItem];
+	        [mainToolbar setSelectedItemIdentifier: [profilesToolbarItem itemIdentifier]];
+			[profileController importProfileAtPath: filename];
 	        return YES;
-    }*/
+    }
     
     return NO;
 }
@@ -806,9 +795,11 @@ typedef struct NameObjectStruct{
         minSize = [pvpController minSectionSize];
         maxSize = [pvpController maxSectionSize];
 	}
-	// profiles
 	if ( [sender tag] == 17 ) {
-		
+		newView = [profileController view];
+		addToTitle = [profileController sectionTitle];
+        minSize = [profileController minSectionSize];
+        maxSize = [profileController maxSectionSize];
 	}
 	
     if(newView) {
@@ -1538,6 +1529,7 @@ typedef struct NameObjectStruct{
 			[pvpToolbarItem itemIdentifier],
             [routesToolbarItem itemIdentifier], 
             [behavsToolbarItem itemIdentifier],
+			[profilesToolbarItem itemIdentifier],
             NSToolbarFlexibleSpaceItemIdentifier,
 			[statisticsToolbarItem itemIdentifier],
             [memoryToolbarItem itemIdentifier],
@@ -1558,7 +1550,8 @@ typedef struct NameObjectStruct{
             [chatLogToolbarItem itemIdentifier], 
 			[statisticsToolbarItem itemIdentifier],
 			[objectsToolbarItem itemIdentifier],
-			[pvpToolbarItem itemIdentifier], nil];
+			[pvpToolbarItem itemIdentifier], 
+			[profilesToolbarItem itemIdentifier], nil];
 }
 
 #pragma mark -
@@ -2060,6 +2053,12 @@ AEDisposeDesc(&targetProcess);
 	}
 
 	return 0.0f;
+}
+
+- (void)selectCombatProfileTab{
+	[self toolbarItemSelected: profilesToolbarItem];
+	[mainToolbar setSelectedItemIdentifier: [profilesToolbarItem itemIdentifier]];
+	[profileController openEditor:TabCombat];
 }
 
 @end

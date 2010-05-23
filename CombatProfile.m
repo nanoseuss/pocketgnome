@@ -79,6 +79,54 @@
 		self.engageRange = 30.0f;
         self.attackLevelMin = 2;
         self.attackLevelMax = PLAYER_LEVEL_CAP;
+		
+		_observers = [[NSArray arrayWithObjects:
+					   @"combatEnabled",
+					   @"onlyRespond",
+					   @"attackNeutralNPCs",
+					   @"attackHostileNPCs",
+					   @"attackPlayers",
+					   @"attackPets",
+					   @"attackAnyLevel",
+					   @"ignoreElite",
+					   @"ignoreLevelOne",
+					   @"ignoreFlying",
+					   @"assistUnit",
+					   @"assistUnitGUID",
+					   @"tankUnit",
+					   @"tankUnitGUID",
+					   @"followUnit",
+					   @"followUnitGUID",
+					   @"partyEnabled",
+					   @"followDistanceToMove",
+					   @"yardsBehindTargetStart",
+					   @"yardsBehindTargetStop",
+					   @"ignoreFlying",
+					   @"healingEnabled",
+					   @"autoFollowTarget",
+					   @"healingRange",
+					   @"mountEnabled",
+					   @"disableRelease",
+					   @"engageRange",
+					   @"attackRange",
+					   @"attackLevelMin",
+					   @"attackLevelMax",
+					   @"partyDoNotInitiate",
+					   @"partyIgnoreOtherFriendlies",
+					   @"partyEmotes",
+					   @"partyEmotesIdleTime",
+					   @"partyEmotesInterval",
+					   @"followEnabled",
+					   @"followStopFollowingOOR",
+					   @"followStopFollowingRange",
+					   @"resurrectWithSpiritHealer",
+					   @"checkForCampers",
+					   @"checkForCampersRange",
+					   @"avoidMobsWhenResurrecting",
+					   @"moveToCorpseRange",
+					   @"partyLeaderWait",
+					   @"partyLeaderWaitRange",
+					   nil] retain];
     }
     return self;
 }
@@ -390,6 +438,7 @@
     } else {
         _combatEntries = nil;
     }
+	self.changed = YES;
     [self didChangeValueForKey: @"entries"];
 }
 
@@ -404,18 +453,23 @@
 }
 
 - (void)addEntry: (IgnoreEntry*)entry {
-    if(entry != nil)
+    if(entry != nil){
         [_combatEntries addObject: entry];
+		self.changed = YES;
+	}
 }
 
 - (void)removeEntry: (IgnoreEntry*)entry {
     if(entry == nil) return;
     [_combatEntries removeObject: entry];
+	self.changed = YES;
 }
 
 - (void)removeEntryAtIndex: (unsigned)index; {
-    if(index >= 0 && index < [self entryCount])
+    if(index >= 0 && index < [self entryCount]){
         [_combatEntries removeObjectAtIndex: index];
+		self.changed = YES;
+	}
 }
 
 @end

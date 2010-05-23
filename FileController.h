@@ -55,4 +55,6 @@
 // old method
 - (NSArray*)dataForKey: (NSString*)key withClass:(Class)class;
 
+// just show an object in the finder
+- (void)showInFinder: (id)object;
 @end

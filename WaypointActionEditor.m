@@ -13,6 +13,7 @@
 #import "Spell.h"
 #import "RouteCollection.h"
 #import "RouteSet.h"
+#import "MailActionProfile.h"
 
 #import "Action.h"
 #import "Condition.h"
@@ -53,7 +54,7 @@
 #import "SpellController.h"
 #import "InventoryController.h"
 #import "MacroController.h"
-#import "CombatProfileEditor.h"
+#import "ProfileController.h"
 #import "MobController.h"
 #import "NodeController.h"
 
@@ -143,9 +144,9 @@ static WaypointActionEditor *sharedEditor = nil;
 	else if ( type == ActionType_Jump)				newAction = [[[JumpActionController alloc] init] autorelease];
 	else if ( type == ActionType_QuestTurnIn)		newAction = [[[QuestTurnInActionController alloc] init] autorelease];
 	else if ( type == ActionType_QuestGrab)			newAction = [[[QuestGrabActionController alloc] init] autorelease];
-	else if ( type == ActionType_CombatProfile)		newAction = [CombatProfileActionController combatProfileActionControllerWithProfiles:[combatProfileEditor combatProfiles]];
+	else if ( type == ActionType_CombatProfile)		newAction = [CombatProfileActionController combatProfileActionControllerWithProfiles:[profileController combatProfiles]];
 	else if ( type == ActionType_Vendor)			newAction = [[[VendorActionController alloc] init] autorelease];
-	else if ( type == ActionType_Mail)				newAction = [[[MailActionController alloc] init] autorelease];
+	else if ( type == ActionType_Mail)				newAction = [MailActionController mailActionControllerWithProfiles:[profileController profilesOfClass:[MailActionProfile class]]];
 	else if ( type == ActionType_ReverseRoute)		newAction = [[[ReverseRouteActionController alloc] init] autorelease];
 	else if ( type == ActionType_InteractNPC){
 		NSArray *nearbyMobs = [mobController mobsWithinDistance:8.0f levelRange:NSMakeRange(0,255) includeElite:YES includeFriendly:YES includeNeutral:YES includeHostile:NO];				

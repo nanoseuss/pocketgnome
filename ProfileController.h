@@ -28,13 +28,44 @@
 #define ProfilesLoaded @"ProfilesLoaded"
 
 @class FileController;
+@class Controller;
+@class PlayersController;
+@class MobController;
+
 @class Profile;
+@class CombatProfile;
+@class MailActionProfile;
+
+typedef enum SelectedTab{
+	TabCombat = 1,
+	TabMail = 2,
+	TabTotal,
+} SelectedTab;
 
 @interface ProfileController : NSObject {
-	IBOutlet FileController *fileController;
+	IBOutlet FileController		*fileController;
+	IBOutlet Controller			*controller;
+	IBOutlet PlayersController	*playersController;
+	IBOutlet MobController		*mobController;
+	
+	IBOutlet NSPopUpButton		*profileTypePopUp;
+	IBOutlet NSTabView			*profileTabView;
+	IBOutlet NSOutlineView		*profileOutlineView;
+	IBOutlet NSTextField		*profileTitle;
+	
+	// combat profile only
+	IBOutlet NSPopUpButton		*assistPopUpButton;
+	IBOutlet NSPopUpButton		*tankPopUpButton;
+	IBOutlet NSPopUpButton		*followPopUpButton;
+	IBOutlet NSTableView		*ignoreTable;
 	
 	IBOutlet NSView *view;
 	NSSize minSectionSize, maxSectionSize;
+	
+	CombatProfile		*_currentCombatProfile;
+	MailActionProfile	*_currentMailActionProfile;
+	
+	SelectedTab _selectedTab;
 	
 	NSMutableArray *_profiles;
 }
@@ -44,11 +75,35 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 
+@property (readwrite, retain) CombatProfile *currentCombatProfile;
+@property (readwrite, retain) MailActionProfile *currentMailActionProfile;
+
+- (void)importProfileAtPath: (NSString*)path;
+
+// profile actions
+- (IBAction)createProfile: (id)sender;
+- (IBAction)renameProfile: (id)sender;
+- (IBAction)duplicateProfile: (id)sender;
+- (IBAction)importProfile: (id)sender;
+- (IBAction)exportProfile: (id)sender;
+- (IBAction)deleteProfile: (id)sender;
+- (IBAction)showInFinder: (id)sender;
+
+// combat profile only
+- (IBAction)addIgnoreEntry: (id)sender;
+- (IBAction)addIgnoreFromTarget: (id)sender;
+- (IBAction)deleteIgnoreEntry: (id)sender;
+
 - (NSArray*)profilesOfClass:(Class)objectClass;
 
 - (void)addProfile:(Profile*)profile;
-- (BOOL)deleteProfile:(Profile*)profile;
+- (BOOL)removeProfile:(Profile*)profile;
 
 - (Profile*)profileForUUID:(NSString*)uuid;
+
+// for bindings
+- (NSArray*)combatProfiles;
+
+- (void)openEditor:(SelectedTab)tab;
 
 @end

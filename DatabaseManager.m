@@ -62,7 +62,7 @@ typedef struct ClientDb {
 	
 } ClientDb;
 
-// huge thanks to Apoc! Code below frm him
+// huge thanks to Apoc! Code below from him
 - (BOOL)unPackRow:(UInt32)addressOfStruct withStruct:(void*)obj withStructSize:(size_t)structSize{
 	
 	//NSLog(@"Obj address3: 0x%X", obj);

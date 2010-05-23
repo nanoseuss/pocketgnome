@@ -10,13 +10,15 @@
 #import "SaveData.h"
 
 @class WaypointController;
+@class FileController;
 
 @class PvPBehavior;
 @class RouteSet;
 
-@interface PvPController : SaveData {
+@interface PvPController : NSObject {
 	
 	IBOutlet WaypointController *waypointController;
+	IBOutlet FileController		*fileController;
 	
 	IBOutlet NSPanel *renamePanel;
 	IBOutlet NSView *view;
@@ -26,6 +28,8 @@
 	PvPBehavior *_currentBehavior;
 	
 	NSString *_nameBeforeRename;
+	
+	NSMutableArray *_behaviors;
 }
 
 @property (readonly) NSView *view;
@@ -46,6 +50,9 @@
 - (IBAction)deleteBehavior: (id)sender;
 - (IBAction)importBehavior: (id)sender;
 - (IBAction)exportBehavior: (id)sender;
+
+- (IBAction)showInFinder: (id)sender;
+- (IBAction)saveAllObjects: (id)sender;
 
 - (IBAction)test: (id)sender;
 

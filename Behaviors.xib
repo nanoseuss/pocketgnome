@@ -2,13 +2,13 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10C540</string>
-		<string key="IBDocument.InterfaceBuilderVersion">740</string>
-		<string key="IBDocument.AppKitVersion">1038.25</string>
-		<string key="IBDocument.HIToolboxVersion">458.00</string>
+		<string key="IBDocument.SystemVersion">10D2094</string>
+		<string key="IBDocument.InterfaceBuilderVersion">762</string>
+		<string key="IBDocument.AppKitVersion">1038.29</string>
+		<string key="IBDocument.HIToolboxVersion">460.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">740</string>
+			<string key="NS.object.0">762</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1985,30 +1985,6 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 					<int key="connectionID">280</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">updateOptions:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="387755143"/>
-					</object>
-					<int key="connectionID">281</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">updateOptions:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="448834113"/>
-					</object>
-					<int key="connectionID">282</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeExportPanel:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="378193013"/>
-					</object>
-					<int key="connectionID">303</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">contentArray: behaviors</string>
 						<reference key="source" ref="888005919"/>
@@ -2079,22 +2055,6 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 						</object>
 					</object>
 					<int key="connectionID">314</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">exportBehaviors:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="881384662"/>
-					</object>
-					<int key="connectionID">316</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">exportPanel</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="568285534"/>
-					</object>
-					<int key="connectionID">317</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -3038,7 +2998,7 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{381, 129}, {749, 477}}</string>
+					<string>{{418, 419}, {749, 477}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{353, 328}, {625, 477}}</string>
@@ -3227,6 +3187,14 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">FileController</string>
+					<string key="superclassName">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">FileController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
 					<reference key="sourceIdentifier" ref="185197107"/>
 				</object>
@@ -3260,7 +3228,7 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ProcedureController</string>
-					<string key="superclassName">SaveData</string>
+					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -3276,8 +3244,8 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 							<string>removeBehavior:</string>
 							<string>renameBehavior:</string>
 							<string>setBehaviorEvent:</string>
+							<string>showInFinder:</string>
 							<string>tableRowDoubleClicked:</string>
-							<string>updateOptions:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3302,6 +3270,7 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>actionMenu</string>
 							<string>combatPriorityTextField</string>
+							<string>fileController</string>
 							<string>itemController</string>
 							<string>procedureEventSegment</string>
 							<string>renamePanel</string>
@@ -3314,6 +3283,7 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
 							<string>NSTextField</string>
+							<string>FileController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSPanel</string>
@@ -3326,18 +3296,6 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">ProcedureController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SaveData</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">showInFinder:</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">SaveData.h</string>
 					</object>
 				</object>
 			</object>
@@ -3763,6 +3721,20 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Sparkle.framework/Headers/SUAppcast.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBFrameworkSource</string>
+						<string key="minorKey">Sparkle.framework/Headers/SUUpdater.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">NSObjectController</string>
 					<string key="superclassName">NSController</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -3926,6 +3898,7 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
+		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
@@ -3941,5 +3914,28 @@ a2V0IEdub21lIG1heSBwYXVzZSByZXBlYXRlZGx5IGFzIHlvdSBwYXRyb2wuA</string>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<string key="IBDocument.LastKnownRelativeProjectPath">Pocket Gnome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
+		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
+			<bool key="EncodedWithXMLCoder">YES</bool>
+			<object class="NSArray" key="dict.sortedKeys">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>NSActionTemplate</string>
+				<string>NSAddTemplate</string>
+				<string>NSListViewTemplate</string>
+				<string>NSMenuCheckmark</string>
+				<string>NSMenuMixedState</string>
+				<string>NSRemoveTemplate</string>
+				<string>NSSwitch</string>
+			</object>
+			<object class="NSMutableArray" key="dict.values">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+				<string>{15, 15}</string>
+				<string>{8, 8}</string>
+				<string>{11, 10}</string>
+				<string>{9, 8}</string>
+				<string>{7, 2}</string>
+				<string>{8, 8}</string>
+				<string>{15, 15}</string>
+			</object>
+		</object>
 	</data>
 </archive>

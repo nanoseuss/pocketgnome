@@ -7,9 +7,11 @@
 //
 
 #import "PvPController.h"
-#import "SaveData.h"
+#import "FileController.h"
 #import "PvPBehavior.h"
 #import "Battleground.h"
+
+#import "FileObject.h"
 
 #import "RouteCollection.h"
 
@@ -21,7 +23,6 @@
 
 @interface PvPController (internal)
 - (void)validateBindings;
-- (void)saveBehaviors;
 - (void)loadCorrectRouteCollection: (Battleground*)bg;
 @end
 
@@ -31,11 +32,19 @@
     self = [super init];
     if ( self != nil ){
 		
+		_behaviors = [[NSMutableArray array] retain];
+		
 		_currentBehavior = nil;
 		
 		_nameBeforeRename = nil;
 		
-		log(LOG_GENERAL, @"[PvP] Loaded %d objects", [self.behaviors count] );
+		if ( fileController == nil ){
+			fileController = [[FileController sharedFileController] retain];
+		}
+		
+		// get behaviors
+		NSArray *pvpBehaviors = [fileController getObjectsWithClass:[PvPBehavior class]];
+		[_behaviors addObjectsFromArray:pvpBehaviors];
 		
 		[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
 		
@@ -66,30 +75,25 @@
 @synthesize minSectionSize;
 @synthesize maxSectionSize;
 @synthesize currentBehavior = _currentBehavior;
-@synthesize behaviors = _objects;
+@synthesize behaviors = _behaviors;
 
 - (NSString*)sectionTitle {
     return @"PvP";
 }
 
 - (void)applicationWillTerminate: (NSNotification*)notification {
-    [self saveBehaviors];
+	
+	NSMutableArray *objectsToSave = [NSMutableArray array];
+	for ( FileObject *obj in _behaviors ){
+		if ( [obj changed] ){
+			[objectsToSave addObject:obj];
+		}
+	}
+	
+    [fileController saveObjects:objectsToSave];
 }
 
 #pragma mark -
-
-// save all of our behaviors!
-- (void)saveBehaviors{
-	for ( PvPBehavior *behavior in self.behaviors ){
-		if ( behavior.changed ){
-			log(LOG_GENERAL, @"SAVING %@", behavior);
-			[self saveObject:behavior];
-		}
-		else{
-			log(LOG_GENERAL, @"NOT SAVING %@", behavior);
-		}
-	}
-}
 
 - (void)setCurrentBehavior: (PvPBehavior*)behavior {
     
@@ -105,8 +109,6 @@
 	
 	//[self willChangeValueForKey: @"currentBehavior"];
     //[self didChangeValueForKey: @"currentBehavior"];
-	
-	log(LOG_GENERAL, @"validateBindings");
 	
 	// assign default routes so it's not "No Value"
 	if ( self.currentBehavior.AlteracValley.routeCollection == nil )
@@ -178,16 +180,15 @@
     // save this route into our array
     [self willChangeValueForKey: @"behaviors"];
 	[self willChangeValueForKey: @"validBehavior"];
-    [_objects addObject: behavior];
+    [_behaviors addObject: behavior];
     [self didChangeValueForKey: @"behaviors"];
 	[self didChangeValueForKey: @"validBehavior"];
 	
-    // update the current procedure
-    //[self saveBehaviors];
-    [self setCurrentBehavior: behavior];
+	// save this behavior
+	[fileController saveObject:behavior];
 	
-	// we will want to save this later!
-	[self currentBehavior].changed = YES;
+    // update the current procedure
+    [self setCurrentBehavior: behavior];
 	
 	[self validateBindings];
 	
@@ -230,7 +231,11 @@
 	
 	// did the name change?
 	if ( ![_nameBeforeRename isEqualToString:[[self currentBehavior] name]] ){
-		[self deleteObjectWithName:_nameBeforeRename];
+		// delete the old object
+		[fileController deleteObjectWithFilename:[NSString stringWithFormat:@"%@.pvpbehavior", _nameBeforeRename]];
+		
+		// save the new one
+		[fileController saveObject:[self currentBehavior]];
 	}
 }
 
@@ -247,11 +252,11 @@
         if ( ret == NSAlertDefaultReturn ){
             [self willChangeValueForKey: @"behaviors"];
 			
-			// remove from list
-			[self.behaviors removeObject: [self currentBehavior]];
+			// delete the object
+			[fileController deleteObject:[self currentBehavior]];
 			
-			// delete from our file system
-			[self deleteObject:[self currentBehavior]];
+			// remove from list
+			[_behaviors removeObject: [self currentBehavior]];
             
 			// select a new one
             if ( [self.behaviors count] )
@@ -262,6 +267,14 @@
             [self didChangeValueForKey: @"behaviors"];
         }
     }
+}
+
+- (IBAction)showInFinder: (id)sender{
+	[fileController showInFinder:[self currentBehavior]];
+}
+
+- (IBAction)saveAllObjects: (id)sender{
+	[fileController saveObjects:_behaviors];
 }
 
 - (void)importBehaviorAtPath: (NSString*)path{
@@ -335,18 +348,6 @@
 			//saveObject
 		}
 	}
-}
-
-
-#pragma mark SaveData
-
-// for saving
-- (NSString*)objectExtension{
-	return @"pvpbehavior";
-}
-
-- (NSString*)objectName:(id)object{
-	return [(PvPBehavior*)object name];
 }
 
 @end

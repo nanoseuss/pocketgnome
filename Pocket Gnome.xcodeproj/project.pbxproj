@@ -58,6 +58,7 @@
 		0350738910CDBA640004636E /* SpellCooldownConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0350738810CDBA640004636E /* SpellCooldownConditionController.m */; };
 		0352F46611376DA5005B28D6 /* PVP.png in Resources */ = {isa = PBXBuildFile; fileRef = 0352F46511376DA5005B28D6 /* PVP.png */; };
 		03567AAD10DDAB52001ACE43 /* CombatController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03567AAC10DDAB52001ACE43 /* CombatController.m */; };
+		0362CDDE11A99CED00EA65B2 /* CombatProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 0362CDDD11A99CED00EA65B2 /* CombatProfile.m */; };
 		03685DC6110266FC001CE552 /* DelayAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685DC5110266FC001CE552 /* DelayAction.xib */; };
 		03685DDA11026831001CE552 /* JumpAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685DD911026831001CE552 /* JumpAction.xib */; };
 		03685FA81103D73B001CE552 /* QuestGrabAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03685FA61103D73B001CE552 /* QuestGrabAction.xib */; };
@@ -99,7 +100,6 @@
 		03CEF7880FCCD93100B47336 /* Corpse.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7850FCCD93100B47336 /* Corpse.m */; };
 		03CEF7890FCCD93100B47336 /* CorpseController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03CEF7870FCCD93100B47336 /* CorpseController.m */; };
 		03D65A591090EC0D00537E9C /* OffsetSignatures.plist in Resources */ = {isa = PBXBuildFile; fileRef = 03D65A581090EC0D00537E9C /* OffsetSignatures.plist */; };
-		03E1D73B110F54BE003180E4 /* SaveData.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E1D73A110F54BE003180E4 /* SaveData.m */; };
 		03E1D7B8110F62CD003180E4 /* FileObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 03E1D7B7110F62CD003180E4 /* FileObject.m */; };
 		03FFD45B110B922D0046AEDF /* MobsKilledCondition.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */; };
 		03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03FFD46D110B930F0046AEDF /* MobsKilledConditionController.m */; };
@@ -347,9 +347,7 @@
 		7DD8910B0F2BE875007E9FE4 /* DeathKnight.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */; };
 		7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */ = {isa = PBXBuildFile; fileRef = 7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */; };
 		7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */; };
-		7DE53DD80E32B48500C59033 /* CombatProfile.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE53DD70E32B48500C59033 /* CombatProfile.m */; };
 		7DE53DDB0E32B84C00C59033 /* IgnoreEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */; };
-		7DE53E6B0E32BEDD00C59033 /* CombatProfileEditor.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE53E6A0E32BEDD00C59033 /* CombatProfileEditor.m */; };
 		7DE53E6D0E32BF4A00C59033 /* CombatProfile.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */; };
 		7DE59CE00E09CABB003C6559 /* NSString+URLEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE59CDF0E09CABB003C6559 /* NSString+URLEncode.m */; };
 		7DE983820E2B2BA800F41293 /* NSString+Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE983810E2B2BA800F41293 /* NSString+Extras.m */; };
@@ -478,6 +476,8 @@
 		0352F46511376DA5005B28D6 /* PVP.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = PVP.png; sourceTree = "<group>"; };
 		03567AAB10DDAB52001ACE43 /* CombatController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatController.h; sourceTree = "<group>"; };
 		03567AAC10DDAB52001ACE43 /* CombatController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatController.m; sourceTree = "<group>"; };
+		0362CDDC11A99CED00EA65B2 /* CombatProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatProfile.h; sourceTree = "<group>"; };
+		0362CDDD11A99CED00EA65B2 /* CombatProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatProfile.m; sourceTree = "<group>"; };
 		03685DC5110266FC001CE552 /* DelayAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DelayAction.xib; sourceTree = "<group>"; };
 		03685DD911026831001CE552 /* JumpAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = JumpAction.xib; sourceTree = "<group>"; };
 		03685FA61103D73B001CE552 /* QuestGrabAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = QuestGrabAction.xib; sourceTree = "<group>"; };
@@ -538,8 +538,6 @@
 		03CEF7860FCCD93100B47336 /* CorpseController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CorpseController.h; sourceTree = "<group>"; };
 		03CEF7870FCCD93100B47336 /* CorpseController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CorpseController.m; sourceTree = "<group>"; };
 		03D65A581090EC0D00537E9C /* OffsetSignatures.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = OffsetSignatures.plist; sourceTree = "<group>"; };
-		03E1D739110F54BE003180E4 /* SaveData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveData.h; sourceTree = "<group>"; };
-		03E1D73A110F54BE003180E4 /* SaveData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SaveData.m; sourceTree = "<group>"; };
 		03E1D7B6110F62CD003180E4 /* FileObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileObject.h; sourceTree = "<group>"; };
 		03E1D7B7110F62CD003180E4 /* FileObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileObject.m; sourceTree = "<group>"; };
 		03FFD45A110B922D0046AEDF /* MobsKilledCondition.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MobsKilledCondition.xib; sourceTree = "<group>"; };
@@ -884,12 +882,8 @@
 		7DD8910A0F2BE875007E9FE4 /* DeathKnight.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DeathKnight.png; sourceTree = "<group>"; };
 		7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = DeathKnight_Small.gif; sourceTree = "<group>"; };
 		7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = InteractWithTarget.png; sourceTree = "<group>"; };
-		7DE53DD60E32B48500C59033 /* CombatProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatProfile.h; sourceTree = "<group>"; };
-		7DE53DD70E32B48500C59033 /* CombatProfile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatProfile.m; sourceTree = "<group>"; };
 		7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IgnoreEntry.h; sourceTree = "<group>"; };
 		7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IgnoreEntry.m; sourceTree = "<group>"; };
-		7DE53E690E32BEDD00C59033 /* CombatProfileEditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CombatProfileEditor.h; sourceTree = "<group>"; };
-		7DE53E6A0E32BEDD00C59033 /* CombatProfileEditor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CombatProfileEditor.m; sourceTree = "<group>"; };
 		7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CombatProfile.xib; sourceTree = "<group>"; };
 		7DE59CDE0E09CABB003C6559 /* NSString+URLEncode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+URLEncode.h"; sourceTree = "<group>"; };
 		7DE59CDF0E09CABB003C6559 /* NSString+URLEncode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+URLEncode.m"; sourceTree = "<group>"; };
@@ -1047,8 +1041,6 @@
 		03BE9607118282E4004DBFBF /* File Management */ = {
 			isa = PBXGroup;
 			children = (
-				03E1D739110F54BE003180E4 /* SaveData.h */,
-				03E1D73A110F54BE003180E4 /* SaveData.m */,
 				03E1D7B6110F62CD003180E4 /* FileObject.h */,
 				03E1D7B7110F62CD003180E4 /* FileObject.m */,
 				03BE961811828343004DBFBF /* FileController.h */,
@@ -1060,12 +1052,14 @@
 		03CD6A641183595F00CCABFE /* Profiles */ = {
 			isa = PBXGroup;
 			children = (
-				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
-				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
+				0362CDDC11A99CED00EA65B2 /* CombatProfile.h */,
+				0362CDDD11A99CED00EA65B2 /* CombatProfile.m */,
 				D02F3C5E1182C5AC000F4037 /* ProfileController.h */,
 				D02F3C5F1182C5AC000F4037 /* ProfileController.m */,
 				D02F3C851182C975000F4037 /* Profile.h */,
 				D02F3C861182C975000F4037 /* Profile.m */,
+				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
+				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
 			);
 			name = Profiles;
 			sourceTree = "<group>";
@@ -1662,10 +1656,6 @@
 				03168C7010FE6CCD00EF241B /* WaypointActionEditor.m */,
 				7DD03DE00D160075000CC1A6 /* MemoryViewController.h */,
 				7DD03DE10D160075000CC1A6 /* MemoryViewController.m */,
-				7DE53E690E32BEDD00C59033 /* CombatProfileEditor.h */,
-				7DE53E6A0E32BEDD00C59033 /* CombatProfileEditor.m */,
-				7DE53DD60E32B48500C59033 /* CombatProfile.h */,
-				7DE53DD70E32B48500C59033 /* CombatProfile.m */,
 			);
 			name = "GUI Controllers";
 			sourceTree = "<group>";
@@ -2134,9 +2124,7 @@
 				7D5496430E1AA073004AA3E9 /* AuraStackConditionController.m in Sources */,
 				7DF445530E241ABA0075B96B /* TotemConditionController.m in Sources */,
 				7DE983820E2B2BA800F41293 /* NSString+Extras.m in Sources */,
-				7DE53DD80E32B48500C59033 /* CombatProfile.m in Sources */,
 				7DE53DDB0E32B84C00C59033 /* IgnoreEntry.m in Sources */,
-				7DE53E6B0E32BEDD00C59033 /* CombatProfileEditor.m in Sources */,
 				7DB8222F0E33384300661394 /* TempEnchantConditionController.m in Sources */,
 				7D45A6BA0E4461CA008A3601 /* BonjourController.m in Sources */,
 				7D45A6CC0E4461DE008A3601 /* NSData+SockAddr.m in Sources */,
@@ -2197,7 +2185,6 @@
 				03FFD46E110B930F0046AEDF /* MobsKilledConditionController.m in Sources */,
 				03FFD596110CB5440046AEDF /* InteractNPCActionController.m in Sources */,
 				03FFD597110CB5440046AEDF /* InteractObjectActionController.m in Sources */,
-				03E1D73B110F54BE003180E4 /* SaveData.m in Sources */,
 				03E1D7B8110F62CD003180E4 /* FileObject.m in Sources */,
 				03BD330E11120A7A00941971 /* BindingsController.m in Sources */,
 				0341DD66111B0FBE00074CED /* ObjectsController.m in Sources */,
@@ -2216,6 +2203,7 @@
 				D02F3C5D1182C497000F4037 /* MailActionProfile.m in Sources */,
 				D02F3C601182C5AC000F4037 /* ProfileController.m in Sources */,
 				D02F3C871182C975000F4037 /* Profile.m in Sources */,
+				0362CDDE11A99CED00EA65B2 /* CombatProfile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

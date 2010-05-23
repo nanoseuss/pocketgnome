@@ -164,6 +164,7 @@
 - (IBAction)exportRoute: (id)sender;
 - (IBAction)renameRoute: (id)sender;
 - (IBAction)duplicateRoute: (id)sender;
+- (IBAction)showInFinder: (id)sender;
 
 // TO DO: add import/export/show/duplicate
 

@@ -15,6 +15,7 @@
 #import "RouteSet.h"
 #import "RouteCollection.h"
 #import "Mob.h"
+#import "CombatProfile.h"
 
 #import "Controller.h"
 #import "BotController.h"
@@ -27,7 +28,7 @@
 #import "WaypointController.h"
 #import "MobController.h"
 #import "StatisticsController.h"
-#import "CombatProfileEditor.h"
+#import "ProfileController.h"
 #import "BindingsController.h"
 #import "InventoryController.h"
 #import "Profile.h"
@@ -136,6 +137,8 @@ typedef enum MovementState{
 		_movementTimer = nil;
 		
 		_movementState = -1;
+		
+		_jumpAttempt = 0;
 		
 		_isMovingFromKeyboard = NO;
 		_positionCheck = 0;
@@ -1046,11 +1049,11 @@ typedef enum MovementState{
 	if (_moveToObject) {
 		if ( [_moveToObject isKindOfClass: [Node class]] ) isNode = YES;
 		destPosition = [_moveToObject position];
-	} else
-	if ( self.destinationWaypoint ) {
+	}
+	else if ( self.destinationWaypoint ) {
 		destPosition = [_destinationWaypoint position];
-	} else
-	if ( self.lastAttemptedPosition ) {
+	} 
+	else if ( self.lastAttemptedPosition ) {
 		// If it's not moveToObject and no destination waypoint then we must have called moveToPosition by it's self
 		destPosition = self.lastAttemptedPosition;
 	}
@@ -1137,10 +1140,8 @@ typedef enum MovementState{
 	}
 
 	// Check evaluation to see if we need to do anything
-//	if ( !self.moveToObject && [botController evaluateSituation] ) {
 	if ( [botController evaluateSituation] ) {
 		log(LOG_DEV, @"Action taken, not checking movement, checking evaluation.");
-//		[self resetMovementState];
 		return;
 	}
 	// Evaluation will need to stop movement if it needs to do so (some things we can do while moving)
@@ -1156,6 +1157,19 @@ typedef enum MovementState{
 		if ( ([[NSDate date] timeIntervalSinceDate: self.lastJumpTime] > self.jumpCooldown ) ) [self jump];
 
 	} 
+	
+	// are we on the ground + should jump?
+	UInt32 movementFlags = [playerData movementFlags];
+	if ( (movementFlags & 0x1000000) == 0x1000000 && (movementFlags & 0x3000000) != 0x3000000 ){
+		if ( _jumpAttempt == 0 && ![controller isWoWChatBoxOpen] ){
+			usleep(200000);
+			PGLog(@"[Bot] Player on ground, jumping!");
+			[self jump];
+			usleep(10000);
+		}
+		
+		if ( _jumpAttempt++ > 3 )	_jumpAttempt = 0;
+	}
 
 	// *******************************************************
 	// if we we get here, we're not close enough :(
@@ -1208,7 +1222,6 @@ typedef enum MovementState{
 	if ( _positionCheck > 13 && oldStuckCounter == _stuckCounter ) _stuckCounter = 0;
 
 	// are we stuck moving up?
-	UInt32 movementFlags = [playerData movementFlags];
 	if ( movementFlags & MovementFlag_FlyUp && !_movingUp ){
 		log(LOG_MOVEMENT, @"We're stuck moving up! Fixing!");
 		[self moveUpStop];
@@ -2764,7 +2777,7 @@ typedef enum MovementState{
 
 			CombatProfile *profile = nil;
 			NSString *UUID = [action value];
-			for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
+			for ( CombatProfile *otherProfile in [profileController combatProfiles] ){
 				if ( [UUID isEqualToString:[otherProfile UUID]] ) {
 					profile = otherProfile;
 					break;

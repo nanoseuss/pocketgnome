@@ -19,7 +19,7 @@
 @class WaypointController;
 @class MobController;
 @class StatisticsController;
-@class CombatProfileEditor;
+@class ProfileController;
 @class BindingsController;
 @class InventoryController;
 @class ProfileController;
@@ -59,7 +59,6 @@ typedef enum MovementType {
 	IBOutlet WaypointController		*waypointController;
 	IBOutlet MobController			*mobController;
 	IBOutlet StatisticsController	*statisticsController;
-	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet BindingsController		*bindingsController;
 	IBOutlet InventoryController	*itemController;
 	IBOutlet ProfileController		*profileController;
@@ -100,6 +99,7 @@ typedef enum MovementType {
 	NSDate *_lastJumpTime;
 	
 	int _jumpCooldown;
+	int _jumpAttempt;
 	
 	BOOL _movingUp;
 	BOOL _afkPressForward;

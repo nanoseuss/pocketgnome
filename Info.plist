@@ -101,6 +101,24 @@
 			<key>NSPersistentStoreTypeKey</key>
 			<string>XML</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mailprofile</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>pgBehavior</string>
+			<key>CFBundleTypeName</key>
+			<string>Mail Profile</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSTypeIsPackage</key>
+			<false/>
+			<key>NSDocumentClass</key>
+			<string>MailActionProfile</string>
+			<key>NSPersistentStoreTypeKey</key>
+			<string>XML</string>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>${PRODUCT_NAME}</string>

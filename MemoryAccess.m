@@ -134,13 +134,25 @@ static MemoryAccess *sharedMemoryAccess = nil;
     
     if(MEMORY_GOD_MODE) {
 		
+		// what is the current protection mode for this block of memory?
+		vm_address_t SourceAddress = Address;
+		vm_size_t SourceSize = Bytes;
+		vm_region_basic_info_data_t SourceInfo;
+		mach_msg_type_number_t SourceInfoSize = VM_REGION_BASIC_INFO_COUNT;
+		mach_port_t ObjectName = MACH_PORT_NULL;
+		int result = vm_region(MySlaveTask,&SourceAddress,&SourceSize,VM_REGION_BASIC_INFO,(vm_region_info_t) &SourceInfo,&SourceInfoSize,&ObjectName);
+		if ( result == KERN_SUCCESS ){
+			NSLog(@"Protection type: 0x%X", SourceInfo.protection);			
+		}
+
 		// make the location writable!
 		vm_protect( MySlaveTask,
 						 (vm_address_t) Address,
-						 Bytes, false, (VM_PROT_ALL | VM_PROT_COPY) );
+						 Bytes, false, (VM_PROT_ALL | VM_PROT_COPY | VM_PROT_READ) );
 		
         bool retVal;
         NS_DURING
+		NSLog(@"Writing 0x%X to 0x%X", DataBuffer, Address);
 		int val = vm_write(MySlaveTask,Address,(vm_offset_t)DataBuffer,Bytes);
         retVal = (KERN_SUCCESS == val);
         NS_HANDLER
@@ -150,7 +162,7 @@ static MemoryAccess *sharedMemoryAccess = nil;
 		// set it back!
 		vm_protect( MySlaveTask,
 						 (vm_address_t) Address, Bytes, false,
-						 (VM_PROT_DEFAULT | VM_PROT_COPY) );
+						 SourceInfo.protection );
         
         return retVal;
     }

@@ -7,6 +7,7 @@
 //
 
 #import "Procedure.h"
+#import "FileObject.h"
 
 @interface Procedure ()
 @property (readwrite, retain) NSArray *rules;
@@ -96,25 +97,31 @@
 }
 
 - (void)addRule: (Rule*)rule {
-    if(rule != nil)
+    if(rule != nil){
         [_rules addObject: rule];
-    else
+	}
+    else{
         log(LOG_GENERAL, @"addRule: failed; rule is nil");
+	}
 }
 
 - (void)insertRule: (Rule*)rule atIndex: (unsigned)index {
-    if(rule != nil && index >= 0 && index <= [_rules count])
+    if(rule != nil && index >= 0 && index <= [_rules count]){
         [_rules insertObject: rule atIndex: index];
-    else
+	}
+    else{
         log(LOG_GENERAL, @"insertRule:atIndex: failed; rule %@ index %d is out of bounds", rule, index);
+	}
 }
 
 - (void)replaceRuleAtIndex: (int)index withRule: (Rule*)rule {
 
     if((rule != nil) && (index >= 0) && (index < [self ruleCount])) {
         [_rules replaceObjectAtIndex: index withObject: rule];
-    }else
+    }
+	else{
         log(LOG_GENERAL, @"replaceRule:atIndex: failed; either rule is nil or index is out of bounds");
+	}
 }
 
 - (void)removeRule: (Rule*)rule {
@@ -123,8 +130,9 @@
 }
 
 - (void)removeRuleAtIndex: (unsigned)index {
-    if(index >= 0 && index < [self ruleCount])
+    if(index >= 0 && index < [self ruleCount]){
         [_rules removeObjectAtIndex: index];
+	}
 }
 
 @end

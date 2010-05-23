@@ -9,12 +9,14 @@
 #import <Cocoa/Cocoa.h>
 #import "Behavior.h"
 #import "Procedure.h"
-#import "SaveData.h"
 
-@interface ProcedureController : SaveData {
+@class FileController;
+
+@interface ProcedureController : NSObject {
     IBOutlet id ruleEditor;
     IBOutlet id spellController;
     IBOutlet id itemController;
+	IBOutlet FileController		*fileController;
 
     IBOutlet NSView *view;
     IBOutlet id procedureEventSegment;
@@ -38,7 +40,6 @@
 @property NSSize minSectionSize;
 @property NSSize maxSectionSize;
 
-- (void)saveBehaviors;
 - (NSArray*)behaviors;
 - (Behavior*)currentBehavior;
 - (void)setCurrentBehavior: (Behavior*)protocol;
@@ -59,13 +60,10 @@
 - (IBAction)duplicateBehavior: (id)sender;
 - (IBAction)closeRename: (id)sender;
 - (IBAction)setBehaviorEvent: (id)sender;
-
+- (IBAction)showInFinder: (id)sender;
 
 // rule actions
 - (IBAction)addRule: (id)sender;
 - (IBAction)deleteRule: (id)sender;
-
-// additional options
-- (IBAction)updateOptions: (id)sender;
 
 @end

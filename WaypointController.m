@@ -121,8 +121,6 @@ enum AutomatorIntervalType {
 			_routeCollectionList = [[fileController getObjectsWithClass:[RouteCollection class]] retain];
 		}
 		
-		log(LOG_WAYPOINT, @"We now have %d objects of route collection", [_routeCollectionList count]);
-		
         // listen for notification
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
         [[NSNotificationCenter defaultCenter] addObserver: self
@@ -1376,6 +1374,10 @@ enum AutomatorIntervalType {
 }
 
 #pragma mark Route Collection UI
+
+- (IBAction)showInFinder: (id)sender{
+	[fileController showInFinder:[self currentRoute]];
+}
 
 - (IBAction)duplicateRoute: (id)sender {
 	

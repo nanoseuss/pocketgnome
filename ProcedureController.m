@@ -12,7 +12,9 @@
 #import "RuleEditor.h"
 #import "Rule.h"
 #import "SecureUserDefaults.h"
-#import "SaveData.h"
+#import "FileController.h"
+
+#import "FileObject.h"
 
 #import "BetterSegmentedControl.h"
 
@@ -22,16 +24,19 @@
 {
     self = [super init];
     if (self != nil) {
+		
+		_behaviors = [[NSMutableArray array] retain];
+		
+		if ( fileController == nil ){
+			fileController = [[FileController sharedFileController] retain];
+		}
+		
+		// get behaviors
+		NSArray *behaviors = [fileController getObjectsWithClass:[Behavior class]];
+		[_behaviors addObjectsFromArray:behaviors];
+		
         _behavior = nil;
 		_nameBeforeRename = nil;
-		
-		// old way
-		_behaviors = [[self loadAllDataForKey:@"Behaviors" withClass:[Behavior class]] retain];
-		
-		// new way!
-		if ( !_behaviors ){
-			_behaviors = [[self loadAllObjects] retain];
-		}
 
         [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(applicationWillTerminate:) name: NSApplicationWillTerminateNotification object: nil];
         
@@ -65,7 +70,17 @@
 }
 
 - (void)applicationWillTerminate: (NSNotification*)notification {
-    [self saveBehaviors];
+	NSMutableArray *objectsToSave = [NSMutableArray array];
+	for ( FileObject *obj in _behaviors ){
+		if ( [obj changed] ){
+			[objectsToSave addObject:obj];
+		}
+	}
+	
+    [fileController saveObjects:objectsToSave];
+	
+	[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"Behaviors"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 #pragma mark -
@@ -93,18 +108,6 @@
     return @"";
 }
 
-
-- (void)saveBehaviors {
-	
-	// save all for now
-	for ( Behavior *behavior in _behaviors ){
-		[self saveObject:behavior];
-	}
-	
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"Behaviors"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
 - (NSArray*)behaviors {
     return [[_behaviors retain] autorelease];
 }
@@ -129,6 +132,7 @@
 #pragma mark Protocol Actions
 
 - (void)addBehavior: (Behavior*)behavior {
+	
     int num = 2;
     BOOL done = NO;
     if(![behavior isKindOfClass: [Behavior class]]) return;
@@ -147,19 +151,18 @@
         }
         if(!conflict) done = YES;
     }
-    
+	
     // save this route into our array
     [self willChangeValueForKey: @"behaviors"];
     [_behaviors addObject: behavior];
     [self didChangeValueForKey: @"behaviors"];
+	
+	// save our new behavior
+	[fileController saveObject: behavior];
 
     // update the current procedure
-    [self saveBehaviors];
     [self setCurrentBehavior: behavior];
-	
-	// we will want to save this later!
-	[self currentBehavior].changed = YES;
-	
+
     [ruleTable reloadData];
     
     //log(LOG_GENERAL, @"Added behavior: %@", [behavior name]);
@@ -172,8 +175,8 @@
         NSBeep();
         return;
     }
-    
-    // create a new route
+
+    // create a new behavior
     [self addBehavior: [Behavior behaviorWithName: behaviorName]];
     [sender setStringValue: @""];
 }
@@ -198,21 +201,22 @@
 
 - (IBAction)removeBehavior: (id)sender {
     if([self currentBehavior]) {
-        
         int ret = NSRunAlertPanel(@"Delete Behavior?", [NSString stringWithFormat: @"Are you sure you want to delete the behavior \"%@\"?", [[self currentBehavior] name]], @"Delete", @"Cancel", NULL);
         if(ret == NSAlertDefaultReturn) {
             [self willChangeValueForKey: @"behaviors"];
+			
+			// delete the object
+			[fileController deleteObject:[self currentBehavior]];
+			
+			// remove frm the list
 			[_behaviors removeObject: [self currentBehavior]];
 			
-			[self deleteObject:[self currentBehavior]];
-            
             if([self.behaviors count])
                 [self setCurrentBehavior: [self.behaviors objectAtIndex: 0]];
             else
                 [self setCurrentBehavior: nil];
             
             [self didChangeValueForKey: @"behaviors"];
-            [self saveBehaviors];
             [ruleTable reloadData];
         }
     }
@@ -240,19 +244,20 @@
     
 	// did the name change?
 	if ( ![_nameBeforeRename isEqualToString:[[self currentBehavior] name]] ){
-		[self currentBehavior].changed = YES;
-		[self deleteObjectWithName:_nameBeforeRename];
+		
+		// delete the old behavior
+		[fileController deleteObjectWithFilename:[NSString stringWithFormat:@"%@.behavior", _nameBeforeRename]];
+		
+		// save the new one
+		[fileController saveObject:[self currentBehavior]];
 	}
-}
-
-- (IBAction)updateOptions: (id)sender {
-    [self saveBehaviors];
 }
 
 #pragma mark Rule Actions
 
 - (void)sheetDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
-    if(returnCode == RuleEditorSaveRule) {
+	
+    if ( returnCode == RuleEditorSaveRule ) {
         Rule *rule = [ruleEditor rule];
         
         if( (Rule*)contextInfo ) {
@@ -266,7 +271,9 @@
         }
         
         [ruleTable reloadData];
-        [self saveBehaviors];
+		
+		// mark this behavior as changed!
+		[[self currentBehavior] setChanged:YES];
     }
 }
 
@@ -288,7 +295,11 @@
     
     [[self currentProcedure] removeRuleAtIndex: row];
     [ruleTable reloadData];
-    [self saveBehaviors];
+	[[self currentBehavior] setChanged:YES];
+}
+
+- (IBAction)showInFinder: (id)sender{
+	[fileController showInFinder:[self currentBehavior]];
 }
 
 #pragma mark -
@@ -530,7 +541,7 @@
             [tableView reloadData];
             [tableView selectRowIndexes: [NSIndexSet indexSetWithIndexesInRange: NSMakeRange(pasteRow, [copiedRules count])] byExtendingSelection: NO];
 
-            [self saveBehaviors];
+            [[self currentBehavior] setChanged:YES];
             return YES;
         }
     }
@@ -540,6 +551,7 @@
 - (BOOL)tableViewCut: (NSTableView*)tableView {
     if( [self tableViewCopy: tableView] ) {
         [self deleteRule: nil];
+		[[self currentBehavior] setChanged:YES];
         return YES;
     }
     return NO;
@@ -601,19 +613,10 @@
     [[self currentProcedure] insertRule: dragRule atIndex: row];
     
     [aTableView reloadData];
+	
+	[[self currentBehavior] setChanged:YES];
     
     return YES;
 }
-
-#pragma mark SaveData
-// for saving
-- (NSString*)objectExtension{
-	return @"behavior";
-}
-
-- (NSString*)objectName:(id)object{
-	return [(Behavior*)object name];
-}
-
 
 @end

@@ -14,7 +14,7 @@
 @class SpellController;
 @class InventoryController;
 @class MacroController;
-@class CombatProfileEditor;
+@class ProfileController;
 @class MobController;
 @class NodeController;
 
@@ -24,7 +24,7 @@
 	IBOutlet SpellController		*spellController;
 	IBOutlet InventoryController	*inventoryController;
 	IBOutlet MacroController		*macroController;
-	IBOutlet CombatProfileEditor	*combatProfileEditor;
+	IBOutlet ProfileController		*profileController;
 	IBOutlet MobController			*mobController;
 	IBOutlet NodeController			*nodeController;
 	

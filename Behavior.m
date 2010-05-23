@@ -26,6 +26,11 @@
         self.procedures = [NSDictionary dictionary];
         self.meleeCombat = NO;
         self.usePet = NO;
+		
+		_observers = [[NSArray arrayWithObjects:
+					   @"usePet",
+					   @"meleeCombat",
+					   nil] retain];
     }
     return self;
 }
@@ -33,12 +38,15 @@
 - (id)initWithName: (NSString*)name {
     self = [self init];
     
-    self.procedures = [NSDictionary dictionaryWithObjectsAndKeys: 
-                       [Procedure procedureWithName: name], PreCombatProcedure,
-                       [Procedure procedureWithName: name], CombatProcedure,
-                       [Procedure procedureWithName: name], PostCombatProcedure,
-                       [Procedure procedureWithName: name], RegenProcedure,
-                       [Procedure procedureWithName: name], PatrollingProcedure, nil];
+	if ( self ){
+		self.name = name;
+		self.procedures = [NSDictionary dictionaryWithObjectsAndKeys: 
+						   [Procedure procedureWithName: name], PreCombatProcedure,
+						   [Procedure procedureWithName: name], CombatProcedure,
+						   [Procedure procedureWithName: name], PostCombatProcedure,
+						   [Procedure procedureWithName: name], RegenProcedure,
+						   [Procedure procedureWithName: name], PatrollingProcedure, nil];
+	}
     
     return self;
 }
@@ -101,9 +109,7 @@
     return copy;
 }
 
-- (void) dealloc
-{
-    self.name = nil;
+- (void) dealloc{
     self.procedures = nil;
     [super dealloc];
 }

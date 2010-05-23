@@ -2,6 +2,52 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>WallWalkAngle</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\xF3\x0F\x10\x05\x1C\x14\xC2\x00\x0F\x2E\x44\x10\x08\x0F\x93\xC0\x0F\xB6\xC0\x85\xC0\x75\xB4</string>
+			<key>Mask</key>
+			<string>xxxx????xxxxxxxxxxxxxxx</string>
+			<key>Comment</key>
+			<string>From 3.3.3a: hasWallWalk</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
+	<key>EnableAllChat</key>
+	<dict>
+		<key>Intel</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x18\x89\x5C\x24\x08\x8B\x75\x10\x89\x74\x24\x04\x8B\x45\x14\x89\x04\x24\xE8\x86\x85\xBF\xFF</string>
+			<key>Mask</key>
+			<string>xxxxxxxxxxxxxxxxxxx????</string>
+			<key>SubtractOffset</key>
+			<string>0x4</string>
+			<key>UseAddress</key>
+			<true/>
+			<key>Comment</key>
+			<string>From 3.3.3a: ChatFuncWithOppOverride</string>
+		</dict>
+		<key>ppc</key>
+		<dict>
+			<key>Signature</key>
+			<string>\x80\x63\x00\x04\x3D\x20\x00\xB3\x39\x29\xE8\xC0\x80\x49\x00\x00\x80\x03\x00\x00\x7F\x80\x10\x00\x40\xBE\x00\x30</string>
+			<key>Mask</key>
+			<string>xxxxxx??xx??xxxxxxxxxxxxxxxx</string>
+			<key>SubtractOffset</key>
+			<string>0x10000</string>
+		</dict>
+	</dict>
 	<key>Lua_GetWorldStateUIInfo</key>
 	<dict>
 		<key>Intel</key>

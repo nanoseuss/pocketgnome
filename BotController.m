@@ -45,7 +45,6 @@
 #import "MacroController.h"
 #import "OffsetController.h"
 #import "MemoryViewController.h"
-#import "CombatProfileEditor.h"
 #import "EventController.h"
 #import "BlacklistController.h"
 #import "StatisticsController.h"
@@ -68,7 +67,6 @@
 #import "PTHeader.h"
 #import "CGSPrivate.h"
 #import "Macro.h"
-#import "CombatProfileEditor.h"
 #import "CombatProfile.h"
 #import "Errors.h"
 #import "PvPBehavior.h"
@@ -403,10 +401,6 @@
 
 - (NSString*)sectionTitle {
 	return @"Start/Stop Bot";
-}
-
-- (CombatProfileEditor*)combatProfileEditor {
-	return [CombatProfileEditor sharedEditor];
 }
 
 #pragma mark -
@@ -6222,8 +6216,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 - (IBAction)editCombatProfiles: (id)sender {
-    [[CombatProfileEditor sharedEditor] showEditorOnWindow: [self.view window] 
-										   forProfileNamed: [[NSUserDefaults standardUserDefaults] objectForKey: @"CombatProfile"]];
+	[controller selectCombatProfileTab];
 }
 
 - (IBAction)updateStatus: (id)sender {
@@ -7959,7 +7952,7 @@ NSMutableDictionary *_diffDict = nil;
 				else if ( [action type] == ActionType_CombatProfile ){
 					BOOL profileFound = NO;
 					NSString *UUID = [action value];
-					for ( CombatProfile *otherProfile in [combatProfileEditor combatProfiles] ){
+					for ( CombatProfile *otherProfile in [profileController combatProfiles] ){
 						if ( [UUID isEqualToString:[otherProfile UUID]] ){
 							profileFound = YES;
 							break;
@@ -8004,19 +7997,76 @@ NSMutableDictionary *_diffDict = nil;
 	return errorMessage;
 }
 
+#pragma mark Hackish shit
+
+- (IBAction)toggleWallWalk: (id)sender{
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 address = [offsetController offset:@"WallWalkAngle"];
+	const float originalAngle = 0.64278764f;
+	const float newAngle = 0.0f;
+	
+	float currentValue = 0.0f;
+	[memory loadDataForObject: self atAddress: address Buffer: (Byte*)&currentValue BufLength: sizeof(currentValue)];
+	
+	// time to disable the wall walk!
+	if ( currentValue == newAngle ){
+		[memory saveDataForAddressForce: address Buffer: (Byte*)&originalAngle BufLength: sizeof(originalAngle)];
+		[wallWalkButton setTitle:@"Enable Wall Walk"];
+	}
+	// enable the wall walk
+	else{
+		[memory saveDataForAddressForce: address Buffer: (Byte*)&newAngle BufLength: sizeof(newAngle)];
+		[wallWalkButton setTitle:@"Disable Wall Walk"];
+	}
+}
+
+- (IBAction)toggleAllChat: (id)sender{
+	
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	UInt32 address = [offsetController offset:@"EnableAllChat"];
+	const UInt32 enableAllChat = 0x5D8B9090;
+	const UInt32 disableAllChat = 0x5D8B2476;
+	
+	// determine what we are!
+	UInt32 currentData = [memory readInt:address withSize:sizeof(UInt32)];
+	
+	// disable chat
+	if ( currentData == enableAllChat ){
+		[memory saveDataForAddressForce: address Buffer: (Byte*)&disableAllChat BufLength: sizeof(disableAllChat)];
+		[allChatButton setTitle:@"Enable All Chat"];
+	}
+	// enable chat
+	else{
+		[memory saveDataForAddressForce: address Buffer: (Byte*)&enableAllChat BufLength: sizeof(enableAllChat)];
+		[allChatButton setTitle:@"Disable All Chat"];
+	}
+}
+
 #pragma mark Testing Shit
 
 - (IBAction)test: (id)sender{
-	
-//	[profileController profilesByClass];
-	
-	log(LOG_GENERAL, @"Current Game State: %d", [controller gameState]);
-	
-	float ping = [controller getPing];
-	
-	log(LOG_GENERAL, @"Ping: %f", ping);
 
+	/*
+	UInt32 address = 0xC2141C;
+	
+	float val = 0.0f;
+	[memory loadDataForObject: self atAddress: address Buffer: (Byte*)&val BufLength: sizeof(val)];
+	
+	NSLog(@"Value: %f", val);
+
+	
+	val = 0.0f;
+	int result = [memory saveDataForAddress: address Buffer: (Byte*)&val BufLength: sizeof(val)];
+	NSLog(@"fail? %d", result);	
+	NSLog(@"changing to %0.2f!", val);
+	
+	[memory loadDataForObject: self atAddress: address Buffer: (Byte*)&val BufLength: sizeof(val)];
+	NSLog(@"Value: %f", val);
+	
 	return;
+
+	[profileController profilesByClass];*/
 
 }
 

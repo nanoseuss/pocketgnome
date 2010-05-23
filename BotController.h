@@ -65,7 +65,6 @@
 @class MacroController;
 @class OffsetController;
 @class MemoryViewController;
-@class CombatProfileEditor;
 @class BlacklistController;
 @class StatisticsController;
 @class BindingsController;
@@ -112,7 +111,6 @@
     IBOutlet WaypointController     *waypointController;
     IBOutlet ProcedureController    *procedureController;
 	IBOutlet MemoryViewController	*memoryViewController;
-	IBOutlet CombatProfileEditor	*combatProfileEditor;
 	IBOutlet BlacklistController	*blacklistController;
 	IBOutlet StatisticsController	*statisticsController;
 	IBOutlet BindingsController		*bindingsController;
@@ -322,6 +320,9 @@
 	IBOutlet NSTextField *runningTimer;
     IBOutlet NSWindow *overlayWindow;
     IBOutlet ScanGridView *scanGrid;
+	
+	IBOutlet NSButton *allChatButton;
+	IBOutlet NSButton *wallWalkButton;
 }
 
 @property (readonly) NSButton *logOutAfterStuckCheckbox;
@@ -420,6 +421,10 @@
 // PVP
 - (BOOL)pvpIsBattlegroundEnding;
 - (void)stopBotActions;
+
+// hackish stuff
+- (IBAction)toggleWallWalk: (id)sender;
+- (IBAction)toggleAllChat: (id)sender;
 
 // test stuff
 - (IBAction)test: (id)sender;

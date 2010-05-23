@@ -56,6 +56,7 @@
 	for ( NSString *observer in _observers ){
 		[self removeObserver:self forKeyPath:observer];
 	}
+	
 	[_observers release]; _observers = nil;
 	[super dealloc];
 }
@@ -80,7 +81,7 @@
 			self.changed = YES;
 		}
 	}
-	
+
 	return self;
 }
 
