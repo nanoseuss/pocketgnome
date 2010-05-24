@@ -1381,6 +1381,7 @@ typedef enum MovementState{
 
 		// Stop n back up a lil
 		[self stopMovement];
+		_isActive = YES;
 		// Jump Back
 		[self jumpBack];
 		usleep( [controller refreshDelay]*2 );
@@ -1464,6 +1465,7 @@ typedef enum MovementState{
 
 		// Stop n back up a lil
 		[self stopMovement];
+		_isActive = YES;
 		// Jump Back
 		[self jumpBack];
 		usleep( [controller refreshDelay]*2 );
@@ -1771,7 +1773,7 @@ typedef enum MovementState{
 
 	// If in a BG
 	if ( botController.pvpIsInBG ) {
-		self.currentRouteSet = nil;
+//		self.currentRouteSet = nil;
 		log(LOG_MOVEMENT, @"Ignoring corpse route because we're PvPing!");
 		return;
 	}
@@ -1804,7 +1806,7 @@ typedef enum MovementState{
 - (void)playerHasRevived:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
 
-	if ( botController.isPvPing ) {
+	if ( botController.isPvPing && botController.pvpIsInBG ) {
 		log(LOG_WAYPOINT, @"Finding the nearest route since we died in PvP.");
 	
 		float closestDistance = 0.0f;
@@ -1855,9 +1857,11 @@ typedef enum MovementState{
 	// reset movement state
 	[self resetMovementState];
 
-	// switch our route!
-	self.currentRouteKey = PrimaryRoute;
-	self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+	if ( self.currentRouteSet ) {
+		// switch our route!
+		self.currentRouteKey = PrimaryRoute;
+		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+	}
 
 	log(LOG_MOVEMENT, @"Player revived, switching to %@", self.currentRoute);
 
@@ -2466,7 +2470,12 @@ typedef enum MovementState{
 - (BOOL)jumpTowardsPosition: (Position*)position {
 	log(LOG_MOVEMENT, @"Jumping towards position.");
 
-	if ( [self isMoving] ) [self stopMovement];
+	if ( [self isMoving] ) {
+		BOOL wasActive = NO;
+		if ( _isActive == YES ) wasActive = YES;
+		[self stopMovement];
+		if ( wasActive == YES ) _isActive = YES;
+	}
 
 	// Face the target
 	[self turnTowardPosition: position];
@@ -2576,6 +2585,7 @@ typedef enum MovementState{
 
 			// only pause movement if we have to!
 			if ( !instant ) [self stopMovement];
+			_isActive = YES;
 
 			[botController performAction:spell];
 		}
@@ -2591,6 +2601,7 @@ typedef enum MovementState{
 			
 			// only pause movement if we have to!
 			if ( !instant )	[self stopMovement];
+			_isActive = YES;
 
 			[botController performAction:actionID];
 		}
@@ -2607,7 +2618,8 @@ typedef enum MovementState{
 			// only pause movement if we have to!
 			if ( !instant )
 				[self stopMovement];
-			
+			_isActive = YES;
+
 			[botController performAction:actionID];
 		}
 		
@@ -2617,7 +2629,7 @@ typedef enum MovementState{
 			delay = [[action value] floatValue];
 			
 			[self stopMovement];
-			
+			_isActive = YES;
 			log(LOG_WAYPOINT, @"Delaying for %0.2f seconds", delay);
 		}
 		
@@ -2674,7 +2686,8 @@ typedef enum MovementState{
 				if ( [questNPC isQuestGiver] ){
 					
 					[self stopMovement];
-					
+					_isActive = YES;
+
 					// might want to make k 3 (but will take longer)
 					
 					log(LOG_WAYPOINT, @"Turning in/grabbing quests to/from %@", questNPC);
@@ -2721,7 +2734,8 @@ typedef enum MovementState{
 			
 			// moving bad, lets pause!
 			[self stopMovement];
-			
+			_isActive = YES;
+
 			// interact
 			[botController interactWithMob:[entryID unsignedIntValue]];
 		}
@@ -2734,6 +2748,7 @@ typedef enum MovementState{
 
 			// moving bad, lets pause!
 			[self stopMovement];
+			_isActive = YES;
 
 			// interact
 			[botController interactWithNode:[entryID unsignedIntValue]];
@@ -2755,6 +2770,8 @@ typedef enum MovementState{
 			// repair
 			if ( repairNPC ) {
 				[self stopMovement];
+				_isActive = YES;
+
 				if ( [botController interactWithMouseoverGUID:[repairNPC GUID]] ){
 					
 					// sleep some to allow the window to open!

@@ -294,10 +294,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[botController cancelCurrentEvaluation];
 
 	// if we can correct this error
-//	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] && [movementController checkUnitOutOfRange: unit] ) {
-//		[botController actOnUnit: unit];
-//		return;
-//	}
+	if ( ![playerData isFriendlyWithFaction: [unit factionTemplate]] && [unit isInCombat] && [unit isTargetingMe] && [movementController checkUnitOutOfRange: unit] ) {
+		[botController actOnUnit: unit];
+		return;
+	}
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 	[self cancelAllCombat];
