@@ -147,7 +147,7 @@
 
 // pvp
 - (void)pvpGetBGInfo;
-- (void)pvpMonitor;
+- (void)pvpMonitor: (NSTimer*)timer;
 - (void)corpseRelease: (NSNumber *)count;
 
 - (void)skinMob: (Mob*)mob;
@@ -300,10 +300,9 @@
 	_dateWGEnded = nil;
 	
 	_logOutTimer = nil;
-	
-	// Every 15 seconds we'll want to send clicks!
-	_wgTimer = [NSTimer scheduledTimerWithTimeInterval: 15.0f target: self selector: @selector(wgTimer:) userInfo: nil repeats: YES];
-	
+
+	_movingToCorpse = NO;
+
 	// Every 30 seconds for an anti-afk
 	_afkTimer = [NSTimer scheduledTimerWithTimeInterval: 30.0f target: self selector: @selector(afkTimer:) userInfo: nil repeats: YES];
 	
@@ -409,6 +408,7 @@
 @synthesize followRoute = _followRoute;
 
 @synthesize includeCorpsesPatrol = _includeCorpsesPatrol;
+@synthesize movingToCorpse = _movingToCorpse;
 
 - (NSString*)sectionTitle {
 	return @"Start/Stop Bot";
@@ -2737,7 +2737,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.isBotting ) return;
 
 	if ( self.evaluationInProgress == @"Follow" ) self.evaluationInProgress = nil;
-	
+
+	_movingToCorpse = NO;
+
 	if ( ![notification object] ) {
 		log(LOG_FUNCTION, @"Reached object called for reach position.");
 		// Back to evaluation
@@ -2819,7 +2821,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self cancelCurrentProcedure];
 		[combatController cancelCombatAction];
 		[movementController stopMovement];
-		
+
 		[self actOnUnit:unit];
 		return;
 	}
@@ -3474,8 +3476,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// looting?
 	Position *playerPosition = [playerController position];
 	float distanceToUnit = [playerController isOnGround] ? [playerPosition distanceToPosition2D: [unit position]] : [playerPosition distanceToPosition: [unit position]];
-//	[movementController turnTowardObject: unit];
-	
+	[movementController turnTowardObject: unit];
+	usleep([controller refreshDelay]*2);
+
 	self.lastAttemptedUnitToLoot = unit;
 	
 	if ( ![unit isValid] || ( distanceToUnit > 5.0f ) ) {
@@ -3745,16 +3748,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if ( !self.isBotting || !theCombatProfile.followEnabled ) return;
 	if ( [playerController isDead] || [[playerController player] percentHealth] == 0 ) return;
-
-	if ( !_followUnit ) return;
 	
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
-	
+
 	float waypointSpacing = [playerController speedMax] / 2.0f;
 
-
 	// Validate the current unit
-	if ( !self.pvpIsInBG && _followRoute && ![_followUnit isValid] && !_followLastSeenPosition ) {
+	if ( !self.pvpIsInBG && _followRoute && [_followRoute waypointCount] > 0 && ( !_followUnit || ![_followUnit isValid] ) && !_followLastSeenPosition ) {
 
 		// Let's set one more way point to push us into a zone just in case
 		_followLastSeenPosition = YES;
@@ -3795,8 +3795,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	}
 
-	// If the unit is out of sight
-	if ( ![_followUnit isValid]) return;
+	// If the unit is out of sight or not set
+	if ( !_followUnit || ![_followUnit isValid]) return;
 
 	Position *positionFollowUnit = [_followUnit position];
 	float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
@@ -4343,8 +4343,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 -(BOOL)evaluateForGhost {
 	
 	// Spooky stories go here
-	if ( ![playerController isGhost] ) return NO;
-	
+	if ( ![playerController isGhost] && ![playerController isDead] ) return NO;
+
 	if ( !self.isBotting ) return NO;
 	
 	if ( [movementController isMoving] && movementController.moveToObject ) return NO;
@@ -4444,14 +4444,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Position *playerPosition = [playerController position];
 	Position *corpsePosition = [playerController corpsePosition];
 	float distanceToCorpse = [playerPosition distanceToPosition: corpsePosition];
-	
+
+	if ( [movementController isMoving] && ![movementController isPatrolling] ) {
+		log(LOG_DEV, @"Player is moving or we're moving to the corpse.");
+		return NO;
+	}
+
 	// If we see the corpse and it's close enough, let's move to it
 	if ( _ghostDance == 0 && distanceToCorpse > 6.0f && distanceToCorpse <= theCombatProfile.moveToCorpseRange) {
 		[movementController resetMovementState];
+		_movingToCorpse = YES;
 		[movementController moveToPosition: corpsePosition];
 		log(LOG_GHOST, @"Moving to the corpse now.");
-		//		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.3f];
-		//		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 		return YES;
 	} else
 		
@@ -4524,6 +4528,28 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_GHOST, @"Waiting %d seconds to resurrect.", _reviveAttempt);
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: _reviveAttempt];
 	return YES;
+}
+
+- (BOOL)evaluateForPVPWG {
+	log(LOG_EVALUATE, @"Evaluating for PvPWG.");
+
+	// Check our WG status and start the timer if needed
+	if ( [playerController zone] == 4197 ) {
+
+		if ( [autoJoinWG state] && !_wgTimer && [playerController playerIsValid] ) {
+			log(LOG_PVP,  @"We're in Wintergrasp, starting the timer.");
+			_wgTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(wgTimer:) userInfo: nil repeats: YES];
+		}
+	} 
+	if ( _wgTimer ) {
+		if ( ![playerController zone] == 4197 || ![autoJoinWG state] ) {
+
+			log(LOG_PVP,  @"Stoping the Wintergrasp timer.");
+			[_wgTimer invalidate]; _wgTimer = nil;
+		}
+	}
+
+	return NO;
 }
 
 - (BOOL)evaluateForPVPQueue {
@@ -4610,9 +4636,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for PvP Battleground");
 
 	_pvpIsInBG = YES;
+	_waitForPvPQueue = NO;
 
 	if ( !_pvpTimer )
-		_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 0.5f target: self selector: @selector(pvpMonitor) userInfo: nil repeats: YES];
+		_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 0.5f target: self selector: @selector(pvpMonitor:) userInfo: nil repeats: YES];
 
 	// Battleground has ended, we've been waiting to leave
 	if ( _waitingToLeaveBattleground ) {
@@ -5994,8 +6021,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// Order of operations is established here
+	
+	if ( [playerController isDead] || [playerController isGhost] ) return [self evaluateForGhost];
 
-	if ( [playerController isGhost] ) return [self evaluateForGhost];
+	if ( [self evaluateForPVPWG] ) return YES;
 
 	if ( [playerController isInBG:[playerController zone]] ) {
 		if ( [self evaluateForPVPBattleGround] ) return YES;
@@ -6132,7 +6161,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	 */
 
 	// In a BG with a Route
-	if ( self.pvpIsInBG && self.theRouteSetPvP && movementController.currentRouteSet == self.theRouteSetPvP ) {
+	if ( self.pvpIsInBG && self.isPvPing ) {
 		
 		// See if we need to set the route for the BG
 		if ( !self.theRouteSetPvP || movementController.currentRouteSet != self.theRouteSetPvP ) {
@@ -6745,6 +6774,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	self.pvpLeaveInactive = NO;
 	self.pvpPlayWarning = NO;
 
+	_movingToCorpse = NO;
+
 	// stop our log out timer
 	[_logOutTimer invalidate];_logOutTimer=nil;
 
@@ -7341,14 +7372,24 @@ NSMutableDictionary *_diffDict = nil;
 - (BOOL)pvpSetEnvironmentForZone{
 
 	UInt32 zone = [playerController zone];
-	if ( ![playerController isInBG:zone] ) return NO;
-		
+	if ( ![playerController isInBG:zone] ) {
+		log(LOG_PVP,  @"Cannot set environment, we're not in a BG!");
+		return NO;
+	}
+
 	Battleground *battleGroundBehavior = [self.pvpBehavior battlegroundForZone:zone];
-	if ( !battleGroundBehavior ) return NO;
+	if ( !battleGroundBehavior ) {
+		log(LOG_PVP,  @"Cannot set environment, there is no behavior for this Battleground!");
+		return NO;
+	}
 
 	// Set the Route Collection
 	RouteCollection *routeCollection = [battleGroundBehavior routeCollection];
-	if ( routeCollection ) return NO;
+	if ( !routeCollection ) {
+		log(LOG_PVP,  @"Cannot set environment, there is no route collection!");
+		return NO;
+	}
+
 	_theRouteCollectionPvP = [routeCollection retain];
 
 	float closestDistance = 0.0f;

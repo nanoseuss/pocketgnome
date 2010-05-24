@@ -922,6 +922,7 @@ typedef enum MovementState{
 #pragma mark Actual Movement Shit - Scary
 
 - (void)moveToPosition: (Position*)position {
+
 	if ( !botController.isBotting && !_destinationWaypointUI ) {
 		[self resetMovementState];
 		return;
@@ -946,7 +947,7 @@ typedef enum MovementState{
     }
 
 	// no object, no actions, just trying to move to the next WP!
-	if ( !_moveToObject && ![_destinationWaypoint actions] && distance < ( [playerData speedMax] / 2.0f) ) {
+	if ( !_moveToObject && !botController.movingToCorpse && ![_destinationWaypoint actions] && distance < ( [playerData speedMax] / 2.0f) ) {
 		log(LOG_MOVEMENT, @"Waypoint is too close %0.2f < %0.2f. Moving to the next one.", distance, ([playerData speedMax] / 2.0f));
 		[self moveToNextWaypoint];
 		return;
@@ -1565,12 +1566,11 @@ typedef enum MovementState{
 	self.lastPlayerPosition			= nil;
 	_isMovingFromKeyboard			= NO;
 	[_stuckDictionary removeAllObjects];
-
 	_unstickifyTry = 0;
 	_stuckCounter = 0;
 	_performingActions = NO;
 
-	if ( self.isFollowing && self.currentRouteHoldForFollow ) {
+	if ( self.currentRouteHoldForFollow ) {
 		// Switch back to what ever was the old route
 		self.currentRoute =	self.currentRouteHoldForFollow;
 		self.currentRouteHoldForFollow =  nil;

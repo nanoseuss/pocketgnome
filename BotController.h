@@ -153,13 +153,17 @@
 	Unit *_castingUnit;		// the unit we're casting on!
 
     NSMutableArray *_mobsToLoot;
-    int _reviveAttempt, _ghostDance, _skinAttempt;
+    int _reviveAttempt;
+	int _ghostDance;
+	int _skinAttempt;
     NSSize minSectionSize, maxSectionSize;
 	NSDate *startDate;
 	int _lastActionErrorCode;
 	UInt32 _lastActionTime;
 	int _zoneBeforeHearth;
 	UInt64 _lastCombatProcedureTarget;
+	
+	BOOL _movingToCorpse;
 	
 	// healing shit
 	BOOL _shouldFollow;
@@ -353,7 +357,7 @@
 @property (readonly, retain) Route *followRoute;
 @property (readwrite, assign) BOOL wasLootWindowOpen;
 @property (readonly, assign) BOOL includeCorpsesPatrol;
-
+@property (readonly, assign) BOOL movingToCorpse;
 @property BOOL waitForPvPQueue;
 
 - (void)testRule: (Rule*)rule;
