@@ -8,6 +8,8 @@
 	<string>YES</string>
 	<key>SUEnableAutomaticChecks</key>
 	<string>YES</string>
+	<key>SUPublicDSAKeyFile</key>
+	<string>dsa_pub.pem</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
@@ -154,8 +156,6 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NoAccessApplication</string>
-	<key>SUPublicDSAKeyFile</key>
-	<string>dsa_pub.pem</string>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>

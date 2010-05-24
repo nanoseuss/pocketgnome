@@ -1039,7 +1039,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 					</object>
 				</object>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{700, 200}</string>
 				<object class="NSView" key="NSWindowView" id="307790377">
 					<nil key="NSNextResponder"/>
@@ -1148,7 +1148,7 @@
 									<string key="NSColorName">controlColor</string>
 									<object class="NSColor" key="NSColor" id="133276419">
 										<int key="NSColorSpace">3</int>
-										<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
+										<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
 									</object>
 								</object>
 								<object class="NSColor" key="NSTextColor" id="557612642">
@@ -1183,7 +1183,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{700, 277}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">MainWindow</string>
 			</object>
 			<object class="NSCustomObject" id="148782052">
@@ -1239,7 +1239,7 @@
 				<string key="NSWindowTitle">Rule Editor</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSWindowContentMinSize">{749, 477}</string>
 				<object class="NSView" key="NSWindowView" id="94846559">
 					<nil key="NSNextResponder"/>
@@ -1359,7 +1359,7 @@
 									<reference key="NSSuperview" ref="591188326"/>
 									<reference key="NSTarget" ref="591188326"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.99193548387096775</double>
+									<double key="NSPercent">0.99193549156188965</double>
 								</object>
 								<object class="NSScroller" id="804227000">
 									<reference key="NSNextResponder" ref="591188326"/>
@@ -1369,7 +1369,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="591188326"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.99222395023328147</double>
+									<double key="NSPercent">0.99222397804260254</double>
 								</object>
 								<object class="NSClipView" id="885604911">
 									<reference key="NSNextResponder" ref="591188326"/>
@@ -2298,7 +2298,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{749, 499}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">RulesEditor</string>
 			</object>
 			<object class="NSCustomView" id="992636968">
@@ -5728,7 +5728,7 @@
 				<string key="NSWindowTitle">Aura Tracker</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="249442898">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -5769,7 +5769,7 @@
 													<string key="NSIdentifier">Order</string>
 													<double key="NSWidth">20</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -5839,7 +5839,7 @@
 													<string key="NSIdentifier">Level</string>
 													<double key="NSWidth">31</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -5903,7 +5903,7 @@
 													<string key="NSIdentifier">TimeRemaining</string>
 													<double key="NSWidth">74</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -5935,7 +5935,7 @@
 													<string key="NSIdentifier">Bytes</string>
 													<double key="NSWidth">163</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -5999,7 +5999,7 @@
 									<reference key="NSTarget" ref="734636930"/>
 									<string key="NSAction">_doScroller:</string>
 									<double key="NSCurValue">37</double>
-									<double key="NSPercent">0.19473679999999999</double>
+									<double key="NSPercent">0.1947367936372757</double>
 								</object>
 								<object class="NSScroller" id="813867683">
 									<reference key="NSNextResponder" ref="734636930"/>
@@ -6009,7 +6009,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="734636930"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.99647889999999995</double>
+									<double key="NSPercent">0.99647891521453857</double>
 								</object>
 								<object class="NSClipView" id="534134755">
 									<reference key="NSNextResponder" ref="734636930"/>
@@ -6042,7 +6042,7 @@
 					<string key="NSFrameSize">{416, 246}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">AuraTrackerWindow</string>
 			</object>
 			<object class="NSCustomObject" id="127609570">
@@ -6068,7 +6068,7 @@
 				<string key="NSWindowTitle">Cooldown Tracker</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="551776608">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -6109,7 +6109,7 @@
 													<string key="NSIdentifier">Address</string>
 													<double key="NSWidth">89</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6142,7 +6142,7 @@
 													<string key="NSIdentifier">ID</string>
 													<double key="NSWidth">15</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6174,7 +6174,7 @@
 													<string key="NSIdentifier">SpellName</string>
 													<double key="NSWidth">166</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6274,7 +6274,7 @@
 													<string key="NSIdentifier">Cooldown</string>
 													<double key="NSWidth">89</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6306,7 +6306,7 @@
 													<string key="NSIdentifier">Bytes</string>
 													<double key="NSWidth">163</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6338,7 +6338,7 @@
 													<string key="NSIdentifier">TimeRemaining</string>
 													<double key="NSWidth">126</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6365,7 +6365,7 @@
 													<string key="NSIdentifier">GCD</string>
 													<double key="NSWidth">65</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6693,7 +6693,7 @@
 									<reference key="NSSuperview" ref="68690136"/>
 									<reference key="NSTarget" ref="68690136"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.93449781659388642</double>
+									<double key="NSPercent">0.93449783325195312</double>
 								</object>
 								<object class="NSScroller" id="1015904369">
 									<reference key="NSNextResponder" ref="68690136"/>
@@ -6703,7 +6703,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="68690136"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.999185667752443</double>
+									<double key="NSPercent">0.99918568134307861</double>
 								</object>
 								<object class="NSClipView" id="879640456">
 									<reference key="NSNextResponder" ref="68690136"/>
@@ -6736,7 +6736,7 @@
 					<string key="NSFrameSize">{1214, 239}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">CooldownTrackerWindow</string>
 			</object>
 			<object class="NSCustomObject" id="133192392">
@@ -6768,7 +6768,7 @@
 				<string key="NSWindowTitle">Combat Tracker</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="385955084">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -6809,7 +6809,7 @@
 													<string key="NSIdentifier">Level</string>
 													<double key="NSWidth">20</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6906,7 +6906,7 @@
 													<string key="NSIdentifier">Class</string>
 													<double key="NSWidth">107</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -6938,7 +6938,7 @@
 													<string key="NSIdentifier">Bytes</string>
 													<double key="NSWidth">163</double>
 													<double key="NSMinWidth">10</double>
-													<double key="NSMaxWidth">3.4028229999999999e+38</double>
+													<double key="NSMaxWidth">3.4028230607370965e+38</double>
 													<object class="NSTableHeaderCell" key="NSHeaderCell">
 														<int key="NSCellFlags">75628096</int>
 														<int key="NSCellFlags2">2048</int>
@@ -7101,7 +7101,7 @@
 									<reference key="NSSuperview" ref="282658619"/>
 									<reference key="NSTarget" ref="282658619"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.93449781659388642</double>
+									<double key="NSPercent">0.93449783325195312</double>
 								</object>
 								<object class="NSScroller" id="157754400">
 									<reference key="NSNextResponder" ref="282658619"/>
@@ -7111,7 +7111,7 @@
 									<int key="NSsFlags">1</int>
 									<reference key="NSTarget" ref="282658619"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSPercent">0.992503748125937</double>
+									<double key="NSPercent">0.99250376224517822</double>
 								</object>
 								<object class="NSClipView" id="217126201">
 									<reference key="NSNextResponder" ref="282658619"/>
@@ -7144,7 +7144,7 @@
 					<string key="NSFrameSize">{662, 245}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
+				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<string key="NSFrameAutosaveName">CombatTrackerWindow</string>
 			</object>
 			<object class="NSCustomObject" id="963237447">
@@ -12221,6 +12221,30 @@
 						<reference key="destination" ref="94147614"/>
 					</object>
 					<int key="connectionID">4709</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">combatController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="983345874"/>
+					</object>
+					<int key="connectionID">4710</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">bindingsController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="963237447"/>
+					</object>
+					<int key="connectionID">4711</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">itemController</string>
+						<reference key="source" ref="290834434"/>
+						<reference key="destination" ref="201772977"/>
+					</object>
+					<int key="connectionID">4712</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -17987,7 +18011,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">4709</int>
+			<int key="maxID">4712</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
