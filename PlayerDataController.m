@@ -1324,6 +1324,10 @@ static PlayerDataController* sharedController = nil;
 // the frostbreaker - left boat
 #define StrandPrivateerZierhut			32658		// right boat
 #define StrandPrivateerStonemantle		32657		// left boat
+// Horde
+#define StrandDreadCaptainNadeux		32660		// right boat
+#define StrandDreadCaptainWinge			32659		// left boat
+
 - (BOOL)isOnRightBoatInStrand{
 	
 	// not on a boat
@@ -1337,6 +1341,13 @@ static PlayerDataController* sharedController = nil;
 		return YES;
 	}
 	
+	if ( [[mobController mobsWithinDistance:50.0f	// actual value is around 35.0f
+									 MobIDs:[NSArray arrayWithObject:[NSNumber numberWithInt: StrandDreadCaptainNadeux]]
+								   position: [[self player] position]
+								  aliveOnly:NO] count] ){
+		return YES;
+	}
+
 	return NO;
 	
 }
@@ -1354,6 +1365,13 @@ static PlayerDataController* sharedController = nil;
 		return YES;
 	}
 	
+	if ( [[mobController mobsWithinDistance:50.0f 
+									 MobIDs:[NSArray arrayWithObject:[NSNumber numberWithInt:StrandDreadCaptainWinge]]
+								   position: [[self player] position]
+								  aliveOnly:NO] count]){
+		return YES;
+	}
+
 	return NO;	
 }
 

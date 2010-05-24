@@ -313,20 +313,20 @@
 }
 
 - (void)dealloc {
-	[_theRouteCollection release];
-	[_theRouteCollectionPvP release];
-	[_theRouteSet release];
-	[_theRouteSetPvP release];
-	[_routesChecked release];
-	[_mobsToLoot release];
-	[_followRoute release];
-	[_followUnit release];
-	[_castingUnit release];
-	[_tankUnit release];
-	[_assistUnit release];
-	[_lootDismountCount release];
-	[_routesChecked release];
-	[_mobsToLoot release];
+	[_theRouteCollection release]; _theRouteCollection = nil;
+	[_theRouteCollectionPvP release]; _theRouteCollectionPvP = nil;
+	[_theRouteSet release]; _theRouteSet = nil;
+	[_theRouteSetPvP release]; _theRouteSetPvP = nil;
+	[_routesChecked release]; _routesChecked = nil;
+	[_mobsToLoot release]; _mobsToLoot = nil;
+	[_followRoute release]; _followRoute = nil;
+	[_followUnit release]; _followUnit = nil;
+	[_castingUnit release]; _castingUnit = nil;
+	[_tankUnit release]; _tankUnit = nil;
+	[_assistUnit release]; _assistUnit = nil;
+	[_lootDismountCount release]; _lootDismountCount = nil;
+	[_routesChecked release]; _routesChecked = nil;
+	[_mobsToLoot release]; _mobsToLoot = nil;
 
 	[super dealloc];
 }
@@ -4642,8 +4642,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Battleground has ended, we've been waiting to leave
 	if ( _waitingToLeaveBattleground ) {
-		[movementController resetMovementState];
-
 		// Actually leave
 		log(LOG_PVP, @"Leaving battleground.");
 		[controller setCurrentStatus: @"Leaving Battleground."];
@@ -6165,20 +6163,26 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.pvpIsInBG && self.isPvPing ) {
 		
 		// See if we need to set the route for the BG
-		if ( !self.theRouteSetPvP || movementController.currentRouteSet != self.theRouteSetPvP ) {
+		if ( !self.theRouteSetPvP || !movementController.currentRouteSet || movementController.currentRouteSet != self.theRouteSetPvP ) {
 
 			if ( [self pvpSetEnvironmentForZone] ) {
-				// set the route set
-				[movementController setPatrolRouteSet:self.theRouteSetPvP];
-				[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
-				return YES;
+				if (self.theRouteSetPvP) {
+					// set the route set
+					[movementController setPatrolRouteSet:self.theRouteSetPvP];
+					[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
+					return YES;
+				} else {
+					log(LOG_ERROR, @"Not able to set the PvP route!");
+					[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+					return NO;
+				}
 			} else {
-				
+
 				log(LOG_ERROR, @"Not able to set the PvP environment!");
 				return YES; // stalled out. no more evaluation
 			}
 		}
-		
+
 		// Update the status if we need to
 		if ( ![[controller currentStatus] isEqualToString: @"Bot: Patrolling"] ) {
 			[controller setCurrentStatus: @"Bot: Patrolling"];
@@ -6950,10 +6954,12 @@ NSMutableDictionary *_diffDict = nil;
 
 		// PvP Resets
 		[self cancelCurrentProcedure];
+		[self cancelCurrentEvaluation];
 		[combatController resetAllCombat];
 		[movementController resetMovementState];
 		self.pvpLeaveInactive = NO;
 		self.pvpPlayWarning = NO;
+		
 		_waitForPvPQueue = NO;
 		_waitingToLeaveBattleground = NO;
 		_pvpIsInBG = NO;
@@ -6970,7 +6976,7 @@ NSMutableDictionary *_diffDict = nil;
 			[controller setCurrentStatus: @"Battleground over, bot stopped."];
 			return;
 		}
-		
+	
 		_waitingToLeaveBattleground = YES;
 		float delay = 0.1f;
 		
@@ -7395,7 +7401,13 @@ NSMutableDictionary *_diffDict = nil;
 		return NO;
 	}
 
+	[_theRouteCollectionPvP release]; _theRouteCollectionPvP = nil;
 	_theRouteCollectionPvP = [routeCollection retain];
+
+	if ( !_theRouteCollectionPvP || ![_theRouteCollectionPvP routes] ) {
+		log(LOG_PVP,  @"Cannot set environment, there is no route collection!");
+		return NO;
+	}
 
 	float closestDistance = 0.0f;
 	Waypoint *thisWaypoint = nil;
@@ -7428,13 +7440,16 @@ NSMutableDictionary *_diffDict = nil;
 	}
 
 	if ( routeSetFound ) {
+		[_theRouteSetPvP release]; _theRouteSetPvP = nil;
 		_theRouteSetPvP = [routeSetFound retain];
 		[routeSetFound release];
 		routeSetFound = nil;
 	} else 
 	if ( [_theRouteCollectionPvP startingRoute] ) {
+		[_theRouteSetPvP release]; _theRouteSetPvP = nil;
 		_theRouteSetPvP = [[_theRouteCollectionPvP startingRoute] retain];
 	} else {
+		[_theRouteSetPvP release]; _theRouteSetPvP = nil;
 		_theRouteSetPvP = [[[_theRouteCollectionPvP routes] objectAtIndex:0] retain];
 	}
 
