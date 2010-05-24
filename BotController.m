@@ -1700,7 +1700,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [[state objectForKey: @"ActionsPerformed"] intValue] > 0 ) {
 			self.evaluationInProgress = @"Regen";
 			log(LOG_REGEN, @"Starting regen!");
-			[self performSelector: @selector(monitorRegen:) withObject: [[[NSDate date] retain] autorelease] afterDelay: 0.1f];
+			[self performSelector: @selector(monitorRegen:) withObject: [[NSDate date] retain] afterDelay: 0.1f];
 			return;
 		} else {
 			// or if we didn't regen, go back to evaluate
@@ -2428,7 +2428,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we can't perform any rules, but we're still in combat with a hostile we do not break procedure.
 	if ( _castingUnit && [_castingUnit isValid] && ![playerController isFriendlyWithFaction: [_castingUnit factionTemplate]] ) {
 		if  ( ![self performProcedureUnitCheck: _castingUnit withState:state] ) return;
-		[combatController resetAllCombat];
 		[self performSelector: _cmd
 				   withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 								CombatProcedure,				@"Procedure",
@@ -3951,7 +3950,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// record our last attempt
 	[_mountLastAttempt release]; _mountLastAttempt = nil;
-	_mountLastAttempt = [[[NSDate date] retain] autorelease];
+	_mountLastAttempt = [[NSDate date] retain];
 	
 	if ( mount != nil ) {
 		
@@ -4548,6 +4547,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[_theRouteSetPvP release];
 		_theRouteSetPvP = nil;
 	}
+
+	// If we're in combat don't check any further
+	if ( [playerController isInCombat] ) return NO;
 
 	// Check for Queueing
 	if ( _waitForPvPQueue ) {

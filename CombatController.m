@@ -622,7 +622,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( type == TargetFriend || type == TargetFriendlies || type == TargetPet || type == TargetSelf || type == TargetNone || [playerData isFriendlyWithFaction: [unit factionTemplate]] ) return;
 
 	// remember when we started w/this unit
-	[_enteredCombat release]; _enteredCombat = [[[NSDate date] retain] autorelease];
+	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
 	if ( !self.inCombat ) _inCombat = YES;
 
 	// lets face our new unit!
