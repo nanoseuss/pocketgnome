@@ -4679,8 +4679,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			_waitForPvPPreparation = YES;
 		}
 		return NO;
-	}
-
+	} else
 	// We do not have the buff so...
 	if ( _waitForPvPPreparation ) {
 		_waitForPvPPreparation = NO;
@@ -7542,7 +7541,7 @@ NSMutableDictionary *_diffDict = nil;
 			_attackingInStrand = YES;
 			log(LOG_PVP, @"We're attacking in strand!");
 		}
-		
+
 		// Check to see if we're on the boat!
 		if ( _attackingInStrand && [playerController isOnBoatInStrand]){
 			_strandDelay = YES;
