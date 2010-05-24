@@ -274,6 +274,7 @@
 - (void)openEditor:(SelectedTab)tab{
 	
 	if ( tab == TabCombat ){
+		[self populatePlayerLists];
 		[profileOutlineView expandItem:CombatProfileName];
 	}
 	else if ( tab == TabMail ){
@@ -633,6 +634,7 @@
 //[self populatePlayerLists]; call this when we display the profile!
 
 - (void)populatePlayerList: (id)popUpButton withGUID:(UInt64)guid{
+	log(LOG_DEV, @"Populating player list.");
 	
 	NSMenu *playerMenu = [[[NSMenu alloc] initWithTitle: @"Player List"] autorelease];
 	NSMenuItem *item;
@@ -667,7 +669,6 @@
 
 // update all 3!
 - (void)populatePlayerLists{
-	
 	// update the list of names!
 	[controller traverseNameList];
 	

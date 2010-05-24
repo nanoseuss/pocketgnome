@@ -99,6 +99,8 @@ typedef enum SelectedTab{
 - (void)addProfile:(Profile*)profile;
 - (BOOL)removeProfile:(Profile*)profile;
 
+- (void)populatePlayerLists;
+
 - (Profile*)profileForUUID:(NSString*)uuid;
 
 // for bindings

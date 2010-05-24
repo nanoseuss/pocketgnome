@@ -126,7 +126,9 @@
     IBOutlet NSView *view;
     
 	RouteCollection *_theRouteCollection;
-    RouteSet *theRouteSet;
+	RouteCollection *_theRouteCollectionPvP;
+    RouteSet *_theRouteSet;
+    RouteSet *_theRouteSetPvP;
     Behavior *theBehavior;
     CombatProfile *theCombatProfile;
 	PvPBehavior *_pvpBehavior;
@@ -235,22 +237,19 @@
 	Unit *_tankUnit;
 	Unit *_assistUnit;
 	BOOL _leaderBeenWaiting;
-	
-	// Follow
-	Route *followRoute;
-	BOOL _followSuspended;
-	BOOL _followLastSeenPosition;
-	BOOL _followingFlagCarrier;
-	Unit *_followUnit;
-	
-	int _lootScanIdleTimer;
-//	int _lootScanCycles;
-
 	int _partyEmoteIdleTimer;
 	int _partyEmoteTimeSince;
 	NSString *_lastEmote;
 	int _lastEmoteShuffled;
+	
+	// Follow
+	Route *_followRoute;
+	Unit *_followUnit;
+	BOOL _followSuspended;
+	BOOL _followLastSeenPosition;
+	BOOL _followingFlagCarrier;
 
+	int _lootScanIdleTimer;
 	BOOL _wasLootWindowOpen;
 	
     // -----------------
@@ -337,7 +336,9 @@
 @property (retain) NSString *evaluationInProgress;
 
 @property (readonly, retain) RouteCollection *theRouteCollection;
+@property (readonly, retain) RouteCollection *theRouteCollectionPvP;
 @property (readwrite, retain) RouteSet *theRouteSet;
+@property (readwrite, retain) RouteSet *theRouteSetPvP;
 @property (readonly, retain) Behavior *theBehavior;
 @property (readonly, retain) PvPBehavior *pvpBehavior;
 @property (readwrite, retain) CombatProfile *theCombatProfile;

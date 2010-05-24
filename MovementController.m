@@ -332,18 +332,21 @@ typedef enum MovementState{
 }
 
 // set our patrolling routeset
-- (void)setPatrolRouteSet: (RouteSet*)route{
-	log(LOG_MOVEMENT, @"Switching from route %@ to %@", _currentRouteSet, route);
+- (void)setPatrolRouteSet: (RouteSet*)routeSet{
+	log(LOG_MOVEMENT, @"Switching from route %@ to %@", _currentRouteSet, routeSet);
 
-	self.currentRouteSet = route;
+	self.currentRouteSet = routeSet;
 
-	if ( ( [playerData isGhost] || [playerData isDead] ) && !botController.pvpIsInBG ) {
+	if ( botController.pvpIsInBG ) {
+		self.currentRouteKey = PrimaryRoute;
+		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
+	} else
+
+	if ( [playerData isGhost] || [playerData isDead] ) {
 		// player is dead
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
-
 	} else {
-
 		// normal route
 		self.currentRouteKey = PrimaryRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
@@ -411,7 +414,7 @@ typedef enum MovementState{
 		[self moveToPosition:[self.moveToObject position]];
 	} else 
 	if ( _currentRouteSet || self.isFollowing ) {
-		
+
 		// Refresh the route if we're in follow
 		if (self.isFollowing) self.currentRoute = botController.followRoute;
 
@@ -542,10 +545,15 @@ typedef enum MovementState{
 	newWaypoint = [self.currentRoute waypointClosestToPosition: playerPosition];
 
 	log(LOG_DEV, @"Initial closest waypoint is %@", newWaypoint);
+	RouteCollection *theRouteCollection;
 
 	float distanceToWaypoint = [playerPosition distanceToPosition: [newWaypoint position]];
 
-	if ( distanceToWaypoint > 100.0f  && botController.theRouteCollection.routes.count > 1) {
+	if ( botController.pvpIsInBG ) 
+		theRouteCollection =  botController.theRouteCollectionPvP;
+			else theRouteCollection =  botController.theRouteCollection;
+
+	if ( distanceToWaypoint > 80.0f  && theRouteCollection.routes.count > 1) {
 		log(LOG_WAYPOINT, @"Looks like the next waypoint is very far, checking to see if we have a closer route.");
 
 		float closestDistance = 0.0f;
@@ -553,7 +561,7 @@ typedef enum MovementState{
 		Route *route = nil;
 		RouteSet *routeSetFound = [RouteSet retain];
 
-		for (RouteSet *routeSet in [botController.theRouteCollection routes] ) {
+		for (RouteSet *routeSet in [theRouteCollection routes] ) {
  
 			// Set the route to test against
 			if ( [playerData isGhost] || [playerData isDead] ) route = [routeSet routeForKey:CorpseRunRoute];
@@ -778,7 +786,7 @@ typedef enum MovementState{
 			[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 			return;
 		}
-		
+
 		// Refresh our follow route
 		self.currentRoute = botController.followRoute;
 		[self realMoveToNextWaypoint];
@@ -1754,30 +1762,22 @@ typedef enum MovementState{
 	[self resetMovementState];
 	
 }
+
 - (void)playerHasDied:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
 
 	// reset our movement state!
 	[self resetMovementState];
 
-	// We're not set to use a route so do nothing
-	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ) return;
-
-	// do nothing if in a BG
+	// If in a BG
 	if ( botController.pvpIsInBG ) {
-
-		// normal route if PvPing -- not sure if this is needed, but I left it in here.
-		if ( botController.isPvPing ) {
-			self.currentRouteKey = PrimaryRoute;
-			self.currentRouteSet = [botController.theRouteCollection startingRoute];
-	
-			if ( !self.currentRouteSet ) self.currentRouteSet = [[botController.theRouteCollection routes] objectAtIndex:0];
-			
-			self.currentRoute = [self.currentRouteSet routeForKey:PrimaryRoute];
-		}
+		self.currentRouteSet = nil;
 		log(LOG_MOVEMENT, @"Ignoring corpse route because we're PvPing!");
 		return;
 	}
+
+	// We're not set to use a route so do nothing
+	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ) return;
 
 	// switch back to starting route?
 	if ( [botController.theRouteCollection startRouteOnDeath] ) {
@@ -1794,7 +1794,7 @@ typedef enum MovementState{
 		self.currentRouteKey = CorpseRunRoute;
 		self.currentRoute = [self.currentRouteSet routeForKey:CorpseRunRoute];
 	}
-	
+
 	if ( self.currentRoute && [[self.currentRoute waypoints] count] == 0  ){
 		log(LOG_MOVEMENT, @"No corpse route! Ending movement");
 		[self stopMovement];
@@ -1814,7 +1814,7 @@ typedef enum MovementState{
 		Position *playerPosition = [playerData position];
 		float distanceToWaypoint;
 
-		for (RouteSet *routeSet in [botController.theRouteCollection routes] ) {
+		for (RouteSet *routeSet in [botController.theRouteCollectionPvP routes] ) {
 
 			// Set the route to test against
 			route = [routeSet routeForKey:PrimaryRoute];

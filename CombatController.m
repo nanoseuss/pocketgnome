@@ -88,6 +88,13 @@
 	[_unitLeftCombatCount release];
 	[_unitLeftCombatTargetCount release];
 	[_unitsDied release];
+	[_unitsMonitoring release];
+
+	[_castingUnit release];
+	[_attackUnit release];
+	[_friendUnit release];
+	[_addUnit release];
+	
     [super dealloc];
 }
 
@@ -615,7 +622,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( type == TargetFriend || type == TargetFriendlies || type == TargetPet || type == TargetSelf || type == TargetNone || [playerData isFriendlyWithFaction: [unit factionTemplate]] ) return;
 
 	// remember when we started w/this unit
-	[_enteredCombat release]; _enteredCombat = [[NSDate date] retain];
+	[_enteredCombat release]; _enteredCombat = [[[NSDate date] retain] autorelease];
 	if ( !self.inCombat ) _inCombat = YES;
 
 	// lets face our new unit!
