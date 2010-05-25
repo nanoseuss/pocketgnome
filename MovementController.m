@@ -1201,7 +1201,7 @@ typedef enum MovementState{
 	int oldStuckCounter = _stuckCounter;
 
 	// we're stuck?
-	if ( _stuckCounter > 3 ) {
+	if ( !botController.waitForPvPPreparation && _stuckCounter > 3 ) {
 		// stop this timer
 		[self resetMovementTimer];
 		[controller setCurrentStatus: @"Bot: Stuck, entering anti-stuck routine"];
@@ -1507,21 +1507,35 @@ typedef enum MovementState{
 	// only do this for hostiles
 	if (![playerData isHostileWithFaction: [target factionTemplate]]) return YES;
 
+	Position *playerPosition = [(PlayerDataController*)playerData position];
 	// If the mob is in our attack range return true
-	float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
-	if ( distanceToTarget <= [botController.theCombatProfile attackRange]) return YES;
+	float distanceToTarget = [playerPosition distanceToPosition: [target position]];
+
+	
+	if ( distanceToTarget <= [botController.theCombatProfile attackRange] ) return YES;
+
+	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
+
+	if ( [[target position] verticalDistanceToPosition: playerPosition] > vertOffset ) {
+		log(LOG_COMBAT, @"Target is beyond the vertical offset limits: %@, giving up.", target);
+		return NO;
+	}
 
 	log(LOG_COMBAT, @"%@ has gone out of range: %0.2f", target, distanceToTarget);
 
+	float attackRange = [botController.theCombatProfile engageRange];
+	if ( [botController.theCombatProfile attackRange] > [botController.theCombatProfile engageRange] )
+		attackRange = [botController.theCombatProfile attackRange];
+	
 	// If they're just a lil out of range lets inch up
-	if ( distanceToTarget < ([botController.theCombatProfile attackRange] + 10.0f) ) {
+	if ( distanceToTarget < (attackRange + 6.0f) ) {
 
 		log(LOG_COMBAT, @"Unit is still close, jumping forward.");
 
 		if ( [self jumpTowardsPosition: [target position]] ) {
 	
 			// Now check again to see if they're in range
-			float distanceToTarget = [[(PlayerDataController*)playerData position] distanceToPosition: [target position]];
+			float distanceToTarget = [playerPosition distanceToPosition: [target position]];
 
 			if ( distanceToTarget > botController.theCombatProfile.attackRange ) {
 				log(LOG_COMBAT, @"Still out of range: %@, giving up.", target);
@@ -1768,15 +1782,16 @@ typedef enum MovementState{
 - (void)playerHasDied:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
 
-	// reset our movement state!
-	[self resetMovementState];
-
 	// If in a BG
 	if ( botController.pvpIsInBG ) {
 //		self.currentRouteSet = nil;
+		[self resetRoutes];
 		log(LOG_MOVEMENT, @"Ignoring corpse route because we're PvPing!");
 		return;
 	}
+
+	// reset our movement state!
+	[self resetMovementState];
 
 	// We're not set to use a route so do nothing
 	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ) return;
@@ -1805,7 +1820,7 @@ typedef enum MovementState{
 
 - (void)playerHasRevived:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
-
+/*
 	if ( botController.isPvPing && botController.pvpIsInBG ) {
 		log(LOG_WAYPOINT, @"Finding the nearest route since we died in PvP.");
 	
@@ -1847,7 +1862,7 @@ typedef enum MovementState{
 			return;
 		}
 	}
-
+*/
 	// do nothing if PvPing or in a BG
 	if ( botController.pvpIsInBG ) return;
 
@@ -2660,7 +2675,7 @@ typedef enum MovementState{
 				log(LOG_WAYPOINT, @"Switching route to %@ with %d waypoints", route, [[route routeForKey: PrimaryRoute] waypointCount]);
 				
 				// switch the botController's route!
-				[botController setTheRouteSet:route];
+//				[botController setTheRouteSet:route];
 				
 				[self setPatrolRouteSet:route];
 				

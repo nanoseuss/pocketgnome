@@ -122,8 +122,12 @@
 @property (readwrite, retain) Unit *followUnit;
 @property (readwrite, retain) Unit *assistUnit;
 @property (readwrite, retain) Unit *tankUnit;
-@property (readwrite, retain) RouteCollection *theRouteCollection;
-@property (readwrite, retain) RouteCollection *theRouteCollectionPvP;
+
+// @property (readwrite, retain) RouteCollection *theRouteCollection;
+// @property (readwrite, retain) RouteCollection *theRouteCollectionPvP;
+// @property (readwrite, retain) RouteCollection *theRouteSet;
+// @property (readwrite, retain) RouteCollection *theRouteSetPvP;
+
 @property (readwrite, retain) Route *followRoute;
 
 // pvp
@@ -227,6 +231,9 @@
 
 	_sleepTimer = 0;
 	_theRouteCollection = nil;
+	_theRouteCollectionPvP = nil;
+	_theRouteSet = nil;
+	_theRouteSetPvP = nil;
 	_pvpBehavior = nil;
 	_procedureInProgress = nil;
 	_evaluationInProgress = nil;
@@ -313,20 +320,19 @@
 }
 
 - (void)dealloc {
-	[_theRouteCollection release]; _theRouteCollection = nil;
-	[_theRouteCollectionPvP release]; _theRouteCollectionPvP = nil;
-	[_theRouteSet release]; _theRouteSet = nil;
-	[_theRouteSetPvP release]; _theRouteSetPvP = nil;
-	[_routesChecked release]; _routesChecked = nil;
-	[_mobsToLoot release]; _mobsToLoot = nil;
-	[_followRoute release]; _followRoute = nil;
-	[_followUnit release]; _followUnit = nil;
-	[_castingUnit release]; _castingUnit = nil;
-	[_tankUnit release]; _tankUnit = nil;
-	[_assistUnit release]; _assistUnit = nil;
-	[_lootDismountCount release]; _lootDismountCount = nil;
-	[_routesChecked release]; _routesChecked = nil;
-	[_mobsToLoot release]; _mobsToLoot = nil;
+//	[_theRouteCollection release]; _theRouteCollection = nil;
+//	[_theRouteCollectionPvP release]; _theRouteCollectionPvP = nil;
+//	[_theRouteSet release]; _theRouteSet = nil;
+//	[_theRouteSetPvP release]; _theRouteSetPvP = nil;
+	[_mobsToLoot release];
+	[_followRoute release];
+	[_followUnit release];
+	[_castingUnit release];
+	[_tankUnit release];
+	[_assistUnit release];
+	[_lootDismountCount release];
+	[_routesChecked release];
+	[_mobsToLoot release];
 
 	[super dealloc];
 }
@@ -400,7 +406,7 @@
 @synthesize pvpLeaveInactive = _pvpLeaveInactive;
 @synthesize pvpIsInBG = _pvpIsInBG;
 @synthesize waitForPvPQueue = _waitForPvPQueue;
-
+@synthesize waitForPvPPreparation = _waitForPvPPreparation;
 @synthesize startDate;
 @synthesize doLooting	    = _doLooting;
 @synthesize gatherDistance  = _gatherDist;
@@ -3808,13 +3814,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( theCombatProfile.followStopFollowingOOR && distanceToFollowUnit > theCombatProfile.followStopFollowingRange ) {
 		log(LOG_FOLLOW, @"Leader is out of range and stop following is enabled, disengaging follow.");
-		 self.followUnit = nil;
+		[_followUnit release]; _followUnit = nil;
 		[self followRouteClear];
 		[[NSNotificationCenter defaultCenter] postNotificationName: ReachedFollowUnitNotification object: nil];
 		return;
 	}
 
-	if ( [_followRoute waypointCount] > 0 ) {
+	if ( [_followRoute waypointCount] ) {
 		// If we already have waypoints on the route
 		log(LOG_DEV, @"Looks like we have a route started already.");
 
@@ -3842,7 +3848,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 		[_followRoute addWaypoint: newWaypoint];
 
-		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, [[_followRoute waypoints] count] );
+		log(LOG_DEV, @"[Follow] Starting route with waypoint: %@ count: %d", newWaypoint, [_followRoute waypointCount] );
 
 	}
 
@@ -4112,6 +4118,27 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( !_followUnit ) {
 		log(LOG_DEV, @"No leader found to follow!");
+		[self followRouteClear];
+		return NO;
+	}
+
+	return YES;
+}
+
+-(BOOL)verifyFollowUnit {
+
+	if ( ![_followUnit isValid] || [_followUnit isDead] ) {
+		[_followUnit release]; _followUnit = nil;
+		[self followRouteClear];
+		return NO;
+	}
+
+	Position *positionFollowUnit = [_followUnit position];
+	float distanceToFollowUnit = [[playerController position] distanceToPosition: positionFollowUnit];
+	
+	if ( theCombatProfile.followStopFollowingOOR && distanceToFollowUnit > theCombatProfile.followStopFollowingRange ) {
+		log(LOG_FOLLOW, @"Leader is out of range and stop following is enabled, disengaging follow.");
+		[_followUnit release]; _followUnit = nil;
 		[self followRouteClear];
 		return NO;
 	}
@@ -4436,6 +4463,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	if( ![playerController corpsePosition] ) {
 		log(LOG_DEV, @"Still not near the corpse.");
+		
+		// Make sure the movement controller has the right route
+		if ( self.theRouteSet && movementController.currentRouteSet != self.theRouteSet )
+			[movementController setPatrolRouteSet:self.theRouteSet];
+		
 		if ( ![movementController isMoving] ) [movementController resumeMovement];
 		return NO;
 	}
@@ -4460,6 +4492,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		
 	// If we're not close to the corpse let's keep moving
 	if( _ghostDance == 0 && distanceToCorpse > 6.0f ) {
+		
+		// Make sure the movement controller has the right route
+		if ( self.theRouteSet && movementController.currentRouteSet != self.theRouteSet )
+			[movementController setPatrolRouteSet:self.theRouteSet];
+
 		log(LOG_DEV, @"Still not near the corpse.");
 		if ( ![movementController isMoving] ) [movementController resumeMovement];
 		return NO;
@@ -4556,22 +4593,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// Out of BG Resets
 	if ( self.pvpIsInBG ) _pvpIsInBG = NO;
-	if ( _theRouteCollectionPvP ) _theRouteCollectionPvP = nil;
-	if ( _theRouteSetPvP ) _theRouteSetPvP = nil;
 	if ( _attackingInStrand ) _attackingInStrand = NO;
 	if ( _strandDelay ) _strandDelay= NO;
 	if ( _waitForPvPPreparation ) _waitForPvPPreparation = NO;
 	if ( _strandDelayTimer != 0 ) _strandDelayTimer = 0;
-	if ( _pvpTimer ) [_pvpTimer invalidate]; _pvpTimer = nil;
-
-	if ( _theRouteCollectionPvP ) {
-		[_theRouteCollectionPvP release];
-		_theRouteCollectionPvP = nil;
-	}
-	if ( _theRouteSetPvP ) {
-		[_theRouteSetPvP release];
-		_theRouteSetPvP = nil;
-	}
+	if ( _pvpTimer ) [self resetPvpTimer];
 
 	// If we're in combat don't check any further
 	if ( [playerController isInCombat] ) return NO;
@@ -4634,12 +4660,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_EVALUATE, @"Evaluating for PvP Battleground");
 
-	_pvpIsInBG = YES;
-	_waitForPvPQueue = NO;
-
-	if ( !_pvpTimer )
-		_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 0.5f target: self selector: @selector(pvpMonitor:) userInfo: nil repeats: YES];
-
 	// Battleground has ended, we've been waiting to leave
 	if ( _waitingToLeaveBattleground ) {
 		// Actually leave
@@ -4647,9 +4667,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[controller setCurrentStatus: @"Leaving Battleground."];
 		[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
 		_waitingToLeaveBattleground = NO;
-		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 5.0f];
 		return YES;
 	}
+
+	_waitForPvPQueue = NO;
+	if ( !_pvpIsInBG ) {
+		_pvpIsInBG = YES;
+		if ( [self pvpSetEnvironmentForZone] ) {
+			log(LOG_DEV, @"PvP environment is set!");
+		}
+	}
+
+	if ( !_pvpTimer )
+		_pvpTimer = [NSTimer scheduledTimerWithTimeInterval: 0.5f target: self selector: @selector(pvpMonitor:) userInfo: nil repeats: YES];
 
 	Player *player = [playerController player];
 
@@ -4752,7 +4783,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for Party");
 
 	if ( [self establishTankUnit] ) {
-		[movementController resetMovementState];
+//		[movementController resetMovementState];
 
 		// Loop again to evaluate after setting tank unit
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
@@ -4760,7 +4791,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	if ( [self establishAssistUnit] ) {
-		[movementController resetMovementState];
+//		[movementController resetMovementState];
 
 		// Loop again to evaluate after setting assist unit
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
@@ -4781,7 +4812,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return YES;
 	} else 
 	if ( _leaderBeenWaiting ) {
-		[movementController resetMovementState];
+//		[movementController resetMovementState];
 
 		_leaderBeenWaiting = NO;
 		self.evaluationInProgress = nil;
@@ -4886,11 +4917,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			log(LOG_DEV, @"Mountingfailed!?");
 			return NO;
 		}
-		
 	}
 
 	// If we've recorded no route yet
-	if ( [_followRoute waypointCount] == 0 ) {
+	if ( ![_followRoute waypointCount] ) {
 		log(LOG_DEV, @"No follow route yet, skipping follow.");
 		
 		if ( self.evaluationInProgress ) {
@@ -5001,7 +5031,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// Skip this if we are already in evaluation
-	if ( self.evaluationInProgress ) return NO;
+	if ( self.evaluationInProgress ) {
+		if ( self.evaluationInProgress == @"Follow" && !_followingFlagCarrier ) {
+			return NO;		
+		} else 
+			if ( self.evaluationInProgress != @"Follow" ) {
+			return NO;
+		}
+	}
 
 	// If combat isn't enabled
 	if ( !theCombatProfile.combatEnabled && !theCombatProfile.healingEnabled ) return NO;
@@ -5569,7 +5606,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateForFishing {
-	
+
 	// Skip this if we are already in evaluation
 	if ( self.evaluationInProgress && self.evaluationInProgress != @"Fishing" ) return NO;
 
@@ -5985,21 +6022,36 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	} else {
 		log(LOG_EVALUATE, @"Evaluating Situation");
 	}
-	
-    if ( ![playerController playerIsValid:self] ) {
-		log(LOG_GENERAL, @"Player is invalid, waiting...");
-		[self performSelector: _cmd withObject: nil afterDelay: 1.0];
-		return NO;
-	}
 
 	UInt32 offset = [offsetController offset:@"WorldState"];
 	UInt32 worldState = 0;
 	if ( [[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte *)&worldState BufLength: sizeof(worldState)] ) {
 		if ( worldState == 10 ) {
+
 			log(LOG_GENERAL, @"Game is loading, waiting...");
+			if ( self.procedureInProgress )
+				[self cancelCurrentProcedure];
+			if ( self.evaluationInProgress ) 
+				self.evaluationInProgress = nil;
+			if ( movementController.isFollowing || [movementController isActive] ) 
+				[movementController resetMovementState];
+			
 			[self performSelector: _cmd withObject: nil afterDelay: 1.0f];
 			return NO;
 		}
+	}
+
+    if ( ![playerController playerIsValid:self] ) {
+		log(LOG_GENERAL, @"Player is invalid, waiting...");
+		if ( self.procedureInProgress )
+			[self cancelCurrentProcedure];
+		if ( self.evaluationInProgress ) 
+			self.evaluationInProgress = nil;
+		if ( movementController.isFollowing || [movementController isActive] ) 
+			[movementController resetMovementState];
+
+		[self performSelector: _cmd withObject: nil afterDelay: 1.0];
+		return NO;
 	}
 
 	// Skip this if there is a procedure going (sometimes a notification can recall evaluation when we don't want it to)
@@ -6092,7 +6144,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// If we're just performing a check while we're in route we can return here
-	if ( movementController.isFollowing ) {
+	if ( movementController.isFollowing && [movementController isActive] ) {
 		log(LOG_EVALUATE, @"Evaluation was called while following, nothing to do.");
 		return NO;
 	}
@@ -6120,7 +6172,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return NO;
 	}
 
-	if ( self.followUnit && !self.followSuspended ) {
+	if ( self.followUnit && !self.followSuspended && [self verifyFollowUnit] ) {
 		log(LOG_EVALUATE, @"In follow mode so we're not processing movement.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 		return NO;
@@ -6142,13 +6194,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// If we have combat to do we loop
-	if ( [combatController.unitsAttackingMe count] && ![playerController isAirMounted] ) {
+//	if ( !self.pvpIsInBG && [combatController.unitsAttackingMe count] && ![playerController isAirMounted] ) {
 		// This is intended to help us not continue a route when our behavior has broken or we've ran out of mana.
-		log(LOG_EVALUATE, @"We have combat to do so we're looping evaluation.");
-		[combatController doCombatSearch];
-		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
-		return NO;
-	}
+//		log(LOG_EVALUATE, @"We have combat to do so we're looping evaluation.");
+//		[combatController doCombatSearch];
+//		[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
+//		return NO;
+//	}
 
 	// If we get here it should be safe to reset this list
 	if ( combatController.unitsDied && combatController.unitsDied.count ) [combatController resetUnitsDied];
@@ -6160,18 +6212,18 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// In a BG with a Route
 	if ( self.pvpIsInBG && self.isPvPing ) {
-		
+
 		// See if we need to set the route for the BG
 		if ( !self.theRouteSetPvP || !movementController.currentRouteSet || movementController.currentRouteSet != self.theRouteSetPvP ) {
 
 			if ( [self pvpSetEnvironmentForZone] ) {
 				if (self.theRouteSetPvP) {
+					log(LOG_DEV, @"Setting our PvP route set in the movementController.");
 					// set the route set
 					[movementController setPatrolRouteSet:self.theRouteSetPvP];
 					[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 					return YES;
 				} else {
-					log(LOG_ERROR, @"Not able to set the PvP route!");
 					[self performSelector: _cmd withObject: nil afterDelay: 0.3f];
 					return NO;
 				}
@@ -6641,17 +6693,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		self.pvpLeaveInactive = [self.pvpBehavior leaveIfInactive];
 
 		// reset these in case they have them selected
-		self.theRouteSet = nil;
-		self.theRouteCollection = nil;
-
-	} else
-
-	// Normal, non-PvP 
-	if ( self.theRouteSet && movementController.currentRouteSet != self.theRouteSet ) {
-
-		[movementController setPatrolRouteSet: self.theRouteSet];
+//		self.theRouteSet = nil;
+//		self.theRouteCollection = nil;
 
 	}
+	//else
+
+	// Normal, non-PvP 
+//	if ( self.theRouteSet && movementController.currentRouteSet != self.theRouteSet ) 
+//		[movementController setPatrolRouteSet: self.theRouteSet];
+
+//	}
 
 	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 }
@@ -6708,7 +6760,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_waitForPvPPreparation = NO;
 
 	_sleepTimer = 0;
-	_theRouteCollection = nil;
+	[movementController resetRoutes];
+//	_theRouteCollection = nil;
+//	_theRouteSet = nil;
+//	_theRouteCollectionPvP = nil;
+//	_theRouteSetPvP = nil;
+
 	_pvpBehavior = nil;
 	_procedureInProgress = nil;
 	_evaluationInProgress = nil;
@@ -6751,8 +6808,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Follow resets
 	[_followUnit release];
 	_followUnit	= nil;
-	[_followRoute release];
-	_followRoute = nil;
+//	[_followRoute release];
+//	_followRoute = nil;
 	_followingFlagCarrier = NO;
 
 	// Party resets
@@ -6780,9 +6837,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	_movingToCorpse = NO;
 
-	[_theRouteCollectionPvP release];_theRouteCollectionPvP = nil;
-	[_theRouteSetPvP release];_theRouteSetPvP = nil;
-
 	// stop our log out timer
 	[_logOutTimer invalidate];_logOutTimer=nil;
 
@@ -6804,7 +6858,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [movementController isActive] ) 
 		[movementController stopMovement];
 
-	if ( _pvpTimer ) [_pvpTimer invalidate]; _pvpTimer = nil;
+	[self resetPvpTimer];
     [combatController resetAllCombat];
 	[blacklistController clearAll];
 	if ( self.doLooting ) [_mobsToLoot removeAllObjects];
@@ -6929,21 +6983,23 @@ NSMutableDictionary *_diffDict = nil;
 
 	if ( status == BGWaiting ) {
 		// queue then check again!
-		_waitForPvPPreparation = YES;
-		_pvpIsInBG = YES;
+//		_waitForPvPPreparation = YES;
+//		_pvpIsInBG = YES;
 		[controller setCurrentStatus: @"Joining Battleground."];
 		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
 		log(LOG_PVP, @"Joining BG!");
-		[self performSelector: _cmd withObject: nil afterDelay:0.5f];
+		[self performSelector: _cmd withObject: nil afterDelay:1.0f];
 		return;
 	}
 
-	_waitForPvPPreparation = YES;
-	_pvpIsInBG = YES;
 	_waitForPvPQueue = NO;
-// Lets skip this and allow the status change to start the evaluation
-	// Restart Evaluation
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
+	[self performSelector: @selector(joinBGCheckStartWithoutPreparation) withObject: nil afterDelay: 8.0f];
+}
+
+- (void)joinBGCheckStartWithoutPreparation {
+	// Normally the auraGain would start the evaluation procedure, this is here in the event that we spawn into a BG that's already in progress.
+	if ( _waitForPvPPreparation ) return;
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.1f];
 }
 
 - (void)pvpMonitor: (NSTimer*)timer {
@@ -6955,7 +7011,8 @@ NSMutableDictionary *_diffDict = nil;
 		[self cancelCurrentProcedure];
 		[self cancelCurrentEvaluation];
 		[combatController resetAllCombat];
-		[movementController resetMovementState];
+		[movementController resetRoutes];
+
 		self.pvpLeaveInactive = NO;
 		self.pvpPlayWarning = NO;
 		
@@ -6964,11 +7021,16 @@ NSMutableDictionary *_diffDict = nil;
 		_pvpIsInBG = NO;
 		_isPvpMonitoring = NO;
 
+		if ( _followUnit ) {
+			[_followUnit release]; _followUnit = nil;
+			[self followRouteClear];
+		}
 		[self stopBotActions];
-		[movementController resetRoutes];
-		self.theRouteCollection = nil;
-		self.theRouteSet = nil;
-
+//		self.theRouteCollection = nil;
+//		self.theRouteSet = nil;
+//		self.theRouteCollectionPvP = nil;
+//		self.theRouteSetPvP = nil;
+		
 		if ( !self.isPvPing ) {
 			log(LOG_PVP, @"Stopping the bot since we're running in easy mode.");
 			[self stopBot: nil];
@@ -6983,12 +7045,13 @@ NSMutableDictionary *_diffDict = nil;
 		int delaySeconds = round(delay);
 		[controller setCurrentStatus: [NSString stringWithFormat:@"Battleground over, waiting %d seconds to leave.", delaySeconds]];
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
+		[self resetPvpTimer];
 		return;
 	}
 
 	if ( ![playerController isInBG:[playerController zone]] ) {
 		log(LOG_PVP, @"No longer in a BG, ending monitor.");
-		_isPvpMonitoring = NO;
+		[self resetPvpTimer];
 		return;
 	}
 
@@ -6997,6 +7060,13 @@ NSMutableDictionary *_diffDict = nil;
 		_isPvpMonitoring = YES;
 	}
 
+}
+-(void)resetPvpTimer{
+	if ( _pvpTimer ) {
+		[_pvpTimer invalidate];
+		_pvpTimer = nil;
+	}
+	_isPvpMonitoring = NO;
 }
 
 - (void)eventBattlegroundStatusChange: (NSNotification*)notification {
@@ -7029,7 +7099,12 @@ NSMutableDictionary *_diffDict = nil;
 		self.pvpLeaveInactive = NO;
 		self.pvpPlayWarning = NO;
 		_waitingToLeaveBattleground = NO;
-		_waitForPvPPreparation = YES;
+		if ( _followUnit ) {
+			[_followUnit release]; _followUnit = nil;
+			[self followRouteClear];
+		}
+		
+//		_waitForPvPPreparation = YES;
 		float queueAfter = SSRandomFloatBetween(10.0f, 15.0f);
 		log(LOG_PVP, @"Joining the BG after %0.2f seconds", queueAfter);
 		[controller setCurrentStatus: @"Queue popped, accepting in a moment..."];
@@ -7048,6 +7123,8 @@ NSMutableDictionary *_diffDict = nil;
 		[movementController resetMovementState];
 		log(LOG_PVP, @"Left BG, stopping movement!");
 	}
+
+	[self verifyFollowUnit];
 
 	log(LOG_GENERAL, @"Zone change fired... to %@", lastZone);
 }
@@ -7322,11 +7399,12 @@ NSMutableDictionary *_diffDict = nil;
 			[movementController resetMovementState];
 			_waitForPvPQueue = NO;
 			_waitForPvPPreparation = YES;
+			_pvpIsInBG = YES;
 
 			log(LOG_PVP, @"We have preparation, checking BG info!");
 
 			// Do it in a bit, as we need to wait for our controller to update the object list!
-			[self performSelector:@selector(pvpGetBGInfo) withObject:nil afterDelay:2.1f];
+			[self performSelector:@selector(pvpGetBGInfo) withObject:nil afterDelay:2.0f];
 		}
     }
 }
@@ -7380,28 +7458,33 @@ NSMutableDictionary *_diffDict = nil;
 
 // this will set up the pvp environment based on the zone we're in (basically set the RouteSet)
 - (BOOL)pvpSetEnvironmentForZone{
-
+	log(LOG_FUNCTION,  @"pvpSetEnvironmentForZone:");
+	
 	UInt32 zone = [playerController zone];
 	if ( ![playerController isInBG:zone] ) {
 		log(LOG_PVP,  @"Cannot set environment, we're not in a BG!");
 		return NO;
 	}
 
-	Battleground *battleGroundBehavior = [self.pvpBehavior battlegroundForZone:zone];
-	if ( !battleGroundBehavior ) {
+	Battleground *battleground = [self.pvpBehavior battlegroundForZone:zone];
+	if ( !battleground ) {
 		log(LOG_PVP,  @"Cannot set environment, there is no behavior for this Battleground!");
 		return NO;
 	}
 
 	// Set the Route Collection
-	RouteCollection *routeCollection = [battleGroundBehavior routeCollection];
+	RouteCollection *routeCollection = [battleground routeCollection];
 	if ( !routeCollection ) {
 		log(LOG_PVP,  @"Cannot set environment, there is no route collection!");
 		return NO;
 	}
 
-	[_theRouteCollectionPvP release]; _theRouteCollectionPvP = nil;
-	_theRouteCollectionPvP = [routeCollection retain];
+	if ( routeCollection != _theRouteCollectionPvP ) {
+		log(LOG_DEV,  @"Setting the route collection to %@", routeCollection);
+		self.theRouteCollectionPvP = routeCollection;
+	} else {
+		log(LOG_DEV,  @"Setting the route collection already set to %@", routeCollection);
+	}
 
 	if ( !_theRouteCollectionPvP || ![_theRouteCollectionPvP routes] ) {
 		log(LOG_PVP,  @"Cannot set environment, there is no route collection!");
@@ -7413,8 +7496,9 @@ NSMutableDictionary *_diffDict = nil;
 	Route *route = nil;
 	RouteSet *routeSetFound;
 	Position *playerPosition = [playerController position];
-	float distanceToWaypoint;	
-	
+	float distanceToWaypoint;
+
+	log(LOG_DEV,  @"pvpSetEnvironmentForZone: looking through routeSets");
 	for (RouteSet *routeSet in [_theRouteCollectionPvP routes] ) {
 
 		// Set the route to test against
@@ -7438,18 +7522,23 @@ NSMutableDictionary *_diffDict = nil;
 		}
 	}
 
+	if ( routeSetFound == _theRouteSetPvP ) {
+		log(LOG_DEV,  @"Route set already set to %@", routeSetFound);
+		return YES;
+	}
+
 	if ( routeSetFound ) {
-		[_theRouteSetPvP release]; _theRouteSetPvP = nil;
-		_theRouteSetPvP = [routeSetFound retain];
+		log(LOG_DEV,  @"pvpSetEnvironmentForZone: setting to the closest route.");
+		self.theRouteSetPvP = routeSetFound;
 		[routeSetFound release];
 		routeSetFound = nil;
 	} else 
 	if ( [_theRouteCollectionPvP startingRoute] ) {
-		[_theRouteSetPvP release]; _theRouteSetPvP = nil;
-		_theRouteSetPvP = [[_theRouteCollectionPvP startingRoute] retain];
+		log(LOG_DEV,  @"pvpSetEnvironmentForZone: setting to the starting route.");
+		self.theRouteSetPvP = [_theRouteCollectionPvP startingRoute];
 	} else {
-		[_theRouteSetPvP release]; _theRouteSetPvP = nil;
-		_theRouteSetPvP = [[[_theRouteCollectionPvP routes] objectAtIndex:0] retain];
+		log(LOG_DEV,  @"pvpSetEnvironmentForZone: setting to the first route.");
+		self.theRouteSetPvP = [[_theRouteCollectionPvP routes] objectAtIndex:0];
 	}
 
 	log(LOG_PVP,  @"Setting PvP route set to %@", self.theRouteSetPvP);
@@ -7472,7 +7561,7 @@ NSMutableDictionary *_diffDict = nil;
 	}
 
 	NSString *macroEnd = [macroController macroTextForKey:@"QueueForBattleground"];
-	
+
 	// doing a random? ezmode!
 	if ( [self.pvpBehavior random] ) {
 		log(LOG_PVP, @"Queueing up for randoms.");
@@ -7501,9 +7590,17 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpGetBGInfo{
+	
+	[movementController resetMovementState];
+	if ( _followUnit ) {
+		[_followUnit release]; _followUnit = nil;
+		[self followRouteClear];
+	}
+	
+	[self pvpSetEnvironmentForZone];
 
 	// Lets gets some info?
-	if ( [playerController zone] == ZoneStrandOfTheAncients ){
+	if ( [playerController zone] == ZoneStrandOfTheAncients ) {
 
 		NSArray *antipersonnelCannons = [mobController mobsWithEntryID:StrandAntipersonnelCannon];
 

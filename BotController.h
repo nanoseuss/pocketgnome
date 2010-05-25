@@ -339,12 +339,14 @@
 @property (retain) NSString *procedureInProgress;
 @property (retain) NSString *evaluationInProgress;
 
-@property (readonly, retain) RouteCollection *theRouteCollection;
-@property (readonly, retain) RouteCollection *theRouteCollectionPvP;
+@property (readwrite, retain) RouteCollection *theRouteCollection;
+@property (readwrite, retain) RouteCollection *theRouteCollectionPvP;
 @property (readwrite, retain) RouteSet *theRouteSet;
 @property (readwrite, retain) RouteSet *theRouteSetPvP;
+
 @property (readonly, retain) Behavior *theBehavior;
 @property (readonly, retain) PvPBehavior *pvpBehavior;
+@property BOOL waitForPvPPreparation;
 @property (readwrite, retain) CombatProfile *theCombatProfile;
 @property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
@@ -407,6 +409,7 @@
 - (BOOL)followMountCheck;
 - (Unit*)whisperCommandUnit:(ChatLogEntry*)entry;
 - (BOOL)whisperCommandAllowed: (ChatLogEntry*)entry;
+- (BOOL)verifyFollowUnit;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
@@ -425,8 +428,8 @@
 
 // PVP
 - (BOOL)pvpIsBattlegroundEnding;
+- (void)resetPvpTimer;
 - (void)stopBotActions;
-
 // hackish stuff
 - (IBAction)toggleWallWalk: (id)sender;
 - (IBAction)toggleAllChat: (id)sender;
