@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="1"/>
 			<integer value="1183"/>
-			<integer value="1431"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -66,7 +66,7 @@
 								<string key="NSColorName">controlColor</string>
 								<object class="NSColor" key="NSColor" id="178564801">
 									<int key="NSColorSpace">3</int>
-									<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
+									<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
 								</object>
 							</object>
 							<object class="NSColor" key="NSTextColor" id="523328271">
@@ -195,7 +195,7 @@
 								<reference key="NSSuperview" ref="520085517"/>
 								<reference key="NSTarget" ref="520085517"/>
 								<string key="NSAction">_doScroller:</string>
-								<double key="NSPercent">0.94252873563218387</double>
+								<double key="NSPercent">0.94252872467041016</double>
 							</object>
 							<object class="NSScroller" id="292701773">
 								<reference key="NSNextResponder" ref="520085517"/>
@@ -205,7 +205,7 @@
 								<int key="NSsFlags">1</int>
 								<reference key="NSTarget" ref="520085517"/>
 								<string key="NSAction">_doScroller:</string>
-								<double key="NSPercent">0.93010752688172038</double>
+								<double key="NSPercent">0.93010753393173218</double>
 							</object>
 							<object class="NSClipView" id="527361258">
 								<reference key="NSNextResponder" ref="520085517"/>
@@ -1307,7 +1307,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 												<object class="NSTabViewItem" id="525947361">
 													<string key="NSIdentifier">Item 3</string>
 													<object class="NSView" key="NSView" id="618054587">
-														<nil key="NSNextResponder"/>
+														<reference key="NSNextResponder" ref="532565394"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1504,7 +1504,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 																		<reference key="NSSuperview" ref="533238575"/>
 																		<reference key="NSTarget" ref="533238575"/>
 																		<string key="NSAction">_doScroller:</string>
-																		<double key="NSPercent">0.81707320000000005</double>
+																		<double key="NSPercent">0.81707322597503662</double>
 																	</object>
 																	<object class="NSScroller" id="870954255">
 																		<reference key="NSNextResponder" ref="533238575"/>
@@ -1514,7 +1514,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 																		<int key="NSsFlags">1</int>
 																		<reference key="NSTarget" ref="533238575"/>
 																		<string key="NSAction">_doScroller:</string>
-																		<double key="NSPercent">0.97058820000000001</double>
+																		<double key="NSPercent">0.97058820724487305</double>
 																	</object>
 																	<object class="NSClipView" id="870026661">
 																		<reference key="NSNextResponder" ref="533238575"/>
@@ -1622,6 +1622,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {652, 288}}</string>
+														<reference key="NSSuperview" ref="532565394"/>
 													</object>
 													<string key="NSLabel">Ignore</string>
 													<reference key="NSColor" ref="211653087"/>
@@ -2981,7 +2982,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 												<object class="NSTabViewItem" id="309040333">
 													<string key="NSIdentifier">Item 6</string>
 													<object class="NSView" key="NSView" id="881345367">
-														<reference key="NSNextResponder" ref="532565394"/>
+														<nil key="NSNextResponder"/>
 														<int key="NSvFlags">256</int>
 														<object class="NSMutableArray" key="NSSubviews">
 															<bool key="EncodedWithXMLCoder">YES</bool>
@@ -3293,21 +3294,20 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 															</object>
 														</object>
 														<string key="NSFrame">{{10, 33}, {652, 288}}</string>
-														<reference key="NSSuperview" ref="532565394"/>
 													</object>
 													<string key="NSLabel">Death</string>
 													<reference key="NSColor" ref="211653087"/>
 													<reference key="NSTabView" ref="532565394"/>
 												</object>
 											</object>
-											<reference key="NSSelectedTabViewItem" ref="309040333"/>
+											<reference key="NSSelectedTabViewItem" ref="525947361"/>
 											<reference key="NSFont" ref="805037073"/>
 											<int key="NSTvFlags">0</int>
 											<bool key="NSAllowTruncatedLabels">YES</bool>
 											<bool key="NSDrawsBackground">YES</bool>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<reference ref="881345367"/>
+												<reference ref="618054587"/>
 											</object>
 										</object>
 									</object>
@@ -4006,7 +4006,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<reference key="NSBackgroundColor" ref="977072340"/>
 							<object class="NSColor" key="NSTextColor">
 								<int key="NSColorSpace">3</int>
-								<bytes key="NSWhite">MCAwLjgwMDAwMDAxAA</bytes>
+								<bytes key="NSWhite">MCAwLjgwMDAwMDAxMTkAA</bytes>
 							</object>
 						</object>
 						<reference key="NSContentView" ref="252295634"/>
@@ -4710,14 +4710,6 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 						<reference key="destination" ref="197030423"/>
 					</object>
 					<int key="connectionID">1501</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">deleteProfile:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="993809216"/>
-					</object>
-					<int key="connectionID">1502</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -6485,6 +6477,14 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 						</object>
 					</object>
 					<int key="connectionID">1728</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">deleteIgnoreEntry:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="993809216"/>
+					</object>
+					<int key="connectionID">1729</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -9047,7 +9047,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{498, 110}, {917, 523}}</string>
+					<string>{{319, 110}, {917, 523}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{575, 480}, {600, 335}}</string>
@@ -9127,7 +9127,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{1125, 593}, {152, 153}}</string>
+					<string>{{1084, 593}, {152, 153}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -9523,7 +9523,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">1728</int>
+			<int key="maxID">1729</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -10182,6 +10182,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>memoryViewController</string>
 							<string>nodeController</string>
 							<string>objectsController</string>
+							<string>offsetController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -10190,6 +10191,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>MemoryViewController</string>
 							<string>NodeController</string>
 							<string>ObjectsController</string>
+							<string>OffsetController</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -10272,6 +10274,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>openSearch:</string>
 							<string>pointerSelectAction:</string>
 							<string>saveValues:</string>
+							<string>selectInstance:</string>
 							<string>setCustomAddress:</string>
 							<string>snapshotMemory:</string>
 							<string>startSearch:</string>
@@ -10279,6 +10282,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10304,6 +10308,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>clearButton</string>
 							<string>controller</string>
 							<string>emulatePPCButton</string>
+							<string>instanceList</string>
 							<string>itemController</string>
 							<string>maskTextField</string>
 							<string>memoryTable</string>
@@ -10339,6 +10344,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>NSButton</string>
 							<string>Controller</string>
 							<string>NSButton</string>
+							<string>NSPopUpButton</string>
 							<string>InventoryController</string>
 							<string>NSTextField</string>
 							<string>id</string>
@@ -10731,7 +10737,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ProcedureController</string>
-					<string key="superclassName">SaveData</string>
+					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -10747,8 +10753,8 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>removeBehavior:</string>
 							<string>renameBehavior:</string>
 							<string>setBehaviorEvent:</string>
+							<string>showInFinder:</string>
 							<string>tableRowDoubleClicked:</string>
-							<string>updateOptions:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -10773,6 +10779,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>actionMenu</string>
 							<string>combatPriorityTextField</string>
+							<string>fileController</string>
 							<string>itemController</string>
 							<string>procedureEventSegment</string>
 							<string>renamePanel</string>
@@ -10785,6 +10792,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
 							<string>NSTextField</string>
+							<string>FileController</string>
 							<string>id</string>
 							<string>id</string>
 							<string>NSPanel</string>
@@ -10873,7 +10881,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">PvPController</string>
-					<string key="superclassName">SaveData</string>
+					<string key="superclassName">NSObject</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
@@ -10885,10 +10893,14 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>exportBehavior:</string>
 							<string>importBehavior:</string>
 							<string>renameBehavior:</string>
+							<string>saveAllObjects:</string>
+							<string>showInFinder:</string>
 							<string>test:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -10903,12 +10915,14 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>fileController</string>
 							<string>renamePanel</string>
 							<string>view</string>
 							<string>waypointController</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>FileController</string>
 							<string>NSPanel</string>
 							<string>NSView</string>
 							<string>WaypointController</string>
@@ -10954,27 +10968,6 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">RouteVisualizationView.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">SaveData</string>
-					<string key="superclassName">NSObject</string>
-					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>saveAllObjects:</string>
-							<string>showInFinder:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-						</object>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">SaveData.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -11108,6 +11101,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 							<string>renameRoute:</string>
 							<string>resetAllWaypoints:</string>
 							<string>setRouteType:</string>
+							<string>showInFinder:</string>
 							<string>startStopAutomator:</string>
 							<string>startingRouteClicked:</string>
 							<string>stopMovement:</string>
@@ -11117,6 +11111,7 @@ IGEgdHlwZSwgZW50ZXJpbmcgYSBuYW1lLCBhbmQgcHJlc3NpbmcgZW50ZXIhCgpFbmpveSE</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

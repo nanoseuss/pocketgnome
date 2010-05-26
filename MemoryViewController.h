@@ -87,6 +87,12 @@
     int _displayCount;
     //id callback;
 	
+	// new method to select non wow-processes
+	NSTimer *_instanceListTimer;
+	IBOutlet NSPopUpButton *instanceList;
+	pid_t _attachedPID;
+	MemoryAccess *_memory;
+	
 	// new pointer search
 	NSMutableDictionary *_pointerList;
     
@@ -133,5 +139,8 @@
 // pointer scanning
 - (IBAction)openPointerPanel: (id)sender;
 - (IBAction)pointerSelectAction: (id)sender;
+
+// new instance list
+- (IBAction)selectInstance: (id)sender;
 
 @end

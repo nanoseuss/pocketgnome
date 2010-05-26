@@ -44,6 +44,7 @@
 		0322D6DA11065D0800EF3EEF /* CombatProfileActionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0322D6D911065D0700EF3EEF /* CombatProfileActionController.m */; };
 		0322D6E211065D8900EF3EEF /* CombatProfileAction.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */; };
 		0322D72F110744D500EF3EEF /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0322D72E110744D500EF3EEF /* CoreData.framework */; };
+		0331619611AAF1B900467490 /* appcast.xml in Resources */ = {isa = PBXBuildFile; fileRef = 0331619511AAF1B900467490 /* appcast.xml */; };
 		034126C11135706E00BE6819 /* PvPController.m in Sources */ = {isa = PBXBuildFile; fileRef = 034126C01135706E00BE6819 /* PvPController.m */; };
 		034126C4113570E100BE6819 /* PvP.xib in Resources */ = {isa = PBXBuildFile; fileRef = 034126C3113570E100BE6819 /* PvP.xib */; };
 		034126E61135774100BE6819 /* Battleground.m in Sources */ = {isa = PBXBuildFile; fileRef = 034126E51135774100BE6819 /* Battleground.m */; };
@@ -348,7 +349,6 @@
 		7DD891240F2BE92A007E9FE4 /* DeathKnight_Small.gif in Resources */ = {isa = PBXBuildFile; fileRef = 7DD891230F2BE92A007E9FE4 /* DeathKnight_Small.gif */; };
 		7DDCC4860F9EE3BE0085A88E /* InteractWithTarget.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */; };
 		7DE53DDB0E32B84C00C59033 /* IgnoreEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */; };
-		7DE53E6D0E32BF4A00C59033 /* CombatProfile.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */; };
 		7DE59CE00E09CABB003C6559 /* NSString+URLEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE59CDF0E09CABB003C6559 /* NSString+URLEncode.m */; };
 		7DE983820E2B2BA800F41293 /* NSString+Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE983810E2B2BA800F41293 /* NSString+Extras.m */; };
 		7DF445530E241ABA0075B96B /* TotemConditionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DF445520E241ABA0075B96B /* TotemConditionController.m */; };
@@ -452,6 +452,7 @@
 		0322D6E111065D8900EF3EEF /* CombatProfileAction.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CombatProfileAction.xib; sourceTree = "<group>"; };
 		0322D72E110744D500EF3EEF /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		032B8C030FDEE37900807DD0 /* Errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Errors.h; sourceTree = "<group>"; };
+		0331619511AAF1B900467490 /* appcast.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = appcast.xml; sourceTree = "<group>"; };
 		034126BF1135706E00BE6819 /* PvPController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PvPController.h; sourceTree = "<group>"; };
 		034126C01135706E00BE6819 /* PvPController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PvPController.m; sourceTree = "<group>"; };
 		034126C3113570E100BE6819 /* PvP.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PvP.xib; sourceTree = "<group>"; };
@@ -884,7 +885,6 @@
 		7DDCC4850F9EE3BE0085A88E /* InteractWithTarget.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = InteractWithTarget.png; sourceTree = "<group>"; };
 		7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IgnoreEntry.h; sourceTree = "<group>"; };
 		7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IgnoreEntry.m; sourceTree = "<group>"; };
-		7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CombatProfile.xib; sourceTree = "<group>"; };
 		7DE59CDE0E09CABB003C6559 /* NSString+URLEncode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+URLEncode.h"; sourceTree = "<group>"; };
 		7DE59CDF0E09CABB003C6559 /* NSString+URLEncode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+URLEncode.m"; sourceTree = "<group>"; };
 		7DE983800E2B2BA800F41293 /* NSString+Extras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Extras.h"; sourceTree = "<group>"; };
@@ -1235,6 +1235,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				0331619511AAF1B900467490 /* appcast.xml */,
 				03981DE8112B22E90081835F /* dsa_pub.pem */,
 				7DA95ECD0E23537A00AC85E2 /* alarm.mp3 */,
 				7D3109430EFDCBA700ECFABE /* splash.mp3 */,
@@ -1258,7 +1259,6 @@
 				7DD803A10D5151CA005C2F01 /* Routes.xib */,
 				7DD803A30D5153E5005C2F01 /* Behaviors.xib */,
 				7DCB5A3F0D540647001678BC /* Memory.xib */,
-				7DE53E6C0E32BF4A00C59033 /* CombatProfile.xib */,
 				7D6BE96F0F87ED8B00ED364A /* ChatLog.xib */,
 				7DCE50650E12EF9100C5DF01 /* MainMenu.xib */,
 				7DC8B60F0D419C3200B25B45 /* Growl Registration Ticket.growlRegDict */,
@@ -1978,7 +1978,6 @@
 				7DA95E360E2302C400AC85E2 /* BannerAlliance.png in Resources */,
 				7DA95ECE0E23537A00AC85E2 /* alarm.mp3 in Resources */,
 				7DF445550E241AE30075B96B /* TotemCondition.xib in Resources */,
-				7DE53E6D0E32BF4A00C59033 /* CombatProfile.xib in Resources */,
 				7DB8222A0E33382900661394 /* TempEnchantCondition.xib in Resources */,
 				7D7C66A30E58E74D002A6C96 /* TargetType.xib in Resources */,
 				7D7C66AE0E58E8B0002A6C96 /* CombatCount.xib in Resources */,
@@ -2035,6 +2034,7 @@
 				03A3211B114E9AC2000D23EE /* JumpToWaypointAction.xib in Resources */,
 				83A9BBF21178BA03003E3683 /* buildnumber.xcconfig in Resources */,
 				03CD6AC41183D5AC00CCABFE /* Profiles.xib in Resources */,
+				0331619611AAF1B900467490 /* appcast.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
