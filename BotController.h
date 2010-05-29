@@ -135,6 +135,9 @@
     //BOOL attackPlayers, attackNeutralNPCs, attackHostileNPCs, _ignoreElite;
     //int _currentAttackDistance, _minLevel, _maxLevel, _attackAnyLevel;
     
+	BOOL _useRoute;
+	BOOL _useRoutePvP;
+
 	int _sleepTimer;
 	UInt32 _lastSpellCastGameTime;
 	UInt32 _lastSpellCast;
@@ -145,6 +148,7 @@
     BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
 	NSString *_evaluationInProgress;
+	BOOL _evaluationIsActive;
 	
 	NSString *_lastProcedureExecuted;
     Mob *_mobToSkin;
@@ -252,7 +256,7 @@
 	BOOL _followSuspended;
 	BOOL _followLastSeenPosition;
 	BOOL _followingFlagCarrier;
-
+	NSTimer *_followTimer;
 	int _lootScanIdleTimer;
 	BOOL _wasLootWindowOpen;
 	
@@ -360,7 +364,13 @@
 @property (readwrite, assign) BOOL wasLootWindowOpen;
 @property (readonly, assign) BOOL includeCorpsesPatrol;
 @property (readonly, assign) BOOL movingToCorpse;
-@property BOOL waitForPvPQueue;
+@property (readonly, assign) BOOL waitForPvPQueue;
+@property (readonly, assign) BOOL evaluationIsActive;
+@property (readonly, assign) BOOL nodeIgnoreMob;
+@property (readonly, assign) BOOL nodeIgnoreFriendly;
+@property (readonly, assign) BOOL nodeIgnoreHostile;
+
+@property (readonly, retain) NSMutableArray *mobsToLoot;
 
 - (void)testRule: (Rule*)rule;
 
@@ -410,6 +420,8 @@
 - (Unit*)whisperCommandUnit:(ChatLogEntry*)entry;
 - (BOOL)whisperCommandAllowed: (ChatLogEntry*)entry;
 - (BOOL)verifyFollowUnit;
+- (void)resetFollowTimer;
+- (void)followRouteStartRecord;
 
 - (IBAction)startBot: (id)sender;
 - (IBAction)stopBot: (id)sender;
@@ -417,7 +429,11 @@
 - (IBAction)testHotkey: (id)sender;
 - (void)updateRunningTimer;
 
-- (IBAction)editCombatProfiles: (id)sender;
+- (IBAction)editProfiles: (id)sender;
+- (IBAction)editBehaviors: (id)sender;
+- (IBAction)editRoutes: (id)sender;
+- (IBAction)editPvPRoutes: (id)sender;
+
 - (IBAction)updateStatus: (id)sender;
 - (IBAction)hotkeyHelp: (id)sender;
 - (IBAction)closeHotkeyHelp: (id)sender;
@@ -425,6 +441,9 @@
 - (IBAction)closeLootHotkeyHelp: (id)sender;
 - (IBAction)gatheringLootingOptions: (id)sender;
 - (IBAction)gatheringLootingSelectAction: (id)sender;
+
+// Looting
+- (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck;
 
 // PVP
 - (BOOL)pvpIsBattlegroundEnding;

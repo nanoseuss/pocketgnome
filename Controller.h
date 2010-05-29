@@ -180,6 +180,10 @@ BOOL Ascii2Virtual(char pcar, BOOL *pshift, BOOL *palt, char *pkeycode);
 - (float)getPing;
 
 - (void)selectCombatProfileTab;
+- (void)selectBehaviorTab;
+- (void)selectRouteTab;
+- (void)selectPvPRouteTab;
+
 @end
 
 @interface NSObject (MemoryViewControllerExtras)

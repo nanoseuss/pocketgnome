@@ -436,7 +436,6 @@
     return [self sendMessage: message toEmailAddress: emailAddress];
 }
 
-
 - (BOOL)sendLogEntry: (ChatLogEntry*)logEntry toEmailAddress: (NSString*)emailAddress {
     if(!logEntry) return NO;
     return [self sendLogEntries: [NSArray arrayWithObject: logEntry] toEmailAddress: emailAddress];

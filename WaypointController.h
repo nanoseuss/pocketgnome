@@ -153,6 +153,8 @@
 // new action/conditions
 - (void)selectCurrentWaypoint:(int)index;
 
+- (void)setCurrentRouteSet: (RouteSet*)routeSet;
+
 // new Route Collection stuff
 - (IBAction)deleteRouteButton: (id)sender;
 - (IBAction)deleteRouteMenu: (id)sender;

@@ -274,7 +274,6 @@
 - (void)openEditor:(SelectedTab)tab{
 	
 	if ( tab == TabCombat ){
-		[self populatePlayerLists];
 		[profileOutlineView expandItem:CombatProfileName];
 	}
 	else if ( tab == TabMail ){
@@ -338,7 +337,7 @@
 	else if ( [profile isKindOfClass:[MailActionProfile class]] ){
 		[profileTabView selectTabViewItemWithIdentifier:[NSString stringWithFormat:@"%d", TabMail]];
 	}
-	
+	[self populatePlayerLists];
 	[self updateTitle];
 }
 
@@ -635,10 +634,10 @@
 
 - (void)populatePlayerList: (id)popUpButton withGUID:(UInt64)guid{
 	log(LOG_DEV, @"Populating player list.");
-	
+
 	NSMenu *playerMenu = [[[NSMenu alloc] initWithTitle: @"Player List"] autorelease];
 	NSMenuItem *item;
-	
+
 	NSArray *friendlyPlayers = [playersController friendlyPlayers];
 	
 	if ( [friendlyPlayers count] > 0 ){
@@ -646,6 +645,7 @@
 		[controller traverseNameList];
 		
 		for(Player *player in friendlyPlayers) {
+
 			NSString *name = [playersController playerNameWithGUID:[player GUID]];
 			
 			item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"%@ %@", name, player] action: nil keyEquivalent: @""] autorelease];
@@ -656,12 +656,56 @@
 		}
 	}
 	else{
+
+		if ( popUpButton == tankPopUpButton && self.currentCombatProfile.tankUnit && self.currentCombatProfile.tankUnitGUID > 0x0 ) {
+
+			NSString *name;
+			name = [playersController playerNameWithGUID: self.currentCombatProfile.tankUnitGUID];
+
+			if ( !name || name == @"" ) name = [NSString stringWithFormat: @"Current Tank (0x%qX)", self.currentCombatProfile.tankUnitGUID];
+			
+			item = [[[NSMenuItem alloc] initWithTitle: name action: nil keyEquivalent: @""] autorelease];
+			[item setIndentationLevel: 1];
+			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:self.currentCombatProfile.tankUnitGUID]];
+			[item setTag: self.currentCombatProfile.tankUnitGUID];
+			[playerMenu addItem: item];
+		}
+
+		if ( popUpButton == assistPopUpButton && self.currentCombatProfile.assistUnit && self.currentCombatProfile.assistUnitGUID > 0x0 ) {
+			
+			NSString *name;
+			name = [playersController playerNameWithGUID: self.currentCombatProfile.assistUnitGUID];
+
+			if ( !name || name == @"" ) name = [NSString stringWithFormat: @"Current Assist (0x%qX)", self.currentCombatProfile.assistUnitGUID];
+			
+			item = [[[NSMenuItem alloc] initWithTitle: name action: nil keyEquivalent: @""] autorelease];
+			[item setIndentationLevel: 1];
+			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:self.currentCombatProfile.assistUnitGUID]];
+			[item setTag: self.currentCombatProfile.assistUnitGUID];
+			[playerMenu addItem: item];
+		}
+
+		if ( popUpButton == followPopUpButton && self.currentCombatProfile.followUnit && self.currentCombatProfile.followUnitGUID > 0x0 ) {
+			
+			NSString *name;
+			name = [playersController playerNameWithGUID: self.currentCombatProfile.followUnitGUID];
+
+			if ( !name || name == @"" ) name = [NSString stringWithFormat: @"Current Leader (0x%qX)", self.currentCombatProfile.followUnitGUID];
+
+			item = [[[NSMenuItem alloc] initWithTitle: name action: nil keyEquivalent: @""] autorelease];
+			[item setIndentationLevel: 1];
+			[item setRepresentedObject: [NSNumber numberWithUnsignedLongLong:self.currentCombatProfile.followUnitGUID]];
+			[item setTag: self.currentCombatProfile.followUnitGUID];
+			[playerMenu addItem: item];
+		}
+		
 		item = [[[NSMenuItem alloc] initWithTitle: [NSString stringWithFormat: @"No Friendly Players Nearby"] action: nil keyEquivalent: @""] autorelease];
 		[item setTag: 0];
 		[item setIndentationLevel: 1];
 		[item setRepresentedObject: nil];
 		[playerMenu addItem: item];
 	}
+
 	
 	[(NSPopUpButton*)popUpButton setMenu:playerMenu];	
 	[(NSPopUpButton*)popUpButton selectItemWithTag:guid];

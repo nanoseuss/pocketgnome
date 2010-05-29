@@ -124,8 +124,8 @@
     
     [_behavior autorelease];
     _behavior = [behavior retain];
-    
-    [procedureEventSegment selectSegmentWithTag: 1];
+  // Let's just leave this at what ever was previously selected  
+//    [procedureEventSegment selectSegmentWithTag: 1];
     [self validateBindings];
 }
 

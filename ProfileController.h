@@ -107,5 +107,6 @@ typedef enum SelectedTab{
 - (NSArray*)combatProfiles;
 
 - (void)openEditor:(SelectedTab)tab;
+- (void)setProfile:(Profile *)profile;
 
 @end

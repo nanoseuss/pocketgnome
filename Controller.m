@@ -2072,4 +2072,19 @@ AEDisposeDesc(&targetProcess);
 	[profileController openEditor:TabCombat];
 }
 
+- (void)selectBehaviorTab{
+	[self toolbarItemSelected: behavsToolbarItem];
+	[mainToolbar setSelectedItemIdentifier: [behavsToolbarItem itemIdentifier]];
+}
+
+- (void)selectRouteTab{
+	[self toolbarItemSelected: routesToolbarItem];
+	[mainToolbar setSelectedItemIdentifier: [routesToolbarItem itemIdentifier]];
+}
+
+- (void)selectPvPRouteTab{
+	[self toolbarItemSelected: pvpToolbarItem];
+	[mainToolbar setSelectedItemIdentifier: [pvpToolbarItem itemIdentifier]];
+}
+
 @end

@@ -1049,21 +1049,6 @@
 			name = "File Management";
 			sourceTree = "<group>";
 		};
-		03CD6A641183595F00CCABFE /* Profiles */ = {
-			isa = PBXGroup;
-			children = (
-				0362CDDC11A99CED00EA65B2 /* CombatProfile.h */,
-				0362CDDD11A99CED00EA65B2 /* CombatProfile.m */,
-				D02F3C5E1182C5AC000F4037 /* ProfileController.h */,
-				D02F3C5F1182C5AC000F4037 /* ProfileController.m */,
-				D02F3C851182C975000F4037 /* Profile.h */,
-				D02F3C861182C975000F4037 /* Profile.m */,
-				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
-				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
-			);
-			name = Profiles;
-			sourceTree = "<group>";
-		};
 		03CD6A651183596A00CCABFE /* Reversed */ = {
 			isa = PBXGroup;
 			children = (
@@ -1185,7 +1170,6 @@
 				034126E21135773900BE6819 /* PvP */,
 				7D72453E0D1511E20094665C /* Units */,
 				03CD6A651183596A00CCABFE /* Reversed */,
-				03CD6A641183595F00CCABFE /* Profiles */,
 				03BE9607118282E4004DBFBF /* File Management */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -1628,8 +1612,6 @@
 				7D65C8F80D2EE14500C50DF7 /* Rule.m */,
 				7D65CA460D2F04D200C50DF7 /* Procedure.h */,
 				7D65CA470D2F04D200C50DF7 /* Procedure.m */,
-				7D65CC1B0D2F69BB00C50DF7 /* Behavior.h */,
-				7D65CC1C0D2F69BB00C50DF7 /* Behavior.m */,
 				7D65C8F50D2EE06200C50DF7 /* Conditions */,
 				7DE53DD90E32B84C00C59033 /* IgnoreEntry.h */,
 				7DE53DDA0E32B84C00C59033 /* IgnoreEntry.m */,
@@ -1642,6 +1624,8 @@
 		7D97730C0D2DBF2800E6D8F9 /* GUI Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				7D65CC1B0D2F69BB00C50DF7 /* Behavior.h */,
+				7D65CC1C0D2F69BB00C50DF7 /* Behavior.m */,
 				034126BF1135706E00BE6819 /* PvPController.h */,
 				034126C01135706E00BE6819 /* PvPController.m */,
 				0341DD64111B0FBE00074CED /* ObjectsController.h */,
@@ -1656,6 +1640,14 @@
 				03168C7010FE6CCD00EF241B /* WaypointActionEditor.m */,
 				7DD03DE00D160075000CC1A6 /* MemoryViewController.h */,
 				7DD03DE10D160075000CC1A6 /* MemoryViewController.m */,
+				0362CDDC11A99CED00EA65B2 /* CombatProfile.h */,
+				0362CDDD11A99CED00EA65B2 /* CombatProfile.m */,
+				D02F3C5E1182C5AC000F4037 /* ProfileController.h */,
+				D02F3C5F1182C5AC000F4037 /* ProfileController.m */,
+				D02F3C851182C975000F4037 /* Profile.h */,
+				D02F3C861182C975000F4037 /* Profile.m */,
+				D02F3C5B1182C497000F4037 /* MailActionProfile.h */,
+				D02F3C5C1182C497000F4037 /* MailActionProfile.m */,
 			);
 			name = "GUI Controllers";
 			sourceTree = "<group>";

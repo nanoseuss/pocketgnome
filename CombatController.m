@@ -259,8 +259,11 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
-	log(LOG_COMBAT, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: unit], unit);
-	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
+	log(LOG_COMBAT, @"%@ %@ gave error You Have No Target!", [self unitHealthBar: unit], unit);
+//	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
+
+//	log(LOG_COMBAT, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: unit], unit);
+//	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
 	
 	[self cancelAllCombat];
 }
@@ -626,12 +629,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( !self.inCombat ) _inCombat = YES;
 
 	// lets face our new unit!
-	if ( unit != oldTarget ) {
-		log(LOG_DEV, @"Facing new target! %@", unit);
-		[movementController turnTowardObject:unit];
+//	if ( unit != oldTarget ) {
+//		log(LOG_DEV, @"Facing new target! %@", unit);
+//		[movementController turnTowardObject:unit];
 //		[movementController establishPlayerPosition];	// already in botController 
-		[movementController correctDirectionByTurning];
-	}
+//		[movementController correctDirectionByTurning];
+//	}
 
 	// stop monitoring our "old" unit - we ONLY want to do this in PvP as we'd like to know when the unit dies!
 	if ( oldTarget && ( botController.pvpIsInBG || ![playerData isFriendlyWithFaction: [unit factionTemplate]] ) ) {
@@ -692,6 +695,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	// Let's not interfere if we're already moving
 	if ( [movementController isMoving] ) {
+		log(LOG_COMBAT, @"We've already moving so stay with unit will not interfere.");
 		[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: delay];
 		return;
 	}
@@ -713,17 +717,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	// find the difference between the angles
 	float angleTo = fabsf(theAngle - playerDirection);
 
-	// ensure unit is our target
+	// ensure unit is our target if they feign
 	UInt64 unitGUID = [_castingUnit cachedGUID];
-	if ( ( [playerData targetID] != unitGUID) || [_castingUnit isFeignDeath] ) [playerData targetGuid:unitGUID];
-	
+	if ( ( [playerData targetID] != unitGUID) && [_castingUnit isFeignDeath] ) [playerData targetGuid:unitGUID];
+
 	if( !isCasting ) {
 
 		// if the difference is more than 90 degrees (pi/2) M_PI_2, reposition
 		if( (angleTo > 0.785f) ) {  // changed to be ~45 degrees
 			log(LOG_COMBAT, @"%@ is behind us (%.2f). Repositioning.", _castingUnit, angleTo);
 
-			if ( !botController.theBehavior.meleeCombat && distanceToCastingUnit < 5.0f ) if ( [movementController jumpForward] ) usleep(300000);
+			if ( [movementController movementType] == MovementType_CTM && !botController.theBehavior.meleeCombat && distanceToCastingUnit < 3.0f ) 
+				if ( [movementController jumpForward] ) log(LOG_COMBAT, @"Lunge and spin.");
+
 			[movementController turnTowardObject: _castingUnit];
 			delay = 0.5f;
 		}
@@ -733,7 +739,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 			if ( [playerPosition distanceToPosition: [_castingUnit position]] > 5.0f ) {
 				log(LOG_COMBAT, @"[Combat] Moving to %@", _castingUnit);
 				if ( [movementController moveToObject:_castingUnit] ) {
-					[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: delay];
+//					[self performSelector: @selector(stayWithUnit) withObject: nil afterDelay: delay];
 					return;
 				}
 			}
@@ -1136,7 +1142,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	for ( Unit *unit in validUnits ) {
 
 		// Let's make sure we can even act on this unit before we consider it
-//		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
 		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
 		if ( !bestUnit ) bestUnit = unit;
 
@@ -1166,12 +1171,15 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ) return nil;
 	
 	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
-	Position *playerPosition = [playerData position];
 	
 	if ( ![validUnits count] ) return nil;
 
+	Position *playerPosition = [playerData position];
+	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
+
 	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
 	int highestWeight = -1000;
+
 
 	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
@@ -1182,8 +1190,10 @@ int WeightCompare(id unit1, id unit2, void *context) {
 		} else {
 			if ( [playerPosition distanceToPosition: [unit position]] > botController.theCombatProfile.healingRange ) continue;
 		}
+
+		if ( [[unit position] verticalDistanceToPosition: playerPosition] > vertOffset ) continue;
+
 		// Let's make sure we can even act on this unit before we consider it
-//		if ( onlyHostilesInCombat && !includeFriendly && ![botController combatProcedureValidForUnit:unit] ) continue;
 		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
 		if ( !bestUnit ) bestUnit = unit;
 		

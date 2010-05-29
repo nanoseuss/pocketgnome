@@ -40,8 +40,8 @@
 @property (readwrite, retain) PvPBehavior *currentBehavior;
 @property (readonly, retain) NSArray *behaviors;
 
+- (void)setCurrentBehavior: (PvPBehavior*)behavior;
 - (void)importBehaviorAtPath: (NSString*)path;
-
 - (IBAction)createBehavior: (id)sender;
 - (IBAction)renameBehavior: (id)sender;
 - (IBAction)closeRename: (id)sender;
