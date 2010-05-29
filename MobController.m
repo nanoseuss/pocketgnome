@@ -59,6 +59,12 @@ static MobController* sharedController = nil;
     return self;
 }
 
+- (void)dealloc{
+	[_objectList release];
+	[_objectDataList release];
+
+	[super dealloc];
+}
 
 #pragma mark Accessors
 

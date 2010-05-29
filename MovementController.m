@@ -1216,12 +1216,12 @@ typedef enum MovementState{
 			}
 		}
 
-		stopingDistance = 2.2f;
+		stopingDistance = 2.4f;
 
 		float horizontalDistance = [[playerData position] distanceToPosition2D: [_moveToObject position]];
 
 		// we've reached our position!
-		if ( distanceToDestination <= stopingDistance || ( horizontalDistance < 1.5f && distanceToDestination <= 5.0f) ) {
+		if ( distanceToDestination <= stopingDistance || ( horizontalDistance < 1.3f && distanceToDestination <= 4.0f) ) {
 
 			if ( [[playerData player] isFlyingMounted] ) { 
 				log(LOG_MOVEMENT, @"Reached our hover spot for node: %@", _moveToObject);

@@ -180,6 +180,22 @@ static Controller* sharedController = nil;
     return self;
 }
 
+- (void)dealloc {
+	[_items release];
+	[_mobs release];
+	[_players release];
+	[_corpses release];
+	[_gameObjects release];
+	[_dynamicObjects release];
+	[_nameListAddresses release];
+	[_objectAddresses release];
+	[factionTemplate release];
+	[currentStatusText release];
+	[_wowMemoryAccess release];
+
+	[super dealloc];
+}
+
 - (void)checkWoWVersion {
     
     NSString *appVers = [[[NSBundle mainBundle] infoDictionary] objectForKey: @"CFBundleShortVersionString"];

@@ -124,12 +124,13 @@
 	IBOutlet Route					*Route;	// is this right?
 
     IBOutlet NSView *view;
-    
+
 	RouteCollection *_theRouteCollection;
 	RouteCollection *_theRouteCollectionPvP;
     RouteSet *_theRouteSet;
     RouteSet *_theRouteSetPvP;
     Behavior *theBehavior;
+    Behavior *theBehaviorPvP;
     CombatProfile *theCombatProfile;
 	PvPBehavior *_pvpBehavior;
     //BOOL attackPlayers, attackNeutralNPCs, attackHostileNPCs, _ignoreElite;
@@ -227,7 +228,6 @@
 	BOOL _waitForPvPQueue;
 	BOOL _waitForPvPPreparation;
 
-	
 	// auto join WG options
 	NSTimer *_wgTimer;
 	int _lastNumWGMarks;
@@ -267,11 +267,13 @@
     
     IBOutlet id attackWithinText;
     IBOutlet id routePopup;
+    IBOutlet id routePvPPopup;
     IBOutlet id behaviorPopup;
+    IBOutlet id behaviorPvPPopup;
     IBOutlet id combatProfilePopup;
+    IBOutlet id combatProfilePvPPopup;
     IBOutlet id minLevelPopup;
     IBOutlet id maxLevelPopup;
-	IBOutlet NSPopUpButton *pvpBehaviorPopUp;
     IBOutlet NSTextField *minLevelText, *maxLevelText;
     IBOutlet NSButton *anyLevelCheckbox;
     
@@ -330,6 +332,10 @@
 	
 	IBOutlet NSButton *allChatButton;
 	IBOutlet NSButton *wallWalkButton;
+
+	UInt32 _oldActionID;
+	int _oldBarOffset;
+
 }
 
 @property (readonly) NSButton *logOutAfterStuckCheckbox;
@@ -349,6 +355,7 @@
 @property (readwrite, retain) RouteSet *theRouteSetPvP;
 
 @property (readonly, retain) Behavior *theBehavior;
+@property (readonly, retain) Behavior *theBehaviorPvP;
 @property (readonly, retain) PvPBehavior *pvpBehavior;
 @property BOOL waitForPvPPreparation;
 @property (readwrite, retain) CombatProfile *theCombatProfile;
@@ -429,10 +436,12 @@
 - (IBAction)testHotkey: (id)sender;
 - (void)updateRunningTimer;
 
-- (IBAction)editProfiles: (id)sender;
-- (IBAction)editBehaviors: (id)sender;
-- (IBAction)editRoutes: (id)sender;
-- (IBAction)editPvPRoutes: (id)sender;
+- (IBAction)editRoute: (id)sender;
+- (IBAction)editRoutePvP: (id)sender;
+- (IBAction)editBehavior: (id)sender;
+- (IBAction)editBehaviorPvP: (id)sender;
+- (IBAction)editProfile: (id)sender;
+- (IBAction)editProfilePvP: (id)sender;
 
 - (IBAction)updateStatus: (id)sender;
 - (IBAction)hotkeyHelp: (id)sender;
@@ -471,6 +480,7 @@
 
 // for new action/conditions
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test;
+- (void)resetHotBarAction;
 
 - (void) updateRunningTimer;
 

@@ -1071,10 +1071,9 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	NSMutableArray *validUnits = [NSMutableArray array];
 	
 	if ( [allPotentialUnits count] ){
-		float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
-//		float range = 0.0f;
-//		BOOL isFriendly = NO;
-		
+		float range = 0.0f;
+		BOOL isFriendly = NO;
+
 		for ( Unit *unit in allPotentialUnits ){
 
 			if ( [blacklistController isBlacklisted:unit] ) {
@@ -1086,16 +1085,14 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 			if ( ![unit isPlayer] && [unit isEvading] ) continue;
 
-			if ( [[unit position] verticalDistanceToPosition: playerPosition] > vertOffset ) continue;
+			if ( [playerData isFriendlyWithFaction: [unit factionTemplate]] ) isFriendly = YES;
+				else isFriendly = NO;
 
-//			if ( [playerData isFriendlyWithFaction: [unit factionTemplate]] ) isFriendly = YES;
-//				else isFriendly = NO;
-					
 			// range changes if the unit is friendly or not
-//			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
-//			range = (self.inCombat ? (isFriendly ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange) : botController.theCombatProfile.engageRange);
-//			if ( distanceToTarget > range ) continue;
-			
+			distanceToTarget = [playerPosition distanceToPosition:[unit position]];
+			range = ( isFriendly ? botController.theCombatProfile.healingRange : botController.theCombatProfile.attackRange);
+			if ( distanceToTarget > range ) continue;
+
 			// player: make sure they're not a ghost
 			if ( [unit isPlayer] ) {
 				NSArray *auras = [auraController aurasForUnit: unit idsOnly: YES];
@@ -1103,19 +1100,19 @@ int WeightCompare(id unit1, id unit2, void *context) {
 					continue;
 				}
 			}
-			
+
 			[validUnits addObject: unit];
 		}
-		
 	}
-	
+
 	if ([validUnits count]) log(LOG_DEV, @"Found %d valid units", [validUnits count]);
 	// sort
 	NSMutableDictionary *dictOfWeights = [NSMutableDictionary dictionary];
 	for ( Unit *unit in validUnits ) {
 		[dictOfWeights setObject: [NSNumber numberWithInt:[self weight:unit PlayerPosition:playerPosition]] forKey:[NSNumber numberWithUnsignedLongLong:[unit cachedGUID]]];
 	}
-	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];	
+
+	[validUnits sortUsingFunction: WeightCompare context: dictOfWeights];
 	return [[validUnits retain] autorelease];
 }
 
@@ -1131,32 +1128,21 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	if ( !botController.theCombatProfile.healingEnabled && !botController.theCombatProfile.combatEnabled ) return nil;
 
 	NSArray *validUnits = [NSArray arrayWithArray:[self validUnitsWithFriendly:includeFriendly onlyHostilesInCombat:onlyHostilesInCombat]];
-	Position *playerPosition = [playerData position];
 
 	if ( ![validUnits count] ) return nil;
 
 	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
-	int highestWeight = -1000;
 
-	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
 
 		// Let's make sure we can even act on this unit before we consider it
 		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
-		if ( !bestUnit ) bestUnit = unit;
 
-		// begin weight calculation
-		int weight = [self weight:unit PlayerPosition:playerPosition];
-		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
-
-		// best weight
-		if ( weight > highestWeight ) {
-			highestWeight = weight;
-			bestUnit = unit;
-		}
+		log(LOG_DEV, @"Best unit %@ found.", unit);
+		return unit;
 	}
-	log(LOG_DEV, @"Best unit %@ found.", bestUnit);
-	return bestUnit;
+
+	return nil;
 }
 
 // find a unit to attack, CC, or heal (this one is for engage range only... combat start vs combat continuation)
@@ -1177,11 +1163,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	Position *playerPosition = [playerData position];
 	float vertOffset = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"BlacklistVerticalOffset"] floatValue];
 
-	// Some weights can be pretty low so let's make sure we don't fail if comparing low weights
-	int highestWeight = -1000;
-
-
-	Unit *bestUnit = nil;
 	for ( Unit *unit in validUnits ) {
 
 		// Make sure it's within our Engage range
@@ -1195,20 +1176,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 		// Let's make sure we can even act on this unit before we consider it
 		if ( ![botController combatProcedureValidForUnit:unit] ) continue;
-		if ( !bestUnit ) bestUnit = unit;
-		
-		// begin weight calculation
-		int weight = [self weight:unit PlayerPosition:playerPosition];
-		log(LOG_DEV, @"Valid target %@ found with weight %d", unit, weight);
 
-		// best weight
-		if ( weight > highestWeight ) {
-			highestWeight = weight;
-			bestUnit = unit;
-		}
+		log(LOG_DEV, @"Best unit %@ found.", unit);
+		return unit;
 	}
-	log(LOG_DEV, @"Best unit %@ found with weight.", bestUnit);
-	return bestUnit;
+
+	return nil;
 }
 
 - (NSArray*)allAdds {	

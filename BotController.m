@@ -108,6 +108,7 @@
 @interface BotController ()
 
 @property (readwrite, retain) Behavior *theBehavior;
+@property (readwrite, retain) Behavior *theBehaviorPvP;
 @property (readwrite, retain) PvPBehavior *pvpBehavior;
 @property (readwrite, retain) NSDate *lootStartTime;
 @property (readwrite, retain) NSDate *skinStartTime;
@@ -189,7 +190,7 @@
 + (void)initialize {
     
     NSDictionary *defaultValues = [NSDictionary dictionaryWithObjectsAndKeys:
-								   [NSNumber numberWithBool:NO],		@"UsePvPBehavior",
+								   [NSNumber numberWithBool:NO],		@"UseRoutePvP",
 								   [NSNumber numberWithBool:YES],		@"UseRoute",
 								   [NSNumber numberWithBool: YES],	@"AttackAnyLevel",
 								   [NSNumber numberWithFloat: 50.0],	@"GatheringDistance",
@@ -203,7 +204,7 @@
 								   [NSNumber numberWithInt:20],		    @"LogOutOnBrokenItemsPercentage",
 								   [NSNumber numberWithBool:NO],		@"DisableReleasingOnDeath",
 								   nil];
-	
+
     [[NSUserDefaults standardUserDefaults] registerDefaults: defaultValues];
     [[NSUserDefaultsController sharedUserDefaultsController] setInitialValues: defaultValues];
 }
@@ -376,11 +377,11 @@
     if([overlayWindow respondsToSelector: @selector(setCollectionBehavior:)])
 		[overlayWindow setCollectionBehavior: NSWindowCollectionBehaviorMoveToActiveSpace];
 	
-	//pvpBehaviorPopUp
+	//routePvPPopup
     
 	// auto select if we need to
-	if ( [[NSUserDefaults standardUserDefaults] objectForKey: @"PvPBehavior"] == nil ) 
-		if ( [[pvpController behaviors] count] ) [pvpBehaviorPopUp selectItemAtIndex:0];
+	if ( [[NSUserDefaults standardUserDefaults] objectForKey: @"RoutePvP"] == nil ) 
+		if ( [[pvpController behaviors] count] ) [routePvPPopup selectItemAtIndex:0];
 
     [self updateStatus: nil];
 }
@@ -390,6 +391,7 @@
 @synthesize theRouteSet = _theRouteSet;
 @synthesize theRouteSetPvP = _theRouteSetPvP;
 @synthesize theBehavior;
+@synthesize theBehaviorPvP;
 @synthesize pvpBehavior = _pvpBehavior;
 @synthesize theCombatProfile;
 @synthesize evaluationIsActive = _evaluationIsActive;
@@ -479,12 +481,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [rule target] != TargetNone ){
 
 		if ( ([rule target] == TargetFriend || [rule target] == TargetFriendlies || [rule target] == TargetPet ) && ![playerController isFriendlyWithFaction: [target factionTemplate]] ){
-			log(LOG_RULE, @"%@ isn't friendly!", target);
+//			log(LOG_DEV, @"[Rule] %@ isn't friendly!", target);
 			return NO;
 		}
 
 		if ( ([rule target] == TargetEnemy || [rule target] == TargetAdd || [rule target] == TargetPat) && [playerController isFriendlyWithFaction: [target factionTemplate]] ){
-			log(LOG_RULE, @"@% isn't an enemy!", target);
+//			log(LOG_DEV, @"[Rule] @% isn't an enemy!", target);
 			return NO;
 		}
 
@@ -493,43 +495,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			target = thePlayer;
 		}
 
-/*		
-		// if this is an add and the rule is not for adds then return no
-		// this can not exclude picking up an add when our target dies
-		if ( [rule target] != TargetAdd && [[self procedureInProgress] isEqualToString: CombatProcedure] && !test) {
-			GUID targetID = [playerController targetID];
-			Unit *targetUnit = [[MobController sharedController] mobWithGUID: targetID];
-			if (targetUnit) {
-				// Make sure our current target is alive, in combat and hostile
-				if (targetUnit != target && [targetUnit isInCombat] && ![targetUnit isDead] && [playerController isHostileWithFaction: [targetUnit factionTemplate]]) {
-					if ([target isKindOfClass: [Mob class]] && [targetUnit isKindOfClass: [Mob class]]) {
-						NSArray *addList = [combatController allAdds];
-						for ( Unit *potentialMatch in addList ) {
-							if (target == potentialMatch) {
-								log(LOG_DEV, @"[Rule] Target is an add, non add rules do not apply");
-								return NO;
-							}
-						}
-					}
-				}
-			}
-		}
- */
-
 	}
 
 	// check to see if we can even cast this spell
 	if ( [[rule action] type] == ActionType_Spell && ![spellController isUsableAction:[[rule action] actionID]] ){
-		log(LOG_RULE, @"Action %d isn't usable!", [[rule action] actionID]);
+//		log(LOG_DEV, @"[Rule] Action %d isn't usable!", [[rule action] actionID]);
 		return NO;
 	}
 
 	// check to see if the spell is on cooldown, obviously the rule will fail!
-	if ( [[rule action] type] == ActionType_Spell ) {
-		if ( [spellController isSpellOnCooldown:[[rule action] actionID]] ){
+	if ( [[rule action] type] == ActionType_Spell && [spellController isSpellOnCooldown:[[rule action] actionID]] ){
 //			log(LOG_DEV, @"%@ Failed, spell is on cooldown!", rule);
 			return NO;
-		}
+//		}
 	}
 
 	Unit *aUnit = nil;
@@ -1935,7 +1913,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// See if we need to target a new hostile
 	if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && !_castingUnit && completed == 0 && ![playerController isFriendlyWithFaction: [target factionTemplate]] ) {
 		[movementController turnTowardObject: target];
-		usleep([controller refreshDelay]*2);
+//		usleep([controller refreshDelay]*2);
 		[movementController establishPlayerPosition];	// This helps up refresh
 	}
 	/*
@@ -2239,27 +2217,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// Dismount if mounted.
 		if ( [player isMounted] ) [movementController dismount];
 
-		// See if we need to target a new hostile
-		if ( [[self procedureInProgress] isEqualToString: CombatProcedure] && !_castingUnit && completed == 0 && ![playerController isFriendlyWithFaction: [target factionTemplate]] ) {
-			log(LOG_DEV, @"Got a new hostile target in performProcedureWithState.");
-
-			// Target if needed
-			if ( !playerTargetID || playerTargetID != [target cachedGUID] ) {
-				[playerController targetGuid:[target cachedGUID]];
-				usleep( 250000 );
-			}
-
-			// send in pet if needed
-			if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] ) {
-				log(LOG_PROCEDURE, @"Sending the pet in!");
-				[bindingsController executeBindingForKey:BindingPetAttack];
-				usleep( 250000 );
-			}
-		}
-
 		// Set the castingUnit
 		if ( target && [rule target] != TargetNone ) {
-			
+
 			if ( !_castingUnit || _castingUnit == nil ) {
 				_castingUnit = [(Unit*)target retain];
 			} else
@@ -2371,6 +2331,19 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						[combatController stayWithUnit:_castingUnit withType: TargetPat];
 					}
 
+					// See if we need to send the pet in
+					if ( [[self procedureInProgress] isEqualToString: CombatProcedure] &&
+						completed == 0 &&														// First loop only
+						![playerController isFriendlyWithFaction: [target factionTemplate]]	&&	// It's a hostile target
+						[self.theBehavior usePet] &&  
+						[playerController pet] && ![[playerController pet] isDead] &&
+						[[playerController pet] targetID] != [_castingUnit cachedGUID]		// Your pet is not already targeting this target
+						) {
+							log(LOG_PROCEDURE, @"Sending the pet in!");
+							[bindingsController executeBindingForKey:BindingPetAttack];
+							usleep( 50000 );
+					}
+
 					// Let the target change set in.
 //					usleep( [controller refreshDelay] );
 //					usleep( 250000 );
@@ -2461,7 +2434,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 				if ( [predicateMountPlain evaluateWithObject: [rule name]] || [predicateMountAtStart evaluateWithObject: [rule name]]) {
 					log(LOG_PROCEDURE, @"Player has mounted.");
-					[self performSelector: @selector(finishCurrentProcedure:) withObject: state afterDelay: 1.8f];
+					[self performSelector: @selector(finishCurrentProcedure:) withObject: state afterDelay: 2.0f];
 					return;
 				}
 		}
@@ -2605,17 +2578,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)performAction: (int32_t) actionID{
 	MemoryAccess *memory = [controller wowMemoryAccess];
-	
+
 	if ( !memory ) return NO;
-	
+
 	int barOffset = [bindingsController castingBarOffset];
 	if ( barOffset == -1 ){
 		log(LOG_ERROR, @"Unable to execute spells! Ahhhhh! Issue with bindings!");
 		return NO;
 	}
-	
+
 	UInt32 oldActionID = 0;
-	
+
 	// save the old spell + write the new one
 	[memory loadDataForObject: self atAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
 	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&actionID BufLength: sizeof(actionID)];
@@ -2625,12 +2598,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[[controller wowMemoryAccess] saveDataForAddress: [offsetController offset:@"LAST_RED_ERROR_MESSAGE"] Buffer: (Byte *)&string BufLength:sizeof(string)];
 	
 	// wow needs time to process the spell change
-	usleep([controller refreshDelay]*2);
-	
+	usleep( [controller refreshDelay]*2 );
+
 	// send the key command
 	[bindingsController executeBindingForKey:BindingPrimaryHotkey];
 	_lastSpellCastGameTime = [playerController currentTime];
-	
+
+
 	// make sure it was a spell and not an item/macro
 	if ( !((USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID)) ){
 		_lastSpellCast = actionID;
@@ -2638,14 +2612,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	else {
 		_lastSpellCast = 0;
 	}
-	
-	// wow needs time to process the spell change before we change it back
-//	usleep([controller refreshDelay]*4);
-	usleep([controller refreshDelay]*2);
 
 	// then save our old action back
-	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
-	
+	// Use a delay to set off the reset
+	_oldActionID = oldActionID;
+	_oldBarOffset = barOffset;
+	[self performSelector: @selector(resetHotBarAction) withObject: nil  afterDelay: 0.2f];
+//	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
+
 	// We don't want to check lastAttemptedActionID if it's not a spell!
 	BOOL wasSpellCast = YES;
 	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ) {
@@ -2653,7 +2627,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// give WoW time to write to memory in case the spell didn't cast
-	usleep([controller refreshDelay]*2);
+//	usleep([controller refreshDelay]*2);
 
 	_lastActionTime = [playerController currentTime];
 
@@ -2663,7 +2637,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// check for an error
-	if ( ( wasSpellCast && [spellController lastAttemptedActionID] == actionID ) || errorFound ){
+	if ( ( wasSpellCast && [spellController lastAttemptedActionID] == actionID ) || errorFound ) {
 
 		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
 		_lastActionErrorCode = lastErrorMessage;
@@ -2720,6 +2694,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_DEV, @"Action taken successfully!");
 	return ErrNone;
+}
+
+-(void)resetHotBarAction {
+	MemoryAccess *memory = [controller wowMemoryAccess];
+	if ( !memory ) return;
+
+	// Save our old action back
+	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + _oldBarOffset) Buffer: (Byte *)&_oldActionID BufLength: sizeof(_oldActionID)];
 }
 
 - (void)monitorRegen: (NSDate*)start {
@@ -3300,6 +3282,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_DEV, @"combatProcedureValidForUnit: target is friendly, but healing is not enabled.");
 		return NO;
 	}
+
 	// Range Checks
 	float distanceToTarget = [[playerController position] distanceToPosition: [unit position]];
 	float range = 0.0f;
@@ -3333,30 +3316,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	for ( i = 0; i < ruleCount; i++ ) {
 		rule = [procedure ruleAtIndex: i];
 
-		if ( isFriendly ) {
-			if ( [rule target] != TargetFriend && [rule target] != TargetFriendlies ) continue;
-		} else {
-			if ( [rule target] != TargetEnemy && [rule target] != TargetAdd && [rule target] != TargetPat ) continue;
+		if ( [rule target] != TargetNone ) {
+			if ( isFriendly ) {
+				if ( [rule target] != TargetFriend && [rule target] != TargetFriendlies ) continue;
+			} else {
+				if ( [rule target] != TargetEnemy && [rule target] != TargetAdd && [rule target] != TargetPat ) continue;
+			}
 		}
-		
-/*
-		// If we're not in combat then don't try rules that are not primary target rules
-		if ( ![[self procedureInProgress] isEqualToString: CombatProcedure] ) {
-			if ( [rule target] == TargetFriendlies || [rule target] == TargetAdd || [rule target] == TargetPat )
-				continue;
-		}
-		// Only check applicable rules
-		if ([playerController isFriendlyWithFaction: [unit factionTemplate]]) {
-			// Friendly
-			if ( [rule target] != TargetFriend && [rule target] != TargetFriendlies ) continue;
-		} else {
-			// Hostlie
-			if ([rule target] != TargetEnemy && [rule target] != TargetAdd && [rule target] != TargetPat ) continue;
-		}
-*/
-		log(LOG_RULE, @"Evaluating rule %@ for %@", rule, unit);
 
 		if ( [self evaluateRule: rule withTarget: unit asTest: NO] ) {
+			log(LOG_RULE, @"Match found for rule %@ on %@", rule, unit);
 			matchFound = YES;
 			break;
 		}
@@ -4721,12 +4690,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for PvP Queue since we are not in a BG.");
 
 	// Out of BG Resets
-	if ( self.pvpIsInBG ) _pvpIsInBG = NO;
-	if ( _attackingInStrand ) _attackingInStrand = NO;
-	if ( _strandDelay ) _strandDelay= NO;
-	if ( _waitForPvPPreparation ) _waitForPvPPreparation = NO;
-	if ( _strandDelayTimer != 0 ) _strandDelayTimer = 0;
-	if ( _pvpTimer ) [self resetPvpTimer];
+	if ( self.pvpIsInBG ) [self pvpSetEnvironmentForZone];
 
 	// If we're in combat don't check any further
 	if ( [playerController isInCombat] ) return NO;
@@ -4802,7 +4766,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	_waitForPvPQueue = NO;
 	if ( !_pvpIsInBG ) {
-		_pvpIsInBG = YES;
 		if ( [self pvpSetEnvironmentForZone] ) {
 			log(LOG_DEV, @"PvP environment is set!");
 		}
@@ -6374,16 +6337,35 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// In a BG with a Route
 	if ( !self.pvpIsInBG && self.useRoute ) {
 
+		if ( self.theBehavior != [[behaviorPopup selectedItem] representedObject] ) self.theBehavior = [[behaviorPopup selectedItem] representedObject];
+		if ( self.theCombatProfile != [[combatProfilePopup selectedItem] representedObject] ) self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+
+		if ( !self.theRouteCollection || self.theRouteCollection != [[routePopup selectedItem] representedObject] ) {
+			log(LOG_GENERAL, @"Resetting our Route before moving.");
+			self.theRouteCollection = [[routePopup selectedItem] representedObject];
+			self.theRouteSet = [_theRouteCollection startingRoute];
+
+			if( !self.theRouteSet ) {
+				// Try the 1st routeSet
+				if ( self.theRouteCollection.routes.count ) {
+					log(LOG_GENERAL, @"You don't have a starting route selected, setting it to the first route.");
+					self.theRouteSet = [[_theRouteCollection routes ] objectAtIndex:0];
+				}
+			}
+		}
+
 		// Make sure the movement controller has the right route
-		if ( movementController.currentRouteSet != self.theRouteSet )
+		if ( !movementController.currentRouteSet || movementController.currentRouteSet != self.theRouteSet ) {
+			log(LOG_GENERAL, @"Updating the movementControllers Route.");
 			[movementController setPatrolRouteSet:self.theRouteSet];
+		}
 
 		// Update the status if we need to
 		if ( ![[controller currentStatus] isEqualToString: @"Bot: Patrolling"] ) {
 			[controller setCurrentStatus: @"Bot: Patrolling"];
 			log(LOG_GENERAL, @"Going on Patrol.");
 		}
-		
+
 		// If there is a starting route selected we traverse the waypoints strictly.
 		if ( [_theRouteCollection startingRoute] ) {
 			log(LOG_GENERAL, @"Resuming Movement.");
@@ -6409,10 +6391,58 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 #pragma mark IBActions
 
-- (IBAction)editProfiles: (id)sender {
+- (IBAction)editRoute: (id)sender {
+	
+	/*
+	 // This doesn't fail, but it doesn't work entirely as it only pulls up the route and doesn't do the rest of the stuff the interface needs to do.
+	 
+	 RouteCollection *selectedRouteCollection;
+	 RouteSet *selectedRouteSet;
+	 
+	 selectedRouteCollection = [[routePopup selectedItem] representedObject];
+	 if ( selectedRouteCollection ) selectedRouteSet = [selectedRouteCollection startingRoute];
+	 
+	 if ( selectedRouteSet && selectedRouteSet != nil ) [waypointController setCurrentRouteSet: selectedRouteSet];
+	 */
+	[controller selectRouteTab];
+}
+
+- (IBAction)editRoutePvP: (id)sender {
+	//	- (void)setCurrentBehavior: (PvPBehavior*)behavior;
+	
+	// The object type is not a route, but this is what groups the PvP routes (hopefully we can move PvP options to a tab in the Combat Profile)
+	PvPBehavior *selectedPvPBehavior;
+	selectedPvPBehavior = [[routePvPPopup selectedItem] representedObject];
+	
+	if ( selectedPvPBehavior && selectedPvPBehavior != nil ) [pvpController setCurrentBehavior: selectedPvPBehavior];
+	
+	[controller selectPvPRouteTab];
+}
+
+- (IBAction)editBehavior: (id)sender {
+	
+	// Let's be intuitive and pull up the currently selected behavior if there is one
+	Behavior *selectedBehavior;
+	selectedBehavior = [[behaviorPopup selectedItem] representedObject];
+	
+	if ( selectedBehavior && selectedBehavior != nil ) [procedureController setCurrentBehavior: selectedBehavior];
+
+	[controller selectBehaviorTab];
+}
+
+- (IBAction)editBehaviorPvP: (id)sender {
+
+	// Let's be intuitive and pull up the currently selected behavior if there is one
+	Behavior *selectedBehavior;
+	selectedBehavior = [[behaviorPvPPopup selectedItem] representedObject];
+	if ( selectedBehavior && selectedBehavior != nil ) [procedureController setCurrentBehavior: selectedBehavior];
+	
+	[controller selectBehaviorTab];
+}
+
+- (IBAction)editProfile: (id)sender {
 	// Let's be intuitive and pull up the currently selected behavior if there is one
 	Profile *selectedProfile;
-
 	selectedProfile = [[combatProfilePopup selectedItem] representedObject];
 
 	// setProfile should use the same naming convention as setCurrentBehavior or the old naming convention needs deprecated.
@@ -6422,42 +6452,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[controller selectCombatProfileTab];
 }
 
-- (IBAction)editBehaviors: (id)sender {
-
+- (IBAction)editProfilePvP: (id)sender {
 	// Let's be intuitive and pull up the currently selected behavior if there is one
-	Behavior *selectedBehavior;
-	selectedBehavior = [[behaviorPopup selectedItem] representedObject];
-
-	if ( selectedBehavior && selectedBehavior != nil ) [procedureController setCurrentBehavior: selectedBehavior];
-
-	[controller selectBehaviorTab];
-}
-
-- (IBAction)editRoutes: (id)sender {
-
-/*
-// This doesn't fail, but it doesn't work entirely as it only pulls up the route and doesn't do the rest of the stuff the interface needs to do.
- 
-	RouteCollection *selectedRouteCollection;
-	RouteSet *selectedRouteSet;
+	Profile *selectedProfile;
+	selectedProfile = [[combatProfilePvPPopup selectedItem] representedObject];
 	
-	selectedRouteCollection = [[routePopup selectedItem] representedObject];
-	if ( selectedRouteCollection ) selectedRouteSet = [selectedRouteCollection startingRoute];
-
-	if ( selectedRouteSet && selectedRouteSet != nil ) [waypointController setCurrentRouteSet: selectedRouteSet];
-*/
-	[controller selectRouteTab];
-}
-
-- (IBAction)editPvPRoutes: (id)sender {
-//	- (void)setCurrentBehavior: (PvPBehavior*)behavior;
-
-	PvPBehavior *selectedPvPBehavior;
-	selectedPvPBehavior = [[pvpBehaviorPopUp selectedItem] representedObject];
+	// setProfile should use the same naming convention as setCurrentBehavior or the old naming convention needs deprecated.
+	// If we can keep this consistent in all of the GUI controllers it'll make it easier to add features like this :)
+	if ( selectedProfile && selectedProfile != nil ) [profileController setProfile: selectedProfile];
 	
-	if ( selectedPvPBehavior && selectedPvPBehavior != nil ) [pvpController setCurrentBehavior: selectedPvPBehavior];
-
-	[controller selectPvPRouteTab];
+	[controller selectCombatProfileTab];
 }
 
 - (IBAction)updateStatus: (id)sender {
@@ -6465,15 +6469,38 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 /*
  * To do, just noticed that this sets options when changed... need to update this for all of the new combat profile options?
  */
- 
-    CombatProfile *profile = [[combatProfilePopup selectedItem] representedObject];
 
-    NSString *status = [NSString stringWithFormat: @"%@ (%@). ", 
-						[[[behaviorPopup selectedItem] representedObject] name],    // behavior
-						[[[routePopup selectedItem] representedObject] name]];	     // route
+	CombatProfile *profile;
+	NSString *status;
+	NSString *behaviorName;
+	NSString *routeName;
 
+	// Is this the right way to get the values for these here?
+	_useRoute = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoute"] boolValue];
+	_useRoutePvP = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoutePvP"] boolValue];
+
+	if ( self.pvpIsInBG ) {
+
+		profile = [[combatProfilePvPPopup selectedItem] representedObject];
+		behaviorName = [[[behaviorPvPPopup selectedItem] representedObject] name];
+
+		if ( _useRoutePvP ) routeName = [[[routePvPPopup selectedItem] representedObject] name];
+			else routeName = @"Easy Mode";
+
+	} else {
+
+		profile = [[combatProfilePopup selectedItem] representedObject];
+		behaviorName = [[[behaviorPopup selectedItem] representedObject] name];
+
+		if ( _useRoute ) routeName = [[[routePopup selectedItem] representedObject] name];
+			else routeName = @"Easy Mode";
+	}
+
+	status = [NSString stringWithFormat: @"%@ (%@). ", behaviorName, routeName];
+	
+	
     NSString *bleh = nil;
-    if(!profile || !profile.combatEnabled) {
+    if (!profile || !profile.combatEnabled) {
 		bleh = @"Combat disabled.";
     } else {
 		if(profile.onlyRespond) {
@@ -6503,6 +6530,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		status = [status stringByAppendingFormat: @" Skinning (%d).", [skinningSkillText intValue]];
     
     [statusText setStringValue: status];
+	
+	if ( self.pvpIsInBG && !_useRoutePvP && [movementController isActive] ) {
+		[movementController resetMovementState];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	}
+	
+	if ( !self.pvpIsInBG && !_useRoute && [movementController isActive] ) {
+		[movementController resetMovementState];
+		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	}
+	
 }
 
 - (IBAction)startBot: (id)sender {
@@ -6511,7 +6549,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 //	BOOL usePvPBehavior = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UsePvPBehavior"] boolValue];
 
 	_useRoute = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoute"] boolValue];
-	_useRoutePvP = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UsePvPBehavior"] boolValue];
+	_useRoutePvP = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoutePvP"] boolValue];
 
     // grab route info
     if ( self.useRoute ) {
@@ -6527,9 +6565,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     self.doLooting = [lootCheckbox state];
     self.gatherDistance = [gatherDistText floatValue];
-	
+
 	// we using a PvP Behavior?
-	if ( self.useRoutePvP ) self.pvpBehavior = [[pvpBehaviorPopUp selectedItem] representedObject];
+	if ( self.useRoutePvP ) self.pvpBehavior = [[routePvPPopup selectedItem] representedObject];
 		else self.pvpBehavior = nil;
 
 	if ( ([self isHotKeyInvalid] & HotKeyPrimary) == HotKeyPrimary ){
@@ -6827,6 +6865,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	self.startDate = [[NSDate date] retain];
 
+	// If we're in a BG this will set the right variables and routes.
+	if ( [self pvpSetEnvironmentForZone] ) {
+		log(LOG_STARTUP, @"We're in a Battleground.");
+	}
+	
 	if ( [playerController isDead] ) {
 
 		[controller setCurrentStatus: @"Bot: Player is Dead"];
@@ -6919,7 +6962,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_wasLootWindowOpen = NO;
 	_shouldFollow = YES;
 	_lastUnitAttemptedToHealed = nil;
-	_pvpIsInBG = NO;
 	self.lootStartTime = nil;
 	self.skinStartTime = nil;
 	_lootMacroAttempt = 0;
@@ -7126,8 +7168,6 @@ NSMutableDictionary *_diffDict = nil;
 
 	if ( status == BGWaiting ) {
 		// queue then check again!
-//		_waitForPvPPreparation = YES;
-//		_pvpIsInBG = YES;
 		[controller setCurrentStatus: @"Joining Battleground."];
 		[macroController useMacroOrSendCmd:@"AcceptBattlefield"];
 		log(LOG_PVP, @"Joining BG!");
@@ -7161,7 +7201,6 @@ NSMutableDictionary *_diffDict = nil;
 		
 		_waitForPvPQueue = NO;
 		_waitingToLeaveBattleground = NO;
-		_pvpIsInBG = NO;
 		_isPvpMonitoring = NO;
 
 		if ( _followUnit ) {
@@ -7506,37 +7545,43 @@ NSMutableDictionary *_diffDict = nil;
 - (void)auraGain: (NSNotification*)notification {
 	if ( !self.isBotting ) return;
 
-	usleep(800000);
+	UInt32 spellID = [[(Spell*)[[notification userInfo] objectForKey: @"Spell"] ID] unsignedIntValue];
 
-    if ( self.isPvPing || self.pvpIsInBG ) {
-		UInt32 spellID = [[(Spell*)[[notification userInfo] objectForKey: @"Spell"] ID] unsignedIntValue];
+	if ( spellID == PreparationSpellID || spellID == WaitingToRezSpellID ) {
+		if ( [movementController isActive] ) [movementController resetMovementState];
+		[self cancelCurrentProcedure];
+		[self cancelCurrentEvaluation];
+		[combatController resetAllCombat];
+		[self followRouteClear];
+		[self pvpSetEnvironmentForZone];
+	}
+
+    if ( self.pvpIsInBG ) {
 
 		// if we are waiting to rez, pause the bot (incase it is not)
 		if( spellID == WaitingToRezSpellID ) {
-			[self cancelCurrentProcedure];
-			[self cancelCurrentEvaluation];
-			[combatController resetAllCombat];
-			[movementController resetMovementState];
-//			[self performSelector:@selector(evaluateSituation) withObject:nil afterDelay:1.0f];
+			log(LOG_PVP, @"Waiting to rez.");
 		} else
 
 		// Just got preparation?  Lets check to see if we're in strand + should be attacking/defending
 		if ( spellID == PreparationSpellID && ![self pvpIsBattlegroundEnding] ) {
-			[self cancelCurrentProcedure];
-			[self cancelCurrentEvaluation];
-			[combatController resetAllCombat];
-			if ( [movementController isActive] ) [movementController resetMovementState];
 
-			_waitForPvPQueue = NO;
+			if ( _followUnit ) {
+				[_followUnit release];
+				_followUnit = nil;
+			}
+
 			_waitForPvPPreparation = YES;
-			_pvpIsInBG = YES;
 
 			log(LOG_PVP, @"We have preparation, checking BG info!");
 
 			// Do it in a bit, as we need to wait for our controller to update the object list!
 			[self performSelector:@selector(pvpGetBGInfo) withObject:nil afterDelay:2.0f];
 		}
-    }
+    } else 
+	if ( spellID == PreparationSpellID || spellID == WaitingToRezSpellID ) {
+		[self evaluateSituation];
+	}
 }
 
 - (void)auraFade: (NSNotification*)notification {
@@ -7572,12 +7617,6 @@ NSMutableDictionary *_diffDict = nil;
 
 - (BOOL)pvpIsBattlegroundEnding {
 
-	// If we're not in a zone
-//	if ( ![playerController isInBG:[playerController zone]] ) return NO;
-
-	// Check this so we don't fail if we're entering a BG
-//	if ( [auraController unit: [playerController player] hasAura: PreparationSpellID] ) return NO;
-
 	UInt32 offset = [offsetController offset:@"Lua_GetBattlefieldWinner"], status = 0;
 	[[controller wowMemoryAccess] loadDataForObject: self atAddress: offset Buffer: (Byte*)&status BufLength: sizeof(status)];
 	log(LOG_DEV, @"pvpIsBattlegroundEnding: %d", status);
@@ -7592,13 +7631,33 @@ NSMutableDictionary *_diffDict = nil;
 	
 	UInt32 zone = [playerController zone];
 	if ( ![playerController isInBG:zone] ) {
-		log(LOG_PVP,  @"Cannot set environment, we're not in a BG!");
+
+		log(LOG_PVP,  @"Resetting the PvP Environment since we're not in a BG.");
+
+		if ( _pvpTimer ) [self resetPvpTimer];
+
+		// Resets for Regular Mode
+		_pvpIsInBG = NO;
+		if ( self.theBehavior != [[behaviorPopup selectedItem] representedObject] ) self.theBehavior = [[behaviorPopup selectedItem] representedObject];
+		if ( self.theCombatProfile != [[combatProfilePopup selectedItem] representedObject] ) self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
+
+		_attackingInStrand = NO;
+		_strandDelay= NO;
+		_waitForPvPPreparation = NO;
+		_strandDelayTimer = 0;
+
 		return NO;
 	}
 
+	_pvpIsInBG = YES;
+	_waitForPvPQueue = NO;
+
+    if ( self.theBehavior != [[behaviorPvPPopup selectedItem] representedObject] ) self.theBehavior = [[behaviorPvPPopup selectedItem] representedObject];
+	if ( self.theCombatProfile != [[combatProfilePvPPopup selectedItem] representedObject] ) self.theCombatProfile = [[combatProfilePvPPopup selectedItem] representedObject];
+
 	Battleground *battleground = [self.pvpBehavior battlegroundForZone:zone];
 	if ( !battleground ) {
-		log(LOG_PVP,  @"Cannot set environment, there is no behavior for this Battleground!");
+		log(LOG_PVP,  @"Running in Easy Mode for this Battleground.");
 		return NO;
 	}
 
@@ -7720,15 +7779,6 @@ NSMutableDictionary *_diffDict = nil;
 }
 
 - (void)pvpGetBGInfo{
-	
-	if ( [movementController isActive] ) [movementController resetMovementState];
-
-	if ( _followUnit ) {
-		[_followUnit release]; _followUnit = nil;
-		[self followRouteClear];
-	}
-	
-	[self pvpSetEnvironmentForZone];
 
 	// Lets gets some info?
 	if ( [playerController zone] == ZoneStrandOfTheAncients ) {
