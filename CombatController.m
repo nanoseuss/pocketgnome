@@ -276,7 +276,6 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
-
 	log(LOG_COMBAT, @"%@ %@ is not in LoS, blacklisting.", [self unitHealthBar: unit], unit);
 	[blacklistController blacklistObject:unit withReason:Reason_NotInLoS];
 

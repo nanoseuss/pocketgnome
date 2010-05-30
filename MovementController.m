@@ -1205,7 +1205,7 @@ typedef enum MovementState{
 
 		if ( distanceToDestination > 20.0f ) {
 			// If we're not supposed to loot this node due to proximity rules
-			BOOL nearbyScaryUnits = [botController scaryUnitsNearNode:_moveToObject doMob:botController.nodeIgnoreMob doFriendy:botController.nodeIgnoreFriendly doHostile:botController.nodeIgnoreHostile];
+			BOOL nearbyScaryUnits = [botController scaryUnitsNearNode:_moveToObject doMob:botController.theCombatProfile.GatherNodesMobNear doFriendy:botController.theCombatProfile.GatherNodesFriendlyPlayerNear doHostile:botController.theCombatProfile.GatherNodesHostilePlayerNear];
 
 			if ( nearbyScaryUnits ) {
 				log(LOG_NODE, @"Skipping node due to proximity count");
@@ -1258,14 +1258,15 @@ typedef enum MovementState{
 			[self resetMovementState];
 			return;
 		}
-
+/*
 		if ( ![(Unit*)_moveToObject isLootable] ) {
 			log(LOG_LOOT, @"%@ is no longer lootable, moving on.", _moveToObject);
 			[botController performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 			[self resetMovementState];
 			return;
 		}
-		
+*/
+
 		stopingDistance = 3.0f; // 6 yards total
 
 		// we've reached our position!
@@ -1811,8 +1812,9 @@ typedef enum MovementState{
 
 	if ( _moveToObject ) {
 		[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithObject:) object: _moveToObject];
-		[_moveToObject release]; _moveToObject = nil;
 	}
+	[_moveToObject release]; _moveToObject = nil;
+	self.moveToObject = nil;
 
 	self.destinationWaypoint		= nil;
 	self.lastAttemptedPosition		= nil;
@@ -2020,17 +2022,16 @@ typedef enum MovementState{
 - (void)playerHasDied:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
 
+	// reset our movement state!
+	[self resetMovementState];
+
 	// If in a BG
 	if ( botController.pvpIsInBG ) {
 //		self.currentRouteSet = nil;
-		[self resetRoutes];
-		[self resetMovementState];
+//		[self resetRoutes];
 		log(LOG_MOVEMENT, @"Ignoring corpse route because we're PvPing!");
 		return;
 	}
-
-	// reset our movement state!
-	[self resetMovementState];
 
 	// We're not set to use a route so do nothing
 	if ( ![[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue] ) return;
@@ -2058,49 +2059,7 @@ typedef enum MovementState{
 
 - (void)playerHasRevived:(NSNotification *)notification {
 	if ( !botController.isBotting ) return;
-/*
-	if ( botController.isPvPing && botController.pvpIsInBG ) {
-		log(LOG_WAYPOINT, @"Finding the nearest route since we died in PvP.");
-	
-		float closestDistance = 0.0f;
-		Waypoint *thisWaypoint = nil;
-		Route *route = nil;
-		RouteSet *routeSetFound = [RouteSet retain];
-		Position *playerPosition = [playerData position];
-		float distanceToWaypoint;
 
-		for (RouteSet *routeSet in [botController.theRouteCollectionPvP routes] ) {
-
-			// Set the route to test against
-			route = [routeSet routeForKey:PrimaryRoute];
-		
-			if ( !route || route == nil ) continue;
-		
-			if ( closestDistance == 0.0f ) {
-				thisWaypoint = [route waypointClosestToPosition:playerPosition];
-				closestDistance = [playerPosition distanceToPosition: [thisWaypoint position]];
-				routeSetFound = routeSet;
-				continue;
-			}
-
-			// We have one to compare
-			thisWaypoint = [route waypointClosestToPosition:playerPosition];
-			distanceToWaypoint = [playerPosition distanceToPosition: [thisWaypoint position]];
-			if (distanceToWaypoint < closestDistance) {
-				closestDistance = distanceToWaypoint;
-				routeSetFound = routeSet;
-			}
-		}
-
-		if ( routeSetFound && [routeSetFound UUID] != [self.currentRouteSet UUID]) {
-			log(LOG_WAYPOINT, @"Found a closer route, switching!");
-			[self setPatrolRouteSet: routeSetFound];
-			routeSetFound = nil;
-			[routeSetFound release];
-			return;
-		}
-	}
-*/
 	// do nothing if PvPing or in a BG
 	if ( botController.pvpIsInBG ) return;
 

@@ -142,9 +142,6 @@
 	int _sleepTimer;
 	UInt32 _lastSpellCastGameTime;
 	UInt32 _lastSpellCast;
-    BOOL _doMining, _doHerbalism, _doSkinning, _doNinjaSkin, _doLooting, _doNetherwingEgg, _doFishing;
-    int _miningLevel, _herbLevel, _skinLevel;
-    float _gatherDist;
     BOOL _isBotting;
     BOOL _didPreCombatProcedure;
     NSString *_procedureInProgress;
@@ -184,27 +181,11 @@
 	WoWObject *_unitToLoot;
 	NSDate *lootStartTime;
 	NSDate *skinStartTime;
-	BOOL _lootUseItems;
+//	BOOL _lootUseItems;
 	int _movingTowardMobCount;
 	int _movingTowardNodeCount;
 	
 	NSMutableArray *_routesChecked;
-	
-	// fishing shit
-	float _fishingGatherDistance;
-	BOOL _fishingApplyLure;
-	BOOL _fishingOnlySchools;
-	BOOL _fishingRecast;
-	BOOL _fishingUseContainers;
-	int _fishingLureSpellID;
-	
-	// new node detection shit
-	BOOL _nodeIgnoreFriendly;
-	BOOL _nodeIgnoreHostile;
-	BOOL _nodeIgnoreMob;
-	float _nodeIgnoreFriendlyDistance;
-	float _nodeIgnoreHostileDistance;
-	float _nodeIgnoreMobDistance;
 	
 	// new flying shit
 	int _jumpAttempt;
@@ -217,9 +198,8 @@
     // pvp shit
     BOOL _isPvPing;
 	BOOL _isPvpMonitoring;
-    BOOL _isInBattleground;
-    BOOL _pvpPlayWarning, _pvpLeaveInactive;
 	BOOL _pvpIsInBG;
+	BOOL _pvpPlayWarning;
 	NSTimer *_pvpTimer;
 	BOOL _attackingInStrand;
 	BOOL _strandDelay;
@@ -227,6 +207,7 @@
 	BOOL _waitingToLeaveBattleground;
 	BOOL _waitForPvPQueue;
 	BOOL _waitForPvPPreparation;
+	BOOL _needToTakeQueue;
 
 	// auto join WG options
 	NSTimer *_wgTimer;
@@ -286,42 +267,42 @@
 	IBOutlet NSTextField	*logOutDurabilityTextField;
 	IBOutlet NSTextField	*logOutAfterRunningTextField;
 	
-    IBOutlet NSButton *miningCheckbox;
-    IBOutlet NSButton *herbalismCheckbox;
-	IBOutlet NSButton *netherwingEggCheckbox;
-    IBOutlet id miningSkillText;
-    IBOutlet id herbalismSkillText;
-    IBOutlet NSButton *skinningCheckbox;
-	IBOutlet NSButton *ninjaSkinCheckbox;
-    IBOutlet id skinningSkillText;
-    IBOutlet id gatherDistText;
-    IBOutlet NSButton *lootCheckbox;
+//    IBOutlet NSButton *miningCheckbox;
+//    IBOutlet NSButton *herbalismCheckbox;
+//	IBOutlet NSButton *netherwingEggCheckbox;
+//    IBOutlet id miningSkillText;
+//    IBOutlet id herbalismSkillText;
+//    IBOutlet NSButton *skinningCheckbox;
+//	IBOutlet NSButton *ninjaSkinCheckbox;
+//    IBOutlet id skinningSkillText;
+//    IBOutlet id gatherDistText;
+//    IBOutlet NSButton *lootCheckbox;
 	
-	IBOutlet NSTextField *fishingGatherDistanceText;
-	IBOutlet NSButton *fishingCheckbox;
-	IBOutlet NSButton *fishingApplyLureCheckbox;
-	IBOutlet NSButton *fishingOnlySchoolsCheckbox;
-	IBOutlet NSButton *fishingRecastCheckbox;
-	IBOutlet NSButton *fishingUseContainersCheckbox;
-	IBOutlet NSButton *fishingLurePopUpButton;
+//	IBOutlet NSTextField *fishingGatherDistanceText;
+//	IBOutlet NSButton *fishingCheckbox;
+//	IBOutlet NSButton *fishingApplyLureCheckbox;
+//	IBOutlet NSButton *fishingOnlySchoolsCheckbox;
+//	IBOutlet NSButton *fishingRecastCheckbox;
+//	IBOutlet NSButton *fishingUseContainersCheckbox;
+//	IBOutlet NSButton *fishingLurePopUpButton;
 	
-	IBOutlet NSButton		*autoJoinWG;
+//	IBOutlet NSButton		*autoJoinWG;
 	IBOutlet NSButton		*antiAFKButton;
 	
-	IBOutlet NSButton *combatDisableRelease;
+//	IBOutlet NSButton *combatDisableRelease;
 	
-	IBOutlet NSTextField *nodeIgnoreHostileDistanceText;
-	IBOutlet NSTextField *nodeIgnoreFriendlyDistanceText;
-	IBOutlet NSTextField *nodeIgnoreMobDistanceText;
-	IBOutlet NSButton *nodeIgnoreHostileCheckbox;
-	IBOutlet NSButton *nodeIgnoreFriendlyCheckbox;
-	IBOutlet NSButton *nodeIgnoreMobCheckbox;
+//	IBOutlet NSTextField *nodeIgnoreHostileDistanceText;
+//	IBOutlet NSTextField *nodeIgnoreFriendlyDistanceText;
+//	IBOutlet NSTextField *nodeIgnoreMobDistanceText;
+//	IBOutlet NSButton *nodeIgnoreHostileCheckbox;
+//	IBOutlet NSButton *nodeIgnoreFriendlyCheckbox;
+//	IBOutlet NSButton *nodeIgnoreMobCheckbox;
 	
-	IBOutlet NSButton *lootUseItemsCheckbox;
+//	IBOutlet NSButton *lootUseItemsCheckbox;
     
     IBOutlet NSPanel *hotkeyHelpPanel;
     IBOutlet NSPanel *lootHotkeyHelpPanel;
-	IBOutlet NSPanel *gatheringLootingPanel;
+//	IBOutlet NSPanel *gatheringLootingPanel;
     IBOutlet SRRecorderControl *startstopRecorder;
     PTHotKey *StartStopBotGlobalHotkey;
     
@@ -358,6 +339,7 @@
 @property (readonly, retain) Behavior *theBehaviorPvP;
 @property (readonly, retain) PvPBehavior *pvpBehavior;
 @property BOOL waitForPvPPreparation;
+@property (readonly, assign) BOOL needToTakeQueue;
 @property (readwrite, retain) CombatProfile *theCombatProfile;
 @property (readonly, retain) Unit *preCombatUnit;
 @property (readonly, retain) NSDate *lootStartTime;
@@ -373,9 +355,9 @@
 @property (readonly, assign) BOOL movingToCorpse;
 @property (readonly, assign) BOOL waitForPvPQueue;
 @property (readonly, assign) BOOL evaluationIsActive;
-@property (readonly, assign) BOOL nodeIgnoreMob;
-@property (readonly, assign) BOOL nodeIgnoreFriendly;
-@property (readonly, assign) BOOL nodeIgnoreHostile;
+// @property (readonly, assign) BOOL nodeIgnoreMob;
+// @property (readonly, assign) BOOL nodeIgnoreFriendly;
+// @property (readonly, assign) BOOL nodeIgnoreHostile;
 
 @property (readonly, retain) NSMutableArray *mobsToLoot;
 
@@ -448,8 +430,8 @@
 - (IBAction)closeHotkeyHelp: (id)sender;
 - (IBAction)lootHotkeyHelp: (id)sender;
 - (IBAction)closeLootHotkeyHelp: (id)sender;
-- (IBAction)gatheringLootingOptions: (id)sender;
-- (IBAction)gatheringLootingSelectAction: (id)sender;
+// - (IBAction)gatheringLootingOptions: (id)sender;
+// - (IBAction)gatheringLootingSelectAction: (id)sender;
 
 // Looting
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck;
@@ -458,6 +440,8 @@
 - (BOOL)pvpIsBattlegroundEnding;
 - (void)resetPvpTimer;
 - (void)stopBotActions;
+- (void)joinBGCheck;
+
 // hackish stuff
 - (IBAction)toggleWallWalk: (id)sender;
 - (IBAction)toggleAllChat: (id)sender;

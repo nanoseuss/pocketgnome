@@ -74,6 +74,16 @@ typedef enum {
     return self;
 }
 
+- (void)dealloc{
+	[_objectList release];
+	[_objectDataList release];
+	[_finishedNodes release];
+	[_miningDict release];
+	[_herbalismDict release];
+
+	[super dealloc];
+}
+
 #pragma mark Dataset Modification
 
 - (unsigned)nodeCount {

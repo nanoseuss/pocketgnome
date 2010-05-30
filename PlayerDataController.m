@@ -101,6 +101,14 @@ static PlayerDataController* sharedController = nil;
     return self;
 }
 
+- (void)dealloc{
+	[_combatDataList release];
+	[_baselineAddress release];
+	[_playerAddress release];
+	
+	[super dealloc];
+}
+
 - (void)viewLoaded: (NSNotification*)notification {
     //if( [notification object] == self.view ) {
     //    log(LOG_DEV, @"loaded");

@@ -56,14 +56,11 @@ static AuraController* sharedController = nil;
     return self;
 }
 
-- (void) dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver: self];
+- (void) dealloc{
     [_playerAuras release];
     [_auras release];
     [super dealloc];
 }
-
 
 - (void)awakeFromNib {
     [aurasPanel setCollectionBehavior: NSWindowCollectionBehaviorCanJoinAllSpaces];

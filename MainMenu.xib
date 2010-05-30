@@ -2,17 +2,17 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10D2094</string>
-		<string key="IBDocument.InterfaceBuilderVersion">762</string>
-		<string key="IBDocument.AppKitVersion">1038.29</string>
-		<string key="IBDocument.HIToolboxVersion">460.00</string>
+		<string key="IBDocument.SystemVersion">10C540</string>
+		<string key="IBDocument.InterfaceBuilderVersion">732</string>
+		<string key="IBDocument.AppKitVersion">1038.25</string>
+		<string key="IBDocument.HIToolboxVersion">458.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">762</string>
+			<string key="NS.object.0">732</string>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="2378"/>
+			<integer value="1725"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1039,7 +1039,7 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 					</object>
 				</object>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{700, 200}</string>
 				<object class="NSView" key="NSWindowView" id="307790377">
 					<nil key="NSNextResponder"/>
@@ -1148,7 +1148,7 @@
 									<string key="NSColorName">controlColor</string>
 									<object class="NSColor" key="NSColor" id="133276419">
 										<int key="NSColorSpace">3</int>
-										<bytes key="NSWhite">MC42NjY2NjY2ODY1AA</bytes>
+										<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 									</object>
 								</object>
 								<object class="NSColor" key="NSTextColor" id="557612642">
@@ -1183,7 +1183,7 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{700, 277}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">MainWindow</string>
 			</object>
 			<object class="NSCustomObject" id="148782052">
@@ -1239,16 +1239,16 @@
 				<string key="NSWindowTitle">Rule Editor</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSWindowContentMinSize">{749, 477}</string>
 				<object class="NSView" key="NSWindowView" id="94846559">
-					<nil key="NSNextResponder"/>
+					<reference key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSScrollView" id="591188326">
 							<reference key="NSNextResponder" ref="94846559"/>
-							<int key="NSvFlags">274</int>
+							<int key="NSvFlags">4370</int>
 							<object class="NSMutableArray" key="NSSubviews">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSClipView" id="1043687804">
@@ -1334,7 +1334,7 @@
 													<bytes key="NSWhite">MC41AA</bytes>
 												</object>
 											</object>
-											<double key="NSRowHeight">36</double>
+											<double key="NSRowHeight">38</double>
 											<int key="NSTvFlags">1388314624</int>
 											<reference key="NSDelegate"/>
 											<reference key="NSDataSource"/>
@@ -1350,7 +1350,7 @@
 									<reference key="NSNextKeyView" ref="988717511"/>
 									<reference key="NSDocView" ref="988717511"/>
 									<reference key="NSBGColor" ref="154473213"/>
-									<int key="NScvFlags">2</int>
+									<int key="NScvFlags">4</int>
 								</object>
 								<object class="NSScroller" id="916340173">
 									<reference key="NSNextResponder" ref="591188326"/>
@@ -1396,7 +1396,7 @@
 							<reference key="NSContentView" ref="1043687804"/>
 							<reference key="NSHeaderClipView" ref="885604911"/>
 							<reference key="NSCornerView" ref="716789274"/>
-							<bytes key="NSScrollAmts">QSAAAEEgAABCGAAAQhgAAA</bytes>
+							<bytes key="NSScrollAmts">QSAAAEEgAABCIAAAQiAAAA</bytes>
 						</object>
 						<object class="NSTextField" id="916480536">
 							<reference key="NSNextResponder" ref="94846559"/>
@@ -2295,10 +2295,11 @@
 						</object>
 					</object>
 					<string key="NSFrameSize">{749, 477}</string>
+					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
 				<string key="NSMinSize">{749, 499}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">RulesEditor</string>
 			</object>
 			<object class="NSCustomView" id="992636968">
@@ -2451,7 +2452,7 @@
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="754616829">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -5705,7 +5706,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{740, 413}</string>
-				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSUserDefaultsController" id="942032820">
@@ -5728,7 +5728,7 @@
 				<string key="NSWindowTitle">Aura Tracker</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<object class="NSView" key="NSWindowView" id="249442898">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -6042,7 +6042,7 @@
 					<string key="NSFrameSize">{416, 246}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">AuraTrackerWindow</string>
 			</object>
 			<object class="NSCustomObject" id="127609570">
@@ -6068,7 +6068,7 @@
 				<string key="NSWindowTitle">Cooldown Tracker</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<object class="NSView" key="NSWindowView" id="551776608">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -6736,7 +6736,7 @@
 					<string key="NSFrameSize">{1214, 239}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">CooldownTrackerWindow</string>
 			</object>
 			<object class="NSCustomObject" id="133192392">
@@ -6768,7 +6768,7 @@
 				<string key="NSWindowTitle">Combat Tracker</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
-				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSWindowContentMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<object class="NSView" key="NSWindowView" id="385955084">
 					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
@@ -7144,7 +7144,7 @@
 					<string key="NSFrameSize">{662, 245}</string>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1920, 1178}}</string>
-				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+				<string key="NSMaxSize">{1.79769e+308, 1.79769e+308}</string>
 				<string key="NSFrameAutosaveName">CombatTrackerWindow</string>
 			</object>
 			<object class="NSCustomObject" id="963237447">
@@ -17165,9 +17165,9 @@
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
-					<string>{{281, 233}, {749, 477}}</string>
+					<string>{{-1413, 19}, {749, 477}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{281, 233}, {749, 477}}</string>
+					<string>{{-1413, 19}, {749, 477}}</string>
 					<integer value="0"/>
 					<string>{{99, 739}, {705, 301}}</string>
 					<integer value="1"/>
@@ -18174,7 +18174,12 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>closeHotkeyHelp:</string>
 							<string>closeLootHotkeyHelp:</string>
-							<string>editCombatProfiles:</string>
+							<string>editBehavior:</string>
+							<string>editBehaviorPvP:</string>
+							<string>editProfile:</string>
+							<string>editProfilePvP:</string>
+							<string>editRoute:</string>
+							<string>editRoutePvP:</string>
 							<string>gatheringLootingOptions:</string>
 							<string>gatheringLootingSelectAction:</string>
 							<string>hotkeyHelp:</string>
@@ -18211,6 +18216,11 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -18225,6 +18235,7 @@
 							<string>auraController</string>
 							<string>autoJoinWG</string>
 							<string>behaviorPopup</string>
+							<string>behaviorPvPPopup</string>
 							<string>bindingsController</string>
 							<string>blacklistController</string>
 							<string>chatController</string>
@@ -18232,6 +18243,7 @@
 							<string>combatController</string>
 							<string>combatDisableRelease</string>
 							<string>combatProfilePopup</string>
+							<string>combatProfilePvPPopup</string>
 							<string>controller</string>
 							<string>corpseController</string>
 							<string>databaseManager</string>
@@ -18285,10 +18297,10 @@
 							<string>playersController</string>
 							<string>procedureController</string>
 							<string>profileController</string>
-							<string>pvpBehaviorPopUp</string>
 							<string>pvpController</string>
 							<string>questController</string>
 							<string>routePopup</string>
+							<string>routePvPPopup</string>
 							<string>runningTimer</string>
 							<string>scanGrid</string>
 							<string>skinningCheckbox</string>
@@ -18312,12 +18324,14 @@
 							<string>AuraController</string>
 							<string>NSButton</string>
 							<string>id</string>
+							<string>id</string>
 							<string>BindingsController</string>
 							<string>BlacklistController</string>
 							<string>ChatController</string>
 							<string>ChatLogController</string>
 							<string>CombatController</string>
 							<string>NSButton</string>
+							<string>id</string>
 							<string>id</string>
 							<string>Controller</string>
 							<string>CorpseController</string>
@@ -18372,9 +18386,9 @@
 							<string>PlayersController</string>
 							<string>ProcedureController</string>
 							<string>ProfileController</string>
-							<string>NSPopUpButton</string>
 							<string>PvPController</string>
 							<string>QuestController</string>
+							<string>id</string>
 							<string>id</string>
 							<string>NSTextField</string>
 							<string>ScanGridView</string>
@@ -18845,6 +18859,7 @@
 							<string>openSearch:</string>
 							<string>pointerSelectAction:</string>
 							<string>saveValues:</string>
+							<string>selectInstance:</string>
 							<string>setCustomAddress:</string>
 							<string>snapshotMemory:</string>
 							<string>startSearch:</string>
@@ -18852,6 +18867,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -18877,6 +18893,7 @@
 							<string>clearButton</string>
 							<string>controller</string>
 							<string>emulatePPCButton</string>
+							<string>instanceList</string>
 							<string>itemController</string>
 							<string>maskTextField</string>
 							<string>memoryTable</string>
@@ -18912,6 +18929,7 @@
 							<string>NSButton</string>
 							<string>Controller</string>
 							<string>NSButton</string>
+							<string>NSPopUpButton</string>
 							<string>InventoryController</string>
 							<string>NSTextField</string>
 							<string>id</string>
@@ -20745,7 +20763,6 @@
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
-		<string key="IBDocument.TargetRuntimeIdentifier">IBCocoaFramework</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginDeclaredDependencies">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin.macosx</string>
 			<integer value="1050" key="NS.object.0"/>
@@ -20761,62 +20778,5 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<string key="IBDocument.LastKnownRelativeProjectPath">Pocket Gnome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
-		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<bool key="EncodedWithXMLCoder">YES</bool>
-			<object class="NSArray" key="dict.sortedKeys">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>Ability_DualWieldSpecialization</string>
-				<string>Ability_Rogue_Sprint</string>
-				<string>Ability_Warrior_Revenge</string>
-				<string>ActiveQuestIcon</string>
-				<string>BinderGossipIcon</string>
-				<string>INV_Misc_Gear_01</string>
-				<string>INV_Misc_Head_Dragon_Blue</string>
-				<string>INV_Misc_Orb_05</string>
-				<string>NSActionTemplate</string>
-				<string>NSAddTemplate</string>
-				<string>NSApplicationIcon</string>
-				<string>NSMenuCheckmark</string>
-				<string>NSMenuMixedState</string>
-				<string>NSStopProgressTemplate</string>
-				<string>NSSwitch</string>
-				<string>NSToolbarCustomizeToolbarItemImage</string>
-				<string>PVP</string>
-				<string>Spell_FireResistanceTotem_01</string>
-				<string>Spell_Holy_MindVision</string>
-				<string>Spell_Holy_PrayerofSpirit</string>
-				<string>Spell_Nature_PoisonCleansingTotem</string>
-				<string>Trade_Engraving</string>
-				<string>good</string>
-				<string>off</string>
-			</object>
-			<object class="NSMutableArray" key="dict.values">
-				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{64, 64}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{16, 16}</string>
-				<string>{16, 16}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{15, 15}</string>
-				<string>{8, 8}</string>
-				<string>{512, 512}</string>
-				<string>{9, 8}</string>
-				<string>{7, 2}</string>
-				<string>{11, 11}</string>
-				<string>{15, 15}</string>
-				<string>{32, 32}</string>
-				<string>{64, 64}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{67.7747, 67.7747}</string>
-				<string>{64, 64}</string>
-				<string>{13, 13}</string>
-				<string>{16, 16}</string>
-			</object>
-		</object>
 	</data>
 </archive>

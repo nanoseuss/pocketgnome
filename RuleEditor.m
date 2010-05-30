@@ -59,8 +59,20 @@
     return self;
 }
 
+- (void) dealloc{
+	[_spellsMenu release];  _spellsMenu = nil;
+	[_itemsMenu release];   _itemsMenu = nil;
+	[_macrosMenu release];  _macrosMenu = nil;
+	[_interactMenu release]; _interactMenu = nil;
+	
+    [super dealloc];
+}
+
 - (void)awakeFromNib {
     // set our column to use a Rule Cell
+
+	[spellRuleTableView registerForDraggedTypes: [NSArray arrayWithObjects: @"Condition", nil]];
+
     NSTableColumn *column = [spellRuleTableView tableColumnWithIdentifier: @"Conditions"];
 	[column setDataCell: [[[ConditionCell alloc] init] autorelease]];
 	[column setEditable: NO];
@@ -321,6 +333,72 @@
     return NO;
 }
 
+#pragma mark Table Drag & Drop
 
+// begin drag operation, save row index
+- (BOOL)tableView:(NSTableView *)tv writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard*)pboard {
+    // Copy the row numbers to the pasteboard.
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+    [pboard declareTypes: [NSArray arrayWithObjects: @"Condition", nil] owner: self];
+    [pboard setData: data forType: @"Condition"];
+    return YES;
+}
+
+// validate drag operation
+- (NSDragOperation) tableView: (NSTableView*) tableView
+                 validateDrop: (id ) info
+                  proposedRow: (int) row
+        proposedDropOperation: (NSTableViewDropOperation) op
+{
+    int result = NSDragOperationNone;
+    
+    if (op == NSTableViewDropAbove) {
+        result = NSDragOperationMove;
+
+        NSPasteboard* pboard = [info draggingPasteboard];
+        NSData* rowData = [pboard dataForType: @"Condition"];
+        NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+        int dragRow = [rowIndexes firstIndex];
+        
+        if (dragRow == row || dragRow == row-1) result = NSDragOperationNone;
+    }
+
+    return (result);
+    
+}
+
+// accept the drop
+- (BOOL)tableView: (NSTableView *)aTableView 
+       acceptDrop: (id <NSDraggingInfo>)info
+              row: (int)row 
+    dropOperation: (NSTableViewDropOperation)operation {
+
+    NSPasteboard* pboard = [info draggingPasteboard];
+
+    NSData* rowData = [pboard dataForType: @"Condition"];
+	if ( !rowData) return NO;
+
+    NSIndexSet* rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:rowData];
+	if ( !rowIndexes ) return NO;
+
+    int dragRow = [rowIndexes firstIndex];
+	if ( dragRow < 0 ) return NO;
+
+	// Move the specified row to its new location...
+
+	ConditionController *condition = [[_conditionList objectAtIndex: dragRow] retain];
+	if ( !condition ) return NO;
+
+	log(LOG_DEV, @"Dropping %@ dragRow: %d row: %d", condition, dragRow, row)
+
+	if(dragRow < row) row--;
+	[_conditionList removeObjectAtIndex: dragRow];
+	[_conditionList insertObject: condition atIndex: row];
+
+	[condition release];
+	[aTableView reloadData];
+	
+    return YES;
+}
 
 @end

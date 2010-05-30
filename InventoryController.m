@@ -88,6 +88,16 @@ static InventoryController *sharedInventory = nil;
     return self;
 }
 
+- (void)dealloc{
+	[_objectList release];
+	[_objectDataList release];
+	[_itemNameList release];
+	[_itemsPlayerIsWearing release];
+	[_itemsInBags release];
+	
+	[super dealloc];
+}
+
 #pragma mark -
 
 - (void)applicationWillTerminate: (NSNotification*)notification {

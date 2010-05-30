@@ -303,5 +303,12 @@
 		<key>Description</key>
 		<string>This will reply to the previous whisper with omw.</string>
 	</dict>
+	<key>StartAttack</key>
+	<dict>
+		<key>Macro</key>
+		<string>/startattack</string>
+		<key>Description</key>
+		<string>Starts your auto attack.</string>
+	</dict>
 </dict>
 </plist>

@@ -110,7 +110,12 @@
 }
 
 - (void) dealloc{
-    self.procedures = nil;
+	[_observers release];
+	_observers = nil;
+	[_procedures release];
+	_procedures = nil;
+//    self.procedures = nil;
+
     [super dealloc];
 }
 

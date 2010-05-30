@@ -133,10 +133,9 @@
 
 // pvp
 @property (readwrite, assign) BOOL pvpPlayWarning;
-@property (readwrite, assign) BOOL pvpLeaveInactive;
 
-@property (readwrite, assign) BOOL doLooting;
-@property (readwrite, assign) float gatherDistance;
+// @property (readwrite, assign) BOOL doLooting;
+// @property (readwrite, assign) float gatherDistance;
 
 @property (readwrite, assign) BOOL useRoute;
 @property (readwrite, assign) BOOL useRoutePvP;
@@ -269,7 +268,8 @@
 	_strandDelay = NO;
 	_strandDelayTimer = 0;
 	_waitingToLeaveBattleground = NO;
-	_waitForPvPQueue  = NO;
+	_waitForPvPQueue = NO;
+	_needToTakeQueue = NO;
 	_waitForPvPPreparation = NO;
 	_isPvpMonitoring = NO;
 
@@ -308,7 +308,6 @@
 	
 	// wipe pvp options
 	self.isPvPing = NO;
-	self.pvpLeaveInactive = NO;
 	self.pvpPlayWarning = NO;
 	
 	// anti afk
@@ -417,13 +416,11 @@
 @synthesize assistUnit = _assistUnit;
 @synthesize tankUnit = _tankUnit;
 @synthesize pvpPlayWarning = _pvpPlayWarning;
-@synthesize pvpLeaveInactive = _pvpLeaveInactive;
 @synthesize pvpIsInBG = _pvpIsInBG;
 @synthesize waitForPvPQueue = _waitForPvPQueue;
 @synthesize waitForPvPPreparation = _waitForPvPPreparation;
+@synthesize needToTakeQueue = _needToTakeQueue;
 @synthesize startDate;
-@synthesize doLooting	    = _doLooting;
-@synthesize gatherDistance  = _gatherDist;
 @synthesize followSuspended  = _followSuspended;
 @synthesize followRoute = _followRoute;
 
@@ -432,9 +429,6 @@
 
 @synthesize includeCorpsesPatrol = _includeCorpsesPatrol;
 @synthesize movingToCorpse = _movingToCorpse;
-@synthesize nodeIgnoreMob = _nodeIgnoreMob;
-@synthesize nodeIgnoreFriendly = _nodeIgnoreFriendly;
-@synthesize nodeIgnoreHostile = _nodeIgnoreHostile;
 @synthesize mobsToLoot = _mobsToLoot;
 
 - (NSString*)sectionTitle {
@@ -467,7 +461,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 }
 
 - (BOOL)evaluateRule: (Rule*)rule withTarget: (Unit*)target asTest: (BOOL)test {
-	if ( !self.isBotting ) return NO;
 
 	// Determine whether or not the given target should have a rule applied
     int numMatched = 0, needToMatch = 0;
@@ -481,12 +474,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [rule target] != TargetNone ){
 
 		if ( ([rule target] == TargetFriend || [rule target] == TargetFriendlies || [rule target] == TargetPet ) && ![playerController isFriendlyWithFaction: [target factionTemplate]] ){
-//			log(LOG_DEV, @"[Rule] %@ isn't friendly!", target);
+			log(LOG_RULE, @"%@ isn't friendly!", target);
 			return NO;
 		}
 
 		if ( ([rule target] == TargetEnemy || [rule target] == TargetAdd || [rule target] == TargetPat) && [playerController isFriendlyWithFaction: [target factionTemplate]] ){
-//			log(LOG_DEV, @"[Rule] @% isn't an enemy!", target);
+			log(LOG_RULE, @"@% isn't an enemy!", target);
 			return NO;
 		}
 
@@ -494,27 +487,24 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if ( [rule target] == TargetSelf ) {
 			target = thePlayer;
 		}
-
 	}
 
 	// check to see if we can even cast this spell
 	if ( [[rule action] type] == ActionType_Spell && ![spellController isUsableAction:[[rule action] actionID]] ){
-//		log(LOG_DEV, @"[Rule] Action %d isn't usable!", [[rule action] actionID]);
+		log(LOG_RULE, @"Action %d isn't usable!", [[rule action] actionID]);
 		return NO;
 	}
 
 	// check to see if the spell is on cooldown, obviously the rule will fail!
 	if ( [[rule action] type] == ActionType_Spell && [spellController isSpellOnCooldown:[[rule action] actionID]] ){
-//			log(LOG_DEV, @"%@ Failed, spell is on cooldown!", rule);
-			return NO;
-//		}
+		log(LOG_RULE, @"%@ Spell is on cooldown.", rule);
+		return NO;
 	}
 
 	Unit *aUnit = nil;
 	
     for ( Condition *condition in [rule conditions] ) {
-		if(![condition enabled]) continue;
-		//		log(LOG_CONDITION, @"Checking condition: %@", condition);
+		if (![condition enabled]) continue;
 		BOOL conditionEval = NO;
 		if ([condition unit] == UnitTarget && !target) goto loopEnd;
 		if ([condition unit] == UnitFriendlies && !target) goto loopEnd;
@@ -1002,7 +992,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				break;
 				
 			case VarietyLastSpellCast:;
-				log(LOG_CONDITION, @"Doing Last Spell Cast condition...");
 				// checking by spell ID
 				if ( [condition type] == TypeValue ){
 					unsigned spellID = [[condition value] unsignedIntValue];
@@ -1011,7 +1000,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// check
 					BOOL spellCast = (_lastSpellCast == spellID);
 					conditionEval = ( [condition comparator] == CompareIs ) ? spellCast : !spellCast;
-					if(test) log(LOG_GENERAL, @" Spell %d %d was%@ the last spell cast? %d", spellID, _lastSpellCast, (([condition comparator] == CompareIs ) ? @"" : @" not"), conditionEval);
+					log(LOG_CONDITION, @" Spell %d was%@ the last spell cast. (%d was)", spellID, (([condition comparator] == CompareIs ) ? @"" : @" not"), _lastSpellCast);
 				}
 				// checking by spell ID
 				else if ( [condition type] == TypeString ){
@@ -1021,11 +1010,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					if ( spell && [spell ID] ){
 						BOOL spellCast = (_lastSpellCast == [[spell ID] unsignedIntValue]);
 						conditionEval = ( [condition comparator] == CompareIs ) ? spellCast : !spellCast;
-						if(test) log(LOG_GENERAL, @" Spell %d %d was%@ the last spell cast? %d", [[spell ID] unsignedIntValue], _lastSpellCast, (([condition comparator] == CompareIs ) ? @"" : @" not"), conditionEval);
+						log(LOG_CONDITION, @" Spell %d was%@ the last spell cast. (%d was)", [[spell ID] unsignedIntValue], (([condition comparator] == CompareIs ) ? @"" : @" not"), _lastSpellCast);
 					}
 				}
 				break;
-				
+
 			case VarietyRune:;
 				if(test) log(LOG_GENERAL, @"Doing Rune condition...");
 				// get our rune type
@@ -1835,7 +1824,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Wait if our GCD is active!
 	if ( [spellController isGCDActive] ) {
 		log(LOG_DEV, @"GCD is active, waiting...");
-		[self performSelector: @selector(performProcedureWithState:) withObject: state afterDelay: 0.25f];
+		[self performSelector: @selector(performProcedureWithState:) withObject: state afterDelay: 0.1f];
 		return;
 	}
 
@@ -1901,13 +1890,22 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     // have we exceeded our maximum attempts on this rule?
     if ( attempts > 3 ) {
-		log(LOG_PROCEDURE, @"Exceeded maximum (3) attempts on action %d (%@). Skipping.", [[procedure ruleAtIndex: completed] actionID], [[spellController spellForID:[NSNumber numberWithInt:[[procedure ruleAtIndex: completed] actionID]]] name]);
+		log(LOG_PROCEDURE, @"Exceeding (%d) attempts on action %@ for %@.", attempts, [spellController spellForID: [NSNumber numberWithUnsignedInt: _lastSpellCast]], _castingUnit );
+
+		if ( ![_castingUnit isInCombat] ) {
+			log(LOG_PROCEDURE, @"Unit not in combat, blacklisting (using LoS settings).");
+			[blacklistController blacklistObject:_castingUnit withReason:Reason_NotInLoS];
+			[self performSelector: @selector(finishCurrentProcedure:) withObject: state afterDelay: 0.25f];
+			return;
+		}
+
 		[self performSelector: _cmd withObject: [NSDictionary dictionaryWithObjectsAndKeys: 
 												 [state objectForKey: @"Procedure"],			@"Procedure",
 												 [NSNumber numberWithInt: completed+1],			@"CompletedRules",
 												 [NSNumber numberWithInt: inCombatNoAttack],	@"InCombatNoAttack",
-												 originalTarget,								@"Target",  nil] afterDelay: 0.1];
+												 originalTarget,								@"Target",  nil] afterDelay: 0.25f];
 		return;
+
     }
 
 	// See if we need to target a new hostile
@@ -2341,12 +2339,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						) {
 							log(LOG_PROCEDURE, @"Sending the pet in!");
 							[bindingsController executeBindingForKey:BindingPetAttack];
-							usleep( 50000 );
+							usleep( [controller refreshDelay]*2 );
 					}
-
-					// Let the target change set in.
-//					usleep( [controller refreshDelay] );
-//					usleep( 250000 );
 
 					// If this is a new action we reset the attempts
 					if ( _lastSpellCast != actionID ) attempts = 1;
@@ -2365,7 +2359,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 							[self finishCurrentProcedure: state];
 							return;
 						}
-						
+
 						BOOL resetCastingUnit = NO;
 
 						// On some errors we bail as notifications will restart evaluation.
@@ -2380,9 +2374,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 							//Call back the pet if needed
 							if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] ) [macroController useMacroOrSendCmd:@"PetFollow"];
-
+							
+							log(LOG_DEV, @"Targeting self.");
+							[playerController targetGuid:[[playerController player] cachedGUID]];
+							
 							[_castingUnit release]; _castingUnit = nil;
-							[self finishCurrentProcedure: state];
+							[self performSelector: @selector(finishCurrentProcedure:) withObject: state afterDelay: 2.0f];
 							return;
 						}
 
@@ -2598,50 +2595,51 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[[controller wowMemoryAccess] saveDataForAddress: [offsetController offset:@"LAST_RED_ERROR_MESSAGE"] Buffer: (Byte *)&string BufLength:sizeof(string)];
 	
 	// wow needs time to process the spell change
-	usleep( [controller refreshDelay]*2 );
+	usleep( [controller refreshDelay] );
 
 	// send the key command
 	[bindingsController executeBindingForKey:BindingPrimaryHotkey];
 	_lastSpellCastGameTime = [playerController currentTime];
 
-
 	// make sure it was a spell and not an item/macro
 	if ( !((USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID)) ){
 		_lastSpellCast = actionID;
-	}
-	else {
+	} else {
 		_lastSpellCast = 0;
 	}
+ 
+	// wow needs time to process the spell change
+	usleep( [controller refreshDelay] );
 
 	// then save our old action back
 	// Use a delay to set off the reset
 	_oldActionID = oldActionID;
 	_oldBarOffset = barOffset;
-	[self performSelector: @selector(resetHotBarAction) withObject: nil  afterDelay: 0.2f];
-//	[memory saveDataForAddress: ([offsetController offset:@"HOTBAR_BASE_STATIC"] + barOffset) Buffer: (Byte *)&oldActionID BufLength: sizeof(oldActionID)];
-
+	
 	// We don't want to check lastAttemptedActionID if it's not a spell!
 	BOOL wasSpellCast = YES;
 	if ( (USE_ITEM_MASK & actionID) || (USE_MACRO_MASK & actionID) ) {
 		wasSpellCast = NO;
 	}
 
-	// give WoW time to write to memory in case the spell didn't cast
-//	usleep([controller refreshDelay]*2);
-
 	_lastActionTime = [playerController currentTime];
+	NSString *lastErrorMessageString = [[playerController lastErrorMessage] retain];
+
+	[self performSelector: @selector(resetHotBarAction) withObject: nil  afterDelay: 0.1f];
 
 	BOOL errorFound = NO;
-	if ( ![[playerController lastErrorMessage] isEqualToString:@"__"] ){
+
+	if ( ![lastErrorMessageString isEqualToString: @"__"] ) {
 		errorFound = YES;
 	}
-
+	
 	// check for an error
-	if ( ( wasSpellCast && [spellController lastAttemptedActionID] == actionID ) || errorFound ) {
+//	if ( ( wasSpellCast && [spellController lastAttemptedActionID] == actionID ) || errorFound ) {
+	if ( errorFound ) {
 
-		int lastErrorMessage = [self errorValue:[playerController lastErrorMessage]];
+		int lastErrorMessage = [self errorValue:lastErrorMessageString];
 		_lastActionErrorCode = lastErrorMessage;
-		log(LOG_PROCEDURE, @"%@ %@ Spell %d didn't cast: %@", [combatController unitHealthBar: _castingUnit], _castingUnit,  actionID, [playerController lastErrorMessage] );
+		log(LOG_PROCEDURE, @"%@ %@ Spell %d didn't cast: %@", [combatController unitHealthBar: _castingUnit], _castingUnit,  actionID, lastErrorMessageString );
 
 		// do something?
 /*
@@ -2688,11 +2686,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		}
 
 		log(LOG_DEV, @"Action taken! Result: %d", lastErrorMessage);
-		
+		[lastErrorMessageString release];
 		return lastErrorMessage;
 	}
 
 	log(LOG_DEV, @"Action taken successfully!");
+	[lastErrorMessageString release];
 	return ErrNone;
 }
 
@@ -2968,11 +2967,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     log(LOG_GENERAL, @"---- Player has revived ----");
     [controller setCurrentStatus: @"Bot: Player has Revived"];
 
-	_ghostDance = 0;
-
 	[self cancelCurrentProcedure];
 	[self cancelCurrentEvaluation];
-	[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.5f];
+	if ( [movementController isActive] ) [movementController resetMovementState];
+
+	_ghostDance = 0;
+	if ( [self pvpSetEnvironmentForZone] ) {
+		log(LOG_PVP, @"Environment Set.");
+	}
+
+	[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 }
 
 - (void)playerHasDied: (NSNotification*)notification {
@@ -3056,7 +3060,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( ![playerController isGhost] && [playerController isDead] ) {
 
 		// Reset the loot scan idle timer
-		if ( self.doLooting ) [self resetLootScanIdleTimer];
+		if ( theCombatProfile.ShouldLoot ) [self resetLootScanIdleTimer];
 
 		int try = [count intValue];
 
@@ -3107,13 +3111,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_COMBAT, @"Unit %@ killed (%@).", unit, [unit class]);
 
 	if ( [unit isPlayer] ) {
-		if ( !self.doLooting ) return;
+		if ( !theCombatProfile.ShouldLoot ) return;
 		log(LOG_DEV, @"Player killed, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 	}
 
 	if ( [unit isNPC] ) log(LOG_DEV, @"NPC killed, flags: %d %d", [(Mob*)unit isTappedByMe], [(Mob*)unit isLootable] );
 
-	if ( self.doLooting && [unit isNPC] ) {
+	if ( theCombatProfile.ShouldLoot && [unit isNPC] ) {
 
 		// Reset the loot scan idle timer
 		[self resetLootScanIdleTimer];
@@ -3143,13 +3147,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"[Notification] Invalid Target (botController): %@", unit);
 
 	// reset!
-	[self cancelCurrentProcedure];
-	[self cancelCurrentEvaluation];
+//	[self cancelCurrentProcedure];
+//	[self cancelCurrentEvaluation];
 
-	log(LOG_DEV, @"Targeting self.");
-	[playerController targetGuid:[[playerController player] cachedGUID]];
+//	log(LOG_DEV, @"Targeting self.");
+//	[playerController targetGuid:[[playerController player] cachedGUID]];
 
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 // have no target
@@ -3160,13 +3164,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"[Notification] No Target (botController): %@", unit);
 
 	// reset!
-	[self cancelCurrentProcedure];
-	[self cancelCurrentEvaluation];
+//	[self cancelCurrentProcedure];
+//	[self cancelCurrentEvaluation];
 
-	log(LOG_DEV, @"Targeting self.");
-	[playerController targetGuid:[[playerController player] cachedGUID]];
+//	log(LOG_DEV, @"Targeting self.");
+//	[playerController targetGuid:[[playerController player] cachedGUID]];
 
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 // not in LoS
@@ -3176,11 +3180,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_DEV, @"[Notification] Not in LoS (botController): %@", unit);
 
-	// reset!
-	[self cancelCurrentProcedure];
-	[self cancelCurrentEvaluation];
+//	log(LOG_DEV, @"Targeting self.");
+//	[playerController targetGuid:[[playerController player] cachedGUID]];
 
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	// reset!
+//	[self cancelCurrentProcedure];
+//	[self cancelCurrentEvaluation];
+
+//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 - (void)morePowerfullSpellActive: (NSNotification*)notification {
@@ -3192,10 +3199,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 //	log(LOG_ERROR, @"You need to adjust your behavior so the previous spell doesn't cast if the player has a more powerfull buff!");
 
 	// reset!
-	[self cancelCurrentProcedure];
-	[self cancelCurrentEvaluation];
+//	[self cancelCurrentProcedure];
+//	[self cancelCurrentEvaluation];
 
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 - (void)cantDoThatWhileStunned: (NSNotification*)notification {
@@ -3205,10 +3212,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"[Notification] Cant do that while stunned (botController): %@", unit);
 
 	// reset!
-	[self cancelCurrentProcedure];
-	[self cancelCurrentEvaluation];
+//	[self cancelCurrentProcedure];
+//	[self cancelCurrentEvaluation];
 
-	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 #pragma mark -
@@ -3397,13 +3404,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 #pragma mark Loot Helpers
 
 - (void)resetLootScanIdleTimer {
-	if ( !self.doLooting ) return;
+	if ( !theCombatProfile.ShouldLoot ) return;
 	_lootScanIdleTimer = 0;	
 }
 
 - (Mob*)mobToLoot {
 
-	if ( !self.doLooting ) return nil;
+	if ( !theCombatProfile.ShouldLoot ) return nil;
 
 	// if our loot list is empty scan for missed mobs
     if ( ![_mobsToLoot count] ) return nil;
@@ -3433,17 +3440,17 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( !self.isBotting ) return NO;
 	if ( [playerController isDead] ) return NO;
 
-	if ( !self.doLooting ) return NO;
+	if ( !theCombatProfile.ShouldLoot ) return NO;
 
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: _cmd object: nil];
 
 	log(LOG_DEV, @"[LootScan] Scanning for missed mobs to loot.");
 
-	NSArray *mobs = [mobController mobsWithinDistance: self.gatherDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
+	NSArray *mobs = [mobController mobsWithinDistance: theCombatProfile.GatheringDistance MobIDs:nil position:[playerController position] aliveOnly:NO];
 	
 	for (Mob *mob in mobs) {
 		
-		if (_doSkinning && _doNinjaSkin && [mob isSkinnable] && mob != self.mobToSkin && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
+		if ( theCombatProfile.DoSkinning && theCombatProfile.DoNinjaSkin && [mob isSkinnable] && mob != self.mobToSkin && ![_mobsToLoot containsObject: mob] && ![blacklistController isBlacklisted:mob]) {
 			log(LOG_LOOT, @"[NinjaSkin] Adding %@ to skinning list.", mob);
 			[_mobsToLoot addObject: mob];
 			return YES;
@@ -3522,7 +3529,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	[blacklistController incrementAttemptForObject:unit];
 	
-	if ( !isNode && _doSkinning) {
+	if ( !isNode && theCombatProfile.DoSkinning) {
 		
 		if ( self.mobToSkin && [self.mobToSkin isSkinnable] ) {
 			log(LOG_LOOT, @"Using Skin instead of loot : %@m", unit);
@@ -3535,7 +3542,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	[self interactWithMouseoverGUID: [unit cachedGUID]];
 
 	// If we do skinning and it may become skinnable
-	if (!_doSkinning || ![self.mobToSkin isKindOfClass: [Mob class]] || ![self.mobToSkin isNPC])  self.mobToSkin = nil;
+	if (!theCombatProfile.DoSkinning || ![self.mobToSkin isKindOfClass: [Mob class]] || ![self.mobToSkin isNPC])  self.mobToSkin = nil;
 	
 	
 	// verify delays
@@ -3554,7 +3561,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// Up to skinning 100, you can find out the highest level mob you can skin by: ((Skinning skill)/10)+10.
 	// From skinning level 100 and up the formula is simply: (Skinning skill)/5.
 	int canSkinUpToLevel = 0;
-	if (_skinLevel <= 100) canSkinUpToLevel = (_skinLevel/10)+10; else canSkinUpToLevel = (_skinLevel/5);
+	if (theCombatProfile.SkinningLevel <= 100) canSkinUpToLevel = (theCombatProfile.SkinningLevel/10)+10; else canSkinUpToLevel = (theCombatProfile.SkinningLevel/5);
 	
 	if ( canSkinUpToLevel >= [self.mobToSkin level] ) {
 		_skinAttempt = 0;
@@ -3562,7 +3569,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 	} else {
 		[blacklistController blacklistObject: self.mobToSkin];
-		log(LOG_LOOT, @"The mob is above your max %@ level (%d).", ((_doSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
+		log(LOG_LOOT, @"The mob is above your max %@ level (%d).", ((theCombatProfile.DoSkinning) ? @"skinning" : @"herbalism"), canSkinUpToLevel);
 		[[NSNotificationCenter defaultCenter] postNotificationName: AllItemsLootedNotification object: [NSNumber numberWithInt:0]];
 	}
 	
@@ -3699,7 +3706,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		log(LOG_LOOT, @"Skinning completed in %0.2f seconds", [currentTime timeIntervalSinceDate: self.skinStartTime]);
 		
 		// We'll give this a blacklist so we don't try to reskin due to ninja skin
-		if (_doNinjaSkin) [blacklistController blacklistObject: self.mobJustSkinned withReason:Reason_RecentlySkinned];
+		if ( theCombatProfile.DoNinjaSkin ) [blacklistController blacklistObject: self.mobJustSkinned withReason:Reason_RecentlySkinned];
 		
 		[_mobsToLoot removeObject: self.mobJustSkinned];
 		self.mobJustSkinned = nil;
@@ -3747,7 +3754,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"Looted %@", [notification object]);
 	
 	// should we try to use the item?
-	if ( _lootUseItems ){
+	if ( theCombatProfile.GatherUseCrystallized ){
 		int itemID = [[notification object] intValue];
 		
 		// crystallized <air|earth|fire|shadow|life|water> or mote of <air|earth|fire|life|mana|shadow|water>
@@ -4668,16 +4675,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_EVALUATE, @"Evaluating for PvPWG.");
 
 	// Check our WG status and start the timer if needed
-	if ( [playerController zone] == 4197 ) {
+	if ( theCombatProfile.pvpStayInWintergrasp && [playerController zone] == 4197 && !_wgTimer ) {
+		log(LOG_PVP,  @"We're in Wintergrasp, starting the timer.");
+		_wgTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(wgTimer:) userInfo: nil repeats: YES];
+	}
 
-		if ( [autoJoinWG state] && !_wgTimer && [playerController playerIsValid] ) {
-			log(LOG_PVP,  @"We're in Wintergrasp, starting the timer.");
-			_wgTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(wgTimer:) userInfo: nil repeats: YES];
-		}
-	} 
 	if ( _wgTimer ) {
-		if ( ![playerController zone] == 4197 || ![autoJoinWG state] ) {
-
+		if ( !theCombatProfile.pvpStayInWintergrasp || ![playerController zone] == 4197 ) {
 			log(LOG_PVP,  @"Stoping the Wintergrasp timer.");
 			[_wgTimer invalidate]; _wgTimer = nil;
 		}
@@ -4695,6 +4699,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	// If we're in combat don't check any further
 	if ( [playerController isInCombat] ) return NO;
 
+	// If we've been waiting to take our Q
+	if ( _needToTakeQueue ) {
+		if ( [movementController isActive] ) [movementController stopMovement];
+		[self joinBGCheck];
+		return YES;
+	}
+
 	// Check for Queueing
 	if ( _waitForPvPQueue ) {
 		if ( ![[controller currentStatus] isEqualToString: @"PvP: Waiting in queue for Battleground."] ) 
@@ -4710,7 +4721,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// Beyond this point we only do checks if we're set to
-	if ( !self.isPvPing ) return NO;
+	if ( !theCombatProfile.pvpQueueForRandomBattlegrounds && !theCombatProfile.pvpLeaveIfInactive ) return NO;
 
 	// Check to see if we have the Deserter buff
 	if ( [auraController unit: [playerController player] hasAura: DeserterSpellID] ) {
@@ -4731,6 +4742,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 1.0f];
 		return YES;
 	}
+
+	if ( !theCombatProfile.pvpQueueForRandomBattlegrounds ) return NO;
 
 	if ( [self pvpQueueBattleground] ) {
 
@@ -4776,14 +4789,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	Player *player = [playerController player];
 
-	if ( self.pvpPlayWarning || self.pvpLeaveInactive ) {
+	if ( self.pvpPlayWarning || theCombatProfile.pvpLeaveIfInactive ) {
 		// Play warning if we're marked idle.
 		if( [auraController unit: player hasAura: IdleSpellID] || [auraController unit: player hasAura: InactiveSpellID]) {
 			log(LOG_PVP, @"Idle/Inactive debuff detected!");
 			if ( self.pvpPlayWarning ) [[NSSound soundNamed: @"alarm"] play];
 			log( LOG_PVP, @"Inactive debuff detected!");
 
-			if ( self.pvpLeaveInactive ) {
+			if ( theCombatProfile.pvpLeaveIfInactive ) {
 				// leave the battleground
 				log( LOG_PVP, @"Leaving battleground due to Inactive debuff.");
 				[macroController useMacroOrSendCmd:@"LeaveBattlefield"];
@@ -5313,7 +5326,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForLoot {
 
-	if ( !self.doLooting ) return NO;
+	if ( !theCombatProfile.ShouldLoot ) return NO;
 
 	if ( [playerController isDead] ) {
 		log(LOG_EVALUATE, @"Skipping Loot Evaluation since playerController.isDead");		
@@ -5470,7 +5483,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (BOOL)evaluateForMiningAndHerbalism {
 
-	if (!_doMining && !_doHerbalism && !_doNetherwingEgg) return NO;
+	if (!theCombatProfile.DoMining && !theCombatProfile.DoHerbalism && !theCombatProfile.DoNetherwingEggs ) return NO;
 
 	if ( [playerController isDead] ) return NO;
 
@@ -5489,9 +5502,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	// check for mining and herbalism
 	NSMutableArray *nodes = [NSMutableArray array];
-	if(_doMining)			[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: MiningNode maxLevel: _miningLevel]];
-	if(_doHerbalism)		[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance ofType: HerbalismNode maxLevel: _herbLevel]];
-	if(_doNetherwingEgg)	[nodes addObjectsFromArray: [nodeController nodesWithinDistance: self.gatherDistance EntryID: 185915 position:[playerController position]]];
+	if( theCombatProfile.DoMining)			[nodes addObjectsFromArray: [nodeController nodesWithinDistance: theCombatProfile.GatheringDistance ofType: MiningNode maxLevel: theCombatProfile.MiningLevel]];
+	if( theCombatProfile.DoHerbalism)		[nodes addObjectsFromArray: [nodeController nodesWithinDistance: theCombatProfile.GatheringDistance ofType: HerbalismNode maxLevel: theCombatProfile.HerbalismLevel]];
+	if( theCombatProfile.DoNetherwingEggs)	[nodes addObjectsFromArray: [nodeController nodesWithinDistance: theCombatProfile.GatheringDistance EntryID: 185915 position:[playerController position]]];
 
 	[nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
 
@@ -5552,7 +5565,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			nodeDist = [playerPosition distanceToPosition: [thisNode position]];
 
 			// If we're not supposed to loot this node due to proximity rules
-			BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
+			BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToLoot doMob: theCombatProfile.GatherNodesMobNear doFriendy: theCombatProfile.GatherNodesFriendlyPlayerNear doHostile: theCombatProfile.GatherNodesHostilePlayerNear];
 
 			if ( nearbyScaryUnits ) {
 				log(LOG_NODE, @"Skipping node due to proximity count");
@@ -5657,7 +5670,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	if ( movementController.moveToObject ) return NO;
 
-	if ( !_doFishing ) return NO;
+	if ( !theCombatProfile.DoFishing ) return NO;
 
 	if ( [playerController isDead] ) return NO;
 
@@ -5669,9 +5682,9 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	Position *playerPosition = [playerController position];
 	
 	// fishing only in schools! (probably have a route we're following)
-	if ( _fishingOnlySchools ) {
+	if ( theCombatProfile.FishingOnlySchools ) {
 		NSMutableArray *nodes = [NSMutableArray array];
-		[nodes addObjectsFromArray:[nodeController nodesWithinDistance:_fishingGatherDistance ofType: FishingSchool maxLevel: 1]];
+		[nodes addObjectsFromArray:[nodeController nodesWithinDistance: theCombatProfile.FishingGatherDistance ofType: FishingSchool maxLevel: 1]];
 		[nodes sortUsingFunction: DistanceFromPositionCompare context: playerPosition];
 
 		// are we close enough to start fishing?
@@ -5690,7 +5703,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				}
 			}
 
-			BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToFish doMob:_nodeIgnoreMob doFriendy:_nodeIgnoreFriendly doHostile:_nodeIgnoreHostile];
+			BOOL nearbyScaryUnits = [self scaryUnitsNearNode:nodeToFish doMob:theCombatProfile.GatherNodesMobNear doFriendy:theCombatProfile.GatherNodesFriendlyPlayerNear doHostile:theCombatProfile.GatherNodesHostilePlayerNear];
 
 			// we have a valid node!
 			if ( nodeDist != INFINITY && !nearbyScaryUnits ) {
@@ -5710,11 +5723,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					}
 					
 					if ( ![fishController isFishing] ){
-						[fishController fish: _fishingApplyLure
-								  withRecast:_fishingRecast
-									 withUse:_fishingUseContainers
-									withLure:_fishingLureSpellID
-								  withSchool:nodeToFish];
+						[fishController fish: theCombatProfile.FishingApplyLure
+								  withRecast: theCombatProfile.FishingRecast
+									 withUse: theCombatProfile.FishingUseContainers
+									withLure: theCombatProfile.FishingLureID
+								  withSchool: nodeToFish];
 					}
 
 					return YES;
@@ -5732,10 +5745,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		// fish where we are
 		if ( !self.evaluationInProgress ) log(LOG_FISHING, @"Just fishing from here.");
 		self.evaluationInProgress = @"Fishing";
-		[fishController fish: _fishingApplyLure
+		[fishController fish: theCombatProfile.FishingApplyLure
 				  withRecast:NO
-					 withUse:_fishingUseContainers
-					withLure:_fishingLureSpellID
+					 withUse: theCombatProfile.FishingUseContainers
+					withLure: theCombatProfile.FishingLureID
 				  withSchool:nil];		
 		return YES;
 	}
@@ -5759,7 +5772,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( movementController.moveToObject ) return NO;
 
 	// If we have looting to do we skip this
-	if ( self.doLooting && [_mobsToLoot count] ) {
+	if ( theCombatProfile.ShouldLoot && [_mobsToLoot count] ) {
 		self.evaluationInProgress = nil;
 		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 		return YES;
@@ -5781,7 +5794,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( [playerController isInCombat] ) return NO;
 
 	// If we might have mobs to loot lets recycle evaluation
-	if ( self.doLooting && _lootScanIdleTimer < 3) {
+	if ( theCombatProfile.ShouldLoot && _lootScanIdleTimer < 3) {
 		self.evaluationInProgress = nil;
 		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 		return YES;
@@ -6162,7 +6175,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
 
 	// Increment the loot scan idle timer if it's not already past it's cut off
-	if ( self.doLooting ) if (_lootScanIdleTimer <= 300) _lootScanIdleTimer++;
+	if ( theCombatProfile.ShouldLoot ) if (_lootScanIdleTimer <= 300) _lootScanIdleTimer++;
 
 	if ( [self evaluateForPartyEmotes] ) {
 		_evaluationIsActive = NO;
@@ -6184,13 +6197,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return YES;
 	}
 
+	if ( _needToTakeQueue ) {
+		log(LOG_EVALUATE, @"Waiting to get out of combat so we can take our PvP Queue.");
+		[self performSelector: _cmd withObject: nil afterDelay: 0.25f];
+		_evaluationIsActive = NO;
+		return NO;
+	}
+
 	if ( [self evaluateForCombatStart] ) {
 		_evaluationIsActive = NO;
 		return YES;
 	}
 
 	// If we're waiting for PvP Preparation and we're not supposed to move
-	if ( _waitForPvPPreparation && [self.pvpBehavior preparationDelay] ) {
+	if ( _waitForPvPPreparation && theCombatProfile.pvpDontMoveWithPreparation  ) {
 		log(LOG_EVALUATE, @"Waiting for PvP Preparation, looping.");
 		[self performSelector: _cmd withObject: nil afterDelay: 0.25f];
 		_evaluationIsActive = NO;
@@ -6522,12 +6542,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
     status = [status stringByAppendingString: bleh];
 
-    if([miningCheckbox state])
-		status = [status stringByAppendingFormat: @" Mining (%d).", [miningSkillText intValue]];
-    if([herbalismCheckbox state])
-		status = [status stringByAppendingFormat: @" Herbalism (%d).", [herbalismSkillText intValue]];
-    if([skinningCheckbox state])
-		status = [status stringByAppendingFormat: @" Skinning (%d).", [skinningSkillText intValue]];
+    if ( theCombatProfile.DoMining )
+		status = [status stringByAppendingFormat: @" Mining (%d).", theCombatProfile.MiningLevel];
+    if( theCombatProfile.DoHerbalism )
+		status = [status stringByAppendingFormat: @" Herbalism (%d).", theCombatProfile.HerbalismLevel];
+    if( theCombatProfile.DoSkinning )
+		status = [status stringByAppendingFormat: @" Skinning (%d).", theCombatProfile.SkinningLevel];
     
     [statusText setStringValue: status];
 	
@@ -6545,9 +6565,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 - (IBAction)startBot: (id)sender {
 
-//	BOOL useRoute = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UseRoute"] boolValue];
-//	BOOL usePvPBehavior = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"UsePvPBehavior"] boolValue];
-
 	_useRoute = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoute"] boolValue];
 	_useRoutePvP = [[[NSUserDefaults standardUserDefaults] objectForKey: @"UseRoutePvP"] boolValue];
 
@@ -6563,9 +6580,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
     self.theBehavior = [[behaviorPopup selectedItem] representedObject];
     self.theCombatProfile = [[combatProfilePopup selectedItem] representedObject];
 
-    self.doLooting = [lootCheckbox state];
-    self.gatherDistance = [gatherDistText floatValue];
-
 	// we using a PvP Behavior?
 	if ( self.useRoutePvP ) self.pvpBehavior = [[routePvPPopup selectedItem] representedObject];
 		else self.pvpBehavior = nil;
@@ -6577,7 +6591,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
     }
 	
-	if ( self.doLooting && ([self isHotKeyInvalid] & HotKeyInteractMouseover) == HotKeyInteractMouseover ){
+	if ( theCombatProfile.ShouldLoot && ([self isHotKeyInvalid] & HotKeyInteractMouseover) == HotKeyInteractMouseover ){
 		log(LOG_STARTUP, @"Interact with MouseOver hotkey is not valid.");
 		NSBeep();
 		NSRunAlertPanel(@"Invalid Looting Hotkey", @"You must choose a valid Interact with MouseOver hotkey, or the bot will be unable to loot bodies.", @"Okay", NULL, NULL);
@@ -6722,7 +6736,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		NSRunAlertPanel(@"Your spells/macros/items need to be on your action bars!", spellError, @"Okay", NULL, NULL);
 		return;
 	}
-	
+/*
 	// pvp checks
 	UInt32 zone = [playerController zone];
 	if ( [playerController isInBG:zone] ){
@@ -6749,7 +6763,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			}
 		}
 	}
-
 	if ( self.pvpBehavior && ![self.pvpBehavior canDoRandom] ){
 		log(LOG_STARTUP, @"Currently PG will only do random BGs, you must enabled all battlegrounds + select a route for each");
 		NSBeep();
@@ -6757,7 +6770,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		return;
 		
 	}
-	
+ */
+
 	// not a valid pvp behavior
 	/*if ( self.pvpBehavior && ![self.pvpBehavior isValid] ){
 		
@@ -6784,38 +6798,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	
 	log(LOG_STARTUP, @"Starting bot.");
 	[spellController reloadPlayerSpells];
-
-	// also check that the route has any waypoints
-	// and that the behavior has any procedures
-	_doMining			= [miningCheckbox state];
-	_doNetherwingEgg	= [netherwingEggCheckbox state];
-	_miningLevel		= [miningSkillText intValue];
-	_doHerbalism		= [herbalismCheckbox state];
-	_herbLevel			= [herbalismSkillText intValue];
-	_doSkinning			= [skinningCheckbox state];
-	_skinLevel			= [skinningSkillText intValue];
-
-	if (_doSkinning) _doNinjaSkin = [[[[NSUserDefaultsController sharedUserDefaultsController] values] valueForKey: @"DoNinjaSkin"] boolValue];
-		else _doNinjaSkin = NO;
-
-	// fishing
-	_doFishing				= [fishingCheckbox state];
-	_fishingGatherDistance	= [fishingGatherDistanceText floatValue];
-	_fishingApplyLure		= [fishingApplyLureCheckbox state];
-	_fishingOnlySchools		= [fishingOnlySchoolsCheckbox state];
-	_fishingRecast			= [fishingRecastCheckbox state];
-	_fishingUseContainers	= [fishingUseContainersCheckbox state];
-	_fishingLureSpellID		= [fishingLurePopUpButton selectedTag];
-	
-	// node checking
-	_nodeIgnoreFriendly				= [nodeIgnoreFriendlyCheckbox state];
-	_nodeIgnoreHostile				= [nodeIgnoreHostileCheckbox state];
-	_nodeIgnoreMob					= [nodeIgnoreMobCheckbox state];
-	_nodeIgnoreFriendlyDistance		= [nodeIgnoreFriendlyDistanceText floatValue];
-	_nodeIgnoreHostileDistance		= [nodeIgnoreHostileDistanceText floatValue];
-	_nodeIgnoreMobDistance			= [nodeIgnoreMobDistanceText floatValue];
-	
-	_lootUseItems					= [lootUseItemsCheckbox state];
 	_lootScanIdleTimer	= 0;
 	
 	self.mobToSkin = nil;
@@ -6851,10 +6833,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_logOutTimer = [NSTimer scheduledTimerWithTimeInterval: 5.0f target: self selector: @selector(logOutTimer:) userInfo: nil repeats: YES];
 
 	int canSkinUpToLevel = 0;
-	if(_skinLevel <= 100) canSkinUpToLevel = (_skinLevel/10)+10;
-	else canSkinUpToLevel = (_skinLevel/5);
-	if (_doSkinning) log(LOG_STARTUP, @"Skinning enabled with skill %d, allowing mobs up to level %d.", _skinLevel, canSkinUpToLevel);
-	if (_doNinjaSkin) log(LOG_STARTUP, @"Ninja Skin enabled.");
+	if ( theCombatProfile.SkinningLevel <= 100) {
+		canSkinUpToLevel = (theCombatProfile.SkinningLevel/10)+10;
+	} else {
+		canSkinUpToLevel = (theCombatProfile.SkinningLevel/5);
+	}
+	if ( theCombatProfile.DoSkinning ) log(LOG_STARTUP, @"Skinning enabled with skill %d, allowing mobs up to level %d.",theCombatProfile.SkinningLevel, canSkinUpToLevel);
+	if ( theCombatProfile.DoNinjaSkin ) log(LOG_STARTUP, @"Ninja Skin enabled.");
 
 	log(LOG_DEV, @"StartBot");
 	[controller setCurrentStatus: @"Bot: Enabled"];
@@ -6879,16 +6864,15 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[self corpseRelease:[NSNumber numberWithInt:0]];
 		}
 
-	} else if (self.doLooting) [self lootScan];
+	} else if ( theCombatProfile.ShouldLoot ) [self lootScan];
 
 	// we have a PvP behavior!
 	if ( self.useRoutePvP && self.pvpBehavior ) {
-		log(LOG_STARTUP, @"PvP enabled.");
+		log(LOG_STARTUP, @"PvP Routes Enabled.");
 		self.isPvPing = YES;
 
 		// TO DO - map these to bindings
 		self.pvpPlayWarning = NO;// [pvpPlayWarningCheckbox state];
-		self.pvpLeaveInactive = [self.pvpBehavior leaveIfInactive];
 
 	}
 
@@ -6939,17 +6923,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_GENERAL, @"Bot Stopped: %@", sender);
 
 	_afkTimerCounter=0;
-	
+
 	_mountAttempt = 0;
-	_isPvPing = NO;
-	_pvpIsInBG = NO;
-	_waitForPvPQueue = NO;
-	_waitForPvPPreparation = NO;
+
 
 	_sleepTimer = 0;
 	[movementController resetRoutes];
 
-	_pvpBehavior = nil;
+//	_pvpBehavior = nil;
 	_procedureInProgress = nil;
 	_evaluationInProgress = nil;
 	_lastProcedureExecuted = nil;
@@ -6966,19 +6947,13 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	self.skinStartTime = nil;
 	_lootMacroAttempt = 0;
 	_zoneBeforeHearth = -1;
-	_attackingInStrand = NO;
-	_strandDelay = NO;
-	_strandDelayTimer = 0;
-	_waitingToLeaveBattleground = NO;
-	_waitForPvPQueue  = NO;
-	_waitForPvPPreparation = NO;
-	_isPvpMonitoring = NO;
+
 
 	_jumpAttempt = 0;
 	_includeFriendly = NO;
 	_includeFriendlyPatrol = NO;
 	_includeCorpsesPatrol = NO;
-	_lastSpellCast = 0;
+//	_lastSpellCast = 0;
 	_mountAttempt = 0;
 	_movingTowardMobCount = 0;
 	_movingTowardNodeCount = 0;
@@ -7012,11 +6987,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	_lastEmoteShuffled = 0;
 
 	// wipe pvp options
-	self.isPvPing = NO;
-	self.pvpIsInBG = NO;
-	self.pvpLeaveInactive = NO;
-	self.pvpPlayWarning = NO;
-
+	_isPvPing = NO;
+	_pvpIsInBG = NO;
+	_pvpPlayWarning = NO;
+	_attackingInStrand = NO;
+	_strandDelay = NO;
+	_strandDelayTimer = 0;
+	_waitingToLeaveBattleground = NO;
+	_waitForPvPQueue  = NO;
+	_waitForPvPPreparation = NO;
+	_isPvpMonitoring = NO;
 	_movingToCorpse = NO;
 
 	// stop our log out timer
@@ -7046,7 +7026,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 //	[blacklistController clearAll];
 	[blacklistController clearAttempts];
 
-	if ( self.doLooting ) [_mobsToLoot removeAllObjects];
+	if ( theCombatProfile.ShouldLoot ) [_mobsToLoot removeAllObjects];
     self.preCombatUnit = nil;
 
 	// stop fishing
@@ -7143,6 +7123,7 @@ NSMutableDictionary *_diffDict = nil;
     [lootHotkeyHelpPanel orderOut: nil];
 }
 
+/*
 - (IBAction)gatheringLootingOptions: (id)sender{
 	[NSApp beginSheet: gatheringLootingPanel
 	   modalForWindow: [self.view window]
@@ -7158,12 +7139,15 @@ NSMutableDictionary *_diffDict = nil;
 - (void)gatheringLootingDidEnd:(NSWindow *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
     [gatheringLootingPanel orderOut: nil];
 }
+*/
 
 #pragma mark Notifications
 
 - (void)joinBGCheck{
 	if ( !self.isBotting ) return;
-	
+
+	_needToTakeQueue = NO;
+
 	int status = [playerController battlegroundStatus];
 
 	if ( status == BGWaiting ) {
@@ -7196,7 +7180,6 @@ NSMutableDictionary *_diffDict = nil;
 		[combatController resetAllCombat];
 		[movementController resetRoutes];
 
-		self.pvpLeaveInactive = NO;
 		self.pvpPlayWarning = NO;
 		
 		_waitForPvPQueue = NO;
@@ -7223,7 +7206,7 @@ NSMutableDictionary *_diffDict = nil;
 		_waitingToLeaveBattleground = YES;
 		float delay = 0.1f;
 		
-		if ( [self.pvpBehavior waitToLeave] && [self.pvpBehavior waitTime] >= 0.0f ) delay = [self.pvpBehavior waitTime];
+		if ( theCombatProfile.pvpWaitToLeave && theCombatProfile.pvpWaitToLeaveTime >= 0.0f ) delay = theCombatProfile.pvpWaitToLeaveTime;
 		int delaySeconds = round(delay);
 		[controller setCurrentStatus: [NSString stringWithFormat:@"Battleground over, waiting %d seconds to leave.", delaySeconds]];
 		[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: delay];
@@ -7258,13 +7241,19 @@ NSMutableDictionary *_diffDict = nil;
 	log(LOG_DEV, @"Battle ground status change notification in botController.");
 
 	// Lets join the BG!
-	if ( status == BGWaiting ) {
+	if ( !self.pvpIsInBG && status == BGWaiting ) {
+
+		if ( [playerController isInCombat] || [playerController isDead] ) {
+			log(LOG_PVP, @"Battleground Queue popped while in combat, will take it as soon as combat is done.");			
+			_needToTakeQueue = YES;
+			return;
+		}
+
 		// PvP Resets
 		[self cancelCurrentProcedure];
 		[self cancelCurrentEvaluation];
 		[combatController resetAllCombat];
 		[movementController resetMovementState];
-		self.pvpLeaveInactive = NO;
 		self.pvpPlayWarning = NO;
 		_waitingToLeaveBattleground = NO;
 		if ( _followUnit ) {
@@ -7628,7 +7617,7 @@ NSMutableDictionary *_diffDict = nil;
 // this will set up the pvp environment based on the zone we're in (basically set the RouteSet)
 - (BOOL)pvpSetEnvironmentForZone{
 	log(LOG_FUNCTION,  @"pvpSetEnvironmentForZone:");
-	
+
 	UInt32 zone = [playerController zone];
 	if ( ![playerController isInBG:zone] ) {
 
@@ -7645,6 +7634,7 @@ NSMutableDictionary *_diffDict = nil;
 		_strandDelay= NO;
 		_waitForPvPPreparation = NO;
 		_strandDelayTimer = 0;
+		_needToTakeQueue = NO;
 
 		return NO;
 	}
@@ -7668,9 +7658,9 @@ NSMutableDictionary *_diffDict = nil;
 		return NO;
 	}
 
-	if ( routeCollection != _theRouteCollectionPvP ) {
+	if ( !_theRouteCollectionPvP || routeCollection != _theRouteCollectionPvP ) {
 		log(LOG_DEV,  @"Setting the route collection to %@", routeCollection);
-		self.theRouteCollectionPvP = routeCollection;
+		_theRouteCollectionPvP = routeCollection;
 	} else {
 		log(LOG_DEV,  @"Setting the route collection already set to %@", routeCollection);
 	}
@@ -7698,7 +7688,7 @@ NSMutableDictionary *_diffDict = nil;
 		if ( closestDistance == 0.0f ) {
 			thisWaypoint = [route waypointClosestToPosition:playerPosition];
 			closestDistance = [playerPosition distanceToPosition: [thisWaypoint position]];
-			routeSetFound = routeSet;
+			routeSetFound = [routeSet retain];
 			continue;
 		}
 
@@ -7707,27 +7697,30 @@ NSMutableDictionary *_diffDict = nil;
 		distanceToWaypoint = [playerPosition distanceToPosition: [thisWaypoint position]];
 		if (distanceToWaypoint < closestDistance) {
 			closestDistance = distanceToWaypoint;
-			routeSetFound = routeSet;
+			if ( routeSetFound ) [routeSetFound release];
+			routeSetFound = [routeSet retain];
 		}
 	}
 
-	if ( routeSetFound == _theRouteSetPvP ) {
+	if ( _theRouteSetPvP && routeSetFound == _theRouteSetPvP ) {
 		log(LOG_DEV,  @"Route set already set to %@", routeSetFound);
+		[routeSetFound release];
+		routeSetFound = nil;
 		return YES;
 	}
 
 	if ( routeSetFound ) {
 		log(LOG_DEV,  @"pvpSetEnvironmentForZone: setting to the closest route.");
-		self.theRouteSetPvP = routeSetFound;
+		_theRouteSetPvP = routeSetFound;
 		[routeSetFound release];
 		routeSetFound = nil;
 	} else 
 	if ( [_theRouteCollectionPvP startingRoute] ) {
 		log(LOG_DEV,  @"pvpSetEnvironmentForZone: setting to the starting route.");
-		self.theRouteSetPvP = [_theRouteCollectionPvP startingRoute];
+		_theRouteSetPvP = [_theRouteCollectionPvP startingRoute];
 	} else {
 		log(LOG_DEV,  @"pvpSetEnvironmentForZone: setting to the first route.");
-		self.theRouteSetPvP = [[_theRouteCollectionPvP routes] objectAtIndex:0];
+		_theRouteSetPvP = [[_theRouteCollectionPvP routes] objectAtIndex:0];
 	}
 
 	log(LOG_PVP,  @"Setting PvP route set to %@", self.theRouteSetPvP);
@@ -7744,15 +7737,10 @@ NSMutableDictionary *_diffDict = nil;
 		return NO;
 	}
 
-	if ( !self.pvpBehavior ) {
-		log(LOG_ERROR,  @"No valid pvp behavior found, unable to queue!");
-		return NO;
-	}
-
 	NSString *macroEnd = [macroController macroTextForKey:@"QueueForBattleground"];
 
 	// doing a random? ezmode!
-	if ( [self.pvpBehavior random] ) {
+	if ( theCombatProfile.pvpQueueForRandomBattlegrounds ) {
 		log(LOG_PVP, @"Queueing up for randoms.");
 
 		// execute the macro
@@ -7947,9 +7935,9 @@ NSMutableDictionary *_diffDict = nil;
 	}
 	
 	// check honor
-	if ( self.pvpBehavior && [self.pvpBehavior stopHonor] ){
+	if ( theCombatProfile.pvpStopHonor ){
 		UInt32 currentHonor = [playerController honor];
-		if ( currentHonor && currentHonor >= [self.pvpBehavior stopHonorTotal] ){
+		if ( currentHonor && currentHonor >= theCombatProfile.pvpStopHonorTotal ){
 			logOutNow = YES;
 			logMessage = [NSString stringWithFormat:@"Honor has reached %u, logging out!", currentHonor];
 		}
@@ -7957,7 +7945,7 @@ NSMutableDictionary *_diffDict = nil;
 
 	// time to stop botting + log!
 	if ( logOutNow ){
-		
+
 		[self logOutWithMessage:logMessage];
 	}
 }
@@ -7991,7 +7979,7 @@ NSMutableDictionary *_diffDict = nil;
 - (void)wgTimer: (NSTimer*)timer {
 
 	// WG zone ID: 4197
-	if ( [autoJoinWG state] && ![playerController isDead] && [playerController zone] == 4197 && [playerController playerIsValid] ) {
+	if ( ![playerController isDead] && [playerController zone] == 4197 && [playerController playerIsValid] ) {
 
 		NSDate *currentTime = [NSDate date];
 
@@ -8192,21 +8180,21 @@ NSMutableDictionary *_diffDict = nil;
 // check if units are nearby
 - (BOOL)scaryUnitsNearNode: (WoWObject*)node doMob:(BOOL)doMobCheck doFriendy:(BOOL)doFriendlyCheck doHostile:(BOOL)doHostileCheck{
 	if ( doMobCheck ){
-		log(LOG_DEV, @"Scanning nearby mobs within %0.2f of %@", _nodeIgnoreMobDistance, [node position]);
-		NSArray *mobs = [mobController mobsWithinDistance: _nodeIgnoreMobDistance MobIDs:nil position:[node position] aliveOnly:YES];
+		log(LOG_DEV, @"Scanning nearby mobs within %0.2f of %@", theCombatProfile.GatherNodesMobNearRange, [node position]);
+		NSArray *mobs = [mobController mobsWithinDistance: theCombatProfile.GatherNodesMobNearRange MobIDs:nil position:[node position] aliveOnly:YES];
 		if ( [mobs count] ){
 			log(LOG_NODE, @"There %@ %d scary mob(s) near the node, ignoring %@", ([mobs count] == 1) ? @"is" : @"are", [mobs count], node);
 			return YES;
 		}
 	}
 	if ( doFriendlyCheck ){
-		if ( [playersController playerWithinRangeOfUnit: _nodeIgnoreFriendlyDistance Unit:(Unit*)node includeFriendly:YES includeHostile:NO] ){
+		if ( [playersController playerWithinRangeOfUnit: theCombatProfile.GatherNodesFriendlyPlayerNearRange Unit:(Unit*)node includeFriendly:YES includeHostile:NO] ){
 			log(LOG_NODE, @"Friendly player(s) near node, ignoring %@", node);
 			return YES;
 		}
 	}
 	if ( doHostileCheck ) {
-		if ( [playersController playerWithinRangeOfUnit: _nodeIgnoreHostileDistance Unit:(Unit*)node includeFriendly:NO includeHostile:YES] ){
+		if ( [playersController playerWithinRangeOfUnit: theCombatProfile.GatherNodesHostilePlayerNearRange Unit:(Unit*)node includeFriendly:NO includeHostile:YES] ){
 			log(LOG_NODE, @"Hostile player(s) near node, ignoring %@", node);
 			return YES;
 		}
