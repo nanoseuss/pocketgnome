@@ -21,7 +21,7 @@ typedef enum CastError {
 	ErrAttack_Stunned  = 8,
 	ErrSpellNot_Ready  = 9,
 	ErrTargetOutRange  = 10,
-	//ErrTargetOutRange2  = 11,
+	ErrYouAreTooFarAway  = 11,
 	//ErrSpellNot_Ready2  = 12,
 	ErrSpellNotReady = 13,
 	ErrInvalidTarget = 14,

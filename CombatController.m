@@ -245,8 +245,8 @@ int WeightCompare(id unit1, id unit2, void *context) {
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
 
-	log(LOG_COMBAT, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: unit], unit);
-	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
+//	log(LOG_COMBAT, @"%@ %@ is an Invalid Target, blacklisting.", [self unitHealthBar: unit], unit);
+//	[blacklistController blacklistObject: unit withReason:Reason_InvalidTarget];
 
 	[self cancelAllCombat];
 }
@@ -254,7 +254,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 // have no target
 - (void)haveNoTarget: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
-	
+
 	Unit *unit = [notification object];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
@@ -322,7 +322,7 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 - (void)cantDoThatWhileStunned: (NSNotification*)notification {
 	if ( !botController.isBotting ) return;
-	
+
 	Unit *unit = [notification object];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
 	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
@@ -338,9 +338,12 @@ int WeightCompare(id unit1, id unit2, void *context) {
 
 	log(LOG_COMBAT, @"%@ %@ is not in front, adjusting.", [self unitHealthBar: unit] , unit);
 
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(monitorUnit:) object: unit];
+	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(stayWithUnit) object: nil];
+
 	[botController cancelCurrentProcedure];
 	[botController cancelCurrentEvaluation];
-	[movementController resetMovementState];
+	if ([movementController isActive] ) [movementController resetMovementState];
 
 	[movementController turnTowardObject:unit];
 	[movementController establishPlayerPosition];

@@ -26,10 +26,12 @@
         self.procedures = [NSDictionary dictionary];
         self.meleeCombat = NO;
         self.usePet = NO;
+		self.useStartAttack = NO;
 		
 		_observers = [[NSArray arrayWithObjects:
 					   @"usePet",
 					   @"meleeCombat",
+					   @"useStartAttack",
 					   nil] retain];
     }
     return self;
@@ -82,6 +84,10 @@
         if([decoder decodeObjectForKey: @"UsePet"]) {
             self.usePet = [[decoder decodeObjectForKey: @"UsePet"] boolValue];
         }
+
+        if([decoder decodeObjectForKey: @"UseStartAttack"]) {
+            self.useStartAttack = [[decoder decodeObjectForKey: @"UseStartAttack"] boolValue];
+        }
 		
 		[super initWithCoder:decoder];
 	}
@@ -95,6 +101,7 @@
     [coder encodeObject: self.procedures forKey: @"Procedures"];
     [coder encodeObject: [NSNumber numberWithBool: self.meleeCombat] forKey: @"MeleeCombat"];
     [coder encodeObject: [NSNumber numberWithBool: self.usePet] forKey: @"UsePet"];
+    [coder encodeObject: [NSNumber numberWithBool: self.usePet] forKey: @"UseStartAttack"];
 }
 
 - (id)copyWithZone:(NSZone *)zone
@@ -104,6 +111,7 @@
     copy.procedures = self.procedures;
     copy.usePet = self.usePet;
     copy.meleeCombat = self.meleeCombat;
+    copy.useStartAttack = self.useStartAttack;
 	copy.changed = YES;
         
     return copy;
@@ -129,7 +137,7 @@
 @synthesize procedures = _procedures;
 @synthesize meleeCombat = _meleeCombat;
 @synthesize usePet = _usePet;
-
+@synthesize useStartAttack = _useStartAttack;
 - (Procedure*)procedureForKey: (NSString*)key {
     return [_procedures objectForKey: key];
 }

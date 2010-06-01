@@ -17,7 +17,7 @@
 #define PatrollingProcedure @"PatrollingProcedure"
 
 @interface Behavior : FileObject {
-    BOOL _meleeCombat, _usePet;
+    BOOL _meleeCombat, _usePet, _useStartAttack;
     NSMutableDictionary *_procedures;
 }
 
@@ -26,6 +26,7 @@
 @property (readonly, retain) NSDictionary *procedures;
 @property BOOL meleeCombat;
 @property BOOL usePet;
+@property BOOL useStartAttack;
 
 - (Procedure*)procedureForKey: (NSString*)key;
 

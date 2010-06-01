@@ -1670,7 +1670,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	if ( self.procedureInProgress ) _lastProcedureExecuted = [NSString stringWithString:self.procedureInProgress];
 
 	[self setProcedureInProgress: nil];
-//	[NSObject cancelPreviousPerformRequestsWithTarget: self selector: @selector(performProcedureWithState:) object: nil];	// we'll try this
 
 }
 
@@ -2332,14 +2331,20 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 					// See if we need to send the pet in
 					if ( [[self procedureInProgress] isEqualToString: CombatProcedure] &&
 						completed == 0 &&														// First loop only
-						![playerController isFriendlyWithFaction: [target factionTemplate]]	&&	// It's a hostile target
-						[self.theBehavior usePet] &&  
-						[playerController pet] && ![[playerController pet] isDead] &&
-						[[playerController pet] targetID] != [_castingUnit cachedGUID]		// Your pet is not already targeting this target
+						![playerController isFriendlyWithFaction: [target factionTemplate]]		// It's a hostile target
 						) {
+						if ( theBehavior.useStartAttack ) {
+							[macroController useMacroOrSendCmd:@"StartAttack"];
+							usleep( [controller refreshDelay] );
+						}
+						if ( theBehavior.usePet &&  
+							[playerController pet] && ![[playerController pet] isDead] &&
+							[[playerController pet] targetID] != [_castingUnit cachedGUID]		// Your pet is not already targeting this target
+							) {
 							log(LOG_PROCEDURE, @"Sending the pet in!");
 							[bindingsController executeBindingForKey:BindingPetAttack];
-							usleep( [controller refreshDelay]*2 );
+							usleep( [controller refreshDelay] );
+						}
 					}
 
 					// If this is a new action we reset the attempts
@@ -2352,13 +2357,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 					// error of some kind :/
 					if ( lastErrorMessage != ErrNone ) {
-						log(LOG_DEV, @"Attempted to do %u on %@ %d %d times", actionID, target, attempts, completed);
-
-						if ( lastErrorMessage == ErrCantDoThatWhileStunned || lastErrorMessage ==  ErrCantDoThatWhileSilenced || ErrCantDoThatWhileIncapacitated ) {
-							[_castingUnit release]; _castingUnit = nil;
-							[self finishCurrentProcedure: state];
-							return;
-						}
 
 						BOOL resetCastingUnit = NO;
 
@@ -2369,19 +2367,11 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						else if ( lastErrorMessage == ErrTargetOutRange ) resetCastingUnit = YES;
 						else if ( lastErrorMessage == ErrTargetDead ) resetCastingUnit = YES;
 						else if ( lastErrorMessage == ErrMorePowerfullSpellActive ) resetCastingUnit = YES;
+						else if ( lastErrorMessage == ErrCantDoThatWhileStunned || lastErrorMessage ==  ErrCantDoThatWhileSilenced || ErrCantDoThatWhileIncapacitated ) resetCastingUnit = YES;
 
-						if ( resetCastingUnit ) {
+						if ( resetCastingUnit ) return;
 
-							//Call back the pet if needed
-							if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] ) [macroController useMacroOrSendCmd:@"PetFollow"];
-							
-							log(LOG_DEV, @"Targeting self.");
-							[playerController targetGuid:[[playerController player] cachedGUID]];
-							
-							[_castingUnit release]; _castingUnit = nil;
-							[self performSelector: @selector(finishCurrentProcedure:) withObject: state afterDelay: 2.0f];
-							return;
-						}
+						log(LOG_DEV, @"Attempted to do %u on %@ %d %d times", actionID, target, attempts, completed);
 
 						NSString *triedRuleKey = [NSString stringWithFormat:@"%d_0x%qX", i, [target cachedGUID]];
 						log(LOG_DEV, @"Looking for key %@", triedRuleKey);
@@ -2624,20 +2614,21 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	_lastActionTime = [playerController currentTime];
 	NSString *lastErrorMessageString = [[playerController lastErrorMessage] retain];
-
+	int lastErrorMessage = [self errorValue:lastErrorMessageString];
+	
 	[self performSelector: @selector(resetHotBarAction) withObject: nil  afterDelay: 0.1f];
 
 	BOOL errorFound = NO;
 
-	if ( ![lastErrorMessageString isEqualToString: @"__"] ) {
+	if ( ![lastErrorMessageString isEqualToString: @"__"] && lastErrorMessage != ErrYouAreTooFarAway ) {
 		errorFound = YES;
 	}
-	
+
 	// check for an error
 //	if ( ( wasSpellCast && [spellController lastAttemptedActionID] == actionID ) || errorFound ) {
-	if ( errorFound ) {
+//	if ( errorFound ) {
+	if ( wasSpellCast && errorFound ) {
 
-		int lastErrorMessage = [self errorValue:lastErrorMessageString];
 		_lastActionErrorCode = lastErrorMessage;
 		log(LOG_PROCEDURE, @"%@ %@ Spell %d didn't cast: %@", [combatController unitHealthBar: _castingUnit], _castingUnit,  actionID, lastErrorMessageString );
 
@@ -2674,10 +2665,8 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		else if ( lastErrorMessage == ErrCantDoThatWhileStunned || lastErrorMessage ==  ErrCantDoThatWhileSilenced || ErrCantDoThatWhileIncapacitated ) {
 			[[NSNotificationCenter defaultCenter] postNotificationName: ErrorCantDoThatWhileStunned object: [[_castingUnit retain] autorelease]];
 		}
-		else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ){
-			if ( ![playerController isOnGround] ){
-				[movementController dismount];
-			}
+		else if ( lastErrorMessage == ErrCantAttackMounted || lastErrorMessage == ErrYouAreMounted ) {
+			if ( [playerController isOnGround] ) [movementController dismount];
 		}
 		// do we need to log out?
 		else if ( lastErrorMessage == ErrInventoryFull ) {
@@ -2685,12 +2674,12 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 				[self logOutWithMessage:@"Inventory full, closing game"];
 		}
 
-		log(LOG_DEV, @"Action taken! Result: %d", lastErrorMessage);
+		log(LOG_DEV, @"Action taken with error! Result: %d", lastErrorMessage);
 		[lastErrorMessageString release];
 		return lastErrorMessage;
 	}
 
-	log(LOG_DEV, @"Action taken successfully!");
+	log(LOG_DEV, @"Action taken successfully.");
 	[lastErrorMessageString release];
 	return ErrNone;
 }
@@ -2855,9 +2844,10 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[self cancelCurrentProcedure];
 		[self cancelCurrentEvaluation];
 		[combatController cancelCombatAction];
+
 		if ( [movementController isActive] ) [movementController resetMovementState];
 
-		[self actOnUnit:unit];
+		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 		return;
 	}
 
@@ -2880,7 +2870,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 
 		log(LOG_COMBAT, @"%@ %@ has jumped me while killing a mob, Targeting Player!", [combatController unitHealthBar:unit], unit);
-		[self actOnUnit:unit];
+		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 		return;
 	}
 
@@ -2895,7 +2885,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 			[combatController cancelCombatAction];
 			if ( [movementController isActive] ) [movementController resetMovementState];
 			log(LOG_COMBAT, @"%@ %@ has jumped me while killing a player, Targeting Player with higher weight!", [combatController unitHealthBar:unit], unit);
-			[self actOnUnit:unit];
+			[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 			return;
 		}
 	}
@@ -2906,7 +2896,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		[combatController cancelCombatAction];
 		if ( [movementController isActive] ) [movementController resetMovementState];
 		log(LOG_COMBAT, @"%@ %@ has jumped me while healing a player, Targeting Hostile Player!", [combatController unitHealthBar:unit], unit);
-		[self actOnUnit:unit];
+		[self performSelector: @selector(evaluateSituation) withObject:nil afterDelay:0.25f];
 		return;
 	}
 
@@ -3147,13 +3137,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"[Notification] Invalid Target (botController): %@", unit);
 
 	// reset!
-//	[self cancelCurrentProcedure];
-//	[self cancelCurrentEvaluation];
+	[self cancelCurrentProcedure];
+	[self cancelCurrentEvaluation];
 
-//	log(LOG_DEV, @"Targeting self.");
-//	[playerController targetGuid:[[playerController player] cachedGUID]];
+	//Call back the pet if needed
+	if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] ) [macroController useMacroOrSendCmd:@"PetFollow"];
 
-//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	log(LOG_DEV, @"Targeting self.");
+	[playerController targetGuid:[[playerController player] cachedGUID]];
+
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 // have no target
@@ -3164,13 +3157,16 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	log(LOG_DEV, @"[Notification] No Target (botController): %@", unit);
 
 	// reset!
-//	[self cancelCurrentProcedure];
-//	[self cancelCurrentEvaluation];
+	[self cancelCurrentProcedure];
+	[self cancelCurrentEvaluation];
 
-//	log(LOG_DEV, @"Targeting self.");
-//	[playerController targetGuid:[[playerController player] cachedGUID]];
+	//Call back the pet if needed
+	if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] ) [macroController useMacroOrSendCmd:@"PetFollow"];
 
-//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	log(LOG_DEV, @"Targeting self.");
+	[playerController targetGuid:[[playerController player] cachedGUID]];
+
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 // not in LoS
@@ -3180,42 +3176,48 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 
 	log(LOG_DEV, @"[Notification] Not in LoS (botController): %@", unit);
 
-//	log(LOG_DEV, @"Targeting self.");
-//	[playerController targetGuid:[[playerController player] cachedGUID]];
-
 	// reset!
-//	[self cancelCurrentProcedure];
-//	[self cancelCurrentEvaluation];
+	[self cancelCurrentProcedure];
+	[self cancelCurrentEvaluation];
 
-//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	//Call back the pet if needed
+	if ( [self.theBehavior usePet] && [playerController pet] && ![[playerController pet] isDead] ) [macroController useMacroOrSendCmd:@"PetFollow"];
+
+	log(LOG_DEV, @"Targeting self.");
+	[playerController targetGuid:[[playerController player] cachedGUID]];
+
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 - (void)morePowerfullSpellActive: (NSNotification*)notification {
 	if ( !self.isBotting ) return;
 	Unit *unit = [notification object];
-	
+
 	log(LOG_DEV, @"[Notification] More powerful spell active (botController): %@", unit);
-	
-//	log(LOG_ERROR, @"You need to adjust your behavior so the previous spell doesn't cast if the player has a more powerfull buff!");
+
+	log(LOG_ERROR, @"You need to adjust your behavior so the previous spell doesn't cast if the player has a more powerfull buff!");
 
 	// reset!
-//	[self cancelCurrentProcedure];
-//	[self cancelCurrentEvaluation];
+	[self cancelCurrentProcedure];
+	[self cancelCurrentEvaluation];
 
-//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	log(LOG_DEV, @"Targeting self.");
+	[playerController targetGuid:[[playerController player] cachedGUID]];
+
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 - (void)cantDoThatWhileStunned: (NSNotification*)notification {
 	if ( !self.isBotting ) return;
 	Unit *unit = [notification object];
-	
+
 	log(LOG_DEV, @"[Notification] Cant do that while stunned (botController): %@", unit);
 
 	// reset!
-//	[self cancelCurrentProcedure];
-//	[self cancelCurrentEvaluation];
+	[self cancelCurrentProcedure];
+	[self cancelCurrentEvaluation];
 
-//	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
+	[self performSelector: @selector(evaluateSituation) withObject: nil afterDelay: 0.25f];
 }
 
 #pragma mark -
@@ -8069,8 +8071,9 @@ NSMutableDictionary *_diffDict = nil;
 	else if ( [errorMessage isEqualToString:TARGET_RNGE] ){
 		return ErrTargetOutRange;
 	}
+// This one is really more for Melee that isn't close enough for melee attack so we don't need to handle it like we do out of range
 	else if ( [errorMessage isEqualToString:TARGET_RNGE2] ){
-		return ErrTargetOutRange;
+		return ErrYouAreTooFarAway;
 	}
 	else if ( [errorMessage isEqualToString:INVALID_TARGET] || [errorMessage isEqualToString:CANT_ATTACK_TARGET] ) {
 		return ErrInvalidTarget;
