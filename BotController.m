@@ -2234,14 +2234,6 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 		if( rule.action.type == ActionType_Item) resultType = @"Use Item";
 		if( rule.action.type == ActionType_Macro) resultType = @"Use Macro";
 
-		NSString *ruleFormatted = [NSString stringWithFormat: @"\"%@\"  %@ (%@)>", [rule name], resultType, rule.action.value];
-
-		if ( [rule target] == TargetNone || [rule target] == TargetSelf) {
-			log(LOG_PROCEDURE, @"%@ %@ %@", [combatController unitHealthBar:player], player, ruleFormatted );
-		} else {
-			log(LOG_COMBAT, @"%@ %@ %@", [combatController unitHealthBar:_castingUnit], _castingUnit, ruleFormatted );
-		}
-
 		if ( [rule resultType] > 0 ) {
 			int32_t actionID = [rule actionID];
 			
@@ -2347,6 +2339,14 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 						}
 					}
 
+					NSString *ruleFormatted = [NSString stringWithFormat: @"\"%@\"  %@ (%@)>", [rule name], resultType, rule.action.value];
+								
+					if ( [rule target] == TargetNone || [rule target] == TargetSelf) {
+						log(LOG_PROCEDURE, @"%@ %@ %@", [combatController unitHealthBar:player], player, ruleFormatted );
+					} else {
+						log(LOG_COMBAT, @"%@ %@ %@", [combatController unitHealthBar:_castingUnit], _castingUnit, ruleFormatted );
+					}
+					
 					// If this is a new action we reset the attempts
 					if ( _lastSpellCast != actionID ) attempts = 1;
 						else attempts++;
@@ -2599,7 +2599,7 @@ int DistanceFromPositionCompare(id <UnitPosition> unit1, id <UnitPosition> unit2
 	}
  
 	// wow needs time to process the spell change
-	usleep( [controller refreshDelay] );
+	usleep( [controller refreshDelay] *2 );
 
 	// then save our old action back
 	// Use a delay to set off the reset
